@@ -170,6 +170,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     if (debugLastKnown == null)
                     {
                         debugLastKnown = DebugGizmos.CreateLabel(lastKnown.Position, string.Empty);
+						_guiObjects.Add(lastKnown, debugLastKnown);
                     }
                     updateDebugString(lastKnown, debugLastKnown);
                 }
@@ -344,6 +345,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     LastKnownPlace = null;
                 }
+
+				if (_guiObjects.ContainsKey(place)){
+					DebugGizmos.DestroyLabel(_guiObjects[place]);
+					_guiObjects.Remove(place);
+				}
+				place.Dispose();
             }
         }
 
