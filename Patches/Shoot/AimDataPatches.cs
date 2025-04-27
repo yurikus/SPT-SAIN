@@ -194,7 +194,7 @@ namespace SAIN.Patches.Shoot.Aim
             //    DebugGizmos.Line(recoilOffset + realTargetPoint, realTargetPoint, Color.red, 0.02f, true, 10f, true);
             //}
 
-            __instance.RealTargetPoint = result;
+            __instance.EndTargetPoint = result;
             return false;
         }
 
