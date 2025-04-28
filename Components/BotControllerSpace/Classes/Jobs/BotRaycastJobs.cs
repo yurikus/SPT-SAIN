@@ -135,21 +135,21 @@ namespace SAIN.Components
                     raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, new QueryParameters
                     {
                         layerMask = _LOSMask
-                    }, eyeDirMag);
+                    }, 1f);
                     commands++;
 
                     //raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, eyeDirMag, _VisionMask);
                     raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, new QueryParameters
                     {
                         layerMask = _VisionMask
-                    }, eyeDirMag);
+                    }, 1f);
                     commands++;
 
                     //raycastCommands[commands] = new RaycastCommand(weaponFirePort, weaponDir, weaponDir.magnitude, _ShootMask);
                     raycastCommands[commands] = new RaycastCommand(weaponFirePort, weaponDir, new QueryParameters
                     {
                         layerMask = _ShootMask
-                    }, weaponDir.magnitude);
+                    }, 1f);
                     commands++;
                 }
             }
