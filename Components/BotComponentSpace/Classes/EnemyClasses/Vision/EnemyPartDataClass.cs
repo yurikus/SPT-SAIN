@@ -58,10 +58,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             RaycastResults[type].Update(castPoint, _colliderDictionary[colliderType], raycastHit, time);
         }
 
-        public SAINBodyPartRaycast GetRaycast(Vector3 origin, float maxRange)
+        public SAINBodyPartRaycast GetRaycast()
         {
             BodyPartCollider collider = getCollider();
-            Vector3 castPoint = getCastPoint(origin, collider);
+            Vector3 castPoint = getCastPoint(collider);
 
             return new SAINBodyPartRaycast
             {
@@ -97,7 +97,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private int _index;
         private readonly int _indexMax;
 
-        private Vector3 getCastPoint(Vector3 origin, BodyPartCollider collider)
+        private Vector3 getCastPoint(BodyPartCollider collider)
         {
             float size = getColliderMinSize(collider);
             //Logger.LogInfo(size);
