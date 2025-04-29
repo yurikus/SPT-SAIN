@@ -200,25 +200,27 @@ namespace SAIN.Patches.Vision
                 return false;
             }
 
-            if (!isAI &&
-                SAINEnableClass.GetSAIN(__instance.Owner, out BotComponent botComponent))
-            {
-                Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
-                if (enemy != null)
-                {
-                    if (enemy.IsCurrentEnemy)
-                    {
-                        __instance.SetCloseParts();
-                        return false;
-                    }
-                    if ((enemy.Status.ShotAtMeRecently ||
-                        enemy.Status.PositionalFlareEnabled))
-                    {
-                        __instance.SetCloseParts();
-                        return false;
-                    }
-                }
-            }
+
+            // This causes a stack overflow. Idk what it did before but it does nothing now. Everything seems fine w/o it
+            // if (!isAI &&
+            //     SAINEnableClass.GetSAIN(__instance.Owner, out BotComponent botComponent))
+            // {
+                // Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
+                // if (enemy != null)
+                // {
+                //     if (enemy.IsCurrentEnemy)
+                //     {
+                //         __instance.SetCloseParts();
+                //         return false;
+                //     }
+                //     if (enemy.Status.ShotAtMeRecently ||
+                //         enemy.Status.PositionalFlareEnabled)
+                //     {
+                //         __instance.SetCloseParts();
+                //         return false;
+                //     }
+                // }
+            // }
 
             return true;
         }
