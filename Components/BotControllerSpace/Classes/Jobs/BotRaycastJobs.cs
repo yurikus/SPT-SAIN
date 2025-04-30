@@ -121,7 +121,8 @@ namespace SAIN.Components
                 for (int j = 0; j < partCount; j++)
                 {
                     var part = parts[j];
-                    SAINBodyPartRaycast raycastData = part.GetRaycast(eyePosition, float.MaxValue);
+					
+                    SAINBodyPartRaycast raycastData = part.GetRaycast();
                     Vector3 castPoint = raycastData.CastPoint;
 
                     _colliderTypes.Add(raycastData.ColliderType);
