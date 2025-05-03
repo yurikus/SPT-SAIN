@@ -180,9 +180,6 @@ namespace SAIN
             //new Patches.Components.AddLightComponentPatch2(),
             new Patches.Components.GetBotController(),
             new Patches.Components.GetBotSpawner(),
-
-            new Patches.Legacy.CheckLookEnemyPatch(),
-            new Patches.Legacy.SetPlayerToNavMeshPatch(),
         ];
 
 
