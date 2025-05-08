@@ -382,17 +382,19 @@ namespace SAIN.Patches.Vision
                 Enemy enemy = sain.EnemyController.GetEnemy(__instance.Person.ProfileId, true);
                 if (enemy != null)
                 {
+                    // float old = __result;
                     if (!enemy.Vision.Angles.CanBeSeen)
-                        __result = 696969;
+                        __result = 0;
                     else
-                        __result *= enemy.Vision.GainSightCoef;
+                        __result /= enemy.Vision.GainSightCoef;
                     enemy.Vision.LastGainSightResult = __result;
+                    // Logger.LogInfo($"Vision speed: {old} -> {__result} ({enemy.Vision.GainSightCoef})");
                 }
 
                 float minSpeed = sain.Info.FileSettings.Look.MinimumVisionSpeed;
                 if (minSpeed > 0)
                 {
-                    __result = Mathf.Clamp(__result, minSpeed, float.MaxValue);
+                    __result = Mathf.Min(__result, 1/minSpeed);
                 }
             }
             //__result = Mathf.Clamp(__result, 0.1f, 8888f);
