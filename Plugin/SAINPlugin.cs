@@ -150,6 +150,7 @@ namespace SAIN
             new Patches.Vision.NoAIESPPatch(),
             new Patches.Vision.BotLightTurnOnPatch(),
             new Patches.Vision.VisionSpeedPatch(),
+            new Patches.Vision.WeatherVisionPatch(),
             new Patches.Vision.VisionDistancePatch(),
             new Patches.Vision.CheckFlashlightPatch(),
 

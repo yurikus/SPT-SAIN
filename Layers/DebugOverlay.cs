@@ -198,7 +198,7 @@ namespace SAIN.Layers
             stringBuilder.AppendLine($"Visible [{enemy.IsVisible}] Seen [{enemy.Seen}]");
 
             stringBuilder.AppendLine($"Aim/Scatter Multi [{enemy.Aim.AimAndScatterMultiplier}]");
-            stringBuilder.AppendLabeledValue("Time To Spot", $"{enemy.Vision.LastGainSightResult.Round100()}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("Time To Spot", $"{(1/enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
             float highestPercent = getPercentSpotted(enemy, out var partType);
             if (highestPercent > 0)
                 stringBuilder.AppendLabeledValue("Percent Spotted", $"{partType} : {highestPercent}", Color.white, Color.yellow, true);
