@@ -178,7 +178,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_3));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_1));
         }
 
         [PatchPrefix]
