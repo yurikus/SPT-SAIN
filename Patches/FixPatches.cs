@@ -234,7 +234,7 @@ namespace SAIN.Patches.Generic.Fixes
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotMover), "method_1");
+            return AccessTools.Method(typeof(BotMover), "method_9");
         }
 
         [PatchPrefix]
