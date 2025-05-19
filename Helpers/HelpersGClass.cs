@@ -46,7 +46,7 @@ namespace SAIN.Helpers
         public int GRENADE_PRECISION = 10;
         public float PRONE_POSE = 1f;
         public float MOVE_COEF = 1f;
-        public float LOWER_POSE = 0f;
+        public float LOWER_POSE = 1f;
         public float MAX_POSE = 1f;
         public float FLARE_POWER = 1.75f;
         public float FLARE_TIME = 2.5f;

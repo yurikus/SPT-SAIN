@@ -116,40 +116,41 @@ namespace SAIN.Components
                 Vector3 eyePosition = transform.EyePosition;
                 Vector3 weaponFirePort = transform.WeaponFirePort;
                 var parts = enemy.Vision.VisionChecker.EnemyParts.PartsArray;
-                var partDistances = enemy.EnemyPlayerData.DistanceData.BodyPartDistances;
+                // var partDistances = enemy.EnemyPlayerData.DistanceData.BodyPartDistances;
 
                 for (int j = 0; j < partCount; j++)
                 {
                     var part = parts[j];
+                    
                     SAINBodyPartRaycast raycastData = part.GetRaycast();
                     Vector3 castPoint = raycastData.CastPoint;
 
                     _colliderTypes.Add(raycastData.ColliderType);
                     _castPoints.Add(castPoint);
 
-                    Vector3 weaponDir = castPoint - weaponFirePort;
+                    Vector3 weaponDir = castPoint - weaponFirePort; // we should normalize this, however, setting the magnitude to 1f allows us to skip that
                     Vector3 eyeDir = castPoint - eyePosition;
-                    float eyeDirMag = partDistances[raycastData.PartType];
+                    // float eyeDirMag = partDistances[raycastData.PartType];
 
                     //raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, eyeDirMag, _LOSMask);
                     raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, new QueryParameters
                     {
                         layerMask = _LOSMask
-                    }, eyeDirMag);
+                    }, 1f);
                     commands++;
 
                     //raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, eyeDirMag, _VisionMask);
                     raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, new QueryParameters
                     {
                         layerMask = _VisionMask
-                    }, eyeDirMag);
+                    }, 1f);
                     commands++;
 
                     //raycastCommands[commands] = new RaycastCommand(weaponFirePort, weaponDir, weaponDir.magnitude, _ShootMask);
                     raycastCommands[commands] = new RaycastCommand(weaponFirePort, weaponDir, new QueryParameters
                     {
                         layerMask = _ShootMask
-                    }, weaponDir.magnitude);
+                    }, 1f);
                     commands++;
                 }
             }

@@ -185,7 +185,6 @@ namespace SAIN.Patches.Vision
         public static bool PatchPrefix(EnemyInfo __instance)
         {
             bool isAI = __instance.Person?.IsAI == true;
-            bool visible = __instance.IsVisible;
 
             if (isAI)
             {
@@ -211,8 +210,8 @@ namespace SAIN.Patches.Vision
                         __instance.SetCloseParts();
                         return false;
                     }
-                    if ((enemy.Status.ShotAtMeRecently ||
-                        enemy.Status.PositionalFlareEnabled))
+                    if (enemy.Status.ShotAtMeRecently ||
+                        enemy.Status.PositionalFlareEnabled)
                     {
                         __instance.SetCloseParts();
                         return false;
@@ -380,20 +379,42 @@ namespace SAIN.Patches.Vision
                 Enemy enemy = sain.EnemyController.GetEnemy(__instance.Person.ProfileId, true);
                 if (enemy != null)
                 {
+                    // float old = __result;
                     if (!enemy.Vision.Angles.CanBeSeen)
-                        __result = 696969;
+                        __result = 0;
                     else
-                        __result *= enemy.Vision.GainSightCoef;
+                        __result /= enemy.Vision.GainSightCoef;
                     enemy.Vision.LastGainSightResult = __result;
+                    // Logger.LogInfo($"Vision speed: {old} -> {__result} ({enemy.Vision.GainSightCoef})");
                 }
 
                 float minSpeed = sain.Info.FileSettings.Look.MinimumVisionSpeed;
                 if (minSpeed > 0)
                 {
-                    __result = Mathf.Clamp(__result, minSpeed, float.MaxValue);
+                    __result = Mathf.Min(__result, 1/minSpeed);
                 }
             }
             //__result = Mathf.Clamp(__result, 0.1f, 8888f);
+        }
+    }
+
+    public class WeatherVisionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_8));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(EnemyInfo __instance, ref float __result)
+        {
+            if (SAINEnableClass.IsBotExcluded(__instance.Owner))
+            {
+                return true;
+            }
+            
+            __result = 1f;
+            return false;
         }
     }
 

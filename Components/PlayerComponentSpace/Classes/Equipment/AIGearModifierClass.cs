@@ -158,7 +158,7 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
             float num = max - min;
             float num2 = distance - min;
             float ratio = num2 / num;
-            float result = Mathf.Lerp(min, max, ratio);
+            float result = Mathf.Lerp(1f, modifier, ratio);
 
             return result;
         }

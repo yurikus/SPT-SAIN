@@ -62,7 +62,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public SAINBodyPartRaycast GetRaycast()
         {
             BodyPartCollider collider = GetCollider();
-
+          
             return new SAINBodyPartRaycast
             {
                 CastPoint = GetCastPoint(collider),
@@ -88,7 +88,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private int _index;
         private readonly int _indexMax;
-
+      
         private Vector3 GetCastPoint(BodyPartCollider collider)
         {
             float size = GetColliderMinSize(collider);
