@@ -220,7 +220,7 @@ namespace SAIN.Patches.Movement
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(WorldInteractiveObject), "method_3");
+            return AccessTools.Method(typeof(WorldInteractiveObject), "method_4");
         }
 
         [PatchPrefix]
