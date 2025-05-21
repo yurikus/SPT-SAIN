@@ -155,7 +155,32 @@ namespace SAIN.Preset.GlobalSettings.Categories
             { Layer.TestLayer , "TestLayer"},
             { Layer.TagillaAmbush , "TagillaAmbush"},
             { Layer.TagillaFollower , "TagillaFollower"},
-            { Layer.TagillaMain , "TagillaMain"}
+            { Layer.TagillaMain , "TagillaMain"},
+            { Layer.BoarGrenadeDanger, "BoarGrenadeDanger" },
+            { Layer.BossBoarFight, "BossBoarFight" },
+            { Layer.BsBoarPatrol, "BsBoarPatrol" },
+            { Layer.AvoidDanger, "AvoidDanger" },
+            { Layer.Kln_NIMH, "Kln_NIMH" },
+            { Layer.KlnSolo, "KlnSolo" },
+            { Layer.KolontayFight, "KolontayFight" },
+            { Layer.KlnTrg, "KlnTrg" },
+            { Layer.BoarStationary, "BoarStationary" },
+            { Layer.FBoarFght, "FBoarFght" },
+            { Layer.BoarSnEn, "BoarSnEn" },
+            { Layer.Boar_sn_tg, "Boar sn tg" },
+            { Layer.KlnForceAtk, "KlnForceAtk" },
+            { Layer.KolontayAP, "KolontayAP" },
+            { Layer.SecurityKln, "SecurityKln" },
+            { Layer.PrtFMN, "PrtFMN" },
+            { Layer.PrtPst, "PrtPst" },
+            { Layer.PrtZrSvg, "PrtZrSvg" },
+            { Layer.PrtFight, "PrtFight" },
+            { Layer.PrtBadTrg, "PrtBadTrg" },
+            { Layer.PrtMany, "PrtMany" },
+            { Layer.PrtStalk, "PrtStalk" },
+            { Layer.PartisanMine, "PartisanMine" },
+            { Layer.PartMineAll, "PartMineAll" },
+            { Layer.HoldOrCoverT, "HoldOrCoverT" }
         };
 
         public static readonly Dictionary<Brain, BrainInfoClass> BrainInfos = new()
@@ -454,6 +479,180 @@ namespace SAIN.Preset.GlobalSettings.Categories
                     [
                         WildSpawnType.bossSanitar,
                     ],
+                }
+            },
+            {
+                Brain.BossBoar, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.BoarGrenadeDanger, 100 },
+                        { Layer.Malfunction, 60},
+                        { Layer.BossBoarFight, 50},
+                        { Layer.BsBoarPatrol, 40},
+                        { Layer.Simple_Target, 9},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.bossBoar,
+                    },
+                }
+            },
+            {
+                Brain.FollowerBoar, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.BoarGrenadeDanger, 120 },
+                        { Layer.ExURequest, 80},
+                        { Layer.Malfunction, 78},
+                        { Layer.FRequest, 74},
+                        { Layer.BoarStationary, 70},
+                        { Layer.FBoarFght, 50},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.followerBoar,
+                    },
+                }
+            },
+            {
+                Brain.FollowerBoarClose1, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.BoarGrenadeDanger, 120 },
+                        { Layer.ExURequest, 80},
+                        { Layer.Malfunction, 78},
+                        { Layer.FRequest, 74},
+                        { Layer.BoarStationary, 70},
+                        { Layer.FBoarFght, 50},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.followerBoarClose1,
+                    },
+                }
+            },
+            {
+                Brain.FollowerBoarClose2, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.BoarGrenadeDanger, 120 },
+                        { Layer.ExURequest, 80},
+                        { Layer.Malfunction, 78},
+                        { Layer.FRequest, 74},
+                        { Layer.BoarStationary, 70},
+                        { Layer.FBoarFght, 50},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.followerBoarClose2,
+                    },
+                }
+            },
+            {
+                Brain.BossBoarSniper, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.AvoidDanger, 80 },
+                        { Layer.BoarSnEn, 30},
+                        { Layer.Boar_sn_tg, 20},
+                        { Layer.PatrolAssault, 1},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.bossBoarSniper,
+                    },
+                }
+            },
+            {
+                Brain.BossKolontay, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.AvoidDanger, 90 },
+                        { Layer.Malfunction, 88 },
+                        { Layer.Kln_NIMH, 77 },
+                        { Layer.KlnSolo, 75 },
+                        { Layer.KolontayFight, 65 },
+                        { Layer.KlnTrg, 45 },
+                        { Layer.PatrolAssault, 0 },
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.bossKolontay,
+                    },
+                }
+            },
+            {
+                Brain.FollowerKolontayAssault, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.AvoidDanger, 80 },
+                        { Layer.Malfunction, 78},
+                        { Layer.Kln_NIMH, 77},
+                        { Layer.FRequest, 70},
+                        { Layer.KlnForceAtk, 60},
+                        { Layer.KolontayAP, 59},
+                        { Layer.Utility_peace, 30},
+                        { Layer.KlnTrg, 9},
+                        { Layer.PatrolFollower, 2},
+                        { Layer.PatrolAssault, 0},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.followerKolontayAssault,
+                    },
+                }
+            },
+            {
+                Brain.FollowerKolontaySecurity, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.AvoidDanger, 80 },
+                        { Layer.Malfunction, 78},
+                        { Layer.Kln_NIMH, 77},
+                        { Layer.FRequest, 70},
+                        { Layer.SecurityKln, 60},
+                        { Layer.Utility_peace, 30},
+                        { Layer.KlnTrg, 9},
+                        { Layer.PatrolFollower, 2},
+                        { Layer.PatrolAssault, 0},
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.followerKolontaySecurity,
+                    },
+                }
+            },
+            {
+                Brain.BossPartisan, new BrainInfoClass()
+                {
+                    Layers = new Dictionary<Layer, int>
+                    {
+                        { Layer.AvoidDanger, 130 },
+                        { Layer.Malfunction, 120 },
+                        { Layer.PrtFMN, 110 },
+                        { Layer.PrtPst, 100 },
+                        { Layer.PrtZrSvg, 95 },
+                        { Layer.PrtFight, 90 },
+                        { Layer.PrtBadTrg, 85 },
+                        { Layer.PrtMany, 80 },
+                        { Layer.PrtStalk, 70 },
+                        { Layer.PartisanMine, 60 },
+                        { Layer.PartMineAll, 50 },
+                        { Layer.HoldOrCoverT, 40 },
+                        { Layer.StayAtPos, 11 },
+                    },
+                    UsedByWildSpawns = new WildSpawnType[]
+                    {
+                        WildSpawnType.bossPartisan,
+                    },
                 }
             },
             {
