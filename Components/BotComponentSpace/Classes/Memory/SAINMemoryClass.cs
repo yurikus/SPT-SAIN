@@ -12,7 +12,6 @@ namespace SAIN.SAINComponent.Classes.Memory
         public Enemy LastUnderFireEnemy { get; private set; }
         public Vector3 UnderFireFromPosition { get; set; }
 
-        public EnemyTargetsClass EnemyTargets { get; } = new EnemyTargetsClass();
         public SAINExtract Extract { get; } = new SAINExtract();
         public HealthTracker Health { get; private set; }
         public LocationTracker Location { get; private set; }
