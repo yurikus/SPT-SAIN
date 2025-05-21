@@ -76,16 +76,11 @@ namespace SAIN.SAINComponent.Classes.Memory
             if (BotOwner.Memory.IsUnderFire &&
                 (LastUnderFireSource == null || LastUnderFireSource.HealthController.IsAlive == false))
             {
-                _underFireTimeField.SetValue(BotOwner.Memory, Time.time);
+                //Reset the UnderFireTime
+                BotOwner.Memory.float_4 = Time.time;
             }
         }
 
-        static SAINMemoryClass()
-        {
-            _underFireTimeField = AccessTools.Field(typeof(BotMemoryClass), "float_4");
-        }
-
         private float _nextCheckDeadTime;
-        private static FieldInfo _underFireTimeField;
     }
 }
