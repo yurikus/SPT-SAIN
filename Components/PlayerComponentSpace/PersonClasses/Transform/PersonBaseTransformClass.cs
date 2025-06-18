@@ -26,7 +26,12 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
             _transform = playerData.Player.Transform;
             var _bones = playerData.Player.PlayerBones;
             _bodyPart = _bones.Ribcage;
-            _eyePart = _bones.BodyPartCollidersDictionary[EBodyPartColliderType.Eyes];
+
+            // zombies don't have eye part
+            var eyePart = _bones.BodyPartCollidersDictionary.ContainsKey(EBodyPartColliderType.Eyes)
+                ? EBodyPartColliderType.Eyes
+                : EBodyPartColliderType.HeadCommon;
+            _eyePart = _bones.BodyPartCollidersDictionary[eyePart];
         }
 
         private readonly BifacialTransform _transform;
