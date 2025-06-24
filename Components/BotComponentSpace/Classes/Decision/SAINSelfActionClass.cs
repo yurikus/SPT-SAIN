@@ -66,7 +66,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 case ESelfDecision.FirstAid:
                     didAction = DoFirstAid();
                     break;
-
+                case ESelfDecision.Surgery:
+                    didAction = DoSurgery();
+                    break;
                 case ESelfDecision.Stims:
                     didAction = DoStims();
                     break;
@@ -90,7 +92,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         public bool DoFirstAid()
         {
             var heal = BotOwner.Medecine?.FirstAid;
-            if (heal == null)
+            if (heal == null || BotOwner.IsDead)
             {
                 return false;
             }
@@ -109,7 +111,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         public bool DoSurgery()
         {
             var surgery = BotOwner.Medecine?.SurgicalKit;
-            if (surgery == null)
+            if (surgery == null || BotOwner.IsDead)
             {
                 return false;
             }
@@ -128,7 +130,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         public bool DoStims()
         {
             var stims = BotOwner.Medecine?.Stimulators;
-            if (stims == null)
+            if (stims == null || BotOwner.IsDead)
             {
                 return false;
             }
