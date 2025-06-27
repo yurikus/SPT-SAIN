@@ -42,10 +42,40 @@ namespace SAIN.Preset.GlobalSettings.Categories
         SectantWarrior,
         CursAssault,
         Assault,
+        PmcBear,
+        PmcUsec,
     }
 
     public static class AIBrains
     {
+        public static List<Brain> GetAllowedScavBrains()
+        {
+            return Scavs;
+        }
+
+        public static List<Brain> GetAllowedPlayerScavBrains()
+        {
+            return GetAllowedPMCBrains();
+        }
+
+        public static List<Brain> GetAllowedPMCBrains()
+        {
+            List<Brain> PMCBrains = PMCs;
+
+            if (BigBrainHandler.INCLUDE_RAIDER_BRAIN_FOR_PMCS)
+            {
+                PMCBrains.Add(Brain.PMC);
+            }
+
+            return PMCBrains;
+        }
+
+        public static readonly List<Brain> PMCs = new List<Brain>
+        {
+            Brain.PmcBear,
+            Brain.PmcUsec,
+        };
+
         public static readonly List<Brain> Scavs = new()
         {
             Brain.CursAssault,
