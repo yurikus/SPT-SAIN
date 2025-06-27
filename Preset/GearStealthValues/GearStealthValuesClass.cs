@@ -6,8 +6,8 @@ namespace SAIN.Preset.GearStealthValues
 {
     public class GearStealthValuesClass
     {
-        public Dictionary<EEquipmentType, List<ItemStealthValue>> ItemStealthValues = new Dictionary<EEquipmentType, List<ItemStealthValue>>();
-        public readonly List<ItemStealthValue> Defaults = new List<ItemStealthValue>();
+        public Dictionary<EEquipmentType, List<ItemStealthValue>> ItemStealthValues = new();
+        public readonly List<ItemStealthValue> Defaults = new();
 
         public GearStealthValuesClass(SAINPresetDefinition preset)
         {

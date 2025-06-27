@@ -1,5 +1,4 @@
 ﻿using EFT.UI;
-using RootMotion.FinalIK;
 using SAIN.Attributes;
 using SAIN.Editor.Util;
 using SAIN.Helpers;
@@ -7,7 +6,6 @@ using SAIN.Plugin;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static RootMotion.FinalIK.GenericPoser;
 using static SAIN.Editor.SAINLayout;
 
 namespace SAIN.Editor
@@ -35,7 +33,8 @@ namespace SAIN.Editor
 
             config.Spacing();
 
-            if (Button("Clear", EUISoundType.MenuContextMenu, config.Clear)) {
+            if (Button("Clear", EUISoundType.MenuContextMenu, config.Clear))
+            {
                 search = string.Empty;
             }
 
@@ -47,36 +46,36 @@ namespace SAIN.Editor
         {
             public SearchParams(float height = 30) : base(height)
             {
-                Options = new EGUIConfig[]
-                {
+                Options =
+                [
                     EGUIConfig.horizontal,
                     EGUIConfig.startFlexSpace
-                };
+                ];
             }
 
             public float labelWidth = 150;
 
-            public GUILayoutOption[] Label => new GUILayoutOption[]
-            {
+            public GUILayoutOption[] Label =>
+            [
                 GUILayout.Width(labelWidth),
                 Height
-            };
+            ];
 
             public float textFieldWidth = 250;
 
-            public GUILayoutOption[] TextField => new GUILayoutOption[]
-            {
+            public GUILayoutOption[] TextField =>
+            [
                 GUILayout.Width(textFieldWidth),
                 Height
-            };
+            ];
 
             public float clearWidth = 75;
 
-            public GUILayoutOption[] Clear => new GUILayoutOption[]
-            {
+            public GUILayoutOption[] Clear =>
+            [
                 GUILayout.Width(labelWidth),
                 Height
-            };
+            ];
         }
 
         public class GUIParams
@@ -87,10 +86,10 @@ namespace SAIN.Editor
             }
 
             public EGUIConfig[] Options =
-            {
+            [
                 EGUIConfig.beginHorizontal,
                 EGUIConfig.endHorizontal,
-            };
+            ];
 
             public float optionHeight = 30;
             public float optionSpacing = 5;
@@ -107,34 +106,42 @@ namespace SAIN.Editor
 
             public void Start()
             {
-                if (Horizontal) {
+                if (Horizontal)
+                {
                     GUILayout.BeginHorizontal();
                 }
-                else if (Vertical) {
+                else if (Vertical)
+                {
                     GUILayout.BeginVertical();
                 }
 
-                if (FixedSpace) {
+                if (FixedSpace)
+                {
                     GUILayout.Space(FixedSpaceWidth);
                 }
-                else if (StartFlexSpace) {
+                else if (StartFlexSpace)
+                {
                     GUILayout.FlexibleSpace();
                 }
             }
 
             public void End()
             {
-                if (FixedSpace) {
+                if (FixedSpace)
+                {
                     GUILayout.Space(FixedSpaceWidth);
                 }
-                else if (EndFlexSpace) {
+                else if (EndFlexSpace)
+                {
                     GUILayout.FlexibleSpace();
                 }
 
-                if (Horizontal) {
+                if (Horizontal)
+                {
                     GUILayout.EndHorizontal();
                 }
-                else if (Vertical) {
+                else if (Vertical)
+                {
                     GUILayout.EndVertical();
                 }
             }
@@ -156,16 +163,19 @@ namespace SAIN.Editor
             BeginHorizontal();
 
             bool result = false;
-            if (Button("Save and Export", toolTip, EUISoundType.InsuranceInsured, Height(height), Width(500))) {
+            if (Button("Save and Export", toolTip, EUISoundType.InsuranceInsured, Height(height), Width(500)))
+            {
                 result = true;
             }
 
             const float alertWidth = 250f;
 
-            if (ConfigEditingTracker.UnsavedChanges) {
+            if (ConfigEditingTracker.UnsavedChanges)
+            {
                 Alert("Click Save to export changes, and send changes to bots if in-game", "YOU HAVE UNSAVED CHANGES", height, alertWidth, ColorNames.LightRed);
             }
-            else {
+            else
+            {
                 Alert(null, null, height, alertWidth);
             }
 
@@ -176,13 +186,15 @@ namespace SAIN.Editor
 
         public static void Alert(string toolTip, string text = null, float height = 25, float width = 25, ColorNames? colorName = null)
         {
-            if (toolTip.IsNullOrEmpty() && text.IsNullOrEmpty()) {
+            if (toolTip.IsNullOrEmpty() && text.IsNullOrEmpty())
+            {
                 Box(string.Empty, Height(height));
                 return;
             }
 
             GUIStyle style = GetStyle(Style.alert);
-            if (colorName != null) {
+            if (colorName != null)
+            {
                 style = new GUIStyle(style);
                 ApplyToStyle.BackgroundAllStates(TexturesClass.GetTexture(colorName.Value), style);
             }
@@ -193,13 +205,15 @@ namespace SAIN.Editor
 
         public static void Alert(string toolTip, string text = null, float height = 25, ColorNames? colorName = null)
         {
-            if (toolTip.IsNullOrEmpty() && text.IsNullOrEmpty()) {
+            if (toolTip.IsNullOrEmpty() && text.IsNullOrEmpty())
+            {
                 Box(string.Empty, Height(height));
                 return;
             }
 
             GUIStyle style = GetStyle(Style.alert);
-            if (colorName != null) {
+            if (colorName != null)
+            {
                 style = new GUIStyle(style);
                 ApplyToStyle.BackgroundAllStates(TexturesClass.GetTexture(colorName.Value), style);
             }
@@ -222,7 +236,8 @@ namespace SAIN.Editor
 
         public static object ResultBox(object value, params GUILayoutOption[] options)
         {
-            if (value != null) {
+            if (value != null)
+            {
                 Box(value.ToString(), "The Rounding this option is set to", options);
                 string dirtyString = TextField(value.ToString(), null, options);
                 value = CleanString(dirtyString, value);
@@ -232,13 +247,16 @@ namespace SAIN.Editor
 
         public static object CleanString(string input, object currentValue)
         {
-            if (currentValue is float floatValue) {
+            if (currentValue is float floatValue)
+            {
                 currentValue = CleanString(input, floatValue);
             }
-            if (currentValue is int intValue) {
+            if (currentValue is int intValue)
+            {
                 currentValue = CleanString(input, intValue);
             }
-            if (currentValue is bool boolValue) {
+            if (currentValue is bool boolValue)
+            {
                 currentValue = CleanString(input, boolValue);
             }
             return currentValue;
@@ -246,7 +264,8 @@ namespace SAIN.Editor
 
         public static float CleanString(string input, float currentValue)
         {
-            if (float.TryParse(input, out float result)) {
+            if (float.TryParse(input, out float result))
+            {
                 return result;
             }
             return currentValue;
@@ -254,10 +273,12 @@ namespace SAIN.Editor
 
         public static int CleanString(string input, int currentValue)
         {
-            if (int.TryParse(input, out int result)) {
+            if (int.TryParse(input, out int result))
+            {
                 return result;
             }
-            else if (float.TryParse(input, out float floatResult)) {
+            else if (float.TryParse(input, out float floatResult))
+            {
                 return Mathf.RoundToInt(floatResult);
             }
             return currentValue;
@@ -265,7 +286,8 @@ namespace SAIN.Editor
 
         public static bool CleanString(string input, bool currentValue)
         {
-            if (input == true.ToString() || input == false.ToString()) {
+            if (input == true.ToString() || input == false.ToString())
+            {
                 currentValue = bool.Parse(input);
             }
             return currentValue;
@@ -273,11 +295,13 @@ namespace SAIN.Editor
 
         public static T SelectionGrid<T>(T value, float height, int optionsPerLine, params T[] valueOptions)
         {
-            if (valueOptions.Length == 0) {
+            if (valueOptions.Length == 0)
+            {
                 return value;
             }
             int count = StartSelection(optionsPerLine, height, out GUILayoutOption[] options);
-            for (var i = 0; i < valueOptions.Length; i++) {
+            for (var i = 0; i < valueOptions.Length; i++)
+            {
                 value = CheckToggle(value, valueOptions[i], options);
                 count = HorizontalSpacing(count, optionsPerLine);
             }
@@ -298,7 +322,8 @@ namespace SAIN.Editor
         public static T SelectionGrid<T>(T value, float height, int optionsPerLine, List<T> list)
         {
             int count = StartSelection(optionsPerLine, height, out GUILayoutOption[] options);
-            for (var i = 0; i < list.Count; i++) {
+            for (var i = 0; i < list.Count; i++)
+            {
                 value = CheckToggle(value, list[i], options);
                 count = HorizontalSpacing(count, optionsPerLine);
             }
@@ -309,7 +334,8 @@ namespace SAIN.Editor
         public static T SelectionGrid<T>(T value, List<T> list, float height = 25, int optionsPerLine = 3)
         {
             int count = StartSelection(optionsPerLine, height, out GUILayoutOption[] options);
-            for (var i = 0; i < list.Count; i++) {
+            for (var i = 0; i < list.Count; i++)
+            {
                 value = CheckToggle(value, list[i], options);
                 count = HorizontalSpacing(count, optionsPerLine);
             }
@@ -321,18 +347,19 @@ namespace SAIN.Editor
         {
             BeginHorizontalSpace();
             float width = 1850f / optionsCount;
-            options = new GUILayoutOption[]
-            {
+            options =
+            [
                 Height(height),
                 Width(width),
-            };
+            ];
             return 0;
         }
 
         private static int HorizontalSpacing(int count, int max)
         {
             count++;
-            if (count >= max) {
+            if (count >= max)
+            {
                 count = 0;
                 EndHorizontal();
                 BeginHorizontalSpace();
@@ -347,7 +374,8 @@ namespace SAIN.Editor
             string listValueString = newValue.ToString();
             bool selected = listValueString == value.ToString();
 
-            if (Toggle(selected, listValueString, SelectionSound, options)) {
+            if (Toggle(selected, listValueString, SelectionSound, options))
+            {
                 value = newValue;
             }
             return value;
@@ -359,8 +387,10 @@ namespace SAIN.Editor
 
             string tooltip = string.Empty;
 
-            for (int i = 0; i < options.Length; i++) {
-                if (toolTips != null) {
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (toolTips != null)
+                {
                     tooltip = toolTips[i];
                 }
 
@@ -372,11 +402,13 @@ namespace SAIN.Editor
                 GUIStyle style = StyleHandler(selected, hovering);
 
                 bool toggleActivated = GUI.Button(optionRects[i], new GUIContent(option, tooltip), style);
-                if (toggleActivated && selected) {
+                if (toggleActivated && selected)
+                {
                     Sounds.PlaySound(EUISoundType.ButtonClick);
                     selectedOption = "None";
                 }
-                if (toggleActivated && !selected) {
+                if (toggleActivated && !selected)
+                {
                     Sounds.PlaySound(EUISoundType.ButtonClick);
                     selectedOption = option;
                 }
@@ -389,13 +421,16 @@ namespace SAIN.Editor
         {
             var style = StylesClass.GetFontStyleDynamic(Style.selectionGrid, selected);
             Texture2D texture;
-            if (selected) {
+            if (selected)
+            {
                 texture = TexturesClass.GetTexture(ColorNames.DarkRed);
             }
-            else if (hovering) {
+            else if (hovering)
+            {
                 texture = TexturesClass.GetTexture(ColorNames.LightRed);
             }
-            else {
+            else
+            {
                 texture = TexturesClass.GetTexture(EGraynessLevel.Mid);
             }
             ApplyToStyle.BackgroundAllStates(texture, style);
@@ -405,7 +440,8 @@ namespace SAIN.Editor
         public static string SelectionGridExpandWidth(Rect menuRect, string[] options, string selectedOption, Rect[] optionRects, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
         {
             BeginGroup(menuRect);
-            for (int i = 0; i < options.Length; i++) {
+            for (int i = 0; i < options.Length; i++)
+            {
                 string option = options[i];
                 bool selected = selectedOption == option;
 
@@ -413,11 +449,13 @@ namespace SAIN.Editor
 
                 GUIStyle style = StyleHandler(selected, hovering);
                 bool toggleActivated = GUI.Button(optionRects[i], option, style);
-                if (toggleActivated && selected) {
+                if (toggleActivated && selected)
+                {
                     Sounds.PlaySound(EUISoundType.ButtonClick);
                     selectedOption = "None";
                 }
-                if (toggleActivated && !selected) {
+                if (toggleActivated && !selected)
+                {
                     Sounds.PlaySound(EUISoundType.ButtonClick);
                     selectedOption = option;
                 }
@@ -428,7 +466,8 @@ namespace SAIN.Editor
 
         public static void SelectionGridExpandWidth(Rect menuRect, string[] options, List<string> selectedList, Rect[] optionRects, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
         {
-            for (int i = 0; i < options.Length; i++) {
+            for (int i = 0; i < options.Length; i++)
+            {
                 string option = options[i];
                 bool selected = selectedList.Contains(option);
 
@@ -437,12 +476,15 @@ namespace SAIN.Editor
                 GUIStyle style = StyleHandler(selected, hovering);
 
                 bool toggleActivated = GUI.Toggle(optionRects[i], selected, option, style);
-                if (toggleActivated != selected) {
+                if (toggleActivated != selected)
+                {
                     Sounds.PlaySound(EUISoundType.MenuDropdownSelect);
-                    if (selected) {
+                    if (selected)
+                    {
                         selectedList.Remove(option);
                     }
-                    else {
+                    else
+                    {
                         selectedList.Add(option);
                     }
                 }
@@ -456,9 +498,11 @@ namespace SAIN.Editor
             float optionHeight = MenuRect.height / count;
             float X = 0;
 
-            for (int i = 0; i < rects.Length; i++) {
+            for (int i = 0; i < rects.Length; i++)
+            {
                 float Y = optionHeight * i;
-                rects[i] = new Rect {
+                rects[i] = new Rect
+                {
                     x = X,
                     y = Y,
                     width = startWidth,
@@ -475,9 +519,11 @@ namespace SAIN.Editor
             float optionWidth = MenuRect.width / count;
             float Y = 0;
 
-            for (int i = 0; i < rects.Length; i++) {
+            for (int i = 0; i < rects.Length; i++)
+            {
                 float X = optionWidth * i;
-                rects[i] = new Rect {
+                rects[i] = new Rect
+                {
                     x = X,
                     y = Y,
                     width = optionWidth,
@@ -507,20 +553,22 @@ namespace SAIN.Editor
 
         private static float Animate(float current, bool mouseHover, bool selected, float max, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
         {
-            if (mouseHover || selected) {
+            if (mouseHover || selected)
+            {
                 current += incPerFrame;
             }
-            else {
+            else
+            {
                 current -= incPerFrame * closeMulti;
             }
             current = Mathf.Clamp(current, min, max);
             return current;
         }
 
-        public static bool ExpandableMenu(string name, bool value, string description = null, float height = 35f)
+        public static bool ExpandableMenu(string name, bool value, string description = null, float height = 20f)
         {
             BeginHorizontal();
-            value = Toggle(value, new GUIContent(value ? "-" : "+", value ? "Collapse" : "Expand"), EUISoundType.MenuDropdown, Width(17.5f), Height(height * 0.66f));
+            value = Toggle(value, new GUIContent(value ? "-" : "+", value ? "Collapse" : "Expand"), EUISoundType.MenuDropdown, Width(17.5f), Height(height));
             value = Toggle(value, new GUIContent(name, description), EUISoundType.MenuDropdown, Height(height));
             EndHorizontal();
             return value;
@@ -531,7 +579,8 @@ namespace SAIN.Editor
             float oldValue = value;
             value = HorizontalSlider(oldValue, min, max, null, options);
             Backgrounds(value, min, max);
-            if (!MouseFunctions.MouseIsMoving) {
+            if (!MouseFunctions.MouseIsMoving)
+            {
                 value = value.Round(rounding);
             }
             return value;
@@ -543,7 +592,8 @@ namespace SAIN.Editor
             value = HorizontalSlider(value, info.Min, info.Max, null, config.Toggle);
             Backgrounds(value, info.Min, info.Max);
             Box(value.Round(info.Rounding).ToString(), config.Result);
-            if (!MouseFunctions.MouseIsMoving) {
+            if (!MouseFunctions.MouseIsMoving)
+            {
                 value = value.Round(info.Rounding);
             }
             return value;

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SAIN.Attributes;
+﻿using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings
 {

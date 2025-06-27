@@ -16,9 +16,9 @@ namespace SAIN.Preset
 
     public class BotTypeDefinitions
     {
-        public static Dictionary<WildSpawnType, BotType> BotTypes = new Dictionary<WildSpawnType, BotType>();
+        public static Dictionary<WildSpawnType, BotType> BotTypes = new();
         public static List<BotType> BotTypesList;
-        public static readonly List<string> BotTypesNames = new List<string>();
+        public static readonly List<string> BotTypesNames = new();
 
         static BotTypeDefinitions()
         {
@@ -48,7 +48,7 @@ namespace SAIN.Preset
             }
             else
             {
-                JsonUtility.SaveObjectToJson(tempList, FileName); 
+                JsonUtility.SaveObjectToJson(tempList, FileName);
                 return tempList;
             }
         }
@@ -92,7 +92,7 @@ namespace SAIN.Preset
             }
         }
 
-        private static readonly List<BotType> _typesToRemove = new List<BotType>();
+        private static readonly List<BotType> _typesToRemove = new();
 
         public static void ExportBotTypes()
         {
@@ -132,9 +132,9 @@ namespace SAIN.Preset
                 new BotType{ WildSpawnType = WildSpawnType.sectantPriest,           Name = "Cultist Priest",           Section = "Other" ,       Description = "Found on Customs, Woods, Factory, Shoreline at night" },
                 new BotType{ WildSpawnType = WildSpawnType.sectantWarrior,          Name = "Cultist",                  Section = "Other" ,       Description = "Found on Customs, Woods, Factory, Shoreline at night" },
                 new BotType{ WildSpawnType = WildSpawnType.bossKilla,               Name = "Killa",                    Section = "Bosses" ,      Description = "He shoot. Found on Interchange and Streets" },
-				new BotType{ WildSpawnType = WildSpawnType.bossPartisan,            Name = "Partisan",                 Section = "Bosses" ,      Description = "Crazy mall santa" },
+				        new BotType{ WildSpawnType = WildSpawnType.bossPartisan,            Name = "Partisan",                 Section = "Bosses" ,      Description = "Crazy mall santa" },
 
-				new BotType{ WildSpawnType = WildSpawnType.bossBully,               Name = "Rashala",                  Section = "Bosses" ,      Description = "Customs Boss" },
+				        new BotType{ WildSpawnType = WildSpawnType.bossBully,               Name = "Rashala",                  Section = "Bosses" ,      Description = "Customs Boss" },
                 new BotType{ WildSpawnType = WildSpawnType.followerBully,           Name = "Rashala Guard",            Section = "Followers" ,   Description = "Customs Boss Follower" },
 
                 new BotType{ WildSpawnType = WildSpawnType.bossKojaniy,             Name = "Shturman",                 Section = "Bosses" ,      Description = "Woods Boss" },
@@ -155,15 +155,18 @@ namespace SAIN.Preset
                 new BotType{ WildSpawnType = WildSpawnType.bossZryachiy,            Name = "Zryachiy",                 Section = "Bosses" ,      Description = "Lighthouse Island Sniper Boss" },
                 new BotType{ WildSpawnType = WildSpawnType.followerZryachiy,        Name = "Zryachiy Guard",           Section = "Followers" ,   Description = "Lighthouse Island Sniper Boss Follower" },
 
-                new BotType{ WildSpawnType = WildSpawnType.bossBoar,                Name = "Kaban",                    Section = "Bosses" ,      Description = "Streets Boss" },
-                new BotType{ WildSpawnType = WildSpawnType.followerBoar,            Name = "Kaban Guard",              Section = "Followers" ,   Description = "Streets Boss Follower" },
-				new BotType{ WildSpawnType = WildSpawnType.followerBoarClose1,      Name = "Kaban Guard Close 1",      Section = "Followers" ,   Description = "Streets Boss Follower Close 1" },
-				new BotType{ WildSpawnType = WildSpawnType.followerBoarClose2,      Name = "Kaban Guard Close 2",      Section = "Followers" ,   Description = "Streets Boss Follower Close 2" },
-                new BotType{ WildSpawnType = WildSpawnType.bossBoarSniper,          Name = "Kaban Sniper",             Section = "Followers" ,   Description = "Streets Boss Follower Sniper" },
+                new BotType{ WildSpawnType = WildSpawnType.bossBoar,                Name = "Kaban",                    Section = "Bosses" ,      Description = "Streets Gangster" },
+                new BotType{ WildSpawnType = WildSpawnType.followerBoar,            Name = "Kaban Guard",              Section = "Followers" ,   Description = "Gangster Cannon Fodder" },
+                new BotType{ WildSpawnType = WildSpawnType.followerBoarClose1,      Name = "Basmach",                  Section = "Followers" ,   Description = "Gangster 1" },
+                new BotType{ WildSpawnType = WildSpawnType.followerBoarClose2,      Name = "Gus",                      Section = "Followers" ,   Description = "Gangster 2" },
+                new BotType{ WildSpawnType = WildSpawnType.bossBoarSniper,          Name = "Kaban Sniper",             Section = "Followers" ,   Description = "Gangster Sniper" },
 
-				new BotType{ WildSpawnType = WildSpawnType.bossKolontay,            Name = "Kolontay",                 Section = "Bosses" ,      Description = "" },
-                new BotType{ WildSpawnType = WildSpawnType.followerKolontayAssault, Name = "Kolontay Assault",         Section = "Followers" ,   Description = "" },
-                new BotType{ WildSpawnType = WildSpawnType.followerKolontaySecurity,Name = "Kolontay Security",        Section = "Followers" ,   Description = "" },
+                new BotType{ WildSpawnType = WildSpawnType.bossKolontay,            Name = "Kollontay",                Section = "Bosses" ,      Description = "Crooked Cop" },
+                new BotType{ WildSpawnType = WildSpawnType.followerKolontayAssault, Name = "Kollantay Assault",        Section = "Followers" ,   Description = "Aggressive Guard" },
+                new BotType{ WildSpawnType = WildSpawnType.followerKolontaySecurity,Name = "Kollantay Security",       Section = "Followers" ,   Description = "Defensive Guard" },
+
+                new BotType{ WildSpawnType = WildSpawnType.bossPartisan,            Name = "Partisan",                 Section = "Bosses" ,      Description = "A scav legend.. who scavs hate" },
+                
                 new BotType{ WildSpawnType = WildSpawnType.shooterBTR,              Name = "BTR",                      Section = "Other" ,       Description = "Zoom. Zoom. Bang. Bang." },
             };
         }

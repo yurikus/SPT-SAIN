@@ -1,5 +1,4 @@
-﻿using EFT;
-using SAIN.Preset.GlobalSettings;
+﻿using SAIN.Preset.GlobalSettings;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
@@ -48,7 +47,8 @@ namespace SAIN.SAINComponent.Classes
         private float getBaseDispersion(float enemyDistance, SAINSoundType soundType)
         {
             HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;
-            if (hearingSettings.HEAR_DISPERSION_VALUES.TryGetValue(soundType, out float dispersionValue) == false) {
+            if (hearingSettings.HEAR_DISPERSION_VALUES.TryGetValue(soundType, out float dispersionValue) == false)
+            {
                 dispersionValue = 12.5f;
                 Logger.LogWarning($"Could not find [{soundType}] in Hearing Dispersion Dictionary!");
             }
@@ -71,8 +71,9 @@ namespace SAIN.SAINComponent.Classes
         {
             float randomX = UnityEngine.Random.Range(-dispersion, dispersion);
             float randomZ = UnityEngine.Random.Range(-dispersion, dispersion);
-            Vector3 randomdirection = new Vector3(randomX, 0, randomZ);
-            if (min > 0 && randomdirection.sqrMagnitude < min * min) {
+            Vector3 randomdirection = new(randomX, 0, randomZ);
+            if (min > 0 && randomdirection.sqrMagnitude < min * min)
+            {
                 randomdirection = Vector3.Normalize(randomdirection) * min;
             }
             return randomdirection;

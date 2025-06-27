@@ -64,14 +64,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             this.Add(enemy);
 
-            if (this.Count == 1) {
+            if (this.Count == 1)
+            {
                 OnListEmptyOrGetFirst?.Invoke(true);
             }
 
             if (!enemy.IsAI)
             {
                 Humans++;
-                if (Humans == 1) {
+                if (Humans == 1)
+                {
                     OnListEmptyOrGetFirstHuman?.Invoke(true);
                 }
             }
@@ -83,7 +85,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void RemoveEnemy(Enemy enemy)
         {
-            if (enemy == null) 
+            if (enemy == null)
                 return;
 
             this.Remove(enemy);
@@ -101,14 +103,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Bots--;
             }
 
-            if (Bots < 0) {
+            if (Bots < 0)
+            {
                 Bots = 0;
             }
-            if (Humans < 0) {
+            if (Humans < 0)
+            {
                 Humans = 0;
             }
 
-            if (this.Count == 0) {
+            if (this.Count == 0)
+            {
                 OnListEmptyOrGetFirst?.Invoke(false);
             }
         }

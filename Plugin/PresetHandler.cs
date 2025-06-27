@@ -16,7 +16,7 @@ namespace SAIN.Plugin
         public static event Action<SAINPresetClass> OnPresetUpdated;
         public static event Action<PresetEditorDefaults> OnEditorSettingsChanged;
 
-        public static readonly List<SAINPresetDefinition> CustomPresetOptions = new List<SAINPresetDefinition>();
+        public static readonly List<SAINPresetDefinition> CustomPresetOptions = new();
 
         public static SAINPresetClass LoadedPreset;
 

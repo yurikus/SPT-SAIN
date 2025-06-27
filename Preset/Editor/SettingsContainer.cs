@@ -13,7 +13,7 @@ namespace SAIN.Editor
             Name = name ?? settingsType.Name;
             foreach (FieldInfo field in settingsType.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
-                ConfigInfoClass attributes = new ConfigInfoClass(field);
+                ConfigInfoClass attributes = new(field);
                 if (!attributes.Hidden)
                 {
                     var category = new Category(attributes);
@@ -28,8 +28,8 @@ namespace SAIN.Editor
 
         public readonly string Name;
 
-        public readonly List<Category> Categories = new List<Category>();
-        public readonly List<Category> SelectedCategories = new List<Category>();
+        public readonly List<Category> Categories = new();
+        public readonly List<Category> SelectedCategories = new();
 
         public string SearchPattern = string.Empty;
 

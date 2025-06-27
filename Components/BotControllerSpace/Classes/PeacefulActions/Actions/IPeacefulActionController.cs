@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SAIN.Models.Enums;
+using System.Collections.Generic;
 
 namespace SAIN.Components.BotController.PeacefulActions
 {

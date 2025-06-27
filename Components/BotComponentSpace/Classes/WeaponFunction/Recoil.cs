@@ -2,7 +2,6 @@
 using EFT.InventoryLogic;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
-using System.Collections;
 using System.Text;
 using UnityEngine;
 
@@ -14,7 +13,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private Vector3 _lookDir => Player.LookDirection * 3f;
         public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
-        private readonly StringBuilder _debugString = new StringBuilder();
+        private readonly StringBuilder _debugString = new();
         private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
         private static float _recoilDecayCoef => SAINPlugin.LoadedPreset.GlobalSettings.Shoot.RECOIL_DECAY_COEF;
         private float _barrelRecoveryTime;
@@ -41,14 +40,16 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private void calcDecay()
         {
-            if (_recoilFinished) {
+            if (_recoilFinished)
+            {
                 return;
             }
 
             float decayTime = Time.deltaTime * _recoilDecayCoef;
             _barrelRecoveryTime += decayTime;
 
-            if (_barrelRecoveryTime >= 1) {
+            if (_barrelRecoveryTime >= 1)
+            {
                 _barrelRecoveryTime = 0;
                 _recoilFinished = true;
                 CurrentRecoilOffset = Vector3.zero;
@@ -60,7 +61,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void WeaponShot()
         {
-            if (Bot.IsCheater) {
+            if (Bot.IsCheater)
+            {
                 Logger.LogDebug("cheato");
                 return;
             }
@@ -72,7 +74,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         private void calculateRecoil()
         {
             Weapon weapon = Bot.Info?.WeaponInfo?.CurrentWeapon;
-            if (weapon == null) {
+            if (weapon == null)
+            {
                 Logger.LogError("Weapon Null!");
                 return;
             }
@@ -91,8 +94,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             result -= dir;
             CurrentRecoilOffset += result;
 
-            if (SAINPlugin.DebugSettings.Gizmos.DebugDrawRecoilGizmos) {
-                DebugGizmos.Ray(Bot.Transform.WeaponFirePort, dir * BotOwner.AimingData.LastDist2Target, Color.red, BotOwner.AimingData.LastDist2Target, 0.02f, true, 10f);
+            if (SAINPlugin.DebugSettings.Gizmos.DebugDrawRecoilGizmos)
+            {
+                DebugGizmos.Ray(Bot.Transform.WeaponFirePort, dir * BotOwner.AimingManager.CurrentAiming.LastDist2Target, Color.red, BotOwner.AimingManager.CurrentAiming.LastDist2Target, 0.02f, true, 10f);
             }
 
             if (_debugRecoilLogs)
@@ -110,7 +114,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private float calcModFromInjury(EInjurySeverity severity)
         {
-            switch (severity) {
+            switch (severity)
+            {
                 default:
                     return 1f;
 
@@ -129,20 +134,25 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             float recoilMod = 1f * RecoilMultiplier;
 
-            if (Player.IsInPronePose) {
+            if (Player.IsInPronePose)
+            {
                 recoilMod *= 0.7f;
             }
-            else if (Player.Pose == EPlayerPose.Duck) {
+            else if (Player.Pose == EPlayerPose.Duck)
+            {
                 recoilMod *= 0.9f;
             }
 
-            if (BotOwner.WeaponManager?.ShootController?.IsAiming == true) {
+            if (BotOwner.WeaponManager?.ShootController?.IsAiming == true)
+            {
                 recoilMod *= 0.9f;
             }
-            if (Bot.Transform.VelocityMagnitudeNormal < 0.1f) {
+            if (Bot.Transform.VelocityMagnitudeNormal < 0.1f)
+            {
                 recoilMod *= 0.85f;
             }
-            if (_armsInjured) {
+            if (_armsInjured)
+            {
                 recoilMod *= Mathf.Sqrt(ArmInjuryModifier);
             }
 
@@ -152,7 +162,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         private float calcRecoilNum(float recoilVal)
         {
             float result = recoilVal / _shootSettings.RECOIL_BASELINE;
-            if (ModDetection.RealismLoaded) {
+            if (ModDetection.RealismLoaded)
+            {
                 result = recoilVal / _shootSettings.RECOIL_BASELINE_REALISM;
             }
             result *= shootModClamped();

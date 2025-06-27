@@ -1,6 +1,6 @@
 ﻿using EFT;
+using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.Memory;
 using UnityEngine;
 
@@ -28,15 +28,15 @@ namespace SAIN.Layers.Peace
 
         private bool allowedToExtract()
         {
-            return 
+            return
                 Bot.Info.FileSettings.Mind.EnableExtracts &&
-                GlobalSettingsClass.Instance.General.Extract.EnableExtractsGlobal &&
+                GlobalSettingsClass.Instance.General.Extract.SAIN_EXTRACT_TOGGLE &&
                 Components.BotController.BotExtractManager.IsBotAllowedToExfil(Bot);
         }
 
         private bool hasExtractReason()
         {
-            return 
+            return
                 ExtractFromTime() ||
                 ExtractFromInjury() ||
                 ExtractFromLoot() ||
@@ -126,7 +126,7 @@ namespace SAIN.Layers.Peace
         private bool ExtractFromLoot()
         {
             // If extract from loot is disabled, or no Looting Bots interop, not active
-            if (SAINPlugin.LoadedPreset.GlobalSettings.General.LootingBots.ExtractFromLoot == false  || !LootingBots.LootingBotsInterop.Init())
+            if (SAINPlugin.LoadedPreset.GlobalSettings.General.LootingBots.ExtractFromLoot == false || !LootingBots.LootingBotsInterop.Init())
             {
                 return false;
             }

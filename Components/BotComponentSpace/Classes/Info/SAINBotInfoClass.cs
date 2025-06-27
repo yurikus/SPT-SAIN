@@ -2,7 +2,6 @@
 using SAIN.Helpers;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;
-using SAIN.Preset.GlobalSettings;
 using SAIN.Preset.Personalities;
 using System.Collections.Generic;
 using System.Reflection;
@@ -12,10 +11,12 @@ namespace SAIN.SAINComponent.Classes.Info
 {
     public class SAINBotInfoClass : BotBase, IBotClass
     {
-        public SAINSettingsClass FileSettings {
+        public SAINSettingsClass FileSettings
+        {
             get
             {
-                if (_fileSettings == null) {
+                if (_fileSettings == null)
+                {
                     _fileSettings = SAINPresetClass.Instance.BotSettings.GetSAINSettings(Profile.WildSpawnType, Profile.BotDifficulty);
                 }
                 return _fileSettings;
@@ -65,7 +66,8 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public void SetPersonality(EPersonality personality)
         {
-            if (SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.TryGetValue(personality, out var personalitySettings)) {
+            if (SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.TryGetValue(personality, out var personalitySettings))
+            {
                 PersonalitySettingsClass = personalitySettings;
                 Personality = personality;
             }
@@ -93,25 +95,30 @@ namespace SAIN.SAINComponent.Classes.Info
         public void CalcTimeBeforeSearch()
         {
             float searchTime;
-            if (Profile.WildSpawnType == WildSpawnType.bossKilla || Profile.WildSpawnType == WildSpawnType.bossTagilla) {
+            if (Profile.WildSpawnType == WildSpawnType.bossKilla || Profile.WildSpawnType == WildSpawnType.bossTagilla)
+            {
                 searchTime = 0.1f;
             }
-            else if (Profile.IsFollower && Bot.Squad.BotInGroup) {
+            else if (Profile.IsFollower && Bot.Squad.BotInGroup)
+            {
                 searchTime = 10f;
             }
-            else {
+            else
+            {
                 searchTime = PersonalitySettings.Search.SearchBaseTime;
             }
 
             searchTime = (searchTime.Randomize(0.66f, 1.33f) / AggressionMultiplier).Round100();
-            if (searchTime < 0.1f) {
+            if (searchTime < 0.1f)
+            {
                 searchTime = 0.1f;
             }
 
             TimeBeforeSearch = searchTime;
             float random = 30f.Randomize(0.75f, 1.25f).Round100();
             float forgetTime = searchTime + random;
-            if (forgetTime < 240f) {
+            if (forgetTime < 240f)
+            {
                 forgetTime = 240f.Randomize(0.9f, 1.1f).Round100();
             }
 
@@ -125,24 +132,31 @@ namespace SAIN.SAINComponent.Classes.Info
 
             var squad = Bot?.Squad;
             var members = squad?.Members;
-            if (squad != null && squad.BotInGroup && members != null && members.Count > 0) {
-                if (squad.IAmLeader) {
+            if (squad != null && squad.BotInGroup && members != null && members.Count > 0)
+            {
+                if (squad.IAmLeader)
+                {
                     PercentageBeforeExtract = percentage;
-                    foreach (var member in members) {
+                    foreach (var member in members)
+                    {
                         var infocClass = member.Value?.Info;
-                        if (infocClass != null) {
+                        if (infocClass != null)
+                        {
                             infocClass.PercentageBeforeExtract = percentage;
                         }
                     }
                 }
-                else if (PercentageBeforeExtract == -1f) {
+                else if (PercentageBeforeExtract == -1f)
+                {
                     var Leader = squad?.LeaderComponent?.Info;
-                    if (Leader != null) {
+                    if (Leader != null)
+                    {
                         PercentageBeforeExtract = Leader.PercentageBeforeExtract;
                     }
                 }
             }
-            else {
+            else
+            {
                 PercentageBeforeExtract = percentage;
             }
         }
@@ -156,34 +170,42 @@ namespace SAIN.SAINComponent.Classes.Info
         private void SetConfigValues(SAINSettingsClass sainFileSettings)
         {
             var eftFileSettings = BotOwner.Settings.FileSettings;
-            if (EFTSettingsCategories == null) {
+            if (EFTSettingsCategories == null)
+            {
                 var flags = BindingFlags.Instance | BindingFlags.Public;
 
                 EFTSettingsCategories = eftFileSettings.GetType().GetFields(flags);
-                foreach (FieldInfo field in EFTSettingsCategories) {
+                foreach (FieldInfo field in EFTSettingsCategories)
+                {
                     EFTSettingsFields.Add(field, field.FieldType.GetFields(flags));
                 }
 
                 SAINSettingsCategories = sainFileSettings.GetType().GetFields(flags);
-                foreach (FieldInfo field in SAINSettingsCategories) {
+                foreach (FieldInfo field in SAINSettingsCategories)
+                {
                     SAINSettingsFields.Add(field, field.FieldType.GetFields(flags));
                 }
             }
 
-            foreach (FieldInfo sainCategoryField in SAINSettingsCategories) {
+            foreach (FieldInfo sainCategoryField in SAINSettingsCategories)
+            {
                 FieldInfo eftCategoryField = Reflection.FindFieldByName(sainCategoryField.Name, EFTSettingsCategories);
-                if (eftCategoryField != null) {
+                if (eftCategoryField != null)
+                {
                     object sainCategory = sainCategoryField.GetValue(sainFileSettings);
                     object eftCategory = eftCategoryField.GetValue(eftFileSettings);
 
                     FieldInfo[] sainFields = SAINSettingsFields[sainCategoryField];
                     FieldInfo[] eftFields = EFTSettingsFields[eftCategoryField];
 
-                    foreach (FieldInfo sainVarField in sainFields) {
+                    foreach (FieldInfo sainVarField in sainFields)
+                    {
                         FieldInfo eftVarField = Reflection.FindFieldByName(sainVarField.Name, eftFields);
-                        if (eftVarField != null) {
+                        if (eftVarField != null)
+                        {
                             object sainValue = sainVarField.GetValue(sainCategory);
-                            if (SAINPlugin.DebugMode) {
+                            if (SAINPlugin.DebugMode)
+                            {
                                 //string message = $"[{eftVarField.Name}] : Default Value = [{eftVarField.GetValue(eftCategory)}] New Value = [{sainValue}]";
                                 //Logger.LogInfo(message);
                                 //Logger.NotifyInfo(message);
@@ -200,7 +222,7 @@ namespace SAIN.SAINComponent.Classes.Info
         private static FieldInfo[] EFTSettingsCategories;
         private static FieldInfo[] SAINSettingsCategories;
 
-        private static readonly Dictionary<FieldInfo, FieldInfo[]> EFTSettingsFields = new Dictionary<FieldInfo, FieldInfo[]>();
-        private static readonly Dictionary<FieldInfo, FieldInfo[]> SAINSettingsFields = new Dictionary<FieldInfo, FieldInfo[]>();
+        private static readonly Dictionary<FieldInfo, FieldInfo[]> EFTSettingsFields = new();
+        private static readonly Dictionary<FieldInfo, FieldInfo[]> SAINSettingsFields = new();
     }
 }

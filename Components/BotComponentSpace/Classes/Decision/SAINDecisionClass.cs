@@ -34,9 +34,9 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
         }
 
-        public bool IsSearching => 
-            CurrentCombatDecision == ECombatDecision.Search || 
-            CurrentSquadDecision == ESquadDecision.Search || 
+        public bool IsSearching =>
+            CurrentCombatDecision == ECombatDecision.Search ||
+            CurrentSquadDecision == ESquadDecision.Search ||
             CurrentSquadDecision == ESquadDecision.GroupSearch;
 
         public BotDecisionManager DecisionManager { get; }

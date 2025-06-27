@@ -1,10 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
-using SAIN.Helpers;
-using SAIN.Plugin;
-using SAIN.Preset.GlobalSettings;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -27,11 +23,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private bool isEnemyAlwaysInVisibleDistance()
+        private bool IsEnemyAlwaysInVisibleDistance()
         {
             if (Enemy.Vision.Angles.AngleToEnemy < 30f &&
                 Enemy.KnownPlaces.EnemyDistanceFromLastKnown < 3 &&
-                SAINBotController.Instance.TimeVision.VisibilityPercent > 50f)
+                SAINBotController.Instance.TimeVision.VisibilityRatio > 0.5f)
             {
                 return true;
             }
@@ -40,16 +36,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private float CalcVisionDistance()
         {
-            if (isEnemyAlwaysInVisibleDistance())
+            if (IsEnemyAlwaysInVisibleDistance())
             {
                 return 1000f;
             }
 
-            float angleMod = calcAngleMod();
+            float angleMod = CalcAngleMod();
 
-            float moveMod = calcMovementMod();
-            float gearMod = calcGearStealthMod();
-            float flareMod = getFlare();
+            float moveMod = CalcMovementMod();
+            float gearMod = CalcGearStealthMod();
+            float flareMod = GetFlare();
 
             SAINEnemyStatus status = Enemy.Status;
             bool posFlare = status.PositionalFlareEnabled;
@@ -72,7 +68,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return result;
         }
 
-        private float calcMovementMod()
+        private float CalcMovementMod()
         {
             float velocity = Enemy.Vision.EnemyVelocity;
             float result = Mathf.Lerp(0.9f, _sprintMod, velocity);
@@ -88,7 +84,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private static float _sprintMod => SAINPlugin.LoadedPreset.GlobalSettings.Look.VisionDistance.MovementDistanceModifier;
 
-        private float calcAngleMod()
+        private float CalcAngleMod()
         {
             // Reduce Bot Periph Vision
             float angleToEnemy = Enemy.Vision.Angles.AngleToEnemy;
@@ -121,12 +117,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return result;
         }
 
-        private float calcGearStealthMod()
+        private float CalcGearStealthMod()
         {
             return Enemy.EnemyPlayerComponent.AIData.AIGearModifier.StealthModifier(Enemy.RealDistance);
         }
 
-        private float getFlare()
+        private float GetFlare()
         {
             // if player shot a weapon recently
             // if player is using suppressed weapon, and has shot recently, don't increase vis distance as much.

@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using SAIN.SAINComponent.Classes.EnemyClasses;
+﻿using SAIN.SAINComponent.Classes.EnemyClasses;
+using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {

@@ -43,14 +43,14 @@ namespace SAIN.SAINComponent
             }
         }
 
-        protected readonly PresetAutoUpdater _autoUpdater = new PresetAutoUpdater();
+        protected readonly PresetAutoUpdater _autoUpdater = new();
     }
 
     public abstract class BotSubClass<T> : BotBase where T : IBotClass
     {
         protected T BaseClass { get; }
 
-        public BotSubClass(T sainClass) : base (sainClass.Bot)
+        public BotSubClass(T sainClass) : base(sainClass.Bot)
         {
             BaseClass = sainClass;
         }

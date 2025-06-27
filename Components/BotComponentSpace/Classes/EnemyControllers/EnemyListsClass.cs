@@ -1,4 +1,5 @@
 ﻿using SAIN.Helpers;
+using SAIN.Models.Enums;
 using System.Collections.Generic;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
@@ -7,7 +8,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
     {
         public EnemyList KnownEnemies { get; private set; }
 
-        public readonly Dictionary<EEnemyListType, EnemyList> EnemyLists = new Dictionary<EEnemyListType, EnemyList>();
+        public readonly Dictionary<EEnemyListType, EnemyList> EnemyLists = new();
 
         public EnemyListsClass(SAINEnemyController controller) : base(controller)
         {
@@ -22,37 +23,45 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             KnownEnemies = GetEnemyList(EEnemyListType.Known);
         }
 
-        public EnemyList GetEnemyList(EEnemyListType type) {
+        public EnemyList GetEnemyList(EEnemyListType type)
+        {
             EnemyLists.TryGetValue(type, out EnemyList list);
             return list;
         }
 
-        public Enemy First(EEnemyListType type) {
+        public Enemy First(EEnemyListType type)
+        {
             return GetEnemyList(type).First();
         }
 
-        public int HumanCount(EEnemyListType type) {
+        public int HumanCount(EEnemyListType type)
+        {
             return GetEnemyList(type).Humans;
         }
 
-        public int TotalCount(EEnemyListType type) {
+        public int TotalCount(EEnemyListType type)
+        {
             return GetEnemyList(type).Count;
         }
 
-        public int BotCount(EEnemyListType type) {
+        public int BotCount(EEnemyListType type)
+        {
             return GetEnemyList(type).Bots;
         }
 
-        public void Init() {
+        public void Init()
+        {
             Bot.EnemyController.Events.OnEnemyAdded += enemyAdded;
             Bot.EnemyController.Events.OnEnemyRemoved += enemyRemoved;
         }
 
-        private void enemyAdded(Enemy enemy) {
+        private void enemyAdded(Enemy enemy)
+        {
             subOrUnSub(true, enemy);
         }
 
-        private void enemyRemoved(string profileID, Enemy enemy) {
+        private void enemyRemoved(string profileID, Enemy enemy)
+        {
             subOrUnSub(false, enemy);
             foreach (var list in EnemyLists.Values)
                 list.RemoveEnemy(enemy);
@@ -102,7 +111,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             EnemyLists.Clear();
         }
 
-        private readonly List<Enemy> _enemiesToRemove = new List<Enemy>();
+        private readonly List<Enemy> _enemiesToRemove = new();
 
         private void subOrUnSub(bool value, Enemy enemy)
         {

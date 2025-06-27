@@ -48,8 +48,8 @@ namespace SAIN.Editor
                 },
             };
 
-            List<string> names = new List<string>();
-            List<string> tooltips = new List<string>();
+            List<string> names = new();
+            List<string> tooltips = new();
             foreach (var tab in TabClasses)
             {
                 names.Add(tab.Value.Name);

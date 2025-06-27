@@ -1,11 +1,7 @@
-﻿using BepInEx.Logging;
-using DrakiaXYZ.BigBrain.Brains;
-using EFT;
-using System.Text;
-using SAIN.SAINComponent;
-using SAIN.Layers.Combat.Solo.Cover;
-using System.Collections.Generic;
+﻿using EFT;
 using SAIN.Layers.Combat.Solo;
+using SAIN.Layers.Combat.Solo.Cover;
+using SAIN.Models.Enums;
 
 namespace SAIN.Layers
 {
@@ -50,7 +46,7 @@ namespace SAIN.Layers
 
         public override bool IsActive()
         {
-            bool active = 
+            bool active =
                 Bot?.BotActive == true &&
                 (CurrentDecision == ECombatDecision.DogFight ||
                 CurrentDecision == ECombatDecision.AvoidGrenade);

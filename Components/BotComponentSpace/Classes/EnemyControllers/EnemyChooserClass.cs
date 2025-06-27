@@ -1,8 +1,6 @@
 ﻿using EFT;
 using SAIN.Helpers;
-using System;
-using System.Collections;
-using UnityEngine;
+using SAIN.Models.Enums;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -53,8 +51,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void enemyKnownChanged(bool known, Enemy enemy)
         {
-            if (!known && 
-                _activeEnemy != null && 
+            if (!known &&
+                _activeEnemy != null &&
                 _activeEnemy.EnemyProfileId == enemy.EnemyProfileId)
             {
                 setActiveEnemy(null);
@@ -86,7 +84,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             Enemy activeEnemy = findActiveEnemy();
 
-            if (activeEnemy != null && 
+            if (activeEnemy != null &&
                 (!activeEnemy.CheckValid() || !activeEnemy.EnemyPerson.Active))
             {
                 //Logger.LogWarning($"Tried to assign inactive or invalid player.");
@@ -104,7 +102,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
 
             var targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy;
-            if (targetEnemy != null && 
+            if (targetEnemy != null &&
                 (ActiveEnemy == null || targetEnemy.IsDifferent(ActiveEnemy)))
             {
                 return targetEnemy;
@@ -114,10 +112,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             if (goalEnemy != null)
             {
-                if (!goalEnemy.IsVisible) {
+                if (!goalEnemy.IsVisible)
+                {
                     Enemy visibileEnemy = BaseClass.EnemyLists.First(EEnemyListType.Visible);
-                    if (visibileEnemy?.CheckValid() == true && 
-                        visibileEnemy.EnemyPerson.Active) {
+                    if (visibileEnemy?.CheckValid() == true &&
+                        visibileEnemy.EnemyPerson.Active)
+                    {
                         return visibileEnemy;
                     }
                 }
@@ -139,8 +139,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (goalEnemy?.Person != null &&
                 goalEnemy.Person.HealthController.IsAlive == false)
             {
-                try  { BotOwner.Memory.GoalEnemy = null; }
-                catch { // Sometimes bsg code throws an error here :D
+                try { BotOwner.Memory.GoalEnemy = null; }
+                catch
+                { // Sometimes bsg code throws an error here :D
                 }
                 goalEnemy = null;
             }
@@ -152,8 +153,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     return;
                 }
-                if (activeEnemy.CheckValid() && 
-                    activeEnemy.EnemyPerson.Active && 
+                if (activeEnemy.CheckValid() &&
+                    activeEnemy.EnemyPerson.Active &&
                     (activeEnemy.Status.ShotAtMeRecently || activeEnemy.IsVisible))
                 {
                     enemy = activeEnemy;
@@ -251,50 +252,49 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             EnemyInfo goalEnemy = BotOwner.Memory.GoalEnemy;
             if (goalEnemy != null && ActiveEnemy == null)
             {
-                if (_nextLogTime < Time.time)
-                {
-                    //_nextLogTime = Time.time + 1f;
+                //if (_nextLogTime < Time.time)
+                //{
+                //_nextLogTime = Time.time + 1f;
 
-                    //Logger.LogError("Bot's Goal Enemy is not null, but SAIN enemy is null.");
-                    if (goalEnemy.Person == null)
-                    {
-                        //Logger.LogError("Bot's Goal Enemy Person is null");
-                        return;
-                    }
-                    if (goalEnemy.ProfileId == Bot.ProfileId)
-                    {
-                        //Logger.LogError("goalEnemy.ProfileId == SAINBot.ProfileId");
-                        return;
-                    }
-                    if (goalEnemy.ProfileId == Bot.Player.ProfileId)
-                    {
-                        //Logger.LogError("goalEnemy.ProfileId == SAINBot.Player.ProfileId");
-                        return;
-                    }
-                    if (goalEnemy.ProfileId == Bot.BotOwner.ProfileId)
-                    {
-                        //Logger.LogError("goalEnemy.ProfileId == SAINBot.Player.ProfileId");
-                        return;
-                    }
-                    Enemy sainEnemy = BaseClass.GetEnemy(goalEnemy.ProfileId, true);
-                    if (sainEnemy != null)
-                    {
-                        setActiveEnemy(sainEnemy);
-                        //Logger.LogError("Got SAINEnemy from goalEnemy.ProfileId");
-                        return;
-                    }
-                    sainEnemy = BaseClass.CheckAddEnemy(goalEnemy.Person);
-                    if (sainEnemy != null)
-                    {
-                        setActiveEnemy(sainEnemy);
-                        //Logger.LogError("Got SAINEnemy from goalEnemy.Person");
-                        return;
-                    }
+                //Logger.LogError("Bot's Goal Enemy is not null, but SAIN enemy is null.");
+                if (goalEnemy.Person == null)
+                {
+                    //Logger.LogError("Bot's Goal Enemy Person is null");
+                    return;
                 }
+                if (goalEnemy.ProfileId == Bot.ProfileId)
+                {
+                    //Logger.LogError("goalEnemy.ProfileId == SAINBot.ProfileId");
+                    return;
+                }
+                if (goalEnemy.ProfileId == Bot.Player.ProfileId)
+                {
+                    //Logger.LogError("goalEnemy.ProfileId == SAINBot.Player.ProfileId");
+                    return;
+                }
+                if (goalEnemy.ProfileId == Bot.BotOwner.ProfileId)
+                {
+                    //Logger.LogError("goalEnemy.ProfileId == SAINBot.Player.ProfileId");
+                    return;
+                }
+                Enemy sainEnemy = BaseClass.GetEnemy(goalEnemy.ProfileId, true);
+                if (sainEnemy != null)
+                {
+                    setActiveEnemy(sainEnemy);
+                    //Logger.LogError("Got SAINEnemy from goalEnemy.ProfileId");
+                    return;
+                }
+                sainEnemy = BaseClass.CheckAddEnemy(goalEnemy.Person);
+                if (sainEnemy != null)
+                {
+                    setActiveEnemy(sainEnemy);
+                    //Logger.LogError("Got SAINEnemy from goalEnemy.Person");
+                    return;
+                }
+                //}
             }
         }
 
-        private float _nextLogTime;
         private Enemy _activeEnemy;
     }
 }

@@ -14,7 +14,7 @@ namespace SAIN.SAINComponent.Classes
 
         public BotSurgery Surgery { get; private set; }
         public SAINBotHitReaction HitReaction { get; private set; }
-        public BotHitByEnemyClass HitByEnemy {  get; private set; }
+        public BotHitByEnemyClass HitByEnemy { get; private set; }
 
         public void TryCancelHeal()
         {

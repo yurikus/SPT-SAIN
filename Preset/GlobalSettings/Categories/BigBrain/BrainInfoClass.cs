@@ -7,7 +7,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
     {
         public string Name;
         public string Description;
-        public Dictionary<Layer, int> Layers = new Dictionary<Layer, int>();
+        public Dictionary<Layer, int> Layers = new();
         public WildSpawnType[] UsedByWildSpawns;
     }
 }

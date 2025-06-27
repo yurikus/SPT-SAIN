@@ -18,11 +18,13 @@ namespace SAIN.SAINComponent.Classes
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)
         {
             var player = DamageInfoStruct.Player?.iPlayer;
-            if (player == null) {
+            if (player == null)
+            {
                 return;
             }
             Enemy enemy = Bot.EnemyController.GetEnemy(player.ProfileId, true);
-            if (enemy == null) {
+            if (enemy == null)
+            {
                 return;
             }
             EnemyWhoLastShotMe = enemy;

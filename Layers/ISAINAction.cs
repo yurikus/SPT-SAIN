@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace SAIN.Layers
+﻿namespace SAIN.Layers
 {
     public interface ISAINAction
     {

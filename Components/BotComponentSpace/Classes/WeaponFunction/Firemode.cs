@@ -1,11 +1,10 @@
 ﻿using EFT;
-using UnityEngine;
-using Random = UnityEngine.Random;
-using static EFT.InventoryLogic.Weapon;
-using SAIN.Components;
-using SAIN.SAINComponent;
-using EFT.InventoryLogic;
+using SAIN.Models.Enums;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.Info;
+using UnityEngine;
+using static EFT.InventoryLogic.Weapon;
+using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
@@ -90,7 +89,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
             float distance = Bot.DistanceToAimTarget;
             mode = EFireMode.doublet;
-            if (distance > SemiAutoSwapDist)
+            if (distance > SemiAutoSwapDist || GlobalSettingsClass.Instance.Shoot.ONLY_SEMIAUTO_TOGGLE)
             {
                 if (weaponInfo.HasFireMode(EFireMode.single))
                 {

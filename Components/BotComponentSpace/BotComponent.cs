@@ -2,6 +2,7 @@
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
+using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.Preset.GlobalSettings.Categories;
 using SAIN.SAINComponent.Classes;
@@ -71,17 +72,40 @@ namespace SAIN.SAINComponent
         public BotGrenadeManager Grenade { get; private set; }
         public SAINSteeringClass Steering { get; private set; }
         public AimClass Aim { get; private set; }
-        public CoroutineManager<BotComponent> CoroutineManager { get; private set; }
+
+        public bool ShallExecuteRequests
+        {
+            get
+            {
+                BotRequest currRequest = BotOwner.BotRequestController.CurRequest;
+                if (currRequest == null)
+                {
+                    return false;
+                }
+                IPlayer requester = currRequest.Requester;
+                if (requester == null)
+                {
+                    return false;
+                }
+                if (HasEnemy && currRequest.Requester.IsAI)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
 
         public bool IsDead => !Person.ActivationClass.IsAlive;
         public bool GameEnding => BotActivation.GameEnding;
         public bool SAINLayersActive => BotActivation.SAINLayersActive;
 
-        public float DistanceToAimTarget {
+        public float DistanceToAimTarget
+        {
             get
             {
-                if (BotOwner.AimingData != null) {
-                    return BotOwner.AimingData.LastDist2Target;
+                if (BotOwner.AimingManager.CurrentAiming != null)
+                {
+                    return BotOwner.AimingManager.CurrentAiming.LastDist2Target;
                 }
                 return CurrentTarget.CurrentTargetDistance;
             }
@@ -89,7 +113,8 @@ namespace SAIN.SAINComponent
 
         public float LastCheckVisibleTime;
 
-        public ESAINLayer ActiveLayer {
+        public ESAINLayer ActiveLayer
+        {
             get
             {
                 return BotActivation.ActiveLayer;
@@ -100,10 +125,11 @@ namespace SAIN.SAINComponent
             }
         }
 
-        private void Update()
+        public void Update()
         {
             BotActivation.Update();
-            if (!BotActive) {
+            if (!BotActive)
+            {
                 return;
             }
 
@@ -114,7 +140,8 @@ namespace SAIN.SAINComponent
             Decision.Update();
             GlobalEvents.Update();
 
-            if (BotInStandBy) {
+            if (BotInStandBy)
+            {
                 return;
             }
 
@@ -149,19 +176,24 @@ namespace SAIN.SAINComponent
 
         public bool InitializeBot(PersonClass person)
         {
-            if (base.Init(person) == false) {
+            if (base.Init(person) == false)
+            {
                 return false;
             }
-            if (createClasses(person) == false) {
+            if (createClasses(person) == false)
+            {
                 return false;
             }
-            if (addToSquad() == false) {
+            if (addToSquad() == false)
+            {
                 return false;
             }
-            if (initClasses() == false) {
+            if (initClasses() == false)
+            {
                 return false;
             }
-            if (finishInit() == false) {
+            if (finishInit() == false)
+            {
                 return false;
             }
             return true;
@@ -169,11 +201,11 @@ namespace SAIN.SAINComponent
 
         private bool createClasses(PersonClass person)
         {
-            try {
+            try
+            {
                 // Must be first, other classes use it
                 Info = initBotClass<SAINBotInfoClass>();
 
-                CoroutineManager = new CoroutineManager<BotComponent>(this);
                 NoBushESP = this.gameObject.AddComponent<SAINNoBushESP>();
 
                 Squad =
@@ -241,7 +273,8 @@ namespace SAIN.SAINComponent
                 Aim =
                     initBotClass<AimClass>();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogError($"Error When Creating Classes, Disposing... : {ex}");
                 return false;
             }
@@ -250,17 +283,19 @@ namespace SAIN.SAINComponent
 
         private T initBotClass<T>() where T : BotBase
         {
-            T botClass = (T)Activator.CreateInstance(typeof(T), new object[] { this });
+            T botClass = (T)Activator.CreateInstance(typeof(T), [this]);
             _botClasses.Add(typeof(T), botClass as IBotClass);
             return botClass;
         }
 
         private bool addToSquad()
         {
-            try {
+            try
+            {
                 Squad.SquadInfo.AddMember(this);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogError($"Error adding member to squad!: {ex}");
                 return false;
             }
@@ -269,18 +304,23 @@ namespace SAIN.SAINComponent
 
         private bool initClasses()
         {
-            try {
+            try
+            {
                 NoBushESP.Init(Person.AIInfo.BotOwner, this);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogError($"Error When Initializing Components, Disposing... : {ex}");
                 return false;
             }
-            foreach (var botClass in _botClasses) {
-                try {
+            foreach (var botClass in _botClasses)
+            {
+                try
+                {
                     botClass.Value.Init();
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     Logger.LogError($"Error When Initializing Class [{botClass.Key.ToString()}], Disposing... : {ex}");
                     return false;
                 }
@@ -290,35 +330,43 @@ namespace SAIN.SAINComponent
 
         private bool finishInit()
         {
-            try {
-                if (!verifyBrain(Person)) {
+            try
+            {
+                if (!verifyBrain(Person))
+                {
                     Logger.LogError("Init SAIN ERROR, Disposing...");
                     return false;
                 }
 
-                try {
-					BotOwner.LookSensor.MaxShootDist = float.MaxValue;
-					if (BotOwner.AIData is GClass551 aiData)
-					{
-						aiData.IsNoOffsetShooting = false;
-					}
-				}
-                catch (Exception ex) {
+                try
+                {
+                    BotOwner.LookSensor.MaxShootDist = float.MaxValue;
+                    if (BotOwner.AIData is GClass567 aiData)
+                    {
+                        aiData.IsNoOffsetShooting = false;
+                    }
+                }
+                catch (Exception ex)
+                {
                     Logger.LogError($"Error setting MaxShootDist during init, but continuing with initialization...: {ex}");
                 }
 
-                try {
+                try
+                {
                     var settings = GlobalSettingsClass.Instance.General.Jokes;
                     if (settings.RandomCheaters &&
-                        (EFTMath.RandomBool(settings.RandomCheaterChance) || Player.Profile.Nickname.ToLower().Contains("solarint"))) {
+                        (EFTMath.RandomBool(settings.RandomCheaterChance) || Player.Profile.Nickname.ToLower().Contains("solarint")))
+                    {
                         IsCheater = true;
                     }
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     Logger.LogWarning($"Error when initializing dumb shit for this bot, continuing anyways since its some dumb shit. Error: {ex}");
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogError($"Error When Finishing Bot Initialization, Disposing... : {ex}");
                 return false;
             }
@@ -328,7 +376,8 @@ namespace SAIN.SAINComponent
         private bool verifyBrain(PersonClass person)
         {
             if (Info.Profile.IsPMC &&
-                person.AIInfo.BotOwner.Brain.BaseBrain.ShortName() != Brain.PMC.ToString()) {
+                person.AIInfo.BotOwner.Brain.BaseBrain.ShortName() != Brain.PMC.ToString())
+            {
                 Logger.LogAndNotifyError($"{BotOwner.name} is a PMC but does not have [PMC] Base Brain! Current Brain Assignment: [{person.AIInfo.BotOwner.Brain.BaseBrain.ShortName()}] : SAIN Server mod is either missing or another mod is overwriting it. Destroying SAIN for this bot...");
                 return false;
             }
@@ -341,20 +390,24 @@ namespace SAIN.SAINComponent
             StopAllCoroutines();
         }
 
-        private void LateUpdate()
+        public void LateUpdate()
         {
             BotActivation.LateUpdate();
+            EnemyController.LateUpdate();
         }
 
         private void handleDumbShit()
         {
-            if (IsCheater) {
-                if (defaultMoveSpeed == 0) {
+            if (IsCheater)
+            {
+                if (defaultMoveSpeed == 0)
+                {
                     defaultMoveSpeed = Player.MovementContext.MaxSpeed;
                     defaultSprintSpeed = Player.MovementContext.SprintSpeed;
                 }
                 Player.Grounder.enabled = Enemy == null;
-                if (Enemy != null) {
+                if (Enemy != null)
+                {
                     Player.MovementContext.SetCharacterMovementSpeed(350, true);
                     Player.MovementContext.SprintSpeed = 50f;
                     Player.ChangeSpeed(100f);
@@ -362,7 +415,8 @@ namespace SAIN.SAINComponent
                     Player.MovementContext.ChangeSpeedLimit(100f, Player.ESpeedLimit.SurfaceNormal);
                     BotOwner.SetTargetMoveSpeed(100f);
                 }
-                else {
+                else
+                {
                     Player.MovementContext.SetCharacterMovementSpeed(defaultMoveSpeed, false);
                     Player.MovementContext.SprintSpeed = defaultSprintSpeed;
                 }
@@ -375,11 +429,14 @@ namespace SAIN.SAINComponent
             BotActivation?.SetActive(false);
             StopAllCoroutines();
 
-            foreach (var botClass in _botClasses) {
-                try {
+            foreach (var botClass in _botClasses)
+            {
+                try
+                {
                     botClass.Value.Dispose();
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     Logger.LogError($"Dispose Class [{botClass.Key.ToString()}] Error: {ex}");
                 }
             }

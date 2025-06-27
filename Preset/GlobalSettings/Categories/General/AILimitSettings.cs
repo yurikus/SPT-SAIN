@@ -17,7 +17,7 @@ namespace SAIN.Preset.GlobalSettings
             "If a bot is further than this number (in meters) from the closest Human Player, " +
             "they will be assigned this AI Limit setting.")]
         [MinMax(150f, 600f, 1f)]
-        public Dictionary<AILimitSetting, float> AILimitRanges = new Dictionary<AILimitSetting, float>
+        public Dictionary<AILimitSetting, float> AILimitRanges = new()
         {
             { AILimitSetting.Far, 150f },
             { AILimitSetting.VeryFar, 250f },
@@ -26,10 +26,10 @@ namespace SAIN.Preset.GlobalSettings
 
         [Name("Limit AI vs AI Vision")]
         [Description("Reduces visible range for bots vs other bots if they are bot far from a human player.")]
-        public bool LimitAIvsAIVision= true;
+        public bool LimitAIvsAIVision = true;
 
         [MinMax(10f, 200f, 1f)]
-        public Dictionary<AILimitSetting, float> MaxVisionRanges = new Dictionary<AILimitSetting, float>
+        public Dictionary<AILimitSetting, float> MaxVisionRanges = new()
         {
             { AILimitSetting.Far, 200f },
             { AILimitSetting.VeryFar, 100f },
@@ -41,7 +41,7 @@ namespace SAIN.Preset.GlobalSettings
         public bool LimitAIvsAIHearing = true;
 
         [MinMax(10f, 200f, 1f)]
-        public Dictionary<AILimitSetting, float> MaxHearingRanges = new Dictionary<AILimitSetting, float>
+        public Dictionary<AILimitSetting, float> MaxHearingRanges = new()
         {
             { AILimitSetting.Far, 100f },
             { AILimitSetting.VeryFar, 60f },

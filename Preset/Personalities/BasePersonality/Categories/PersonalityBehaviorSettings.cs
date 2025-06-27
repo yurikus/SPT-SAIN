@@ -1,14 +1,12 @@
-﻿using SAIN.Preset.GlobalSettings;
-
-namespace SAIN.Preset.Personalities
+﻿namespace SAIN.Preset.Personalities
 {
     public class PersonalityBehaviorSettings : SettingsGroupBase<PersonalityBehaviorSettings>, ISettingsGroup
     {
-        public PersonalityGeneralSettings General = new PersonalityGeneralSettings();
-        public PersonalitySearchSettings Search = new PersonalitySearchSettings();
-        public PersonalityRushSettings Rush = new PersonalityRushSettings();
-        public PersonalityCoverSettings Cover = new PersonalityCoverSettings();
-        public PersonalityTalkSettings Talk = new PersonalityTalkSettings();
+        public PersonalityGeneralSettings General = new();
+        public PersonalitySearchSettings Search = new();
+        public PersonalityRushSettings Rush = new();
+        public PersonalityCoverSettings Cover = new();
+        public PersonalityTalkSettings Talk = new();
 
         public override void InitList()
         {

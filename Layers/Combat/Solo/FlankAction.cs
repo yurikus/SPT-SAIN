@@ -1,19 +1,10 @@
-﻿using BepInEx.Logging;
-using DrakiaXYZ.BigBrain.Brains;
+﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.SAINComponent.Classes.Decision;
-using SAIN.SAINComponent.Classes.Talk;
-using SAIN.SAINComponent.Classes.WeaponFunction;
-using SAIN.SAINComponent.Classes.Mover;
-using SAIN.SAINComponent.Classes;
-using SAIN.SAINComponent.SubComponents;
-using SAIN.SAINComponent;
 using SAIN.Helpers;
+using SAIN.SAINComponent.Classes;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
 using UnityEngine.AI;
-using System.IO;
-using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections;
 
 namespace SAIN.Layers.Combat.Solo
 {
@@ -28,12 +19,14 @@ namespace SAIN.Layers.Combat.Solo
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             Enemy enemy = Bot.Enemy;
             if (enemy != null)
             {
             }
+            this.EndProfilingSample();
         }
 
         private FlankRoute FindFlankRoute()
@@ -56,10 +49,10 @@ namespace SAIN.Layers.Combat.Solo
                 Vector3 directionFromMiddle = enemyPosition - middleNode.Value;
 
                 flankRoute = FindFlank(
-                    middleNode.Value, 
-                    directionFromMiddle, 
-                    botPosition, 
-                    enemy, 
+                    middleNode.Value,
+                    directionFromMiddle,
+                    botPosition,
+                    enemy,
                     SideTurn.right);
 
                 if (flankRoute != null)
@@ -68,10 +61,10 @@ namespace SAIN.Layers.Combat.Solo
                 }
 
                 flankRoute = FindFlank(
-                    middleNode.Value, 
-                    directionFromMiddle, 
-                    botPosition, 
-                    enemy, 
+                    middleNode.Value,
+                    directionFromMiddle,
+                    botPosition,
+                    enemy,
                     SideTurn.left);
 
                 if (flankRoute != null)
@@ -89,12 +82,12 @@ namespace SAIN.Layers.Combat.Solo
             {
                 flank = path.corners[path.corners.Length - 1];
                 NavMeshPath pathToEnemy = enemy.Path.PathToEnemy;
-                NavMeshPath flankPath = new NavMeshPath();
+                NavMeshPath flankPath = new();
                 if (NavMesh.CalculatePath(botPosition, flank, -1, flankPath)
                     && ArePathsDifferent(pathToEnemy, flankPath))
                 {
-                    NavMeshPath flankPath2 = new NavMeshPath();
-                    if (NavMesh.CalculatePath(flank, enemy.EnemyPosition, -1, flankPath2) 
+                    NavMeshPath flankPath2 = new();
+                    if (NavMesh.CalculatePath(flank, enemy.EnemyPosition, -1, flankPath2)
                         && ArePathsDifferent(pathToEnemy, flankPath2)
                         && ArePathsDifferent(flankPath, flankPath2))
                     {

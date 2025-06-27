@@ -6,20 +6,20 @@ namespace SAIN.Preset.BotSettings.SAINSettings
 {
     public class SAINSettingsClass : SettingsGroupBase<SAINSettingsClass>
     {
-        public DifficultySettings Difficulty = new DifficultySettings();
-        public SAINCoreSettings Core = new SAINCoreSettings();
-        public SAINAimingSettings Aiming = new SAINAimingSettings();
-        public SAINBossSettings Boss = new SAINBossSettings();
-        public SAINChangeSettings Change = new SAINChangeSettings();
-        public SAINGrenadeSettings Grenade = new SAINGrenadeSettings();
-        public SAINHearingSettings Hearing = new SAINHearingSettings();
-        public SAINLaySettings Lay = new SAINLaySettings();
-        public SAINLookSettings Look = new SAINLookSettings();
-        public SAINMindSettings Mind = new SAINMindSettings();
-        public SAINMoveSettings Move = new SAINMoveSettings();
-        public SAINPatrolSettings Patrol = new SAINPatrolSettings();
-        public SAINScatterSettings Scattering = new SAINScatterSettings();
-        public SAINShootSettings Shoot = new SAINShootSettings();
+        public DifficultySettings Difficulty = new();
+        public SAINCoreSettings Core = new();
+        public SAINAimingSettings Aiming = new();
+        public SAINBossSettings Boss = new();
+        public SAINChangeSettings Change = new();
+        public SAINGrenadeSettings Grenade = new();
+        public SAINHearingSettings Hearing = new();
+        public SAINLaySettings Lay = new();
+        public SAINLookSettings Look = new();
+        public SAINMindSettings Mind = new();
+        public SAINMoveSettings Move = new();
+        public SAINPatrolSettings Patrol = new();
+        public SAINScatterSettings Scattering = new();
+        public SAINShootSettings Shoot = new();
 
         public override void InitList()
         {

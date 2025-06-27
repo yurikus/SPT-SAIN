@@ -31,15 +31,18 @@ namespace SAIN.SAINComponent.Classes
 
         private void onBotActive(bool value)
         {
-            switch (value) {
+            switch (value)
+            {
                 case true:
-                    if (_controller == null) {
+                    if (_controller == null)
+                    {
                         _controller = Bot.StartCoroutine(controlSteeringLoop());
                     }
                     break;
 
                 case false:
-                    if (_controller != null) {
+                    if (_controller != null)
+                    {
                         Bot.StopCoroutine(_controller);
                         _controller = null;
                     }
@@ -49,7 +52,8 @@ namespace SAIN.SAINComponent.Classes
 
         private IEnumerator controlSteeringLoop()
         {
-            while (true) {
+            while (true)
+            {
                 yield return null;
             }
         }

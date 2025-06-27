@@ -1,4 +1,5 @@
-﻿using SAIN.SAINComponent;
+﻿using SAIN.Models.Enums;
+using SAIN.SAINComponent;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -19,7 +20,8 @@ namespace SAIN.Components.BotController.PeacefulActions
 
         public void CheckExecute(BotZoneData data)
         {
-            if (_nextCheckTime < Time.time) {
+            if (_nextCheckTime < Time.time)
+            {
                 _nextCheckTime = Time.time + FIND_GATHERING_FREQ;
                 findPossibleGatherings(data);
             }
@@ -33,7 +35,8 @@ namespace SAIN.Components.BotController.PeacefulActions
         private void findPossibleGatherings(BotZoneData data)
         {
             _selectedBots.Clear();
-            if (PeacefulActionHelpers.findBotsForPeacefulAction(data, _localList, _selectedBots, MAX_GATHER_ENTER_DIST_SQR)) {
+            if (PeacefulActionHelpers.findBotsForPeacefulAction(data, _localList, _selectedBots, MAX_GATHER_ENTER_DIST_SQR))
+            {
                 logConvoStart(data);
             }
         }
@@ -45,8 +48,10 @@ namespace SAIN.Components.BotController.PeacefulActions
         private IEnumerator executeConversation(params BotComponent[] bots)
         {
             bool finishedConvo = false;
-            while (!finishedConvo) {
-                if (!recheckBots(bots)) {
+            while (!finishedConvo)
+            {
+                if (!recheckBots(bots))
+                {
                     finishedConvo = true;
                     break;
                 }
@@ -67,13 +72,15 @@ namespace SAIN.Components.BotController.PeacefulActions
 
         private void logConvoStart(BotZoneData data)
         {
-            if (SAINPlugin.DebugMode || true) {
-                StringBuilder stringBuilder = new StringBuilder();
+            if (SAINPlugin.DebugMode || true)
+            {
+                StringBuilder stringBuilder = new();
                 stringBuilder.AppendLine($"Gathering [{_gatherings++}]");
                 stringBuilder.AppendLine($"Selected [{_selectedBots.Count}] Bots");
                 stringBuilder.AppendLine($"Name: [{data.Name}]");
                 stringBuilder.AppendLine($"Time: [{Time.time}]");
-                for (int j = 0; j < _selectedBots.Count; j++) {
+                for (int j = 0; j < _selectedBots.Count; j++)
+                {
                     var selected = _selectedBots[j];
                     stringBuilder.AppendLine($"[{j + 1}] : Selected: [{selected.name}]");
                 }
@@ -81,8 +88,8 @@ namespace SAIN.Components.BotController.PeacefulActions
             }
         }
 
-        private readonly List<BotComponent> _localList = new List<BotComponent>();
-        private readonly List<BotComponent> _selectedBots = new List<BotComponent>();
+        private readonly List<BotComponent> _localList = new();
+        private readonly List<BotComponent> _selectedBots = new();
         private float _nextCheckTime;
         private int _gatherings;
     }

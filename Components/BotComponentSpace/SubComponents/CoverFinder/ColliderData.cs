@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using SAIN.Models.Structs;
+using UnityEngine;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
     public class ColliderData
     {
-        public ColliderData(HardColliderData hardData, TargetData targetDirs)
+        public ColliderData(SAINHardColliderData hardData, TargetData targetDirs)
         {
             Vector3 colliderPos = hardData.Position;
             Vector3 dirToTarget = targetDirs.TargetPosition - colliderPos;

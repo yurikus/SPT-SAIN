@@ -2,12 +2,12 @@ using Comfort.Common;
 using EFT;
 using EFT.EnvironmentEffect;
 using SAIN.BotController.Classes;
-using SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
 using SAIN.Components.BotController;
 using SAIN.Components.BotController.PeacefulActions;
 using SAIN.Components.BotControllerSpace.Classes;
 using SAIN.Helpers;
 using SAIN.Layers;
+using SAIN.Models.Structs;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.WeaponFunction;
@@ -24,8 +24,6 @@ namespace SAIN.Components
         public event Action<Grenade, float> OnGrenadeCollision;
 
         public event Action<Grenade, Vector3, string> OnGrenadeThrown;
-
-        public event Action<Vector3, string, bool, float, float> OnGrenadeExploded;
 
         public GrenadeController(SAINBotController controller) : base(controller)
         {
@@ -62,16 +60,20 @@ namespace SAIN.Components
 
         private void GrenadeExplosion(Vector3 explosionPosition, string playerProfileID, bool isSmoke, float smokeRadius, float smokeLifeTime)
         {
-            if (!Singleton<BotEventHandler>.Instantiated || playerProfileID == null) {
+            if (!Singleton<BotEventHandler>.Instantiated || playerProfileID == null)
+            {
                 return;
             }
             Player player = GameWorldInfo.GetAlivePlayer(playerProfileID);
-            if (player != null) {
-                if (!isSmoke) {
-                    registerGrenadeExplosionForSAINBots(explosionPosition, player, playerProfileID, 200f);
+            if (player != null)
+            {
+                if (!isSmoke)
+                {
+                    RegisterGrenadeExplosionForSAINBots(explosionPosition, player, playerProfileID, 200f);
                 }
-                else {
-                    registerGrenadeExplosionForSAINBots(explosionPosition, player, playerProfileID, 50f);
+                else
+                {
+                    RegisterGrenadeExplosionForSAINBots(explosionPosition, player, playerProfileID, 50f);
 
                     float radius = smokeRadius * HelpersGClass.SMOKE_GRENADE_RADIUS_COEF;
                     Vector3 position = player.Position;
@@ -84,24 +86,29 @@ namespace SAIN.Components
             }
         }
 
-        private void registerGrenadeExplosionForSAINBots(Vector3 explosionPosition, Player player, string playerProfileID, float range)
+        private void RegisterGrenadeExplosionForSAINBots(Vector3 explosionPosition, Player player, string playerProfileID, float range)
         {
             // Play a sound with the input range.
             Singleton<BotEventHandler>.Instance?.PlaySound(player, explosionPosition, range, AISoundType.gun);
 
             // We dont want bots to think the grenade explosion was a place they heard an enemy, so set this manually.
-            foreach (var bot in Bots.Values) {
-                if (bot?.BotActive == true) {
+            foreach (var bot in Bots.Values)
+            {
+                if (bot?.BotActive == true)
+                {
                     float distance = (bot.Position - explosionPosition).magnitude;
-                    if (distance < range) {
+                    if (distance < range)
+                    {
                         Enemy enemy = bot.EnemyController.GetEnemy(playerProfileID, true);
-                        if (enemy != null) {
+                        if (enemy != null)
+                        {
                             float dispersion = distance / 10f;
                             Vector3 random = UnityEngine.Random.onUnitSphere * dispersion;
                             random.y = 0;
                             Vector3 estimatedThrowPosition = enemy.EnemyPosition + random;
 
-                            HearingReport report = new HearingReport {
+                            SAINHearingReport report = new()
+                            {
                                 position = estimatedThrowPosition,
                                 soundType = SAINSoundType.GrenadeExplosion,
                                 placeType = EEnemyPlaceType.Hearing,
@@ -117,16 +124,19 @@ namespace SAIN.Components
 
         private void GrenadeThrown(Grenade grenade, Vector3 position, Vector3 force, float mass)
         {
-            if (grenade == null) {
+            if (grenade == null)
+            {
                 return;
             }
 
             Player player = GameWorldInfo.GetAlivePlayer(grenade.ProfileId);
-            if (player == null) {
+            if (player == null)
+            {
                 Logger.LogError($"Player Null from ID {grenade.ProfileId}");
                 return;
             }
-            if (!player.HealthController.IsAlive) {
+            if (!player.HealthController.IsAlive)
+            {
                 return;
             }
 
@@ -145,12 +155,15 @@ namespace SAIN.Components
         public GameWorld GameWorld => SAINGameWorld.GameWorld;
         public IBotGame BotGame => Singleton<IBotGame>.Instance;
 
-        public BotEventHandler BotEventHandler {
+        public BotEventHandler BotEventHandler
+        {
             get
             {
-                if (_eventHandler == null) {
+                if (_eventHandler == null)
+                {
                     _eventHandler = Singleton<BotEventHandler>.Instance;
-                    if (_eventHandler != null) {
+                    if (_eventHandler != null)
+                    {
                         GrenadeController.Subscribe(_eventHandler);
                     }
                 }
@@ -163,7 +176,8 @@ namespace SAIN.Components
         public GameWorldComponent SAINGameWorld { get; private set; }
         public BotsController DefaultController { get; set; }
 
-        public BotSpawner BotSpawner {
+        public BotSpawner BotSpawner
+        {
             get
             {
                 return _spawner;
@@ -199,7 +213,7 @@ namespace SAIN.Components
             SAINGameWorld.PlayerTracker.GetPlayerComponent(profileID)?.AIData.PlayerLocation.UpdateEnvironment(trigger);
         }
 
-        private void Awake()
+        public void Awake()
         {
             Instance = this;
             SAINGameWorld = this.GetComponent<GameWorldComponent>();
@@ -215,15 +229,16 @@ namespace SAIN.Components
             GameWorld.OnDispose += Dispose;
         }
 
-        private void Start()
+        public void Start()
         {
             PeacefulActions.Init();
         }
 
-        private void Update()
+        public void Update()
         {
             if (BotGame == null ||
-                BotGame.Status == GameStatus.Stopping) {
+                BotGame.Status == GameStatus.Stopping)
+            {
                 return;
             }
 
@@ -236,28 +251,12 @@ namespace SAIN.Components
             PeacefulActions.Update();
         }
 
-        private void showBotInfoDebug()
-        {
-            foreach (var bot in Bots.Values) {
-                if (bot != null && !_debugObjects.ContainsKey(bot)) {
-                    GUIObject obj = DebugGizmos.CreateLabel(bot.Position, "");
-                    _debugObjects.Add(bot, obj);
-                }
-            }
-            foreach (var obj in _debugObjects) {
-                if (obj.Value != null) {
-                    obj.Value.WorldPos = obj.Key.Position;
-                    obj.Value.StringBuilder.Clear();
-                    DebugOverlay.AddBaseInfo(obj.Key, obj.Key.BotOwner, obj.Value.StringBuilder);
-                }
-            }
-        }
-
-        private readonly Dictionary<BotComponent, GUIObject> _debugObjects = new Dictionary<BotComponent, GUIObject>();
+        private readonly Dictionary<BotComponent, GUIObject> _debugObjects = new();
 
         public void BotDeath(BotOwner bot)
         {
-            if (bot?.GetPlayer != null && bot.IsDead) {
+            if (bot?.GetPlayer != null && bot.IsDead)
+            {
                 DeadBots.Add(bot.GetPlayer);
             }
         }
@@ -266,32 +265,40 @@ namespace SAIN.Components
 
         public List<BotDeathObject> DeathObstacles { get; private set; } = new List<BotDeathObject>();
 
-        private readonly List<int> IndexToRemove = new List<int>();
+        private readonly List<int> IndexToRemove = new();
 
         public void AddNavObstacles()
         {
-            if (DeadBots.Count > 0) {
+            if (DeadBots.Count > 0)
+            {
                 const float ObstacleRadius = 1.5f;
 
-                for (int i = 0; i < DeadBots.Count; i++) {
+                for (int i = 0; i < DeadBots.Count; i++)
+                {
                     var bot = DeadBots[i];
-                    if (bot == null || bot.GetPlayer == null) {
+                    if (bot == null || bot.GetPlayer == null)
+                    {
                         IndexToRemove.Add(i);
                         continue;
                     }
                     bool enableObstacle = true;
                     Collider[] players = Physics.OverlapSphere(bot.Position, ObstacleRadius, LayerMaskClass.PlayerMask);
-                    foreach (var p in players) {
+                    foreach (var p in players)
+                    {
                         if (p == null) continue;
-                        if (p.TryGetComponent<Player>(out var player)) {
-                            if (player.IsAI && player.HealthController.IsAlive) {
+                        if (p.TryGetComponent<Player>(out var player))
+                        {
+                            if (player.IsAI && player.HealthController.IsAlive)
+                            {
                                 enableObstacle = false;
                                 break;
                             }
                         }
                     }
-                    if (enableObstacle) {
-                        if (bot != null && bot.GetPlayer != null) {
+                    if (enableObstacle)
+                    {
+                        if (bot != null && bot.GetPlayer != null)
+                        {
                             var obstacle = new BotDeathObject(bot);
                             obstacle.Activate(ObstacleRadius);
                             DeathObstacles.Add(obstacle);
@@ -300,7 +307,8 @@ namespace SAIN.Components
                     }
                 }
 
-                foreach (var index in IndexToRemove) {
+                foreach (var index in IndexToRemove)
+                {
                     DeadBots.RemoveAt(index);
                 }
 
@@ -310,16 +318,20 @@ namespace SAIN.Components
 
         private void UpdateObstacles()
         {
-            if (DeathObstacles.Count > 0) {
-                for (int i = 0; i < DeathObstacles.Count; i++) {
+            if (DeathObstacles.Count > 0)
+            {
+                for (int i = 0; i < DeathObstacles.Count; i++)
+                {
                     var obstacle = DeathObstacles[i];
-                    if (obstacle?.TimeSinceCreated > 30f) {
+                    if (obstacle?.TimeSinceCreated > 30f)
+                    {
                         obstacle?.Dispose();
                         IndexToRemove.Add(i);
                     }
                 }
 
-                foreach (var index in IndexToRemove) {
+                foreach (var index in IndexToRemove)
+                {
                     DeathObstacles.RemoveAt(index);
                 }
 
@@ -327,34 +339,39 @@ namespace SAIN.Components
             }
         }
 
-        public List<string> Groups = new List<string>();
+        public List<string> Groups = new();
 
-        private void OnDestroy()
+        public void OnDestroy()
         {
         }
 
         public void Dispose()
         {
-            try {
+            try
+            {
                 GameWorld.OnDispose -= Dispose;
                 StopAllCoroutines();
                 BotJobs.Dispose();
                 BotSpawnController.UnSubscribe();
                 PeacefulActions.Dispose();
 
-                if (BotEventHandler != null) {
+                if (BotEventHandler != null)
+                {
                     GrenadeController.UnSubscribe(BotEventHandler);
                 }
 
-                if (Bots != null && Bots.Count > 0) {
-                    foreach (var bot in Bots.Values) {
+                if (Bots != null && Bots.Count > 0)
+                {
+                    foreach (var bot in Bots.Values)
+                    {
                         bot?.Dispose();
                     }
                 }
 
                 Bots?.Clear();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogError($"Dispose SAIN BotController Error: {ex}");
             }
 
@@ -383,7 +400,8 @@ namespace SAIN.Components
 
         public void Activate(float radius = 2f)
         {
-            if (NavMeshObstacle != null) {
+            if (NavMeshObstacle != null)
+            {
                 NavMeshObstacle.enabled = true;
                 NavMeshObstacle.carving = true;
                 NavMeshObstacle.radius = radius;
@@ -392,7 +410,8 @@ namespace SAIN.Components
 
         public void Dispose()
         {
-            if (NavMeshObstacle != null) {
+            if (NavMeshObstacle != null)
+            {
                 NavMeshObstacle.carving = false;
                 NavMeshObstacle.enabled = false;
                 GameObject.Destroy(NavMeshObstacle);

@@ -23,16 +23,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void Init() { }
 
-        public void Update() 
+        public void Update()
         {
-            calcAngles();
+            CalcAngles();
         }
 
         public void Dispose() { }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy) { }
 
-        private void calcAngles()
+        private void CalcAngles()
         {
             if (_calcAngleTime < Time.time)
             {
@@ -55,19 +55,19 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 AngleToEnemy = Vector3.Angle(enemyDirNormal, lookDir);
                 CanBeSeen = AngleToEnemy <= MaxVisionAngle;
 
-                float verticalAngle = calcVerticalAngle(enemyDirNormal, lookDir, out float yDiff);
+                float verticalAngle = CalcVerticalAngle(enemyDirNormal, lookDir, out float yDiff);
                 AngleToEnemyVertical = verticalAngle;
                 AngleToEnemyVerticalSigned = yDiff >= 0 ? verticalAngle : -verticalAngle;
 
-                float horizSigned = calcHorizontalAngle(enemyDirNormal, lookDir);
+                float horizSigned = CalcHorizontalAngle(enemyDirNormal, lookDir);
                 AngleToEnemyHorizontalSigned = horizSigned;
                 AngleToEnemyHorizontal = Mathf.Abs(horizSigned);
             }
         }
 
-        private float calcVerticalAngle(Vector3 enemyDirNormal, Vector3 lookDirection, out float yDiff)
+        private float CalcVerticalAngle(Vector3 enemyDirNormal, Vector3 lookDirection, out float yDiff)
         {
-            Vector3 enemyElevDir = new Vector3(lookDirection.x, enemyDirNormal.y, lookDirection.z);
+            Vector3 enemyElevDir = new(lookDirection.x, enemyDirNormal.y, lookDirection.z);
             yDiff = (enemyElevDir.y - lookDirection.y).Round100();
             if (yDiff == 0)
             {
@@ -77,7 +77,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return angle;
         }
 
-        private float calcHorizontalAngle(Vector3 enemyDirNormal, Vector3 lookDirection)
+        private float CalcHorizontalAngle(Vector3 enemyDirNormal, Vector3 lookDirection)
         {
             enemyDirNormal.y = 0;
             lookDirection.y = 0;

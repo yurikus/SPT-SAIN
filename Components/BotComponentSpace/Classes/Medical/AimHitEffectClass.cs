@@ -42,7 +42,8 @@ namespace SAIN.SAINComponent.Classes
 
         public Vector3 ApplyEffect(Vector3 dir)
         {
-            if (this._affectActive) {
+            if (this._affectActive)
+            {
                 this.decayAffect();
                 Vector3 affect = this._affectVector * this._affectAmount;
                 Vector3 result = dir.normalized + affect;
@@ -56,7 +57,8 @@ namespace SAIN.SAINComponent.Classes
         {
             float mod = DamageInfoStruct.Damage / DAMAGE_BASELINE;
             mod = Mathf.Clamp(mod, DAMAGE_MIN_MOD, DAMAGE_MAX_MOD) * DAMAGE_MANUAL_MODIFIER;
-            if (_affectActive) {
+            if (_affectActive)
+            {
                 mod *= 0.5f;
             }
             return mod;
@@ -80,11 +82,13 @@ namespace SAIN.SAINComponent.Classes
         {
             float mod = calcDamageMod(DamageInfoStruct);
             Vector3 hitReactionDir;
-            if (DAMAGE_USE_HIT_OFFSET_DIR) {
+            if (DAMAGE_USE_HIT_OFFSET_DIR)
+            {
                 hitReactionDir = getHitReactionDir(DamageInfoStruct) * mod;
                 _affectVector += hitReactionDir;
             }
-            else {
+            else
+            {
                 float minAngle = Mathf.Clamp(EFFECT_MIN_ANGLE * mod, 0f, 90f);
                 float maxAngle = Mathf.Clamp(EFFECT_MAX_ANGLE * mod, 0f, 90f);
                 float x = UnityEngine.Random.Range(-minAngle, -maxAngle) * 0.5f;
@@ -101,9 +105,11 @@ namespace SAIN.SAINComponent.Classes
 
         public void decayAffect()
         {
-            if (this._affectActive) {
+            if (this._affectActive)
+            {
                 float timeRemaining = this._timeFinished - Time.time;
-                if (timeRemaining <= 0f) {
+                if (timeRemaining <= 0f)
+                {
                     this._affectActive = false;
                     _affectVector = Vector3.zero;
                     return;

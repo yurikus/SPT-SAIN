@@ -1,6 +1,6 @@
 ﻿using EFT;
 using SAIN.Layers.Combat.Solo;
-using SAIN.SAINComponent;
+using SAIN.Models.Enums;
 
 namespace SAIN.Layers.Combat.Squad
 {
@@ -64,7 +64,7 @@ namespace SAIN.Layers.Combat.Squad
 
         public override bool IsCurrentActionEnding()
         {
-            return Bot?.BotActive == true && 
+            return Bot?.BotActive == true &&
                 SquadDecision != LastActionDecision;
         }
 

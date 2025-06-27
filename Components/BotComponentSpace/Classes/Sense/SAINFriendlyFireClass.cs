@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.Components;
-using System.Collections;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
@@ -33,11 +32,11 @@ namespace SAIN.SAINComponent.Classes
 
         public bool CheckFriendlyFire(Vector3? target = null)
         {
-            FriendlyFireStatus = checkFriendlyFire(target);
+            FriendlyFireStatus = CheckFriendlyFireStatus(target);
             return FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock;
         }
 
-        private FriendlyFireStatus checkFriendlyFire(Vector3? target = null)
+        private FriendlyFireStatus CheckFriendlyFireStatus(Vector3? target = null)
         {
             var members = Bot.Squad?.Members;
             if (members == null || members.Count <= 1)
@@ -47,28 +46,28 @@ namespace SAIN.SAINComponent.Classes
 
             if (target != null)
             {
-                return checkFriendlyFire(target.Value);
+                return CheckFriendlyFire(target.Value);
             }
 
-            var aimData = BotOwner?.AimingData;
+            var aimData = BotOwner.AimingManager.CurrentAiming;
             if (aimData == null)
             {
                 return FriendlyFireStatus.None;
             }
 
 
-            FriendlyFireStatus friendlyFire = checkFriendlyFire(aimData.RealTargetPoint);
+            FriendlyFireStatus friendlyFire = CheckFriendlyFire(aimData.RealTargetPoint);
             if (friendlyFire != FriendlyFireStatus.FriendlyBlock)
             {
-                friendlyFire = checkFriendlyFire(aimData.EndTargetPoint);
+                friendlyFire = CheckFriendlyFire(aimData.EndTargetPoint);
             }
 
             return friendlyFire;
         }
 
-        private FriendlyFireStatus checkFriendlyFire(Vector3 target)
+        private FriendlyFireStatus CheckFriendlyFire(Vector3 target)
         {
-            var hits = sphereCastAll(target);
+            var hits = SphereCastAll(target);
             int count = hits.Length;
             if (count == 0)
             {
@@ -93,19 +92,7 @@ namespace SAIN.SAINComponent.Classes
             return FriendlyFireStatus.Clear;
         }
 
-        private Collider sphereCast(Vector3 target)
-        {
-            Vector3 firePort = Bot.Transform.WeaponFirePort;
-            float distance = (target - firePort).magnitude + 1;
-            float sphereCastRadius = 0.2f;
-
-            var hits = Physics.SphereCastAll(firePort, sphereCastRadius, Bot.Transform.WeaponPointDirection, distance, LayerMaskClass.PlayerMask);
-
-            Physics.SphereCast(firePort, sphereCastRadius, Bot.Transform.WeaponPointDirection, out var hit, distance, LayerMaskClass.PlayerMask);
-            return hit.collider;
-        }
-
-        private RaycastHit[] sphereCastAll(Vector3 target)
+        private RaycastHit[] SphereCastAll(Vector3 target)
         {
             Vector3 firePort = Bot.Transform.WeaponFirePort;
             float distance = (target - firePort).magnitude + 1;
@@ -114,21 +101,9 @@ namespace SAIN.SAINComponent.Classes
             return hits;
         }
 
-        private bool isColliderEnemy(Collider collider)
-        {
-            if (collider == null)
-                return false;
-
-            Player player = GameWorldComponent.Instance.GameWorld.GetPlayerByCollider(collider);
-            return player != null && Bot.EnemyController.IsPlayerAnEnemy(player.ProfileId);
-        }
-
         public void StopShooting()
         {
             BotOwner.ShootData?.EndShoot();
         }
-
-        private const float FRIENDLYFIRE_FREQUENCY = 1f / FRIENDLYFIRE_FPS;
-        private const float FRIENDLYFIRE_FPS = 30f;
     }
 }

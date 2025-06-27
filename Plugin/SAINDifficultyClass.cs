@@ -16,7 +16,7 @@ namespace SAIN.Plugin
         private const string PresetNameVeryHard = "I Like Pain";
         private const string PresetNameImpossible = "Death Wish";
 
-        public static readonly Dictionary<SAINDifficulty, SAINPresetDefinition> DefaultPresetDefinitions = new Dictionary<SAINDifficulty, SAINPresetDefinition>();
+        public static readonly Dictionary<SAINDifficulty, SAINPresetDefinition> DefaultPresetDefinitions = new();
 
         static SAINDifficultyClass()
         {
@@ -66,7 +66,8 @@ namespace SAIN.Plugin
         public static SAINPresetClass GetDefaultPreset(SAINDifficulty difficulty)
         {
             SAINPresetClass result;
-            switch (difficulty) {
+            switch (difficulty)
+            {
                 case SAINDifficulty.easy:
                     result = SAINDifficultyClass.CreateEasyPreset();
                     break;
@@ -111,19 +112,23 @@ namespace SAIN.Plugin
             global.Difficulty.VisibleDistCoef = 0.66f;
             global.Difficulty.GainSightCoef = 2.5f;
 
-            foreach (var bot in preset.BotSettings.SAINSettings) {
+            foreach (var bot in preset.BotSettings.SAINSettings)
+            {
                 bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 0.5f, 0.01f, 2f).Round100();
-                foreach (var setting in bot.Value.Settings) {
+                foreach (var setting in bot.Value.Settings)
+                {
                     setting.Value.Core.VisibleAngle = 120f;
                     setting.Value.Shoot.FireratMulti *= 0.4f;
                     setting.Value.Shoot.BurstMulti *= 0.5f;
                     setting.Value.Look.MinimumVisionSpeed = 0.4f;
                     setting.Value.Aiming.DistanceAimTimeMultiplier = 1.5f;
                     setting.Value.Aiming.AngleAimTimeMultiplier = 1.5f;
-                    if (setting.Value.Aiming.MAX_AIM_TIME < 1f) {
+                    if (setting.Value.Aiming.MAX_AIM_TIME < 1f)
+                    {
                         setting.Value.Aiming.MAX_AIM_TIME = 1f;
                     }
-                    if (setting.Value.Aiming.MAX_AIMING_UPGRADE_BY_TIME < 0.4f) {
+                    if (setting.Value.Aiming.MAX_AIMING_UPGRADE_BY_TIME < 0.4f)
+                    {
                         setting.Value.Aiming.MAX_AIMING_UPGRADE_BY_TIME = 0.4f;
                     }
                     setting.Value.Core.ScatteringPerMeter += 0.05f;
@@ -147,9 +152,11 @@ namespace SAIN.Plugin
             global.Difficulty.HearingDistanceCoef = 0.85f;
             global.Aiming.FasterCQBReactionsGlobal = false;
 
-            foreach (var bot in preset.BotSettings.SAINSettings) {
+            foreach (var bot in preset.BotSettings.SAINSettings)
+            {
                 bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 0.85f, 0.01f, 2f).Round100();
-                foreach (var setting in bot.Value.Settings) {
+                foreach (var setting in bot.Value.Settings)
+                {
                     setting.Value.Core.VisibleAngle = 150f;
                     setting.Value.Shoot.FireratMulti *= 0.8f;
                     setting.Value.Look.MinimumVisionSpeed = 0.1f;
@@ -174,12 +181,15 @@ namespace SAIN.Plugin
         private static void ApplyHarderPMCs(SAINPresetClass preset)
         {
             var botSettings = preset.BotSettings;
-            foreach (var botsetting in botSettings.SAINSettings) {
-                if (botsetting.Key == WildSpawnType.pmcUSEC || botsetting.Key == WildSpawnType.pmcBEAR) {
+            foreach (var botsetting in botSettings.SAINSettings)
+            {
+                if (botsetting.Key == WildSpawnType.pmcUSEC || botsetting.Key == WildSpawnType.pmcBEAR)
+                {
                     var pmcSettings = botsetting.Value.Settings;
 
                     // Set for all difficulties
-                    foreach (var diff in pmcSettings.Values) {
+                    foreach (var diff in pmcSettings.Values)
+                    {
                         //diff.Core.ScatteringPerMeter = 0.03f;
                         //diff.Core.ScatteringClosePerMeter = 0.080f;
                         diff.Mind.WeaponProficiency = 0.75f;
@@ -239,9 +249,11 @@ namespace SAIN.Plugin
             global.Difficulty.PrecisionSpeedCoef = 0.8f;
             global.Difficulty.AccuracySpeedCoef = 0.8f;
 
-            foreach (var bot in preset.BotSettings.SAINSettings) {
+            foreach (var bot in preset.BotSettings.SAINSettings)
+            {
                 bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 1.33f, 0.01f, 2f).Round100();
-                foreach (var setting in bot.Value.Settings) {
+                foreach (var setting in bot.Value.Settings)
+                {
                     setting.Value.Core.VisibleAngle = 170f;
                     setting.Value.Shoot.FireratMulti = 1.5f;
                     setting.Value.Shoot.BurstMulti = 2f;
@@ -268,8 +280,10 @@ namespace SAIN.Plugin
             global.Look.NotLooking.NotLookingToggle = false;
             global.Aiming.PMCSAimForHead = true;
 
-            foreach (var bot in preset.BotSettings.SAINSettings) {
-                foreach (var setting in bot.Value.Settings) {
+            foreach (var bot in preset.BotSettings.SAINSettings)
+            {
+                foreach (var setting in bot.Value.Settings)
+                {
                     setting.Value.Core.VisibleAngle = 180f;
                     setting.Value.Shoot.FireratMulti = 3f;
                     setting.Value.Shoot.BurstMulti = 3f;

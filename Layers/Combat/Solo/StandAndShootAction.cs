@@ -1,6 +1,6 @@
-﻿using EFT;
+﻿using DrakiaXYZ.BigBrain.Brains;
+using EFT;
 using SAIN.Helpers;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,17 +17,19 @@ namespace SAIN.Layers.Combat.Solo
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             Bot.Steering.SteerByPriority();
             if (!shallMoveShoot)
             {
                 Bot.Mover.Pose.SetPoseToCover();
             }
             Shoot.CheckAimAndFire();
+            this.EndProfilingSample();
         }
 
-        bool shallMoveShoot = false;
+        private bool shallMoveShoot = false;
 
         public override void Start()
         {
@@ -77,7 +79,7 @@ namespace SAIN.Layers.Combat.Solo
             return false;
         }
 
-        bool shallResume = false;
+        private bool shallResume = false;
 
         public override void Stop()
         {

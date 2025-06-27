@@ -15,7 +15,8 @@ namespace SAIN
 
         public static void Update()
         {
-            if (!ModsChecked && ModsCheckTimer < Time.time && ModsCheckTimer > 0) {
+            if (!ModsChecked && ModsCheckTimer < Time.time && ModsCheckTimer > 0)
+            {
                 ModsChecked = true;
                 CheckPlugins();
             }
@@ -28,19 +29,23 @@ namespace SAIN
 
         public static void CheckPlugins()
         {
-            if (Chainloader.PluginInfos.ContainsKey(FikaKey) || Chainloader.PluginInfos.ContainsKey("com.mpt.core")) {
+            if (Chainloader.PluginInfos.ContainsKey(FikaKey) || Chainloader.PluginInfos.ContainsKey("com.mpt.core"))
+            {
                 ProjectFikaLoaded = true;
                 Logger.LogInfo($"SAIN: Project Fika Detected.");
             }
-            if (Chainloader.PluginInfos.ContainsKey(QuestingBotsKey)) {
+            if (Chainloader.PluginInfos.ContainsKey(QuestingBotsKey))
+            {
                 QuestingBotsLoaded = true;
                 Logger.LogInfo($"SAIN: Questing Bots Detected.");
             }
-            if (Chainloader.PluginInfos.ContainsKey(LootingBotsKey)) {
+            if (Chainloader.PluginInfos.ContainsKey(LootingBotsKey))
+            {
                 LootingBotsLoaded = true;
                 Logger.LogInfo($"SAIN: Looting Bots Detected.");
             }
-            if (Chainloader.PluginInfos.ContainsKey(RealismModKey)) {
+            if (Chainloader.PluginInfos.ContainsKey(RealismModKey))
+            {
                 RealismLoaded = true;
                 Logger.LogInfo($"SAIN: Realism Detected.");
             }
@@ -48,11 +53,13 @@ namespace SAIN
 
         public static void UpdateArmorClassCoef()
         {
-            if (RealismLoaded) {
+            if (RealismLoaded)
+            {
                 EFTCoreSettings.UpdateArmorClassCoef(3.5f);
                 Logger.LogInfo($"Realism Detected, updating armor class number to reflect new armor classes...");
             }
-            else {
+            else
+            {
                 EFTCoreSettings.UpdateArmorClassCoef(6f);
             }
         }

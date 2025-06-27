@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using SeasonController = Class442;
+using SeasonController = Class437;
 
 namespace SAIN.Components
 {
@@ -30,15 +30,18 @@ namespace SAIN.Components
 
         private void findWeather()
         {
-            if (_weatherFound) {
+            if (_weatherFound)
+            {
                 return;
             }
-            if (_nextCheckWeatherTime > Time.time) {
+            if (_nextCheckWeatherTime > Time.time)
+            {
                 return;
             }
             _nextCheckWeatherTime = Time.time + 0.5f;
 
-            if (SeasonController.Controller == null) {
+            if (SeasonController.Controller == null)
+            {
                 return;
             }
 
@@ -49,7 +52,8 @@ namespace SAIN.Components
 
         private void findLocation()
         {
-            if (!_foundLocation) {
+            if (!_foundLocation)
+            {
                 Location = parseLocation();
             }
         }
@@ -58,11 +62,13 @@ namespace SAIN.Components
         {
             ELocation Location = ELocation.None;
             string locationString = GameWorld.GameWorld?.LocationId;
-            if (locationString.IsNullOrEmpty()) {
+            if (locationString.IsNullOrEmpty())
+            {
                 return Location;
             }
 
-            switch (locationString.ToLower()) {
+            switch (locationString.ToLower())
+            {
                 case "bigmap":
                     Location = ELocation.Customs;
                     break;
@@ -95,11 +101,11 @@ namespace SAIN.Components
                     Location = ELocation.GroundZero;
                     break;
 
-				case "sandbox_high":
-					Location = ELocation.GroundZero;
-					break;
+                case "sandbox_high":
+                    Location = ELocation.GroundZero;
+                    break;
 
-				case "shoreline":
+                case "shoreline":
                     Location = ELocation.Shoreline;
                     break;
 

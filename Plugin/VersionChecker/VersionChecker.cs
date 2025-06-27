@@ -74,11 +74,11 @@ namespace DrakiaXYZ.VersionChecker
 
         static void ErrorLabelDrawer(ConfigEntryBase entry)
         {
-            GUIStyle styleNormal = new GUIStyle(GUI.skin.label);
+            GUIStyle styleNormal = new(GUI.skin.label);
             styleNormal.wordWrap = true;
             styleNormal.stretchWidth = true;
 
-            GUIStyle styleError = new GUIStyle(GUI.skin.label);
+            GUIStyle styleError = new(GUI.skin.label);
             styleError.stretchWidth = true;
             styleError.alignment = TextAnchor.MiddleCenter;
             styleError.normal.textColor = Color.red;
@@ -86,10 +86,10 @@ namespace DrakiaXYZ.VersionChecker
 
             // General notice that we're the wrong version
             GUILayout.BeginVertical();
-            GUILayout.Label(entry.Description.Description, styleNormal, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
+            GUILayout.Label(entry.Description.Description, styleNormal, [GUILayout.ExpandWidth(true)]);
 
             // Centered red disabled text
-            GUILayout.Label("Plugin has been disabled!", styleError, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
+            GUILayout.Label("Plugin has been disabled!", styleError, [GUILayout.ExpandWidth(true)]);
             GUILayout.EndVertical();
         }
 

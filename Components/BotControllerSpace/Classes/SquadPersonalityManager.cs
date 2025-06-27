@@ -1,4 +1,5 @@
-﻿using SAIN.SAINComponent;
+﻿using SAIN.Models.Enums;
+using SAIN.SAINComponent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,7 +10,7 @@ namespace SAIN.BotController.Classes
         public static ESquadPersonality GetSquadPersonality(Dictionary<string, BotComponent> Members, out SquadPersonalitySettings settings)
         {
             GetMemberPersonalities(Members);
-            EPersonality mostFrequentPersonality =  GetMostFrequentPersonality(PersonalityCounts, out int count);
+            EPersonality mostFrequentPersonality = GetMostFrequentPersonality(PersonalityCounts, out int count);
             ESquadPersonality result = PickSquadPersonality(mostFrequentPersonality);
             settings = GetSquadSettings(result);
             return result;
@@ -37,7 +38,7 @@ namespace SAIN.BotController.Classes
                 }
             }
 
-            StringBuilder stringbuilder = new StringBuilder();
+            StringBuilder stringbuilder = new();
             foreach (var personality in PersonalityCounts)
             {
                 stringbuilder.AppendLine($"[{personality.Key}] : [{personality.Value}]");
@@ -130,8 +131,8 @@ namespace SAIN.BotController.Classes
             return SquadSettings[squadPersonality];
         }
 
-        private static readonly List<EPersonality> MemberPersonalities = new List<EPersonality>();
-        private static readonly Dictionary<EPersonality, int> PersonalityCounts = new Dictionary<EPersonality, int>();
-        private static readonly Dictionary<ESquadPersonality, SquadPersonalitySettings> SquadSettings = new Dictionary<ESquadPersonality, SquadPersonalitySettings>();
+        private static readonly List<EPersonality> MemberPersonalities = new();
+        private static readonly Dictionary<EPersonality, int> PersonalityCounts = new();
+        private static readonly Dictionary<ESquadPersonality, SquadPersonalitySettings> SquadSettings = new();
     }
 }

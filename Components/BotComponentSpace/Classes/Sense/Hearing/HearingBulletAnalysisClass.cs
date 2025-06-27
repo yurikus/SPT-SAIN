@@ -58,7 +58,7 @@ namespace SAIN.SAINComponent.Classes
 
             sound.BulletData.ProjectionPoint = projectionPoint;
 
-            float maxDist = SAINPlugin.LoadedPreset.GlobalSettings.Mind.MaxSuppressionDistance;
+            float maxDist = SAINPlugin.LoadedPreset.GlobalSettings.Mind.SUPP_DISTANCE_SCALE_END;
             float maxDistSqr = maxDist * maxDist;
             if (pointDistanceSqr > maxDistSqr)
             {
@@ -91,6 +91,5 @@ namespace SAIN.SAINComponent.Classes
             Vector3 projectionPoint = shotPos + (weaponPointDir * realDistance);
             return projectionPoint;
         }
-
     }
 }

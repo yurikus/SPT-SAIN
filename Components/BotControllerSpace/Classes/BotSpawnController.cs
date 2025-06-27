@@ -1,7 +1,6 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
-using SAIN.Layers.Peace;
 using SAIN.SAINComponent;
 using System;
 using System.Collections;
@@ -23,9 +22,9 @@ namespace SAIN.Components.BotController
 
         public static BotSpawnController Instance;
 
-        public BotDictionary BotDictionary = new BotDictionary();
+        public BotDictionary BotDictionary = new();
 
-        public static readonly List<WildSpawnType> StrictExclusionList = new List<WildSpawnType>
+        public static readonly List<WildSpawnType> StrictExclusionList = new()
         {
             WildSpawnType.bossZryachiy,
             WildSpawnType.followerZryachiy,
@@ -33,11 +32,11 @@ namespace SAIN.Components.BotController
             WildSpawnType.ravangeZryachiyEvent,
             WildSpawnType.shooterBTR,
             WildSpawnType.marksman,
-			WildSpawnType.infectedAssault,
-			WildSpawnType.infectedCivil,
-			WildSpawnType.infectedLaborant,
-			WildSpawnType.infectedPmc,
-			WildSpawnType.infectedTagilla
+            WildSpawnType.infectedAssault,
+            WildSpawnType.infectedCivil,
+            WildSpawnType.infectedLaborant,
+            WildSpawnType.infectedPmc,
+            WildSpawnType.infectedTagilla
         };
 
         public void Update()

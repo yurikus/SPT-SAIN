@@ -1,25 +1,10 @@
-﻿using HarmonyLib;
-using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using static WindowsManager;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyVisionClass : EnemyBase, IBotEnemyClass
     {
-        static EnemyVisionClass()
-        {
-            _bodyPartField = AccessTools.Field(typeof(EnemyInfo), "_bodyPart");
-            _headPartField = AccessTools.Field(typeof(EnemyInfo), "_headPart");
-        }
-
-        private static FieldInfo _bodyPartField;
-        private static FieldInfo _headPartField;
-
         private const float _repeatContactMinSeenTime = 12f;
         private const float _lostContactMinSeenTime = 12f;
 
@@ -40,9 +25,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float GainSightCoef => _gainSight.GainSightModifier;
         public float VisionDistance => _visionDistance.Value;
 
-        public bool Illuminated { get; private set; }
-        public float IlluminationLevel => EnemyPlayerComponent.Illumination.Level;
-
         public EnemyAnglesClass Angles { get; }
         public EnemyVisionChecker VisionChecker { get; }
 
@@ -59,10 +41,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void Init()
         {
-            _bodyPart = (KeyValuePair<EnemyPart, EnemyPartData>)_bodyPartField.GetValue(Enemy.EnemyInfo);
-            _headPart = (KeyValuePair<EnemyPart, EnemyPartData>)_headPartField.GetValue(Enemy.EnemyInfo);
+            _bodyPart = Enemy.EnemyInfo._bodyPart;
+            _headPart = Enemy.EnemyInfo._headPart;
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            EnemyPlayerComponent.Illumination.OnPlayerIlluminationChanged += enemyIlluminationChanged;
             Angles.Init();
             VisionChecker.Init();
         }
@@ -71,34 +52,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             VisionChecker.Update();
             Angles.Update();
-            updateVision();
+            UpdateVision();
         }
 
         public void Dispose()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
-            if (EnemyPlayerComponent != null) {
-                EnemyPlayerComponent.Illumination.OnPlayerIlluminationChanged -= enemyIlluminationChanged;
-            }
             Angles.Dispose();
             VisionChecker.Dispose();
         }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
-            if (known) {
+            if (known)
+            {
                 return;
             }
             UpdateVisibleState(true);
             UpdateCanShootState(true);
         }
 
-        private void enemyIlluminationChanged(bool value)
-        {
-            Illuminated = value;
-        }
-
-        private void updateVision()
+        private void UpdateVision()
         {
             UpdateVisibleState(false);
             UpdateCanShootState(false);
@@ -112,14 +86,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             else
                 IsVisible = EnemyInfo.IsVisible && Angles.CanBeSeen;
 
-            if (IsVisible) {
-                if (!wasVisible) {
+            if (IsVisible)
+            {
+                if (!wasVisible)
+                {
                     VisibleStartTime = Time.time;
-                    if (Seen && TimeSinceSeen >= _repeatContactMinSeenTime) {
+                    if (Seen && TimeSinceSeen >= _repeatContactMinSeenTime)
+                    {
                         ShallReportRepeatContact = true;
                     }
                 }
-                if (!Seen) {
+                if (!Seen)
+                {
                     FirstContactOccured = true;
                     TimeFirstSeen = Time.time;
                     Seen = true;
@@ -130,13 +108,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Enemy.UpdateCurrentEnemyPos(EnemyTransform.Position);
             }
 
-            if (!IsVisible) {
+            if (!IsVisible)
+            {
                 if (wasVisible)
                     Enemy.UpdateLastSeenPosition(EnemyTransform.Position);
 
                 if (Seen &&
                     TimeSinceSeen > _lostContactMinSeenTime &&
-                    _nextReportLostVisualTime < Time.time) {
+                    _nextReportLostVisualTime < Time.time)
+                {
                     _nextReportLostVisualTime = Time.time + 20f;
                     ShallReportLostVisual = true;
                 }
@@ -144,14 +124,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
 
             Enemy.Events.OnVisionChange.CheckToggle(IsVisible);
-            if (IsVisible != wasVisible) {
+            if (IsVisible != wasVisible)
+            {
                 LastChangeVisionTime = Time.time;
             }
         }
 
         public void UpdateCanShootState(bool forceOff)
         {
-            if (forceOff) {
+            if (forceOff)
+            {
                 CanShoot = false;
                 return;
             }

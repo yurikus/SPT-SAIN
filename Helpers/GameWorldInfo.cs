@@ -1,16 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
-
-using SAIN.Components;
-using System;
-using System.Collections.Generic;
-using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes.Decision;
-using SAIN.SAINComponent.Classes.Talk;
-using SAIN.SAINComponent.Classes.WeaponFunction;
-using SAIN.SAINComponent.Classes.Mover;
-using SAIN.SAINComponent.SubComponents;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using System.Collections.Generic;
 
 namespace SAIN.Helpers
 {

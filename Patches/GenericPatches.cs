@@ -1,11 +1,12 @@
-﻿using SPT.Reflection.Patching;
-using EFT;
+﻿using EFT;
 using EFT.EnvironmentEffect;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SPT.Reflection.Patching;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotReload), "method_1");
+            return AccessTools.Method(typeof(BotReload), nameof(BotReload.method_1));
         }
 
         [PatchPrefix]
@@ -41,11 +42,11 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass551), "SetEnvironment");
+            return AccessTools.Method(typeof(GClass567), nameof(GClass567.SetEnvironment));
         }
 
         [PatchPostfix]
-        public static void Patch(GClass551 __instance, IndoorTrigger trigger)
+        public static void Patch(GClass567 __instance, IndoorTrigger trigger)
         {
             SAINBotController.Instance?.PlayerEnviromentChanged(__instance?.Player?.ProfileId, trigger);
         }
@@ -55,7 +56,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotsGroup), "AddPointToSearch");
+            return AccessTools.Method(typeof(BotsGroup), nameof(BotsGroup.AddPointToSearch));
         }
 
         [PatchPrefix]
@@ -69,7 +70,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotMemoryClass), "SetPanicPoint");
+            return AccessTools.Method(typeof(BotMemoryClass), nameof(BotMemoryClass.SetPanicPoint));
         }
 
         [PatchPrefix]
@@ -83,7 +84,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.PropertyGetter(typeof(EnemyInfo), "HaveSeen");
+            return AccessTools.PropertyGetter(typeof(EnemyInfo), nameof(EnemyInfo.HaveSeen));
         }
 
         [PatchPostfix]
@@ -104,12 +105,12 @@ namespace SAIN.Patches.Generic
 
     public class TurnDamnLightOffPatch : ModulePatch
     {
-		protected override MethodBase GetTargetMethod()
-		{
-			return AccessTools.Method(typeof(BotWeaponSelector), nameof(BotWeaponSelector.TryChangeToSlot));
-		}
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotWeaponSelector), nameof(BotWeaponSelector.TryChangeToSlot));
+        }
 
-		[PatchPrefix]
+        [PatchPrefix]
         public static void PatchPrefix(ref BotOwner ___botOwner_0)
         {
             // Try to turn a gun's light off before swapping weapon.
@@ -121,7 +122,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), "ShallKnowEnemy");
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.ShallISuppress));
         }
 
         [PatchPostfix]
@@ -134,43 +135,13 @@ namespace SAIN.Patches.Generic
             var enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
             __result = enemy?.EnemyKnown == true;
         }
-
-        public static bool BotsGroupSenseRecently(EnemyInfo enemyInfo)
-        {
-            BotsGroup group = enemyInfo.GroupOwner;
-            for (int i = 0; i < group.MembersCount; i++)
-            {
-                if (SAINEnableClass.GetSAIN(group.Member(i), out BotComponent sain)
-                    && EnemySenseRecently(sain, enemyInfo))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool EnemySenseRecently(BotComponent sain, EnemyInfo enemyInfo)
-        {
-            Enemy myEnemy = sain.EnemyController.CheckAddEnemy(enemyInfo.Person);
-            return myEnemy?.CheckValid() == true && myEnemy.EnemyKnown;
-        }
-    }
-
-    public enum KnowEnemyReason
-    {
-        None = 0,
-        HeardRecent = 1,
-        SeenRecent = 2,
-        SquadHeardRecent = 3,
-        SquadSeenRecent = 4,
     }
 
     internal class ShallKnowEnemyLatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), "ShallKnowEnemyLate");
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.ShallKnowEnemyLate));
         }
 
         [PatchPostfix]
@@ -189,7 +160,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotsController), "method_4");
+            return AccessTools.Method(typeof(BotsController), nameof(BotsController.method_5));
         }
 
         [PatchPrefix]
@@ -211,7 +182,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotsController), "method_3");
+            return AccessTools.Method(typeof(BotsController), nameof(BotsController.method_3));
         }
 
         [PatchPrefix]
@@ -221,4 +192,78 @@ namespace SAIN.Patches.Generic
         }
     }
 
+    public class AllowRequestPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.method_2));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotOwner ____owner)
+        {
+            BotRequest curRequest = ____owner.BotRequestController.CurRequest;
+            if (curRequest == null)
+            {
+                return false;
+            }
+            if (!SAINEnableClass.GetSAIN(____owner, out BotComponent sain))
+            {
+                return true;
+            }
+            if (sain.HasEnemy && curRequest.Requester?.IsAI == true)
+            {
+                curRequest.Dispose();
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public class FindRequestForMePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotGroupRequestController), nameof(BotGroupRequestController.FindForMe));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotOwner executer, List<BotRequest> ____listOfRequests)
+        {
+            // Copied original code in FindForMe, but add check to see if requester is AI or not if this bot currently has an active enemy.
+            // START NEW //
+            if (!SAINEnableClass.GetSAIN(executer, out BotComponent sain))
+            {
+                return true;
+            }
+            if (!sain.HasEnemy)
+            {
+                return true;
+            }
+            // END NEW //
+
+            BotRequest botRequest = null;
+            foreach (BotRequest botRequest2 in ____listOfRequests)
+            {
+                // START NEW //
+                IPlayer requestor = botRequest2.Requester;
+                if (requestor != null && requestor.IsAI)
+                {
+                    continue;
+                }
+                // END NEW //
+                if ((botRequest2.CanExecuteByMyself || (Player)botRequest2.Requester != executer.GetPlayer) && (!executer.Boss.IamBoss || executer.Boss.AllowRequestSelf || executer.GetPlayer.Id != botRequest2.Requester.Id) && botRequest2.CanStartExecute(executer))
+                {
+                    botRequest = botRequest2;
+                    break;
+                }
+            }
+            if (botRequest != null)
+            {
+                botRequest.Take(executer);
+                ____listOfRequests.Remove(botRequest);
+            }
+            return false;
+        }
+    }
 }

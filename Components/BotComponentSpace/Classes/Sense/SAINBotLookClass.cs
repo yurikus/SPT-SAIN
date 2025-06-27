@@ -1,14 +1,11 @@
 ﻿using EFT;
-using HarmonyLib;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 // Found in Botowner.Looksensor
-using EnemyTotalCheck = GClass568;
-using EnemyVisionCheck = GClass548;
-using LookAllData = GClass573;
+using EnemyVisionCheck = GClass564;
+using LookAllData = GClass589;
 
 namespace SAIN.SAINComponent.Classes
 {
@@ -38,10 +35,12 @@ namespace SAIN.SAINComponent.Classes
         private Dictionary<string, Enemy> _enemies;
         public readonly LookAllData LookData;
 
+        // This (And the methods it calls) mirrors a large part of BSG's LookSensor
+        // Look at that for potential changes between versions
         public int UpdateLook()
         {
-            if (BotOwner.LeaveData == null ||
-                BotOwner.LeaveData.LeaveComplete) {
+            if (BotOwner.LeaveData == null || BotOwner.LeaveData.LeaveComplete)
+            {
                 return 0;
             }
 
@@ -52,16 +51,21 @@ namespace SAIN.SAINComponent.Classes
 
         public void UpdateLookData(LookAllData lookData)
         {
-            for (int i = 0; i < lookData.reportsData.Count; i++) {
-                EnemyVisionCheck enemyVision = lookData.reportsData[i];
-                BotOwner.BotsGroup.ReportAboutEnemy(enemyVision.enemy, enemyVision.VisibleOnlyBuSence);
+            for (int i = 0; i < lookData.ReportsData.Count; i++)
+            {
+                EnemyVisionCheck enemyVision = lookData.ReportsData[i];
+                BotOwner.BotsGroup.ReportAboutEnemy(enemyVision.Enemy, enemyVision.VisibleOnlyBySence);
             }
 
-            if (lookData.reportsData.Count > 0)
+            if (lookData.ReportsData.Count > 0)
+            {
                 BotOwner.Memory.SetLastTimeSeeEnemy();
+            }
 
-            if (lookData.shallRecalcGoal)
+            if (lookData.ShallRecalcGoal)
+            {
                 BotOwner.CalcGoal();
+            }
 
             lookData.Reset();
         }
@@ -71,11 +75,15 @@ namespace SAIN.SAINComponent.Classes
             int updated = 0;
             _cachedList.Clear();
             _cachedList.AddRange(_enemies.Values);
-            foreach (Enemy enemy in _cachedList) {
-                if (!shallCheckEnemy(enemy))
+            foreach (Enemy enemy in _cachedList)
+            {
+                if (!ShallCheckEnemy(enemy))
+                {
                     continue;
+                }
 
-                if (checkEnemy(enemy, lookAll)) {
+                if (CheckEnemy(enemy, lookAll))
+                {
                     updated++;
                 }
             }
@@ -83,66 +91,83 @@ namespace SAIN.SAINComponent.Classes
             return updated;
         }
 
-        private readonly List<Enemy> _cachedList = new List<Enemy>();
+        private readonly List<Enemy> _cachedList = new();
 
-        private bool shallCheckEnemy(Enemy enemy)
+        private bool ShallCheckEnemy(Enemy enemy)
         {
             if (enemy?.CheckValid() != true)
-                return false;
-
-            if (!enemy.InLineOfSight ||
-                !enemy.Vision.Angles.CanBeSeen) {
-                setNotVis(enemy);
+            {
                 return false;
             }
+
+            if (!enemy.InLineOfSight || !enemy.Vision.Angles.CanBeSeen)
+            {
+                SetNotVis(enemy);
+                return false;
+            }
+
             return true;
         }
 
-        private void setNotVis(Enemy enemy)
+        private void SetNotVis(Enemy enemy)
         {
-            foreach (var part in enemy.EnemyInfo.AllActiveParts.Values) {
-                if (part.IsVisible || part.VisibleBySense) {
-                    part.UpdateVision(1000f, false, false, false, BotOwner);
+            foreach (var part in enemy.EnemyInfo.AllActiveParts.Values)
+            {
+                if (part.IsVisible || part.VisibleType == EEnemyPartVisibleType.Sence)
+                {
+                    part.UpdateVisibility(BotOwner, false, false, false, Time.time - enemy.Vision.VisionChecker.LastCheckLookTime);
                 }
             }
-            if (enemy.EnemyInfo.IsVisible) {
+
+            if (enemy.EnemyInfo.IsVisible)
+            {
                 enemy.EnemyInfo.SetVisible(false);
             }
         }
 
-        private bool checkEnemy(Enemy enemy, LookAllData lookAll)
+        private bool CheckEnemy(Enemy enemy, LookAllData lookAll)
         {
-            float delay = getDelay(enemy);
+            float delay = GetDelay(enemy);
             var look = enemy.Vision.VisionChecker;
             float timeSince = Time.time - look.LastCheckLookTime;
-            if (timeSince >= delay) {
+            if (timeSince >= delay)
+            {
                 look.LastCheckLookTime = Time.time;
-                enemy.EnemyInfo.CheckLookEnemy(lookAll);
+                // ArchangelWTF: In AITaskManager.UpdateGroup timeSince is passed here
+                enemy.EnemyInfo.CheckLookEnemy(lookAll, timeSince);
                 return true;
             }
             return false;
         }
 
-        private float getDelay(Enemy enemy)
+        private float GetDelay(Enemy enemy)
         {
             float updateFreqCoef = enemy.UpdateFrequencyCoefNormal + 1f;
-            float baseDelay = calcBaseDelay(enemy) * updateFreqCoef;
-            if (!enemy.IsAI) {
+            float baseDelay = CalcBaseDelay(enemy) * updateFreqCoef;
+            if (!enemy.IsAI)
+            {
                 return baseDelay;
             }
             var active = Bot.BotActivation;
-            if (!active.BotActive || active.BotInStandBy) {
+            if (!active.BotActive || active.BotInStandBy)
+            {
                 return baseDelay * VISION_FREQ_INACTIVE_BOT_COEF;
             }
             return baseDelay * VISION_FREQ_ACTIVE_BOT_COEF;
         }
 
-        private float calcBaseDelay(Enemy enemy)
+        private float CalcBaseDelay(Enemy enemy)
         {
             if (enemy.IsCurrentEnemy)
+            {
                 return VISION_FREQ_CURRENT_ENEMY;
+            }
+
             if (enemy.EnemyKnown)
+            {
                 return VISION_FREQ_KNOWN_ENEMY;
+            }
+
             return VISION_FREQ_UNKNOWN_ENEMY;
         }
     }

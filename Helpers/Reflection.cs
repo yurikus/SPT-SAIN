@@ -1,7 +1,4 @@
-﻿using SPT.Reflection.Utils;
-using HarmonyLib;
-using SAIN.Preset;
-using SAIN.Preset.BotSettings.SAINSettings;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -131,7 +128,7 @@ namespace SAIN.Helpers
                 Dictionary = new Dictionary<Type, Dictionary<KeyValuePair<FieldInfo, FieldInfo>, object>>();
             }
 
-            Dictionary<KeyValuePair<FieldInfo, FieldInfo>, object> TypeDict = new Dictionary<KeyValuePair<FieldInfo, FieldInfo>, object>();
+            Dictionary<KeyValuePair<FieldInfo, FieldInfo>, object> TypeDict = new();
 
             Dictionary<FieldInfo, FieldInfo> TypeList = GetReflectionDictionary(obj.GetType());
 
@@ -169,7 +166,7 @@ namespace SAIN.Helpers
         {
             if (!ReflectionDictionary.ContainsKey(type))
             {
-                Dictionary<FieldInfo, FieldInfo> fieldDict = new Dictionary<FieldInfo, FieldInfo>();
+                Dictionary<FieldInfo, FieldInfo> fieldDict = new();
 
                 foreach (FieldInfo Section in type.GetFields(flags))
                 {
@@ -191,9 +188,9 @@ namespace SAIN.Helpers
         }
 
         static readonly Dictionary<Type, Dictionary<FieldInfo, FieldInfo>>
-            ReflectionDictionary = new Dictionary<Type, Dictionary<FieldInfo, FieldInfo>>();
+            ReflectionDictionary = new();
 
-        public static readonly Type[] FloatBoolInt = { typeof(bool), typeof(float), typeof(int) };
+        public static readonly Type[] FloatBoolInt = [typeof(bool), typeof(float), typeof(int)];
 
         public static List<FieldInfo> GetFields(Type type)
         {

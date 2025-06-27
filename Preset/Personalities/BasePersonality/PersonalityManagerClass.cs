@@ -1,5 +1,4 @@
 ﻿using SAIN.Helpers;
-using SAIN.Plugin;
 
 namespace SAIN.Preset.Personalities
 {
@@ -71,6 +70,6 @@ namespace SAIN.Preset.Personalities
             PersonalityDefaultsClass.InitDefaults(PersonalityDictionary, Preset);
         }
 
-        public PersonalityDictionary PersonalityDictionary = new PersonalityDictionary();
+        public PersonalityDictionary PersonalityDictionary = new();
     }
 }

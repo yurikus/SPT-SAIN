@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Helpers.Events;
+using SAIN.Models.Enums;
 using System;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses

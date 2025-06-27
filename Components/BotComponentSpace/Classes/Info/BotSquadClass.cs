@@ -3,8 +3,6 @@ using SAIN.BotController.Classes;
 using SAIN.Components;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Profiling;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.Info
 {
@@ -35,7 +33,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public float DistanceToSquadLeader { get; private set; }
 
-        public readonly List<BotComponent> VisibleMembers = new List<BotComponent>();
+        public readonly List<BotComponent> VisibleMembers = new();
 
         private float _updateMemberTime = 0f;
 
@@ -70,19 +68,19 @@ namespace SAIN.SAINComponent.Classes.Info
             {
                 if (playerComponent != null &&
                     !playerComponent.IsAI &&
-                    Bot?.EnemyController?.IsPlayerAnEnemy(playerComponent.ProfileId) == false && 
+                    Bot?.EnemyController?.IsPlayerAnEnemy(playerComponent.ProfileId) == false &&
                     (playerComponent.Position - Bot.Position).sqrMagnitude < distToCheck)
                 {
                     return true;
                 }
-            }         
+            }
             return false;
         }
 
         public void Update()
         {
-            if (BotOwner.BotsGroup.MembersCount > 1 && 
-                SquadInfo != null && 
+            if (BotOwner.BotsGroup.MembersCount > 1 &&
+                SquadInfo != null &&
                 _updateMemberTime < Time.time)
             {
                 _updateMemberTime = Time.time + 0.5f;
@@ -106,7 +104,7 @@ namespace SAIN.SAINComponent.Classes.Info
             Vector3 eyePos = Bot.Transform.EyePosition;
             foreach (var member in Members.Values)
             {
-                if (member != null && 
+                if (member != null &&
                     member.ProfileId != Bot.ProfileId)
                 {
                     Vector3 direction = member.Transform.BodyPosition - eyePos;

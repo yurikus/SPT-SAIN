@@ -1,11 +1,7 @@
-﻿using HarmonyLib;
-using SAIN.Editor;
-using SAIN.Helpers;
-using SAIN.Preset.BotSettings.SAINSettings;
+﻿using SAIN.Helpers;
+using SAIN.Plugin;
 using SAIN.Preset.GlobalSettings;
 using System;
-using System.Configuration;
-using System.Linq;
 using System.Reflection;
 
 namespace SAIN.Attributes
@@ -23,10 +19,12 @@ namespace SAIN.Attributes
             Name = name;
         }
 
-        public Type ValueType {
+        public Type ValueType
+        {
             get
             {
-                switch (MemberInfo.MemberType) {
+                switch (MemberInfo.MemberType)
+                {
                     case MemberTypes.Field:
                         return (MemberInfo as FieldInfo).FieldType;
 
@@ -48,7 +46,8 @@ namespace SAIN.Attributes
             if (obj == null)
                 return null;
 
-            switch (MemberInfo.MemberType) {
+            switch (MemberInfo.MemberType)
+            {
                 case MemberTypes.Field:
                     return (MemberInfo as FieldInfo).GetValue(obj);
 
@@ -62,7 +61,8 @@ namespace SAIN.Attributes
 
         public void SetValue(object obj, object value)
         {
-            switch (MemberInfo.MemberType) {
+            switch (MemberInfo.MemberType)
+            {
                 case MemberTypes.Field:
                     (MemberInfo as FieldInfo).SetValue(obj, value);
                     return;
@@ -84,27 +84,37 @@ namespace SAIN.Attributes
         private void GetInfo(MemberInfo member)
         {
             Hidden = Get<HiddenAttribute>() != null;
-            Advanced = Get<AdvancedAttribute>() != null;
+            AdvancedOption = Get<AdvancedAttribute>() != null;
+            DeveloperOption = Get<DeveloperOptionAttribute>() != null;
             Debug = Get<DebugAttribute>() != null;
             CopyValue = Get<CopyValueAttribute>() != null;
+            SimpleValueEdit = Get<SimpleValueAttribute>() != null;
 
-            if (Hidden) {
+            if (Hidden)
+            {
                 return;
             }
 
-            var nameDescription = Get<NameAndDescriptionAttribute>();
+            NameAndDescriptionAttribute nameDescription = Get<NameAndDescriptionAttribute>();
             Name = nameDescription?.Name ?? Get<NameAttribute>()?.Value ?? member.Name;
             Description = nameDescription?.Description ?? Get<DescriptionAttribute>()?.Value ?? string.Empty;
             Category = Get<CategoryAttribute>()?.Value ?? "None";
 
             GUIValuesAttribute GUIValues = Get<GUIValuesAttribute>();
-            if (GUIValues != null) {
+            if (GUIValues != null)
+            {
                 Min = GUIValues.Min;
                 Max = GUIValues.Max;
                 Rounding = GUIValues.Rounding;
             }
 
             DictionaryString = Get<DefaultDictionaryAttribute>()?.Value;
+
+            DefaultFloatAttribute defaultValueAtt = Get<DefaultFloatAttribute>();
+            if (defaultValueAtt != null)
+            {
+                DefaultFloatValue = defaultValueAtt.Value;
+            }
         }
 
         private T Get<T>() where T : Attribute
@@ -122,12 +132,17 @@ namespace SAIN.Attributes
         public float Max { get; private set; } = 300f;
         public float Rounding { get; private set; } = 10f;
         public bool Hidden { get; private set; }
-        public bool Advanced { get; private set; }
+        public bool AdvancedOption { get; private set; }
+        public bool DeveloperOption { get; private set; }
         public bool Debug { get; private set; }
+        public bool SimpleValueEdit { get; private set; }
+        public float? DefaultFloatValue { get; private set; }
 
         public bool CopyValue { get; private set; }
 
-        public bool DoNotShowGUI => Hidden || (Advanced && !SAINEditor.AdvancedBotConfigs); // || (Debug && !SAINPlugin.DebugMode)
+        public bool DoNotShowGUI => Hidden
+            || (AdvancedOption && !PresetHandler.EditorDefaults.AdvancedBotConfigs)
+            || (DeveloperOption && !PresetHandler.EditorDefaults.DevBotConfigs); // || (Debug && !SAINPlugin.DebugMode)
 
         public EListType EListType { get; private set; } = EListType.None;
         public Type ListType { get; private set; }
@@ -137,7 +152,12 @@ namespace SAIN.Attributes
 
         public object GetDefault(object settingsObject)
         {
-            if (settingsObject is ISAINSettings settings) {
+            if (DefaultFloatValue != null)
+            {
+                return DefaultFloatValue.Value;
+            }
+            if (settingsObject is ISAINSettings settings)
+            {
                 var defaults = settings.GetDefaults();
                 object value = GetValue(defaults);
                 return value;

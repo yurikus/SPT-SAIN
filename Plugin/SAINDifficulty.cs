@@ -7,7 +7,7 @@
         lesshard,
         hard,
         harderpmcs,
-        veryhard ,
+        veryhard,
         deathwish,
         custom,
     }

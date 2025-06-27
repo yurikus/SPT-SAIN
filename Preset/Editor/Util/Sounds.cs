@@ -20,10 +20,12 @@ namespace SAIN.Editor
         public static void PlaySound(EUISoundType soundType, float volume = 1f)
         {
             volume = Mathf.Clamp(volume, 0f, 1f);
-            if (_soundsWrapper == null) {
+            if (_soundsWrapper == null)
+            {
                 getWrapper();
             }
-            if (SoundLimiter < Time.time) {
+            if (SoundLimiter < Time.time)
+            {
                 SoundLimiter = Time.time + 0.05f;
                 playSound(soundType, volume);
             }
@@ -31,18 +33,22 @@ namespace SAIN.Editor
 
         private static void playSound(EUISoundType soundType, float volume)
         {
-            if (_soundsWrapper == null || _audioSource == null) {
+            if (_soundsWrapper == null || _audioSource == null)
+            {
                 Logger.LogWarning($"null");
                 Singleton<GUISounds>.Instance.PlayUISound(soundType);
             }
-            else {
+            else
+            {
                 var clip = _soundsWrapper.GetUIClip(soundType);
-                if (clip == null) {
+                if (clip == null)
+                {
                     return;
                 }
                 _audioSource.PlayOneShot(clip, volume);
             }
-            if (SAINPlugin.DebugMode) {
+            if (SAINPlugin.DebugMode)
+            {
                 Logger.LogDebug(soundType);
             }
         }

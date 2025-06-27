@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using static CC_Vintage;
-using static EFT.UI.CharacterSelectionStartScreen;
 
 namespace SAIN.Preset.GlobalSettings.Categories
 {
@@ -9,9 +7,12 @@ namespace SAIN.Preset.GlobalSettings.Categories
         ArenaFighter,
         BossBully,
         BossGluhar,
+        BossBoar,
+        BossPartisan,
         Knight,
         BossKojaniy,
         BossSanitar,
+        BossKolontay,
         Tagilla,
         BossTest,
         //BossZryachiy,
@@ -25,6 +26,12 @@ namespace SAIN.Preset.GlobalSettings.Categories
         FollowerGluharScout,
         FollowerKojaniy,
         FollowerSanitar,
+        FollowerBoar,
+        FollowerBoarClose1,
+        FollowerBoarClose2,
+        BossBoarSniper,
+        FollowerKolontayAssault,
+        FollowerKolontaySecurity,
         TagillaFollower,
         //Fl_Zraychiy,
         Gifter,
@@ -39,25 +46,25 @@ namespace SAIN.Preset.GlobalSettings.Categories
 
     public static class AIBrains
     {
-        public static readonly List<Brain> Scavs = new List<Brain>
+        public static readonly List<Brain> Scavs = new()
         {
             Brain.CursAssault,
             Brain.Assault,
         };
 
-        public static readonly List<Brain> Goons = new List<Brain>
+        public static readonly List<Brain> Goons = new()
         {
             Brain.Knight,
             Brain.BirdEye,
             Brain.BigPipe,
         };
 
-        public static readonly List<Brain> Others = new List<Brain>
+        public static readonly List<Brain> Others = new()
         {
             Brain.Obdolbs,
         };
 
-        public static readonly List<Brain> Bosses = new List<Brain>
+        public static readonly List<Brain> Bosses = new()
         {
             Brain.BossBully,
             Brain.BossGluhar,
@@ -69,9 +76,12 @@ namespace SAIN.Preset.GlobalSettings.Categories
             Brain.Gifter,
             Brain.Killa,
             Brain.SectantPriest,
+            Brain.BossBoar,
+            Brain.BossKolontay,
+            Brain.BossPartisan
         };
 
-        public static readonly List<Brain> Followers = new List<Brain>
+        public static readonly List<Brain> Followers = new()
         {
             Brain.BossBully,
             Brain.FollowerBully,
@@ -82,6 +92,12 @@ namespace SAIN.Preset.GlobalSettings.Categories
             Brain.FollowerSanitar,
             Brain.TagillaFollower,
             //Brain.Fl_Zraychiy,
+            Brain.FollowerBoar,
+            Brain.FollowerBoarClose1,
+            Brain.FollowerBoarClose2,
+            Brain.BossBoarSniper,
+            Brain.FollowerKolontayAssault,
+            Brain.FollowerKolontaySecurity,
         };
     }
 }

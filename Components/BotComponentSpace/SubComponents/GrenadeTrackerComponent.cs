@@ -1,6 +1,5 @@
 ﻿using EFT;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.SubComponents
 {
@@ -48,7 +47,7 @@ namespace SAIN.SAINComponent.SubComponents
                 _sentToBot = true;
                 var collisionSound = Grenade.GrenadeSettings.CollisionSound;
                 bool isFrag = collisionSound == GrenadeSettings.CollisionSounds.frag;
-                var trigger = isFrag ? EPhraseTrigger.OnEnemyGrenade : EPhraseTrigger.Attention;
+                var trigger = isFrag ? EPhraseTrigger.OnEnemyGrenade : EPhraseTrigger.Look;
                 Bot.Talk.GroupSay(trigger, ETagStatus.Combat, false, 70);
 
                 Vector3 pos = DangerPoint;

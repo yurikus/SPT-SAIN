@@ -30,15 +30,17 @@ namespace SAIN.Components.PlayerComponentSpace.Classes
 
         public bool ShallPlayAISound(float power)
         {
-            if (!SoundMakerStarted) {
+            if (!SoundMakerStarted)
+            {
 
-                if (_startPlaySoundsTime > Time.time) {
+                if (_startPlaySoundsTime > Time.time)
+                {
                     return false;
                 }
                 SoundMakerStarted = true;
             }
 
-            if (_nextPlaySoundTime < Time.time || 
+            if (_nextPlaySoundTime < Time.time ||
                 _lastSoundPower > power * SOUND_POWER_THRESH)
             {
                 _nextPlaySoundTime = Time.time + _soundFrequency;

@@ -1,19 +1,13 @@
 using BepInEx;
 using BepInEx.Configuration;
-using DrakiaXYZ.VersionChecker;
 using EFT;
-using HarmonyLib;
 using SAIN.Editor;
 using SAIN.Helpers;
-using SAIN.Patches.Movement;
-using SAIN.Patches.Shoot.Aim;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using SPT.Reflection.Patching;
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using static SAIN.AssemblyInfoClass;
 
@@ -30,7 +24,6 @@ namespace SAIN
 {
     [BepInPlugin(SAINGUID, SAINName, SAINVersion)]
     [BepInDependency(BigBrainGUID, BigBrainVersion)]
-    [BepInDependency(WaypointsGUID, WaypointsVersion)]
     [BepInDependency(SPTGUID, SPTVersion)]
     [BepInProcess(EscapeFromTarkov)]
     [BepInIncompatibility("com.dvize.BushNoESP")]
@@ -38,7 +31,8 @@ namespace SAIN
     public class SAINPlugin : BaseUnityPlugin
     {
         public static DebugSettings DebugSettings => LoadedPreset.GlobalSettings.General.Debug;
-        public static bool DebugMode => DebugSettings.Logs.GlobalDebugMode;
+        public static bool DebugMode => true;
+        public static bool ProfilingMode => DebugSettings.Logs.GlobalProfilingToggle;
         public static bool DrawDebugGizmos => DebugSettings.Gizmos.DrawDebugGizmos;
         public static PresetEditorDefaults EditorDefaults => PresetHandler.EditorDefaults;
 
@@ -48,11 +42,14 @@ namespace SAIN
 
         public static ESelfDecision ForceSelfDecision = ESelfDecision.None;
 
-        private void Awake()
+        public void Awake()
         {
-            if (!VersionChecker.CheckEftVersion(Logger, Info, Config)) {
+            /*
+            if (!VersionChecker.CheckEftVersion(Logger, Info, Config))
+            {
                 throw new Exception("Invalid EFT Version");
             }
+            */
 
             PresetHandler.Init();
             BindConfigs();
@@ -72,149 +69,133 @@ namespace SAIN
 
         public static ConfigEntry<KeyboardShortcut> OpenEditorConfigEntry { get; private set; }
 
-        private List<Type> patches => new List<Type>() {
-                typeof(Patches.Generic.StopRefillMagsPatch),
-                typeof(Patches.Generic.SetEnvironmentPatch),
-                typeof(Patches.Generic.SetPanicPointPatch),
-                typeof(Patches.Generic.AddPointToSearchPatch),
-                typeof(Patches.Generic.TurnDamnLightOffPatch),
-                typeof(Patches.Generic.GrenadeThrownActionPatch),
-                typeof(Patches.Generic.GrenadeExplosionActionPatch),
-                typeof(Patches.Generic.ShallKnowEnemyPatch),
-                typeof(Patches.Generic.ShallKnowEnemyLatePatch),
-                typeof(Patches.Generic.HaveSeenEnemyPatch),
+        private List<ModulePatch> SainPatches => [
+            new Patches.Generic.StopRefillMagsPatch(),
+            new Patches.Generic.SetEnvironmentPatch(),
+            new Patches.Generic.SetPanicPointPatch(),
+            new Patches.Generic.AddPointToSearchPatch(),
+            new Patches.Generic.TurnDamnLightOffPatch(),
+            new Patches.Generic.GrenadeThrownActionPatch(),
+            new Patches.Generic.GrenadeExplosionActionPatch(),
+            new Patches.Generic.ShallKnowEnemyPatch(),
+            new Patches.Generic.ShallKnowEnemyLatePatch(),
+            new Patches.Generic.HaveSeenEnemyPatch(),
+            new Patches.Generic.AllowRequestPatch(),
+            new Patches.Generic.FindRequestForMePatch(),
 
-                //typeof(Patches.Generic.Fixes.HealCancelPatch),
-                typeof(Patches.Generic.Fixes.StopSetToNavMeshPatch),
-                typeof(Patches.Generic.Fixes.FightShallReloadFixPatch),
-                typeof(Patches.Generic.Fixes.EnableVaultPatch),
-                typeof(Patches.Generic.Fixes.BotMemoryAddEnemyPatch),
-                typeof(Patches.Generic.Fixes.BotGroupAddEnemyPatch),
-                //typeof(Patches.Generic.Fixes.NoTeleportPatch),
-                typeof(Patches.Generic.Fixes.FixItemTakerPatch),
-                typeof(Patches.Generic.Fixes.FixItemTakerPatch2),
-                //typeof(Patches.Generic.Fixes.FixPatrolDataPatch),
-                typeof(Patches.Generic.Fixes.RotateClampPatch),
+            new Patches.Generic.Fixes.StopSetToNavMeshPatch(),
+            new Patches.Generic.Fixes.FightShallReloadFixPatch(),
+            new Patches.Generic.Fixes.EnableVaultPatch(),
+            new Patches.Generic.Fixes.BotMemoryAddEnemyPatch(),
+            new Patches.Generic.Fixes.BotGroupAddEnemyPatch(),
+            new Patches.Generic.Fixes.FixItemTakerPatch(),
+            new Patches.Generic.Fixes.FixItemTakerPatch2(),
+            new Patches.Generic.Fixes.RotateClampPatch(),
 
-                typeof(Patches.Movement.EncumberedPatch),
-                typeof(Patches.Movement.DoorOpenerPatch),
-                typeof(Patches.Movement.DoorDisabledPatch),
-                typeof(Patches.Movement.CrawlPatch),
-                typeof(Patches.Movement.CrawlPatch2),
-                typeof(Patches.Movement.PoseStaminaPatch),
-                typeof(Patches.Movement.AimStaminaPatch),
-                typeof(Patches.Movement.GlobalShootSettingsPatch),
-                typeof(Patches.Movement.GlobalLookPatch),
+            new Patches.Movement.EncumberedPatch(),
+            new Patches.Movement.DoorOpenerPatch(),
+            new Patches.Movement.DoorDisabledPatch(),
+            new Patches.Movement.CrawlPatch(),
+            new Patches.Movement.CrawlPatch2(),
+            new Patches.Movement.PoseStaminaPatch(),
+            new Patches.Movement.AimStaminaPatch(),
+            new Patches.Movement.GlobalShootSettingsPatch(),
+            new Patches.Movement.GlobalLookPatch(),
 
-                typeof(Patches.Hearing.TryPlayShootSoundPatch),
-                typeof(Patches.Hearing.OnMakingShotPatch),
-                typeof(Patches.Hearing.HearingSensorPatch),
+            new Patches.Hearing.TryPlayShootSoundPatch(),
+            new Patches.Hearing.OnMakingShotPatch(),
+            new Patches.Hearing.HearingSensorPatch(),
 
-                typeof(Patches.Hearing.VoicePatch),
-                typeof(Patches.Hearing.GrenadeCollisionPatch),
-                typeof(Patches.Hearing.GrenadeCollisionPatch2),
+            new Patches.Hearing.GrenadeCollisionPatch(),
+            new Patches.Hearing.GrenadeCollisionPatch2(),
 
-                typeof(Patches.Hearing.ToggleSoundPatch),
-                typeof(Patches.Hearing.SpawnInHandsSoundPatch),
-                typeof(Patches.Hearing.PlaySwitchHeadlightSoundPatch),
-                typeof(Patches.Hearing.BulletImpactPatch),
-                typeof(Patches.Hearing.TreeSoundPatch),
-                typeof(Patches.Hearing.DoorBreachSoundPatch),
-                typeof(Patches.Hearing.DoorOpenSoundPatch),
-                typeof(Patches.Hearing.FootstepSoundPatch),
-                typeof(Patches.Hearing.SprintSoundPatch),
-                typeof(Patches.Hearing.GenericMovementSoundPatch),
-                typeof(Patches.Hearing.JumpSoundPatch),
-                typeof(Patches.Hearing.DryShotPatch),
-                typeof(Patches.Hearing.ProneSoundPatch),
-                typeof(Patches.Hearing.SoundClipNameCheckerPatch),
-                typeof(Patches.Hearing.SoundClipNameCheckerPatch2),
-                typeof(Patches.Hearing.AimSoundPatch),
-                typeof(Patches.Hearing.LootingSoundPatch),
-                typeof(Patches.Hearing.SetInHandsGrenadePatch),
-                typeof(Patches.Hearing.SetInHandsFoodPatch),
-                typeof(Patches.Hearing.SetInHandsMedsPatch),
+            new Patches.Hearing.ToggleSoundPatch(),
+            new Patches.Hearing.SpawnInHandsSoundPatch(),
+            new Patches.Hearing.PlaySwitchHeadlightSoundPatch(),
+            new Patches.Hearing.BulletImpactPatch(),
+            new Patches.Hearing.TreeSoundPatch(),
+            new Patches.Hearing.DoorBreachSoundPatch(),
+            new Patches.Hearing.DoorOpenSoundPatch(),
+            new Patches.Hearing.FootstepSoundPatch(),
+            new Patches.Hearing.SprintSoundPatch(),
+            new Patches.Hearing.GenericMovementSoundPatch(),
+            new Patches.Hearing.JumpSoundPatch(),
+            new Patches.Hearing.DryShotPatch(),
+            new Patches.Hearing.ProneSoundPatch(),
+            new Patches.Hearing.SoundClipNameCheckerPatch(),
+            new Patches.Hearing.SoundClipNameCheckerPatch2(),
+            new Patches.Hearing.AimSoundPatch(),
+            new Patches.Hearing.LootingSoundPatch(),
+            new Patches.Hearing.SetInHandsGrenadePatch(),
+            new Patches.Hearing.SetInHandsFoodPatch(),
+            new Patches.Hearing.SetInHandsMedsPatch(),
 
-                typeof(Patches.Talk.JumpPainPatch),
-                typeof(Patches.Talk.PlayerHurtPatch),
-                typeof(Patches.Talk.PlayerTalkPatch),
-                typeof(Patches.Talk.BotTalkPatch),
-                typeof(Patches.Talk.BotTalkManualUpdatePatch),
+            new Patches.Talk.JumpPainPatch(),
+            new Patches.Talk.PlayerHurtPatch(),
+            new Patches.Talk.PlayerTalkPatch(),
+            new Patches.Talk.BotTalkPatch(),
+            new Patches.Talk.BotTalkManualUpdatePatch(),
 
-                typeof(Patches.Vision.DisableLookUpdatePatch),
-                typeof(Patches.Vision.UpdateLightEnablePatch),
-                typeof(Patches.Vision.UpdateLightEnablePatch2),
-                typeof(Patches.Vision.ToggleNightVisionPatch),
-                typeof(Patches.Vision.SetPartPriorityPatch),
-                typeof(Patches.Vision.GlobalLookSettingsPatch),
-                typeof(Patches.Vision.WeatherTimeVisibleDistancePatch),
-                typeof(Patches.Vision.NoAIESPPatch),
-                typeof(Patches.Vision.BotLightTurnOnPatch),
-                typeof(Patches.Vision.VisionSpeedPatch),
-                typeof(Patches.Vision.VisionDistancePatch),
-                typeof(Patches.Vision.CheckFlashlightPatch),
+            new Patches.Vision.DisableLookUpdatePatch(),
+            new Patches.Vision.UpdateLightEnablePatch(),
+            new Patches.Vision.UpdateLightEnablePatch2(),
+            new Patches.Vision.ToggleNightVisionPatch(),
+            new Patches.Vision.SetPartPriorityPatch(),
+            new Patches.Vision.GlobalLookSettingsPatch(),
+            new Patches.Vision.WeatherTimeVisibleDistancePatch(),
+            new Patches.Vision.NoAIESPPatch(),
+            new Patches.Vision.BotLightTurnOnPatch(),
+            new Patches.Vision.VisionSpeedPatch(),
+            new Patches.Vision.WeatherVisionPatch(),
+            new Patches.Vision.VisionDistancePatch(),
+            new Patches.Vision.CheckFlashlightPatch(),
 
-                typeof(Patches.Shoot.Aim.DoHitAffectPatch),
-                typeof(Patches.Shoot.Aim.HitAffectApplyPatch),
-                typeof(Patches.Shoot.Aim.PlayerHitReactionDisablePatch),
+            new Patches.Shoot.Aim.DoHitAffectPatch(),
+            new Patches.Shoot.Aim.HitAffectApplyPatch(),
+            new Patches.Shoot.Aim.PlayerHitReactionDisablePatch(),
 
-                typeof(Patches.Shoot.Aim.SetAimStatusPatch),
-                typeof(Patches.Shoot.Aim.AimOffsetPatch),
-                typeof(Patches.Shoot.Aim.AimTimePatch),
-                //typeof(Patches.Shoot.Aim.WeaponPresetPatch),
-                typeof(Patches.Shoot.Aim.ForceNoHeadAimPatch),
-                typeof(Patches.Shoot.Aim.AimRotateSpeedPatch),
+            new Patches.Shoot.Aim.SetAimStatusPatch(),
+            new Patches.Shoot.Aim.AimOffsetPatch(),
+            new Patches.Shoot.Aim.AimTimePatch(),
+            new Patches.Shoot.Aim.ForceNoHeadAimPatch(),
+            new Patches.Shoot.Aim.AimRotateSpeedPatch(),
 
-                //typeof(Patches.Shoot.Grenades.DoThrowPatch),
-                //typeof(Patches.Shoot.Grenades.DisableSpreadPatch),
-                typeof(Patches.Shoot.Grenades.ResetGrenadePatch),
-                typeof(Patches.Shoot.Grenades.SetGrenadePatch),
+            new Patches.Shoot.Grenades.ResetGrenadePatch(),
+            new Patches.Shoot.Grenades.SetGrenadePatch(),
 
-                typeof(Patches.Shoot.RateOfFire.FullAutoPatch),
-                typeof(Patches.Shoot.RateOfFire.SemiAutoPatch),
-                typeof(Patches.Shoot.RateOfFire.SemiAutoPatch2),
-                typeof(Patches.Shoot.RateOfFire.SemiAutoPatch3),
+            new Patches.Shoot.RateOfFire.FullAutoPatch(),
+            new Patches.Shoot.RateOfFire.SemiAutoPatch(),
+            new Patches.Shoot.RateOfFire.SemiAutoPatch2(),
+            new Patches.Shoot.RateOfFire.SemiAutoPatch3(),
 
-                typeof(Patches.Components.AddBotComponentPatch),
-                typeof(Patches.Components.AddGameWorldPatch),
-                //typeof(Patches.Components.AddLightComponentPatch),
-                //typeof(Patches.Components.AddLightComponentPatch2),
-                typeof(Patches.Components.GetBotController),
-                typeof(Patches.Components.GetBotSpawner),
-            };
+            new Patches.Components.AddBotComponentPatch(),
+            new Patches.Components.AddGameWorldPatch(),
+            new Patches.Components.GetBotController(),
+            new Patches.Components.GetBotSpawner(),
+        ];
+
 
         private void InitPatches()
         {
-            // Reflection go brrrrrrrrrrrrrr
-            MethodInfo enableMethod = AccessTools.Method(typeof(ModulePatch), "Enable");
-            foreach (var patch in patches) {
-                if (!typeof(ModulePatch).IsAssignableFrom(patch)) {
-                    Logger.LogError($"Type {patch.Name} is not a ModulePatch");
-                    continue;
-                }
-
-                try {
-                    enableMethod.Invoke(Activator.CreateInstance(patch), null);
-                }
-                catch (Exception ex) {
-                    Logger.LogError(ex);
-                }
+            foreach (var patch in SainPatches)
+            {
+                patch.Enable();
             }
         }
 
         public static SAINPresetClass LoadedPreset => PresetHandler.LoadedPreset;
 
-        private void Update()
+        public void Update()
         {
             ModDetection.Update();
             SAINEditor.Update();
         }
 
-        private void Start() => SAINEditor.Init();
+        public void Start() => SAINEditor.Init();
 
-        private void LateUpdate() => SAINEditor.LateUpdate();
+        public void LateUpdate() => SAINEditor.LateUpdate();
 
-        private void OnGUI() => SAINEditor.OnGUI();
+        public void OnGUI() => SAINEditor.OnGUI();
 
         public static bool IsBotExluded(BotOwner botOwner) => SAINEnableClass.IsSAINDisabledForBot(botOwner);
     }

@@ -90,7 +90,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private void checkEndDoorOpening()
         {
             //this.BotOwner.Steering.SetYAngle(0f);
-            if (this._traversingEnd < Time.time || 
+            if (this._traversingEnd < Time.time ||
                 (_lastInteractedInfo != null && _lastInteractedInfo.Door.DoorState != EDoorState.Interacting))
             {
                 endDoorInteraction();
@@ -270,7 +270,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             _possibleInteractDoors.Clear();
 
             Vector3 targetMovePos;
-            if (BotOwner.Mover.HavePath)
+            if (BotOwner.Mover.HasPathAndNoComplete)
                 targetMovePos = BotOwner.Mover.RealDestPoint;
             else if (Bot.Mover.SprintController.Running)
                 targetMovePos = Bot.Mover.SprintController.CurrentCornerDestination();
@@ -326,7 +326,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        private readonly List<DoorData> _possibleInteractDoors = new List<DoorData>();
+        private readonly List<DoorData> _possibleInteractDoors = new();
 
         private void checkIfLastDoorExpire()
         {
@@ -529,17 +529,17 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool ShallInvertDoorAngle(Door door)
         {
-			if (!GlobalSettingsClass.Instance.General.Doors.InvertDoors)
-			{
-				return false;
-			}
-			var interactionParameters = door.GetInteractionParameters(BotOwner.Position);
-			if (interactionParameters.AnimationId == (door.DoorState is EDoorState.Locked ? (int)door.DoorKeyOpenInteraction : door.CalculateInteractionIndex(BotOwner.Position)))
-			{
-				return false;
-			}
-			return true;
-		}
+            if (!GlobalSettingsClass.Instance.General.Doors.InvertDoors)
+            {
+                return false;
+            }
+            var interactionParameters = door.GetInteractionParameters(BotOwner.Position);
+            if (interactionParameters.AnimationId == (door.DoorState is EDoorState.Locked ? (int)door.DoorKeyOpenInteraction : door.CalculateInteractionIndex(BotOwner.Position)))
+            {
+                return false;
+            }
+            return true;
+        }
 
         // Token: 0x060010AF RID: 4271 RVA: 0x0004CED4 File Offset: 0x0004B0D4
         public bool CheckWantToInteract(DoorData data, Vector3 botPosition)
@@ -567,7 +567,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private bool checkCrossPoint(Vector3 goTo, Vector3 botPosition, DoorData data)
         {
             NavMeshDoorLink link = data.Link;
-			GClass340 gclass;
+            GClass355 gclass;
             switch (link.Door.DoorState)
             {
                 case EDoorState.Open:
@@ -600,12 +600,11 @@ namespace SAIN.SAINComponent.Classes.Mover
         }
 
         private static bool _debugMode => SAINPlugin.DebugSettings.Gizmos.DrawDoorLinks;
-        private readonly List<NavMeshDoorLink> _doorsOnPath = new List<NavMeshDoorLink>();
+        private readonly List<NavMeshDoorLink> _doorsOnPath = new();
         private DoorData _lastInteractedInfo;
-        private static readonly Dictionary<NavMeshDoorLink, linkObjects> _debugObjects = new Dictionary<NavMeshDoorLink, linkObjects>();
+        private static readonly Dictionary<NavMeshDoorLink, linkObjects> _debugObjects = new();
         public bool _interactingWithDoor;
         private float _nextPosibleDoorInteractTime;
         private float _traversingEnd;
-        private float _refreshWayPeriod;
     }
 }

@@ -67,6 +67,6 @@ namespace SAIN.Preset.Personalities
         [Name("Allowed Bot Types")]
         [Advanced]
         [Hidden]
-        public List<WildSpawnType> AllowedTypes = new List<WildSpawnType>();
+        public List<WildSpawnType> AllowedTypes = new();
     }
 }

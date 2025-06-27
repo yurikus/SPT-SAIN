@@ -1,6 +1,5 @@
-﻿using EFT;
-using SAIN.Helpers;
-using System.Collections;
+﻿using DrakiaXYZ.BigBrain.Brains;
+using EFT;
 using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
@@ -18,7 +17,7 @@ namespace SAIN.Layers.Combat.Run
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
             //Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
@@ -29,7 +28,7 @@ namespace SAIN.Layers.Combat.Run
             }
 
             if (nextRandomRunTime < Time.time &&
-                findRandomPlace(out var path) &&
+                FindRandomPlace(out var path) &&
                 Bot.Mover.GoToPoint(_runDestination, out _, -1f, true))
             {
                 nextRandomRunTime = Time.time + 20f;
@@ -44,9 +43,9 @@ namespace SAIN.Layers.Combat.Run
             Toggle(true);
         }
 
-        private bool findRandomPlace(out NavMeshPath path)
+        private bool FindRandomPlace(out NavMeshPath path)
         {
-            for (int i = 0; i < 10;  i++)
+            for (int i = 0; i < 10; i++)
             {
                 Vector3 random = UnityEngine.Random.onUnitSphere * 100f;
                 if (NavMesh.SamplePosition(random + Bot.Position, out var hit, 10f, -1))

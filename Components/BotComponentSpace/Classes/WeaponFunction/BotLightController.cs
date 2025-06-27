@@ -110,7 +110,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                     return;
                 }
 
-                if (enemy.IsVisible && 
+                if (enemy.IsVisible &&
                     Time.time - enemy.Vision.VisibleStartTime > 0.75f)
                 {
                     if (enemy.RealDistance <= maxTurnOnrange * 0.9f)

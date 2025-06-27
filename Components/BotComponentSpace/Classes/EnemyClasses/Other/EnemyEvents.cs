@@ -1,4 +1,5 @@
 ﻿using SAIN.Helpers.Events;
+using SAIN.Models.Enums;
 using System;
 using UnityEngine.AI;
 
@@ -24,7 +25,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public event Action<Enemy, EEnemyAction> OnVulnerableStateChanged;
         public event Action<Enemy, ETagStatus> OnHealthStatusChanged;
 
-        public EnemyEvents(Enemy enemy) : base (enemy)
+        public EnemyEvents(Enemy enemy) : base(enemy)
         {
             OnEnemyLineOfSightChanged = new EnemyToggleEventTimeTracked(enemy, false);
             OnEnemyKnownChanged = new EnemyToggleEventTimeTracked(enemy, false);

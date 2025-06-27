@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom;
 using System.Reflection;
 
 namespace SAIN.Preset.GlobalSettings

@@ -1,7 +1,5 @@
 ﻿using EFT;
 using SAIN.Components;
-using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes.Info;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,7 +44,7 @@ namespace SAIN.BotController.Classes
 
         private float DebugTimer = 0f;
 
-        public readonly Dictionary<string, Squad> Squads = new Dictionary<string, Squad>();
+        public readonly Dictionary<string, Squad> Squads = new();
 
         public Squad GetSquad(BotOwner botOwner)
         {
@@ -62,7 +60,7 @@ namespace SAIN.BotController.Classes
                 for (int i = 0; i < groupCount; i++)
                 {
                     var defaultMember = group.Member(i);
-                    if (defaultMember != null && 
+                    if (defaultMember != null &&
                         defaultMember.ProfileId != botOwner.ProfileId)
                     {
                         if (BotController.GetSAIN(defaultMember, out var sainComponent))

@@ -50,6 +50,6 @@ namespace SAIN.Preset.BotSettings.SAINSettings
         public float DifficultyModifier = 0.5f;
 
         [JsonProperty]
-        public Dictionary<BotDifficulty, SAINSettingsClass> Settings = new Dictionary<BotDifficulty, SAINSettingsClass>();
+        public Dictionary<BotDifficulty, SAINSettingsClass> Settings = new();
     }
 }

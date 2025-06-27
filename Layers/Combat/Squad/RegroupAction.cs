@@ -1,9 +1,5 @@
-﻿using BepInEx.Logging;
-using DrakiaXYZ.BigBrain.Brains;
+﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Layers.Combat.Solo;
-using SAIN.SAINComponent;
-using System.Collections;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Squad
@@ -19,10 +15,12 @@ namespace SAIN.Layers.Combat.Squad
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             var SquadLeadPos = Bot.Squad.LeaderComponent?.Position;
-            if (SquadLeadPos != null) {
+            if (SquadLeadPos != null)
+            {
                 Bot.Mover.GoToPoint(SquadLeadPos.Value, out _);
                 CheckShouldSprint(SquadLeadPos.Value);
             }
@@ -30,10 +28,12 @@ namespace SAIN.Layers.Combat.Squad
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
 
-            if (!Bot.Mover.SprintController.Running) {
+            if (!Bot.Mover.SprintController.Running)
+            {
                 Shoot.CheckAimAndFire();
                 Bot.Steering.SteerByPriority();
             }
+            this.EndProfilingSample();
         }
 
         public override void Start()
@@ -54,16 +54,20 @@ namespace SAIN.Layers.Combat.Squad
                 !enemyLOS &&
                 enemyDist > 50f;
 
-            if (Bot.Steering.SteerByPriority(null, false)) {
+            if (Bot.Steering.SteerByPriority(null, false))
+            {
                 sprint = false;
             }
 
-            if (_nextChangeSprintTime < Time.time) {
+            if (_nextChangeSprintTime < Time.time)
+            {
                 _nextChangeSprintTime = Time.time + 1f;
-                if (sprint) {
+                if (sprint)
+                {
                     Bot.Mover.Sprint(true);
                 }
-                else {
+                else
+                {
                     Bot.Mover.Sprint(false);
                     Bot.Steering.SteerByPriority();
                 }

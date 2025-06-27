@@ -18,31 +18,38 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
             return getSightMod(distance);
         }
 
-        private float gearStealthModifier {
+        private float gearStealthModifier
+        {
             get
             {
-                if (_calcGearTime < Time.time) {
+                if (_calcGearTime < Time.time)
+                {
                     _calcGearTime = Time.time + 1f;
 
                     float modifier = 1f;
                     bool success = false;
-                    try {
+                    try
+                    {
                         modifier = calcGearEffects();
                         success = true;
                     }
-                    catch (Exception e) {
+                    catch (Exception e)
+                    {
                         if (SAINPlugin.DebugMode)
                             Logger.LogError(e);
                     }
 
-                    if (success) {
-                        if (_nextLogTime < Time.time && modifier != 1f) {
+                    if (success)
+                    {
+                        if (_nextLogTime < Time.time && modifier != 1f)
+                        {
                             _nextLogTime = Time.time + 60f;
                             //Logger.LogDebug($"Stealth Mod: {modifier}");
                         }
                         _gearStealthModifier = modifier;
                     }
-                    else {
+                    else
+                    {
                         float backPackMod = getBackpackMod();
                         float headWearMod = getHeadWearMod();
                         float faceCoverMod = getFaceCoverMod();
@@ -60,11 +67,13 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
             var stealthValues = SAINPlugin.LoadedPreset.GearStealthValuesClass.ItemStealthValues;
             float result = 1f;
             Item item;
-            foreach (var value in stealthValues) {
+            foreach (var value in stealthValues)
+            {
                 if (value.Value.Count == 0)
                     continue;
 
-                switch (value.Key) {
+                switch (value.Key)
+                {
                     case EEquipmentType.Headwear:
                         item = GearInfo.GetItem(EquipmentSlot.Headwear);
                         if (item != null)
@@ -81,7 +90,8 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
 
                     case EEquipmentType.FaceCover:
                         item = GearInfo.GetItem(EquipmentSlot.FaceCover);
-                        if (item != null) {
+                        if (item != null)
+                        {
                             float faceCoverValue = calcEffect(item.TemplateId, value.Value);
                             if (faceCoverValue == 1f)
                                 result *= 1.05f;
@@ -115,8 +125,10 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
 
         private float calcEffect(string id, List<ItemStealthValue> values)
         {
-            foreach (var value in values) {
-                if (value.ItemID == id) {
+            foreach (var value in values)
+            {
+                if (value.ItemID == id)
+                {
                     return value.StealthValue;
                 }
             }
@@ -131,20 +143,22 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
         {
             float min = 30f;
             float max = 60f;
-            if (distance <= min) {
+            if (distance <= min)
+            {
                 return 1f;
             }
 
             float modifier = gearStealthModifier;
 
-            if (distance >= max) {
+            if (distance >= max)
+            {
                 return modifier;
             }
 
             float num = max - min;
             float num2 = distance - min;
             float ratio = num2 / num;
-            float result = Mathf.Lerp(min, max, ratio);
+            float result = Mathf.Lerp(1f, modifier, ratio);
 
             return result;
         }
@@ -152,10 +166,12 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
         private float getBackpackMod()
         {
             Item backpack = GearInfo.GetItem(EquipmentSlot.Backpack);
-            if (backpack == null) {
+            if (backpack == null)
+            {
                 return 1.15f;
             }
-            switch (backpack.TemplateId) {
+            switch (backpack.TemplateId)
+            {
                 case backpack_pilgrim:
                     return 0.875f;
 
@@ -170,10 +186,12 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
         private float getHeadWearMod()
         {
             Item headwear = GearInfo.GetItem(EquipmentSlot.Headwear);
-            if (headwear == null) {
+            if (headwear == null)
+            {
                 return 1f;
             }
-            switch (headwear.TemplateId) {
+            switch (headwear.TemplateId)
+            {
                 case boonie_MILTEC:
                     return 1.2f;
 
@@ -200,10 +218,12 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
         private float getFaceCoverMod()
         {
             Item faceCover = GearInfo.GetItem(EquipmentSlot.FaceCover);
-            if (faceCover == null) {
+            if (faceCover == null)
+            {
                 return 1f;
             }
-            switch (faceCover.TemplateId) {
+            switch (faceCover.TemplateId)
+            {
                 default:
                     return 1.05f;
             }

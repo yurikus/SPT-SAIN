@@ -1,11 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Layers.Combat.Solo;
-using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes;
-using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.Classes.WeaponFunction;
-using System.Collections;
+using SAIN.Models.Enums;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Squad
@@ -21,53 +16,65 @@ namespace SAIN.Layers.Combat.Squad
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             var enemy = Bot.Enemy;
-            if (enemy != null) {
-                if (enemy.IsVisible && enemy.CanShoot) {
+            if (enemy != null)
+            {
+                if (enemy.IsVisible && enemy.CanShoot)
+                {
                     Bot.Mover.StopMove();
                     Shoot.CheckAimAndFire();
+                    this.EndProfilingSample();
                     return;
                 }
 
                 if (Bot.ManualShoot.CanShoot(true) &&
                     FindSuppressionTarget(out var target) &&
-                    CanSeeSuppressionTarget(target)) {
+                    CanSeeSuppressionTarget(target))
+                {
                     _manualShooting = true;
                     Bot.Mover.StopMove();
 
                     bool hasMachineGun = Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun;
                     if (hasMachineGun
-                        && Bot.Mover.Prone.ShallProne(true)) {
+                        && Bot.Mover.Prone.ShallProne(true))
+                    {
                         Bot.Mover.Prone.SetProne(true);
                     }
 
                     bool shot = Bot.ManualShoot.TryShoot(true, target.Value, true, EShootReason.SquadSuppressing);
 
-                    if (shot) {
+                    if (shot)
+                    {
                         enemy.Status.EnemyIsSuppressed = true;
                         float waitTime = hasMachineGun ? 0.1f : 0.5f;
                         _nextShotTime = Time.time + (waitTime * Random.Range(0.75f, 1.25f));
                     }
+                    this.EndProfilingSample();
                     return;
                 }
 
                 Vector3? lastKnown = enemy.LastKnownPosition;
-                if (lastKnown != null) {
+                if (lastKnown != null)
+                {
                     Bot.Mover.GoToPoint(lastKnown.Value, out _, -1, false, false, false);
                 }
             }
 
-            resetManualShoot();
-            if (!Bot.Steering.SteerByPriority(enemy, false)) {
+            ResetManualShoot();
+            if (!Bot.Steering.SteerByPriority(enemy, false))
+            {
                 Bot.Steering.LookToLastKnownEnemyPosition(enemy);
             }
+            this.EndProfilingSample();
         }
 
-        private void resetManualShoot()
+        private void ResetManualShoot()
         {
-            if (_manualShooting) {
+            if (_manualShooting)
+            {
                 _manualShooting = false;
                 Bot.ManualShoot.TryShoot(false, Vector3.zero);
             }
@@ -85,10 +92,12 @@ namespace SAIN.Layers.Combat.Squad
 
         private bool CanSeeSuppressionTarget(Vector3? target)
         {
-            if (target == null) {
+            if (target == null)
+            {
                 _canSeeSuppTarget = false;
             }
-            else if (_nextCheckVisTime < Time.time) {
+            else if (_nextCheckVisTime < Time.time)
+            {
                 _nextCheckVisTime = Time.time + 0.5f;
                 Vector3 myHead = Bot.Transform.HeadPosition;
                 _canSeeSuppTarget = !Physics.Raycast(myHead, target.Value - myHead, (target.Value - myHead).magnitude * 0.8f);
@@ -108,7 +117,7 @@ namespace SAIN.Layers.Combat.Squad
         public override void Stop()
         {
             Toggle(false);
-            resetManualShoot();
+            ResetManualShoot();
         }
     }
 }

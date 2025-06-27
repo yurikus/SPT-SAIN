@@ -134,7 +134,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
         public EquipmentSlot ActiveEquipmentSlot => _weaponManager.Selector.EquipmentSlot;
         public Weapon CurrentWeapon => _weaponManager?.CurrentWeapon;
 
-        public readonly Dictionary<EquipmentSlot, BotMagazineWeapon> BotMagazineWeapons = new Dictionary<EquipmentSlot, BotMagazineWeapon> ();
+        public readonly Dictionary<EquipmentSlot, BotMagazineWeapon> BotMagazineWeapons = new();
 
         public ReloadClass(BotComponent bot) : base(bot)
         {
@@ -147,8 +147,8 @@ namespace SAIN.Components.BotComponentSpace.Classes
             foreach (EquipmentSlot slot in _weapSlots)
             {
                 Item item = Bot.Player.Equipment.GetSlot(slot).ContainedItem;
-                if (item != null && 
-                    item is Weapon weapon && 
+                if (item != null &&
+                    item is Weapon weapon &&
                     isMagFed(weapon.ReloadMode))
                 {
                     BotMagazineWeapons.Add(slot, new BotMagazineWeapon(weapon, Bot));
@@ -174,7 +174,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
         public void Update()
         {
             checkWeapChanged();
-            foreach (var weapon in BotMagazineWeapons.Values )
+            foreach (var weapon in BotMagazineWeapons.Values)
             {
                 weapon?.Update();
             }
@@ -281,12 +281,12 @@ namespace SAIN.Components.BotComponentSpace.Classes
             BotMagazineWeapons.Clear();
         }
 
-        private static EquipmentSlot[] _weapSlots = 
-        { 
-            EquipmentSlot.FirstPrimaryWeapon, 
-            EquipmentSlot.SecondPrimaryWeapon, 
-            EquipmentSlot.Holster 
-        };
+        private static EquipmentSlot[] _weapSlots =
+        [
+            EquipmentSlot.FirstPrimaryWeapon,
+            EquipmentSlot.SecondPrimaryWeapon,
+            EquipmentSlot.Holster
+        ];
 
         private bool _weaponChanged = true;
         private readonly BotWeaponManager _weaponManager;

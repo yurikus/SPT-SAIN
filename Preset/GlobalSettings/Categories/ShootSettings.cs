@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using SAIN;
 using SAIN.Attributes;
 using System.Collections.Generic;
 
@@ -8,6 +7,11 @@ namespace SAIN.Preset.GlobalSettings
     // note for later: Need to find a way to remove the clunky duplicates of the dictionaries here, as its a hold over from a previous system of getting the default values for different config options.
     public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     {
+        [Name("Bots only use Semi Auto")]
+        [Description("If enabled, bots will never be able to use full auto at close/mid range.")]
+        [Category("General")]
+        public bool ONLY_SEMIAUTO_TOGGLE = false;
+
         [Name("Global Recoil Multiplier")]
         [Description("Higher = more recoil. Modifies SAIN's recoil scatter feature. 1.5 = 1.5x more recoilfrom a single gunshot")]
         [Category("Bot Recoil")]
@@ -70,7 +74,7 @@ namespace SAIN.Preset.GlobalSettings
         [Percentage0to1(0.01f)]
         [Advanced]
         [DefaultDictionary(nameof(AmmoCaliberShootabilityDefaults))]
-        public Dictionary<ECaliber, float> AmmoCaliberShootability = new Dictionary<ECaliber, float>()
+        public Dictionary<ECaliber, float> AmmoCaliberShootability = new()
         {
             { ECaliber.Caliber9x18PM, 0.225f },
             { ECaliber.Caliber9x19PARA, 0.275f },
@@ -104,7 +108,7 @@ namespace SAIN.Preset.GlobalSettings
 
         [JsonIgnore]
         [Hidden]
-        public static readonly Dictionary<ECaliber, float> AmmoCaliberShootabilityDefaults = new Dictionary<ECaliber, float>()
+        public static readonly Dictionary<ECaliber, float> AmmoCaliberShootabilityDefaults = new()
         {
             { ECaliber.Caliber9x18PM, 0.225f },
             { ECaliber.Caliber9x19PARA, 0.275f },
@@ -142,7 +146,7 @@ namespace SAIN.Preset.GlobalSettings
         [MinMax(10f, 150f)]
         [Advanced]
         [DefaultDictionary(nameof(AmmoCaliberFullAutoMaxDistancesDefaults))]
-        public Dictionary<ECaliber, float> AmmoCaliberFullAutoMaxDistances = new Dictionary<ECaliber, float>
+        public Dictionary<ECaliber, float> AmmoCaliberFullAutoMaxDistances = new()
         {
             { ECaliber.Caliber9x18PM, 80f },
             { ECaliber.Caliber9x19PARA, 80f },
@@ -176,7 +180,7 @@ namespace SAIN.Preset.GlobalSettings
 
         [JsonIgnore]
         [Hidden]
-        public static readonly Dictionary<ECaliber, float> AmmoCaliberFullAutoMaxDistancesDefaults = new Dictionary<ECaliber, float>()
+        public static readonly Dictionary<ECaliber, float> AmmoCaliberFullAutoMaxDistancesDefaults = new()
         {
             { ECaliber.Caliber9x18PM, 80f },
             { ECaliber.Caliber9x19PARA, 80f },
@@ -220,7 +224,7 @@ namespace SAIN.Preset.GlobalSettings
         [Percentage0to1(0.01f)]
         [Advanced]
         [DefaultDictionary(nameof(WeaponClassShootabilityDefaults))]
-        public Dictionary<EWeaponClass, float> WeaponClassShootability = new Dictionary<EWeaponClass, float>
+        public Dictionary<EWeaponClass, float> WeaponClassShootability = new()
         {
             { EWeaponClass.Default, 0.425f },
             { EWeaponClass.assaultCarbine, 0.5f },
@@ -237,7 +241,7 @@ namespace SAIN.Preset.GlobalSettings
 
         [JsonIgnore]
         [Hidden]
-        public static readonly Dictionary<EWeaponClass, float> WeaponClassShootabilityDefaults = new Dictionary<EWeaponClass, float>()
+        public static readonly Dictionary<EWeaponClass, float> WeaponClassShootabilityDefaults = new()
         {
             { EWeaponClass.Default, 0.425f },
             { EWeaponClass.assaultCarbine, 0.5f },
@@ -265,7 +269,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Bot Weapon Control")]
         [Advanced]
         [DefaultDictionary(nameof(WeaponPerMeterDefaults))]
-        public Dictionary<EWeaponClass, float> WeaponPerMeter = new Dictionary<EWeaponClass, float>
+        public Dictionary<EWeaponClass, float> WeaponPerMeter = new()
         {
             { EWeaponClass.Default, 120f },
             { EWeaponClass.assaultCarbine, 140 },
@@ -282,7 +286,7 @@ namespace SAIN.Preset.GlobalSettings
 
         [JsonIgnore]
         [Hidden]
-        public static readonly Dictionary<EWeaponClass, float> WeaponPerMeterDefaults = new Dictionary<EWeaponClass, float>()
+        public static readonly Dictionary<EWeaponClass, float> WeaponPerMeterDefaults = new()
         {
             { EWeaponClass.Default, 120f },
             { EWeaponClass.assaultCarbine, 140 },
@@ -306,7 +310,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Bot Weapon Control")]
         [Advanced]
         [DefaultDictionary(nameof(EngagementDistanceDefaults))]
-        public Dictionary<EWeaponClass, float> EngagementDistance = new Dictionary<EWeaponClass, float>
+        public Dictionary<EWeaponClass, float> EngagementDistance = new()
         {
             { EWeaponClass.Default, 125f },
             { EWeaponClass.assaultCarbine, 125f },
@@ -323,7 +327,7 @@ namespace SAIN.Preset.GlobalSettings
 
         [JsonIgnore]
         [Hidden]
-        public static readonly Dictionary<EWeaponClass, float> EngagementDistanceDefaults = new Dictionary<EWeaponClass, float>()
+        public static readonly Dictionary<EWeaponClass, float> EngagementDistanceDefaults = new()
         {
             { EWeaponClass.Default, 125f },
             { EWeaponClass.assaultCarbine, 125f },

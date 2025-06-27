@@ -12,7 +12,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
         }
 
-        public static readonly List<SAINVaultPoint> GlobalVaultPoints = new List<SAINVaultPoint>();
+        public static readonly List<SAINVaultPoint> GlobalVaultPoints = new();
 
         public void Init()
         {
@@ -40,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private static float DebugTimer = 0;
 
         public SAINVaultPoint CurrentVaultPoint;
-        public List<SAINVaultPoint> VaultPointHistory = new List<SAINVaultPoint>();
+        public List<SAINVaultPoint> VaultPointHistory = new();
 
         public bool FindVaultPoint(NavMeshPath path, out SAINVaultPoint vaultPoint)
         {

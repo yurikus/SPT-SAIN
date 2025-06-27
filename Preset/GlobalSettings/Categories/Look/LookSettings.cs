@@ -1,9 +1,4 @@
-﻿using RootMotion.FinalIK;
-using SAIN.Attributes;
-using SAIN.Helpers;
-using System.Threading.Tasks;
-using System;
-using UnityEngine.UIElements.Experimental;
+﻿using SAIN.Attributes;
 using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings
@@ -12,27 +7,27 @@ namespace SAIN.Preset.GlobalSettings
     {
         [Category("Core Settings")]
         [Name("Vision Speed Settings")]
-        public VisionSpeedSettings VisionSpeed = new VisionSpeedSettings();
+        public VisionSpeedSettings VisionSpeed = new();
 
         [Category("Core Settings")]
         [Name("Vision Distance Settings")]
-        public VisionDistanceSettings VisionDistance = new VisionDistanceSettings();
+        public VisionDistanceSettings VisionDistance = new();
 
         [Category("Core Settings")]
         [Name("Time Settings")]
-        public TimeSettings Time = new TimeSettings();
+        public TimeSettings Time = new();
 
         [Category("Core Settings")]
         [Name("Flashlights and NVGs Settings")]
-        public LightNVGSettings Light = new LightNVGSettings();
+        public LightNVGSettings Light = new();
 
         [Category("Extra")]
         [Name("Not Looking At Bot Settings")]
-        public NotLookingSettings NotLooking = new NotLookingSettings();
+        public NotLookingSettings NotLooking = new();
 
         [Category("Extra")]
         [Name("No Bush ESP")]
-        public NoBushESPSettings NoBushESP = new NoBushESPSettings();
+        public NoBushESPSettings NoBushESP = new();
 
         public override void Init(List<ISAINSettings> list)
         {

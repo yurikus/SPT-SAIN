@@ -4,7 +4,6 @@ using EFT;
 using EFT.Interactive;
 
 using HarmonyLib;
-using SAIN;
 using System;
 using System.Reflection;
 
@@ -97,7 +96,7 @@ namespace LootingBots
             if (_ForceBotToScanLootMethod == null)
                 return false;
 
-            return (bool)_ForceBotToScanLootMethod.Invoke(null, new object[] { botOwner });
+            return (bool)_ForceBotToScanLootMethod.Invoke(null, [botOwner]);
         }
 
         /**
@@ -111,7 +110,7 @@ namespace LootingBots
                 return false;
 
             return (bool)
-                _PreventBotFromLootingMethod.Invoke(null, new object[] { botOwner, duration });
+                _PreventBotFromLootingMethod.Invoke(null, [botOwner, duration]);
         }
 
         /**
@@ -125,7 +124,7 @@ namespace LootingBots
                 return false;
 
             return (bool)
-                _CheckIfInventoryFullMethod.Invoke(null, new object[] { botOwner });
+                _CheckIfInventoryFullMethod.Invoke(null, [botOwner]);
         }
 
         /**
@@ -141,7 +140,7 @@ namespace LootingBots
             }
 
             return (float)
-                _GetNetLootValueMethod.Invoke(null, new object[] { botOwner });
+                _GetNetLootValueMethod.Invoke(null, [botOwner]);
         }
 
         /**
@@ -155,7 +154,7 @@ namespace LootingBots
                 return 0f;
 
             return (float)
-                _GetItemPriceMethod.Invoke(null, new object[] { item });
+                _GetItemPriceMethod.Invoke(null, [item]);
         }
     }
 }

@@ -17,17 +17,17 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotLight), "UpdateLightEnable");
+            return AccessTools.Method(typeof(BotLight), nameof(BotLight.UpdateLightEnable));
         }
 
         [PatchPrefix]
         public static bool PatchPrefix(
-            BotOwner ___botOwner_0, 
-            float curLightDist, 
-            ref float __result, 
-            bool ____haveLight, 
-            ref float ____curLightDist, 
-            ref bool ____canUseNow, 
+            BotOwner ___botOwner_0,
+            float curLightDist,
+            ref float __result,
+            bool ____haveLight,
+            ref float ____curLightDist,
+            ref bool ____canUseNow,
             BotLight __instance)
         {
             __result = curLightDist;
@@ -94,7 +94,7 @@ namespace SAIN.Patches.Vision
                     Logger.LogError($"Player Component is null, cannot check if bot has flashlight on!");
                     return false;
                 }
-                if (playerComponent.Flashlight.WhiteLight || 
+                if (playerComponent.Flashlight.WhiteLight ||
                     (___botOwner_0.NightVision.UsingNow && playerComponent.Flashlight.IRLight))
                 {
                     float min = ___botOwner_0.Settings.FileSettings.Look.VISIBLE_DISNACE_WITH_LIGHT;
@@ -110,7 +110,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotLight), "method_0");
+            return AccessTools.Method(typeof(BotLight), nameof(BotLight.method_0));
         }
 
         [PatchPrefix]
@@ -135,7 +135,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotNightVisionData), "method_0");
+            return AccessTools.Method(typeof(BotNightVisionData), nameof(BotNightVisionData.method_0));
         }
 
         [PatchPrefix]
@@ -178,14 +178,13 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), "UpdatePartsByPriority");
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_1));
         }
 
         [PatchPrefix]
         public static bool PatchPrefix(EnemyInfo __instance)
         {
-            bool isAI = __instance?.Person?.IsAI == true;
-            bool visible = __instance.IsVisible;
+            bool isAI = __instance.Person?.IsAI == true;
 
             if (isAI)
             {
@@ -200,7 +199,7 @@ namespace SAIN.Patches.Vision
                 return false;
             }
 
-            if (!isAI && 
+            if (!isAI &&
                 SAINEnableClass.GetSAIN(__instance.Owner, out BotComponent botComponent))
             {
                 Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
@@ -211,8 +210,8 @@ namespace SAIN.Patches.Vision
                         __instance.SetCloseParts();
                         return false;
                     }
-                    if ((enemy.Status.ShotAtMeRecently ||
-                        enemy.Status.PositionalFlareEnabled))
+                    if (enemy.Status.ShotAtMeRecently ||
+                        enemy.Status.PositionalFlareEnabled)
                     {
                         __instance.SetCloseParts();
                         return false;
@@ -228,13 +227,13 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(LookSensor), "CheckAllEnemies");
+            return AccessTools.Method(typeof(LookSensor), nameof(LookSensor.CheckAllEnemies));
         }
 
         [PatchPrefix]
-        public static bool Patch(BotOwner ____botOwner)
+        public static bool Patch(LookSensor __instance)
         {
-            return SAINEnableClass.isBotExcluded(____botOwner);
+            return SAINEnableClass.IsBotExcluded(__instance._botOwner);
         }
     }
 
@@ -242,7 +241,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotGlobalLookData), "Update");
+            return AccessTools.Method(typeof(BotGlobalLookData), nameof(BotGlobalLookData.Update));
         }
 
         [PatchPostfix]
@@ -256,59 +255,23 @@ namespace SAIN.Patches.Vision
 
     public class WeatherTimeVisibleDistancePatch : ModulePatch
     {
-        private static PropertyInfo _clearVisibleDistProperty;
-        private static PropertyInfo _visibleDistProperty;
-        private static PropertyInfo _HourServerProperty;
-
         protected override MethodBase GetTargetMethod()
         {
-            _clearVisibleDistProperty = typeof(LookSensor).GetProperty("ClearVisibleDist");
-            _visibleDistProperty = typeof(LookSensor).GetProperty("VisibleDist");
-            _HourServerProperty = typeof(LookSensor).GetProperty("HourServer");
-
-            return AccessTools.Method(typeof(LookSensor), "method_2");
+            return AccessTools.Method(typeof(LookSensor), nameof(LookSensor.method_2));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(ref BotOwner ____botOwner, ref float ____nextUpdateVisibleDist)
+        public static bool PatchPrefix(BotOwner ____botOwner, ref float ____nextUpdateVisibleDist)
         {
             if (____nextUpdateVisibleDist < Time.time)
             {
-                float timeMod = 1f;
-                float weatherMod = 1f;
-
-                // Checks to make sure a date and time is present
-                if (____botOwner.GameDateTime != null)
+                if (SAINEnableClass.IsBotExcluded(____botOwner))
                 {
-                    DateTime dateTime = SAINBotController.Instance.TimeVision.GameDateTime;
-                    timeMod = SAINBotController.Instance.TimeVision.TimeVisionDistanceModifier;
-                    // Modify the Rounding of the "HourServer" property to the hour from the DateTime object
-                    _HourServerProperty.SetValue(____botOwner.LookSensor, (int)((short)dateTime.Hour));
+                    return true;
                 }
-                if (SAINBotController.Instance != null)
-                {
-                    weatherMod = SAINBotController.Instance.WeatherVision.VisionDistanceModifier;
-                    weatherMod = Mathf.Clamp(weatherMod, 0.33f, 1f);
-                }
-
-                float currentVisionDistance = ____botOwner.Settings.Current.CurrentVisibleDistance;
-
-                // Sets a minimum cap based on weather conditions to avoid bots having too low of a vision Distance while at peace in bad weather
-                float currentVisionDistanceCapped = Mathf.Clamp(currentVisionDistance * weatherMod, 80f, currentVisionDistance);
-
-                // Applies SeenTime Modifier to the final vision Distance results
-                float finalVisionDistance = currentVisionDistanceCapped * timeMod;
-
-                _clearVisibleDistProperty.SetValue(____botOwner.LookSensor, finalVisionDistance);
-
-                finalVisionDistance = ____botOwner.NightVision.UpdateVision(finalVisionDistance);
-                finalVisionDistance = ____botOwner.BotLight.UpdateLightEnable(finalVisionDistance);
-                _visibleDistProperty.SetValue(____botOwner.LookSensor, finalVisionDistance);
-
-                ____nextUpdateVisibleDist = Time.time + (____botOwner.FlashGrenade.IsFlashed ? 3 : 20);
+                ____nextUpdateVisibleDist = float.MaxValue;
+                return false;
             }
-            // Not sure what this does, but its new, so adding it here since this patch replaces the old.
-            ____botOwner.BotLight.UpdateStrope();
             return false;
         }
     }
@@ -317,7 +280,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BotOwner)?.GetMethod("IsEnemyLookingAtMe", BindingFlags.Instance | BindingFlags.Public, null, new[] { typeof(IPlayer) }, null);
+            return typeof(BotOwner).GetMethod(nameof(BotOwner.IsEnemyLookingAtMe), BindingFlags.Instance | BindingFlags.Public, null, [typeof(IPlayer)], null);
         }
 
         [PatchPrefix]
@@ -332,7 +295,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotLight), "TurnOn");
+            return AccessTools.Method(typeof(BotLight), nameof(BotLight.TurnOn));
         }
 
         [PatchPrefix]
@@ -347,7 +310,7 @@ namespace SAIN.Patches.Vision
             {
                 return true;
             }
-            if (!shallTurnLightOff(___botOwner_0.Profile.Info.Settings.Role))
+            if (!ShallTurnLightOff(___botOwner_0.Profile.Info.Settings.Role))
             {
                 return true;
             }
@@ -355,7 +318,7 @@ namespace SAIN.Patches.Vision
             return false;
         }
 
-        private static bool shallTurnLightOff(WildSpawnType wildSpawnType)
+        private static bool ShallTurnLightOff(WildSpawnType wildSpawnType)
         {
             FlashlightSettings settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight;
             if (EnumValues.WildSpawn.IsScav(wildSpawnType))
@@ -382,53 +345,57 @@ namespace SAIN.Patches.Vision
         }
     }
 
-    public class FlashbangedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotFlashGrenade), "AddBlindEffect");
-        }
-
-        [PatchPrefix]
-        public static bool Patch(float time, Vector3 position, BotOwner ___botOwner_0)
-        {
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out var sain)) {
-                sain.Grenade.BotFlash.BotFlashed(time, position);
-                return false;
-            }
-            return true;
-        }
-    }
-
     public class VisionSpeedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), "method_5");
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_7));
         }
 
         [PatchPostfix]
         public static void PatchPostfix(ref float __result, EnemyInfo __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance?.Owner, out var sain))
+            if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain))
             {
                 Enemy enemy = sain.EnemyController.GetEnemy(__instance.Person.ProfileId, true);
                 if (enemy != null)
                 {
+                    // float old = __result;
                     if (!enemy.Vision.Angles.CanBeSeen)
-                        __result = 696969;
+                        __result = 0;
                     else
-                        __result *= enemy.Vision.GainSightCoef;
+                        __result /= enemy.Vision.GainSightCoef;
                     enemy.Vision.LastGainSightResult = __result;
+                    // Logger.LogInfo($"Vision speed: {old} -> {__result} ({enemy.Vision.GainSightCoef})");
                 }
 
                 float minSpeed = sain.Info.FileSettings.Look.MinimumVisionSpeed;
                 if (minSpeed > 0)
                 {
-                    __result = Mathf.Clamp(__result, minSpeed, float.MaxValue);
+                    __result = Mathf.Min(__result, 1/minSpeed);
                 }
             }
             //__result = Mathf.Clamp(__result, 0.1f, 8888f);
+        }
+    }
+
+    public class WeatherVisionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_8));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(EnemyInfo __instance, ref float __result)
+        {
+            if (SAINEnableClass.IsBotExcluded(__instance.Owner))
+            {
+                return true;
+            }
+            
+            __result = 1f;
+            return false;
         }
     }
 
@@ -436,34 +403,33 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), "CheckVisibility");
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.CheckPartLineOfSight));
         }
 
         [PatchPrefix]
-        public static void PatchPrefix(ref float addVisibility, EnemyInfo __instance)
+        public static void PatchPrefix(ref float addSensorDistance, EnemyInfo __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance?.Owner, out var sain)) {
+            if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain))
+            {
                 Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, true);
-                if (enemy != null) {
-                    if (!enemy.Vision.Angles.CanBeSeen) {
-                        addVisibility = float.MinValue;
+                if (enemy != null)
+                {
+                    if (!enemy.Vision.Angles.CanBeSeen)
+                    {
+                        addSensorDistance = float.MinValue;
                         return;
                     }
-                    addVisibility += enemy.Vision.VisionDistance;
+                    addSensorDistance += enemy.Vision.VisionDistance;
                 }
             }
         }
-
     }
 
     public class CheckFlashlightPatch : ModulePatch
     {
-        private static MethodInfo _UsingLight;
-
         protected override MethodBase GetTargetMethod()
         {
-            _UsingLight = AccessTools.PropertySetter(typeof(GClass551), "UsingLight");
-            return AccessTools.Method(typeof(Player.FirearmController), "SetLightsState");
+            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.SetLightsState));
         }
 
         [PatchPostfix]
@@ -478,7 +444,7 @@ namespace SAIN.Patches.Vision
 
                 if (!flashLight.WhiteLight && !flashLight.Laser)
                 {
-                    _UsingLight.Invoke(____player.AIData, new object[] { false });
+                    (____player.AIData as GClass567).UsingLight = false;
                 }
             }
         }

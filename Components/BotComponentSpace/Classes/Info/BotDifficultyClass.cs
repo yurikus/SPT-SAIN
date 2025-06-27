@@ -1,9 +1,6 @@
-﻿using SAIN.Components;
-using SAIN.Helpers;
+﻿using SAIN.Helpers;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
-using System.Collections;
-using static HBAO_Core;
 
 namespace SAIN.SAINComponent.Classes
 {
@@ -67,7 +64,8 @@ namespace SAIN.SAINComponent.Classes
                 personalitySettings.AggressionCoef;
 
             var locationSettings = preset.GlobalSettings.Location.Current();
-            if (locationSettings == null) {
+            if (locationSettings == null)
+            {
                 return;
             }
 
@@ -117,7 +115,8 @@ namespace SAIN.SAINComponent.Classes
         private void applyLocation(SAINPresetClass preset)
         {
             var locationSettings = preset.GlobalSettings.Location.Current();
-            if (locationSettings == null) {
+            if (locationSettings == null)
+            {
                 return;
             }
             var mods = LocationDifficultyModifiers.Modifiers;

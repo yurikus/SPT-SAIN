@@ -53,8 +53,8 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         private CalcDistanceAndNormalJob _distanceJob;
         private JobHandle _partDistanceJobHandle;
         private CalcDistanceJob _partDistanceJob;
-        private readonly List<PlayerComponent> _players = new List<PlayerComponent>();
-        private static readonly EBodyPart[] _bodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.LeftArm, EBodyPart.RightArm, EBodyPart.LeftLeg, EBodyPart.RightLeg };
+        private readonly List<PlayerComponent> _players = new();
+        private static readonly EBodyPart[] _bodyParts = [EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.LeftArm, EBodyPart.RightArm, EBodyPart.LeftLeg, EBodyPart.RightLeg];
 
         public PlayerDistancesJob(SAINBotController botController) : base(botController)
         {
@@ -64,19 +64,23 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         private IEnumerator calcDistancesLoop()
         {
             yield return null;
-            while (true) {
+            while (true)
+            {
                 var gameWorld = GameWorldComponent.Instance;
-                if (gameWorld == null) {
+                if (gameWorld == null)
+                {
                     yield return null;
                     continue;
                 }
                 var players = gameWorld.PlayerTracker?.AlivePlayers;
-                if (players == null || players.Count <= 1) {
+                if (players == null || players.Count <= 1)
+                {
                     yield return null;
                     continue;
                 }
 
-                if (BotController?.BotGame?.Status == EFT.GameStatus.Stopping) {
+                if (BotController?.BotGame?.Status == EFT.GameStatus.Stopping)
+                {
                     yield return null;
                     continue;
                 }
@@ -87,7 +91,8 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
 
                 var directions = getDirections(_players, playerCount);
                 int total = directions.Length;
-                _distanceJob = new CalcDistanceAndNormalJob {
+                _distanceJob = new CalcDistanceAndNormalJob
+                {
                     directions = directions,
                     distances = new NativeArray<float>(total, Allocator.TempJob),
                     normals = new NativeArray<Vector3>(total, Allocator.TempJob)
@@ -108,7 +113,8 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
                 // check part directions for vision checks
                 var partDirections = getPartDirections(_players, playerCount);
                 int partDirTotal = partDirections.Length;
-                _partDistanceJob = new CalcDistanceJob {
+                _partDistanceJob = new CalcDistanceJob
+                {
                     directions = partDirections,
                     distances = new NativeArray<float>(partDirTotal, Allocator.TempJob)
                 };
@@ -132,13 +138,16 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             int playerCount = players.Count;
 
             int count = 0;
-            for (int i = 0; i < playerCount; i++) {
+            for (int i = 0; i < playerCount; i++)
+            {
                 var player = players[i];
                 var datas = player?.OtherPlayersData.Datas;
 
-                for (int j = 0; j < playerCount; j++) {
+                for (int j = 0; j < playerCount; j++)
+                {
                     var otherPlayer = players[j];
-                    if (otherPlayer != null && datas?.TryGetValue(otherPlayer.ProfileId, out var data) == true) {
+                    if (otherPlayer != null && datas?.TryGetValue(otherPlayer.ProfileId, out var data) == true)
+                    {
                         data.DistanceData.Update(otherPlayer.Position, directions[count], normals[count], distances[count]);
                     }
                     count++;
@@ -154,17 +163,20 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             int partCount = _bodyParts.Length;
 
             int count = 0;
-            for (int i = 0; i < playerCount; i++) {
+            for (int i = 0; i < playerCount; i++)
+            {
                 var player = players[i];
                 var datas = player?.OtherPlayersData.Datas;
 
-                for (int j = 0; j < playerCount; j++) {
+                for (int j = 0; j < playerCount; j++)
+                {
                     var otherPlayer = players[j];
                     OtherPlayerData otherData = null;
                     if (otherPlayer != null)
                         datas?.TryGetValue(otherPlayer.ProfileId, out otherData);
 
-                    for (int b = 0; b < partCount; b++) {
+                    for (int b = 0; b < partCount; b++)
+                    {
                         otherData?.DistanceData.UpdateBodyPart(_bodyParts[b], distances[count]);
                         count++;
                     }
@@ -178,14 +190,17 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             int partCount = _bodyParts.Length;
             int totalChecks = playerCount * playerCount * partCount;
             var directions = new NativeArray<Vector3>(totalChecks, Allocator.TempJob);
-            for (int i = 0; i < playerCount; i++) {
+            for (int i = 0; i < playerCount; i++)
+            {
                 var player = players[i];
                 Vector3 eyePosition = player != null ? player.Transform.EyePosition : Vector3.zero;
 
-                for (int j = 0; j < playerCount; j++) {
+                for (int j = 0; j < playerCount; j++)
+                {
                     var otherPlayer = players[j];
                     var parts = otherPlayer?.BodyParts.Parts;
-                    for (int b = 0; b < partCount; b++) {
+                    for (int b = 0; b < partCount; b++)
+                    {
                         EBodyPart part = _bodyParts[b];
                         Vector3 partDir = parts != null ? parts[part].Transform.position - eyePosition : Vector3.zero;
                         directions[count] = partDir;
@@ -201,11 +216,13 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             int count = 0;
             int totalChecks = playerCount * playerCount;
             var directions = new NativeArray<Vector3>(totalChecks, Allocator.TempJob);
-            for (int i = 0; i < playerCount; i++) {
+            for (int i = 0; i < playerCount; i++)
+            {
                 var player = players[i];
                 Vector3 playerPos = player != null ? player.Position : Vector3.zero;
 
-                for (int j = 0; j < playerCount; j++) {
+                for (int j = 0; j < playerCount; j++)
+                {
                     var otherPlayer = players[j];
                     Vector3 otherPlayerPos = otherPlayer != null ? otherPlayer.Position : Vector3.zero;
                     Vector3 direction = otherPlayerPos - playerPos;

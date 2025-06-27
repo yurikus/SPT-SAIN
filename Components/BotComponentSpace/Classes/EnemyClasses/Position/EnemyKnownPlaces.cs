@@ -1,6 +1,6 @@
 ﻿using EFT;
-using SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
 using SAIN.Helpers;
+using SAIN.Models.Structs;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -116,7 +116,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             updatePlaces();
             if (Enemy.EnemyKnown)
             {
-                //checkIfArrived(); 
+                //checkIfArrived();
                 checkSearched();
 
                 if (Enemy.IsCurrentEnemy)
@@ -160,7 +160,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             TimeLastKnownUpdated = -1000f;
         }
 
-
         private void createDebug()
         {
             if (SAINPlugin.DebugMode)
@@ -171,6 +170,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     if (debugLastKnown == null)
                     {
                         debugLastKnown = DebugGizmos.CreateLabel(lastKnown.Position, string.Empty);
+						_guiObjects.Add(lastKnown, debugLastKnown);
                     }
                     updateDebugString(lastKnown, debugLastKnown);
                 }
@@ -198,7 +198,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void tryTalk()
         {
-            if (_nextTalkClearTime < Time.time 
+            if (_nextTalkClearTime < Time.time
                 && Bot.Talk.GroupSay(EFTMath.RandomBool(75) ? EPhraseTrigger.Clear : EPhraseTrigger.LostVisual, null, true, 75))
             {
                 _nextTalkClearTime = Time.time + 10f;
@@ -283,7 +283,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             addPlace(place);
         }
 
-        public EnemyPlace UpdatePersonalHeardPosition(HearingReport report)
+        public EnemyPlace UpdatePersonalHeardPosition(SAINHearingReport report)
         {
             if (Enemy.IsVisible)
             {
@@ -341,9 +341,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 place.OnPositionUpdated -= lastKnownPosUpdated;
                 AllEnemyPlaces.Remove(place);
-                if (LastKnownPlace != null && LastKnownPlace == place) {
+                if (LastKnownPlace != null && LastKnownPlace == place)
+                {
                     LastKnownPlace = null;
                 }
+
+				if (_guiObjects.ContainsKey(place)){
+					DebugGizmos.DestroyLabel(_guiObjects[place]);
+					_guiObjects.Remove(place);
+				}
+				place.Dispose();
             }
         }
 
@@ -391,14 +398,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private readonly PlaceData _placeData;
         private float _nextTalkClearTime;
-        private float _checkArrivedTime;
-        private const float _checkArriveFreq = 0.25f;
-        private const float arrivedReachDistanceSqr = 0.5f;
         private float _nextCheckSearchTime;
-        private float _nextCheckSeenTime;
-        private const float _checkSeenFreq = 0.5f;
         private float _nextSortPlacesTime;
         private GUIObject debugLastKnown;
-        private readonly Dictionary<EnemyPlace, GUIObject> _guiObjects = new Dictionary<EnemyPlace, GUIObject>();
+        private readonly Dictionary<EnemyPlace, GUIObject> _guiObjects = new();
     }
 }

@@ -1,20 +1,9 @@
-﻿using SPT.Reflection.Patching;
-using EFT;
+﻿using EFT;
 using HarmonyLib;
 using SAIN.Components;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes.Decision;
-using SAIN.SAINComponent.Classes.Talk;
-using SAIN.SAINComponent.Classes.WeaponFunction;
-using SAIN.SAINComponent.Classes.Mover;
-using SAIN.SAINComponent.Classes;
-using SAIN.SAINComponent.SubComponents;
-using Comfort.Common;
-using SAIN.Helpers;
-using UnityEngine.UI;
+using SPT.Reflection.Patching;
+using System.Reflection;
 
 namespace SAIN.Patches.Talk
 {
@@ -22,7 +11,7 @@ namespace SAIN.Patches.Talk
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(Player), "ApplyHitDebuff");
+            return AccessTools.Method(typeof(Player), nameof(Player.ApplyHitDebuff));
         }
 
         [PatchPrefix]
@@ -30,7 +19,8 @@ namespace SAIN.Patches.Talk
         {
             if (__instance?.HealthController?.IsAlive == true &&
                 __instance.IsAI &&
-                (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) || damage > 4f)) {
+                (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) || damage > 4f))
+            {
                 __instance.Speaker?.Play(EPhraseTrigger.OnBeingHurt, __instance.HealthStatus, true, null);
             }
         }
@@ -40,19 +30,22 @@ namespace SAIN.Patches.Talk
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(Player), nameof(Player.method_117));
+            return AccessTools.Method(typeof(Player), nameof(Player.method_110));
         }
 
         [PatchPrefix]
         public static void PatchPrefix(Player __instance, EPlayerState nextState)
         {
-            if (nextState != EPlayerState.Jump || !__instance.IsAI) {
+            if (nextState != EPlayerState.Jump || !__instance.IsAI)
+            {
                 return;
             }
 
-            if (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers)) {
+            if (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers))
+            {
                 if (__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftLegDamaged) ||
-                    __instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightLegDamaged)) {
+                    __instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightLegDamaged))
+                {
                     __instance.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false);
                 }
             }
@@ -69,7 +62,8 @@ namespace SAIN.Patches.Talk
         [PatchPrefix]
         public static bool PatchPrefix(Player __instance, EPhraseTrigger phrase, ETagStatus mask, bool aggressive)
         {
-            switch (phrase) {
+            switch (phrase)
+            {
                 case EPhraseTrigger.OnDeath:
                 case EPhraseTrigger.OnBeingHurt:
                 case EPhraseTrigger.OnAgony:
@@ -81,9 +75,11 @@ namespace SAIN.Patches.Talk
                     break;
             }
 
-            if (__instance.IsAI) {
+            if (__instance.IsAI)
+            {
                 if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching ||
-                    SAINPlugin.IsBotExluded(__instance.AIData?.BotOwner)) {
+                    SAINPlugin.IsBotExluded(__instance.AIData?.BotOwner))
+                {
                     SAINBotController.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
                     return true;
                 }
@@ -99,19 +95,22 @@ namespace SAIN.Patches.Talk
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotTalk), "Say");
+            return AccessTools.Method(typeof(BotTalk), nameof(BotTalk.Say));
         }
 
         [PatchPrefix]
         public static bool PatchPrefix(BotOwner ___botOwner_0, EPhraseTrigger type, ETagStatus? additionalMask = null)
         {
-            if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching) {
+            if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching)
+            {
                 return true;
             }
-            if (___botOwner_0?.HealthController?.IsAlive == false) {
+            if (___botOwner_0?.HealthController?.IsAlive == false)
+            {
                 return true;
             }
-            switch (type) {
+            switch (type)
+            {
                 case EPhraseTrigger.OnDeath:
                 case EPhraseTrigger.OnBeingHurt:
                 case EPhraseTrigger.OnAgony:
@@ -121,10 +120,12 @@ namespace SAIN.Patches.Talk
                 default:
                     break;
             }
-            if (!SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent bot)) {
+            if (!SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent bot))
+            {
                 return true;
             }
-            switch (type) {
+            switch (type)
+            {
                 case EPhraseTrigger.HandBroken:
                 case EPhraseTrigger.LegBroken:
                     bot.Talk.GroupSay(type, null, false, 60);
@@ -141,7 +142,7 @@ namespace SAIN.Patches.Talk
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotTalk), "ManualUpdate");
+            return AccessTools.Method(typeof(BotTalk), nameof(BotTalk.ManualUpdate));
         }
 
         [PatchPrefix]

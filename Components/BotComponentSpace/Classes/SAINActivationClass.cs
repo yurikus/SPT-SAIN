@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using SAIN.Helpers.Events;
+using SAIN.Models.Enums;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
@@ -25,22 +26,12 @@ namespace SAIN.SAINComponent.Classes
         public void SetActive(bool botActive)
         {
             BotActiveToggle.CheckToggle(botActive);
-            setCoroutines(botActive);
-            if (!botActive) {
+
+            if (!botActive)
+            {
                 BotStandByToggle.CheckToggle(true);
                 ActiveLayer = ESAINLayer.None;
                 SAINLayersActiveToggle.CheckToggle(false);
-            }
-        }
-
-        private void setCoroutines(bool value)
-        {
-            bool started = Bot.CoroutineManager.CoroutinesStarted;
-            if (value && !started) {
-                Bot.CoroutineManager.StartCoroutines();
-            }
-            else if (!value && started) {
-                Bot.CoroutineManager.StopCoroutines();
             }
         }
 
@@ -80,7 +71,8 @@ namespace SAIN.SAINComponent.Classes
 
             if (!GameEnding &&
                 !BotActive &&
-                Bot.Person.ActivationClass.BotActive) {
+                Bot.Person.ActivationClass.BotActive)
+            {
                 Logger.LogWarning($"Bot not active but should be!");
                 SetActive(true);
             }
@@ -89,13 +81,16 @@ namespace SAIN.SAINComponent.Classes
         private void checkStandBy()
         {
             bool standby = _botInStandby;
-            if (standby && BotActive) {
-                if (Bot.HasEnemy) {
+            if (standby && BotActive)
+            {
+                if (Bot.HasEnemy)
+                {
                     //Logger.LogWarning($"Had to activate bot manually because they were in stand by.");
                     BotOwner.StandBy.Activate();
                     standby = false;
                 }
-                else if (checkAllEnemies()) {
+                else if (checkAllEnemies())
+                {
                     Logger.LogDebug($"[{BotOwner.name}] disabled standby due to enemies being near.");
                     BotOwner.StandBy.Activate();
                     standby = false;
@@ -107,7 +102,8 @@ namespace SAIN.SAINComponent.Classes
 
         private bool checkAllEnemies()
         {
-            if (_nextCheckEnemiesTime > Time.time) {
+            if (_nextCheckEnemiesTime > Time.time)
+            {
                 return false;
             }
             _nextCheckEnemiesTime = Time.time + ACTIVATE_STANDBY_CHECK_FREQ;
@@ -132,14 +128,16 @@ namespace SAIN.SAINComponent.Classes
 
         private void checkSpeedReset()
         {
-            if (SAINLayersActive) {
+            if (SAINLayersActive)
+            {
                 if (_speedReset)
                     _speedReset = false;
 
                 return;
             }
 
-            if (!_speedReset) {
+            if (!_speedReset)
+            {
                 _speedReset = true;
                 BotOwner.SetTargetMoveSpeed(1f);
                 BotOwner.Mover.SetPose(1f);

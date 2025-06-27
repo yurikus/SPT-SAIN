@@ -16,12 +16,12 @@ namespace SAIN.Plugin
 
         public static void Add(string name, object value)
         {
-            addConfigValue(name, value);
-            clearAndCreateStringBuilder();
+            AddConfigValue(name, value);
+            ClearAndCreateStringBuilder();
             SettingChangedThisFrame = true;
         }
 
-        private static void addConfigValue(string name, object value)
+        private static void AddConfigValue(string name, object value)
         {
             if (EditedConfigValues.ContainsKey(name))
             {
@@ -34,7 +34,7 @@ namespace SAIN.Plugin
         public static void Remove(ConfigInfoClass info)
         {
             EditedConfigValues.Remove(info.Name);
-            clearAndCreateStringBuilder();
+            ClearAndCreateStringBuilder();
         }
 
         public static bool WasEdited(ConfigInfoClass info)
@@ -57,7 +57,7 @@ namespace SAIN.Plugin
         private static readonly Type _float = typeof(float);
         private static readonly Type _bool = typeof(bool);
 
-        private static void addToStringBuilder(string name, object value)
+        private static void AddToStringBuilder(string name, object value)
         {
             string _string;
             Type type = value.GetType();
@@ -73,22 +73,22 @@ namespace SAIN.Plugin
             _unsavedValues = _stringBuilder.ToString();
         }
 
-        private static void clearAndCreateStringBuilder()
+        private static void ClearAndCreateStringBuilder()
         {
             _stringBuilder.Clear();
             _stringBuilder.AppendLine($"Unsaved Config Options: Count: [{EditedConfigValues.Count}]");
             foreach (var item in EditedConfigValues)
             {
-                addToStringBuilder(item.Key, item.Value);
+                AddToStringBuilder(item.Key, item.Value);
             }
             _unsavedValues = _stringBuilder.ToString();
         }
 
         private static string _unsavedValues = string.Empty;
-        private static readonly StringBuilder _stringBuilder = new StringBuilder();
+        private static readonly StringBuilder _stringBuilder = new();
 
         public static bool UnsavedChanges => EditedConfigValues.Count > 0;
 
-        public static readonly Dictionary<string, object> EditedConfigValues = new Dictionary<string, object>();
+        public static readonly Dictionary<string, object> EditedConfigValues = new();
     }
 }

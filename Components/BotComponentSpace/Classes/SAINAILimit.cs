@@ -1,6 +1,5 @@
 ﻿using SAIN.Components;
 using SAIN.Helpers;
-using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using System;
@@ -44,7 +43,7 @@ namespace SAIN.SAINComponent.Classes
             {
                 _checkDistanceTime = Time.time + _frequency * UnityEngine.Random.Range(0.9f, 1.1f);
                 var gameWorld = GameWorldComponent.Instance;
-                if (gameWorld != null && 
+                if (gameWorld != null &&
                     gameWorld.PlayerTracker.FindClosestHumanPlayer(out float closestPlayerSqrMag, Bot.Position) != null)
                 {
                     CurrentAILimit = checkDistances(closestPlayerSqrMag);

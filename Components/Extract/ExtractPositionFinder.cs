@@ -1,21 +1,12 @@
-﻿using Comfort.Common;
-using EFT;
-using EFT.Game.Spawning;
-using EFT.Interactive;
-using EFT.UI;
+﻿using EFT.Interactive;
 using HarmonyLib;
 using SAIN.Helpers;
-using SAIN.SAINComponent;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.AI;
-using static HairRenderer;
 
 namespace SAIN.Components.Extract
 {
@@ -57,9 +48,9 @@ namespace SAIN.Components.Extract
         private static int maxPathEndpoints = 2;
 
         private ExfiltrationPoint ex = null;
-        private readonly List<Vector3> pathEndpoints = new List<Vector3>();
-        private readonly List<Vector3> sortedNavMeshPoints = new List<Vector3>();
-        private readonly Stack<Vector3> navMeshTestPoints = new Stack<Vector3>();
+        private readonly List<Vector3> pathEndpoints = new();
+        private readonly List<Vector3> sortedNavMeshPoints = new();
+        private readonly Stack<Vector3> navMeshTestPoints = new();
 
         public IReadOnlyCollection<Vector3> PathEndpoints => pathEndpoints.AsReadOnly();
 
@@ -256,7 +247,7 @@ namespace SAIN.Components.Extract
         private IList<Vector3> GetColliderTestPointsOnNavMesh(IEnumerable<Vector3> colliderTestPoints, float searchRadius)
         {
             // For each point in the 3D mesh, try to find a point on the NavMesh within a certain radius
-            List<Vector3> navMeshPoints = new List<Vector3>();
+            List<Vector3> navMeshPoints = new();
             foreach (Vector3 testPoint in colliderTestPoints)
             {
                 Vector3? navMeshPoint = NavMeshHelpers.GetNearbyNavMeshPoint(testPoint, searchRadius);

@@ -1,9 +1,6 @@
-﻿using EFT;
-using SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
+﻿using SAIN.Models.Structs;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -94,7 +91,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _timeLastUpdated = Time.time;
         }
 
-        public EnemyPlace(PlaceData placeData, HearingReport report)
+        public EnemyPlace(PlaceData placeData, SAINHearingReport report)
         {
             PlaceData = placeData;
             VisibleSourceOnLastUpdate = placeData.Enemy.InLineOfSight;

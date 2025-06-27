@@ -5,7 +5,7 @@ namespace SAIN.Editor
 {
     public static class SettingsContainers
     {
-        private static readonly Dictionary<Type, SettingsContainer> Containers = new Dictionary<Type, SettingsContainer>();
+        private static readonly Dictionary<Type, SettingsContainer> Containers = new();
 
         public static SettingsContainer GetContainer(Type containerType, string name = null)
         {

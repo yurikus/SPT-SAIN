@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SAIN.Editor.Util
 {
@@ -36,11 +35,13 @@ namespace SAIN.Editor.Util
         private static void checkMouseEvents()
         {
             Vector2 mousePos = Event.current.mousePosition;
-            if ((mousePos - _lastMousePos).sqrMagnitude > 0.001f) {
+            if ((mousePos - _lastMousePos).sqrMagnitude > 0.001f)
+            {
                 _mouseMoveTime = Time.time + MOUSE_FUNC_TIME;
             }
             _lastMousePos = mousePos;
-            if (Event.current.type == EventType.MouseDown && Event.current.button == 1) {
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 1)
+            {
                 Sounds.PlaySound(EFT.UI.EUISoundType.ButtonBottomBarClick);
             }
         }
@@ -61,10 +62,12 @@ namespace SAIN.Editor.Util
 
         public static bool IsNearMouse(Rect rect, float widthDistance = 10f, float heightDistance = 10f)
         {
-            if (rect.Contains(MousePos)) {
+            if (rect.Contains(MousePos))
+            {
                 return true;
             }
-            Rect rect2 = new Rect(0f, 0f, widthDistance * 2, heightDistance * 2) {
+            Rect rect2 = new(0f, 0f, widthDistance * 2, heightDistance * 2)
+            {
                 center = MousePos
             };
             return rect2.Overlaps(rect);
@@ -75,11 +78,11 @@ namespace SAIN.Editor.Util
 
     public static class MouseDragClass
     {
-        private static Rect FullScreen = new Rect(0, 0, Screen.width, Screen.height);
+        private static Rect FullScreen = new(0, 0, Screen.width, Screen.height);
         private static GUIStyle BlankStyle;
 
         public static Rect DragRectangle = Rect.zero;
-        private static Rect DrawPosition = new Rect(193, 148, 249 - 193, 148 - 104);
+        private static Rect DrawPosition = new(193, 148, 249 - 193, 148 - 104);
         public static Color color = Color.white;
         private static readonly Vector3[] mousePositions = new Vector3[2];
         private static readonly Vector2[] mousePositions2D = new Vector2[2];
@@ -87,10 +90,12 @@ namespace SAIN.Editor.Util
 
         public static void OnGUI()
         {
-            if (BlankStyle == null) {
+            if (BlankStyle == null)
+            {
                 BlankStyle = new GUIStyle(GUI.skin.window);
             }
-            if (SAINEditor.DisplayingWindow && drawRect) {
+            if (SAINEditor.DisplayingWindow && drawRect)
+            {
                 FullScreen = GUI.Window(999, FullScreen, EmptyWindowFunc, "", BlankStyle);
             }
         }

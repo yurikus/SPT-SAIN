@@ -14,7 +14,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
         }
 
-        public readonly List<Vector3> PlacesToShootMe = new List<Vector3>();
+        public readonly List<Vector3> PlacesToShootMe = new();
 
         public sealed class FindPlacesToShootParameters
         {

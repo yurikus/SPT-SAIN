@@ -1,9 +1,4 @@
-﻿using EFT;
-using Newtonsoft.Json;
-using SAIN.Attributes;
-using SAIN.Helpers;
-using SAIN.Preset.GlobalSettings.Categories;
-using System.Collections.Generic;
+﻿using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings
 {

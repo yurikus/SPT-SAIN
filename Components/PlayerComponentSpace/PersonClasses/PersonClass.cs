@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.SAINComponent;
-using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace.PersonClasses
 {

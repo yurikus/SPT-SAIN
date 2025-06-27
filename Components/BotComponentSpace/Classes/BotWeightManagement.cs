@@ -1,9 +1,8 @@
 ﻿using EFT.InventoryLogic;
 using HarmonyLib;
 using SAIN.Preset.GlobalSettings;
-using System;
 using System.Collections.Generic;
-using FloatFunc = GClass817<float>;
+using FloatFunc = GClass828<float>;
 
 namespace SAIN.SAINComponent.Classes
 {
@@ -18,8 +17,8 @@ namespace SAIN.SAINComponent.Classes
             if (GlobalSettingsClass.Instance.General.BotWeightEffects)
             {
                 getSlots();
-				Traverse.Create(Person.Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);
-				Person.Player.Physical.EncumberDisabled = false;
+                Traverse.Create(Person.Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);
+                Person.Player.Physical.EncumberDisabled = false;
             }
         }
 
@@ -43,15 +42,15 @@ namespace SAIN.SAINComponent.Classes
         private float getBotTotalWeight()
         {
             float result = InventoryEquipment.smethod_1(_slots);
-			_slots.Clear();
+            _slots.Clear();
             // Logger.LogWarning(result);
             return result;
         }
 
-        private readonly List<Slot> _slots = new List<Slot>();
+        private readonly List<Slot> _slots = new();
 
-        public static readonly EquipmentSlot[] _botEquipmentSlots = new EquipmentSlot[]
-        {
+        public static readonly EquipmentSlot[] _botEquipmentSlots =
+        [
             EquipmentSlot.Backpack,
             EquipmentSlot.TacticalVest,
             EquipmentSlot.ArmorVest,
@@ -63,6 +62,6 @@ namespace SAIN.SAINComponent.Classes
             EquipmentSlot.SecondPrimaryWeapon,
             EquipmentSlot.Holster,
             EquipmentSlot.Pockets,
-        };
+        ];
     }
 }

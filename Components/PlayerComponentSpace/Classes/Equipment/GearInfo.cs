@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public IEnumerator GearUpdateLoop()
         {
-            WaitForSeconds wait = new WaitForSeconds(GEAR_UPDATE_FREQ);
+            WaitForSeconds wait = new(GEAR_UPDATE_FREQ);
             while (true)
             {
                 HasEarPiece = GetItem(EquipmentSlot.Earpiece) != null;
@@ -143,7 +143,7 @@ namespace SAIN.SAINComponent.Classes.Info
             return findMaxAC(item);
         }
 
-        private readonly List<FaceShieldComponent> _faceShieldComponents = new List<FaceShieldComponent>();
-        private readonly List<ArmorComponent> _armorList = new List<ArmorComponent>();
+        private readonly List<FaceShieldComponent> _faceShieldComponents = new();
+        private readonly List<ArmorComponent> _armorList = new();
     }
 }

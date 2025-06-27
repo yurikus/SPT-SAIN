@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using SAIN.Attributes;
-
-namespace SAIN.Preset.GearStealthValues
+﻿namespace SAIN.Preset.GearStealthValues
 {
     public class ItemStealthValue
     {

@@ -5,7 +5,7 @@ namespace SAIN.Components
 {
     public class BotDoorTrigger : MonoBehaviour
     {
-        private void Awake()
+        public void Awake()
         {
             SphereCollider = this.gameObject.AddComponent<SphereCollider>();
             SphereCollider.isTrigger = true;
@@ -14,7 +14,7 @@ namespace SAIN.Components
             _doorHandler = GameWorldComponent.Instance.Doors;
         }
 
-        private void Update()
+        public void Update()
         {
         }
 
@@ -27,7 +27,7 @@ namespace SAIN.Components
 
         private Door _door;
 
-        private void OnDestroy()
+        public void OnDestroy()
         {
         }
 
@@ -36,7 +36,8 @@ namespace SAIN.Components
         public void OnTriggerEnter(Collider other)
         {
             Logger.LogDebug($"Enter: {other.gameObject?.name}");
-            if (_door.DoorState == EDoorState.Shut) {
+            if (_door.DoorState == EDoorState.Shut)
+            {
                 bool shallInvert = shallInvertDoorAngle(_door, other.transform.position);
                 _doorHandler.ChangeDoorState(_door, EDoorState.Open, shallInvert);
                 Logger.LogInfo("open");
@@ -45,9 +46,11 @@ namespace SAIN.Components
 
         public void OnTriggerStay(Collider other)
         {
-            if (_door.DoorState == EDoorState.Open) {
+            if (_door.DoorState == EDoorState.Open)
+            {
                 var colliders = _door.gameObject.GetComponents<Collider>();
-                foreach (var collider in colliders) {
+                foreach (var collider in colliders)
+                {
                     Physics.IgnoreCollision(other, collider, true);
                     //Logger.LogInfo("ignoreCollisions");
                 }
@@ -57,12 +60,14 @@ namespace SAIN.Components
         public void OnTriggerExit(Collider other)
         {
             Logger.LogDebug($"Exit: {other.gameObject?.name}");
-            if (_door.DoorState == EDoorState.Open) {
+            if (_door.DoorState == EDoorState.Open)
+            {
                 _doorHandler.ChangeDoorState(_door, EDoorState.Shut, false);
                 Logger.LogInfo("close");
             }
             var colliders = _door.gameObject.GetComponents<Collider>();
-            foreach (var collider in colliders) {
+            foreach (var collider in colliders)
+            {
                 Physics.IgnoreCollision(other, collider, false);
                 //Logger.LogInfo("resetCollisions");
             }
@@ -70,13 +75,13 @@ namespace SAIN.Components
 
         private bool shallInvertDoorAngle(Door door, Vector3 colliderPosition)
         {
-			var interactionParameters = door.GetInteractionParameters(colliderPosition);
-			if (interactionParameters.AnimationId == (door.DoorState is EDoorState.Locked ? (int)door.DoorKeyOpenInteraction : door.CalculateInteractionIndex(colliderPosition)))
-			{
-				return false;
-			}
-			return true;
-		}
+            var interactionParameters = door.GetInteractionParameters(colliderPosition);
+            if (interactionParameters.AnimationId == (door.DoorState is EDoorState.Locked ? (int)door.DoorKeyOpenInteraction : door.CalculateInteractionIndex(colliderPosition)))
+            {
+                return false;
+            }
+            return true;
+        }
 
         private DoorHandler _doorHandler;
     }

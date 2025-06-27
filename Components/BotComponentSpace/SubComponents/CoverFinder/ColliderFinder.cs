@@ -75,17 +75,17 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         private static float _nextLogTime;
 
-        private static List<LayerMask> _layersToCheck = new List<LayerMask>() 
+        private static List<LayerMask> _layersToCheck = new()
         {
             //LayerMaskClass.HighPolyCollider,
             //LayerMaskClass.TerrainLayer,
-            LayerMaskClass.HighPolyWithTerrainMask, 
+            LayerMaskClass.HighPolyWithTerrainMask,
             LayerMaskClass.LowPolyColliderLayerMask,
         };
 
         private int getCollidersInBox(float x, float y, float z, Vector3 boxOrigin, Collider[] array, LayerMask colliderMask)
         {
-            Vector3 box = new Vector3(x, y, z);
+            Vector3 box = new(x, y, z);
             int rawHits = Physics.OverlapBoxNonAlloc(boxOrigin, box, array, _orientation, colliderMask);
             return FilterColliders(array, rawHits);
         }
@@ -103,7 +103,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         public int HitCount;
 
-        private List<GameObject> debugObjects = new List<GameObject>();
+        private List<GameObject> debugObjects = new();
 
         private void clearColliders(Collider[] array)
         {
@@ -145,8 +145,8 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         public void UpdateDebugColliders(Collider[] array)
         {
-            if (SAINPlugin.DebugMode 
-                && SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder 
+            if (SAINPlugin.DebugMode
+                && SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder
                 && CoverFinderComponent.Bot.Cover.CurrentCoverFinderState == Classes.CoverFinderState.on)
             {
                 foreach (Collider collider in array)
@@ -171,7 +171,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                     }
                 }
             }
-            else if (debugGUIObjects.Count > 0 
+            else if (debugGUIObjects.Count > 0
                 || debugColliders.Count > 0)
             {
                 foreach (var obj in debugGUIObjects)
@@ -187,8 +187,8 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
         }
 
-        private static Dictionary<Collider, GUIObject> debugGUIObjects = new Dictionary<Collider, GUIObject>();
-        private static Dictionary<Collider, GameObject> debugColliders = new Dictionary<Collider, GameObject>();
+        private static Dictionary<Collider, GUIObject> debugGUIObjects = new();
+        private static Dictionary<Collider, GameObject> debugColliders = new();
 
         public int ColliderArrayBotDistComparer(Collider A, Collider B)
         {

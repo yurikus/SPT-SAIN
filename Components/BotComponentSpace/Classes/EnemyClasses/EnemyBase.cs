@@ -9,7 +9,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public abstract class EnemyBase : BotBase
     {
-        public EnemyBase(Enemy enemy) : base (enemy.Bot)
+        public EnemyBase(Enemy enemy) : base(enemy.Bot)
         {
             Enemy = enemy;
             enemy.OnEnemyDisposed += dispose;
@@ -24,7 +24,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void SubscribeToDispose(Action disposeFunc)
         {
-            if (disposeFunc == null) {
+            if (disposeFunc == null)
+            {
                 Logger.LogError("Dispose Func is null!");
                 return;
             }

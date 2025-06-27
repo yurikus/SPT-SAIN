@@ -1,5 +1,5 @@
-﻿using EFT;
-using SAIN.Helpers;
+﻿using SAIN.Helpers;
+using SAIN.Models.Enums;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -8,20 +8,25 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class SAINEnemyPath : EnemyBase, IBotEnemyClass
     {
-        public EPathDistance EPathDistance {
+        public EPathDistance EPathDistance
+        {
             get
             {
                 float distance = PathDistance;
-                if (distance <= ENEMY_DISTANCE_VERYCLOSE) {
+                if (distance <= ENEMY_DISTANCE_VERYCLOSE)
+                {
                     return EPathDistance.VeryClose;
                 }
-                if (distance <= ENEMY_DISTANCE_CLOSE) {
+                if (distance <= ENEMY_DISTANCE_CLOSE)
+                {
                     return EPathDistance.Close;
                 }
-                if (distance <= ENEMY_DISTANCE_MID) {
+                if (distance <= ENEMY_DISTANCE_MID)
+                {
                     return EPathDistance.Mid;
                 }
-                if (distance <= ENEMY_DISTANCE_FAR) {
+                if (distance <= ENEMY_DISTANCE_FAR)
+                {
                     return EPathDistance.Far;
                 }
                 return EPathDistance.VeryFar;
@@ -37,15 +42,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public EnemyCornerDictionary EnemyCorners { get; private set; }
 
-        public bool CanSeeLastCornerToEnemy {
+        public bool CanSeeLastCornerToEnemy
+        {
             get
             {
                 var last = EnemyCorners.EyeLevelPosition(ECornerType.Last);
-                if (last == null) {
+                if (last == null)
+                {
                     return false;
                 }
 
-                if (_nextCheckLast > Time.time) {
+                if (_nextCheckLast > Time.time)
+                {
                     return _canSeeLast;
                 }
                 _nextCheckLast = Time.time + 0.2f;
@@ -72,7 +80,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void Init()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            _blindCornerFinder.Init();
         }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
@@ -82,15 +89,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void toggleCoroutine(bool value)
         {
-            switch (value) {
+            switch (value)
+            {
                 case true:
-                    if (_calcPathCoroutine == null) {
+                    if (_calcPathCoroutine == null)
+                    {
                         _calcPathCoroutine = Bot.StartCoroutine(calcPathLoop());
                     }
                     break;
 
                 case false:
-                    if (_calcPathCoroutine != null) {
+                    if (_calcPathCoroutine != null)
+                    {
                         Bot.StopCoroutine(_calcPathCoroutine);
                         _calcPathCoroutine = null;
                     }
@@ -104,7 +114,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void Update()
         {
             if (_calcPathCoroutine == null &&
-                Enemy.EnemyKnown) {
+                Enemy.EnemyKnown)
+            {
                 Logger.LogWarning($"Enemy Known but coroutine was not started!");
                 toggleCoroutine(true);
             }
@@ -118,9 +129,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private IEnumerator calcPathLoop()
         {
-            while (true) {
+            while (true)
+            {
                 float timeAdd = calcDelayOnDistance();
-                if (_calcPathTime + timeAdd > Time.time) {
+                if (_calcPathTime + timeAdd > Time.time)
+                {
                     yield return null;
                     continue;
                 }
@@ -128,7 +141,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 _calcPathTime = Time.time;
 
                 bool isCurrentEnemy = Enemy.IsCurrentEnemy;
-                if (!isCurrentEnemy && !isEnemyInRange()) {
+                if (!isCurrentEnemy && !isEnemyInRange())
+                {
                     yield return null;
                     continue;
                 }
@@ -138,7 +152,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Vector3 botPosition = Bot.Position;
 
                 // Did we already check the current enemy position and has the bot not moved? dont recalc path then
-                if (!checkPositionsChanged(botPosition, enemyPosition)) {
+                if (!checkPositionsChanged(botPosition, enemyPosition))
+                {
                     yield return null;
                     continue;
                 }
@@ -152,7 +167,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 yield return null;
 
-                switch (PathToEnemyStatus) {
+                switch (PathToEnemyStatus)
+                {
                     case NavMeshPathStatus.PathInvalid:
                         EnemyCorners.Clear();
                         break;
@@ -161,7 +177,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     case NavMeshPathStatus.PathComplete:
                         findCorners(enemyPosition, PathToEnemyStatus, corners);
                         if (isCurrentEnemy)
-                            yield return _blindCornerFinder.FindBlindCorner2(corners, enemyPosition);
+                            yield return _blindCornerFinder.FindBlindCorner(corners, enemyPosition);
                         else
                             EnemyCorners.Remove(ECornerType.Blind);
 
@@ -209,7 +225,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (searchingForEnemy)
                 maxDelay *= ACTIVE_SEARCH_COEF;
 
-            if (distance > MAX_FREQ_CALCPATH_DISTANCE) {
+            if (distance > MAX_FREQ_CALCPATH_DISTANCE)
+            {
                 return maxDelay;
             }
 
@@ -221,7 +238,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (searchingForEnemy)
                 minDelay *= ACTIVE_SEARCH_COEF;
 
-            if (distance < MIN_FREQ_CALCPATH_DISTANCE) {
+            if (distance < MIN_FREQ_CALCPATH_DISTANCE)
+            {
                 return minDelay;
             }
 
@@ -232,7 +250,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             float result = distanceRatio * delayDifference + minDelay;
             float clampedResult = Mathf.Clamp(result, minDelay, maxDelay);
 
-            if (_nextLogTime < Time.time) {
+            if (_nextLogTime < Time.time)
+            {
                 _nextLogTime = Time.time + 10f;
                 //Logger.LogDebug($"{BotOwner.name} calcPathFreqResults for [{Enemy.EnemyPerson.Nickname}] Result: [{result}] preClamped: [[{result}] [{distanceRatio} * {delayDifference} + {minDelay}]] : Distance: [{distance}] : IsAI? [{isAI}] : Current Enemy? [{currentEnemy}] : MinDelay [{minDelay}] : MaxDelay [{maxDelay}]");
             }
@@ -267,13 +286,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private bool checkPositionsChanged(Vector3 botPosition, Vector3 enemyPosition)
         {
-            if (Enemy.Events.OnSearch.Value) {
+            if (Enemy.Events.OnSearch.Value)
+            {
                 return true;
             }
             // Did we already check the current enemy position and has the bot not moved? dont recalc path then
             if (_enemyLastPosChecked != null
                 && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.1f
-                && (_botLastPosChecked - botPosition).sqrMagnitude < 0.05f) {
+                && (_botLastPosChecked - botPosition).sqrMagnitude < 0.05f)
+            {
                 return false;
             }
 
@@ -285,11 +306,13 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public float CalculatePathLength(Vector3[] corners)
         {
-            if (corners == null) {
+            if (corners == null)
+            {
                 return float.MaxValue;
             }
             float result = 0f;
-            for (int i = 0; i < corners.Length - 1; i++) {
+            for (int i = 0; i < corners.Length - 1; i++)
+            {
                 Vector3 a = corners[i];
                 Vector3 b = corners[i + 1];
                 result += (a - b).magnitude;
@@ -304,11 +327,13 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Vector3 lastCorner;
             int index;
             if (pathStatus == NavMeshPathStatus.PathComplete &&
-                length > 2) {
+                length > 2)
+            {
                 index = length - 2;
                 lastCorner = corners[index];
             }
-            else {
+            else
+            {
                 index = length - 1;
                 lastCorner = corners[index];
             }
@@ -319,7 +344,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private EnemyCorner findFirstCorner(Vector3 enemyPosition, Vector3[] corners)
         {
-            if (corners.Length < 2) {
+            if (corners.Length < 2)
+            {
                 return null;
             }
 
@@ -333,8 +359,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return new EnemyCorner(enemyPosition, 0f, index);
         }
 
-        private GUIObject blindcornerGUIObject;
-        private GameObject blindcornerGameObject;
         private bool _canSeeLast;
         private float _nextCheckLast;
         private Vector3? _enemyLastPosChecked;

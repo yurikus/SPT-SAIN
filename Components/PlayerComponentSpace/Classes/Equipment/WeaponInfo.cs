@@ -318,4 +318,16 @@ namespace SAIN.SAINComponent.Classes.Info
         private static readonly string OpticScopeTypeId = "55818ae44bdc2dde698b456c";
         private static readonly string SpecialScopeTypeId = "55818aeb4bdc2ddc698b456a";
     }
+
+    public class OpticAIConfig
+    {
+        public string Name;
+        public string TypeId;
+        public float FarDistanceScaleStart;
+        public float FarDistanceScaleEnd;
+        public float FarMultiplier;
+        public float CloseDistanceScaleStart;
+        public float CloseDistanceScaleEnd;
+        public float CloseMultiplier;
+    }
 }

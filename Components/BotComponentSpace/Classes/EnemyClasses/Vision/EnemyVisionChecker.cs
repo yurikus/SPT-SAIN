@@ -1,5 +1,6 @@
-﻿using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
+﻿using SAIN.Components.PlayerComponentSpace.PersonClasses;
+using SAIN.Models.Enums;
+using SAIN.Models.Structs;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using System.Collections.Generic;
@@ -39,82 +40,81 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void CheckVision(out bool didCheck)
         {
             // staggers ai vision over a few quarters of a second
-            if (!shallStart()) {
+            if (!ShallStart())
+            {
                 didCheck = false;
                 return;
             }
 
             didCheck = true;
             Enemy.Events.OnEnemyLineOfSightChanged.CheckToggle(LineOfSight);
-            //bool canShoot = EnemyParts.CheckCanShoot(Enemy.Shoot.Targets.CanShootHead);
-            //Enemy.Events.OnEnemyCanShootChanged.CheckToggle(canShoot);
         }
 
-        private bool shallStart()
+        private bool ShallStart()
         {
-            if (_visionStarted) {
+            if (_visionStarted)
+            {
                 return true;
             }
-            if (_startVisionTime < Time.time) {
+            if (_startVisionTime < Time.time)
+            {
                 _visionStarted = true;
                 return true;
             }
             return false;
         }
 
-        private const float MAX_LOS_RANGE_HEAD_HUMAN = 125f;
-        private const float MAX_LOS_RANGE_LIMBS_AI = 200f;
-
-        private readonly List<BodyPartRaycast> _raycasts = new List<BodyPartRaycast>();
-
-        private static readonly ERaycastPart[] _empty = new ERaycastPart[0];
-        private static readonly ERaycastPart[] _onlyBody = new ERaycastPart[] { ERaycastPart.Body };
-        private static readonly ERaycastPart[] _bodyPlus1Random = new ERaycastPart[] { ERaycastPart.Body, ERaycastPart.RandomPart };
-        private static readonly ERaycastPart[] _bodyHeadPlus1Random = new ERaycastPart[] { ERaycastPart.Body, ERaycastPart.Head, ERaycastPart.RandomPart };
-        private static readonly ERaycastPart[] _bodyHeadPlus2Random = new ERaycastPart[] { ERaycastPart.Body, ERaycastPart.Head, ERaycastPart.RandomPart, ERaycastPart.RandomPart };
-
         private const float MAX_RANGE_VISION_UNKNOWN = 300f;
 
         public float AIVisionRangeLimit()
         {
-            float max = checkMaxVisionRangeAI();
-            if (!Enemy.EnemyKnown && max > MAX_RANGE_VISION_UNKNOWN) {
+            float max = CheckMaxVisionRangeAI();
+            if (!Enemy.EnemyKnown && max > MAX_RANGE_VISION_UNKNOWN)
+            {
                 return MAX_RANGE_VISION_UNKNOWN;
             }
             return max;
         }
 
-        private float checkMaxVisionRangeAI()
+        private float CheckMaxVisionRangeAI()
         {
-            if (!Enemy.IsAI) {
+            if (!Enemy.IsAI)
+            {
                 return float.MaxValue;
             }
             var aiLimit = GlobalSettingsClass.Instance.General.AILimit;
-            if (!aiLimit.LimitAIvsAIGlobal) {
+            if (!aiLimit.LimitAIvsAIGlobal)
+            {
                 return float.MaxValue;
             }
-            if (!aiLimit.LimitAIvsAIVision) {
+            if (!aiLimit.LimitAIvsAIVision)
+            {
                 return float.MaxValue;
             }
             var enemyBot = Enemy.EnemyPerson.AIInfo.BotComponent;
-            if (enemyBot == null) {
+            if (enemyBot == null)
+            {
                 // if an enemy bot is not a sain bot, but has this bot as an enemy, dont limit at all.
-                if (Enemy.EnemyPerson.AIInfo.BotOwner?.Memory.GoalEnemy?.ProfileId == Bot.ProfileId) {
+                if (Enemy.EnemyPerson.AIInfo.BotOwner?.Memory.GoalEnemy?.ProfileId == Bot.ProfileId)
+                {
                     return float.MaxValue;
                 }
-                return getMaxVisionRange(Bot.CurrentAILimit);
+                return GetMaxVisionRange(Bot.CurrentAILimit);
             }
-            else {
-                if (enemyBot.Enemy?.EnemyProfileId == Bot.ProfileId) {
+            else
+            {
+                if (enemyBot.Enemy?.EnemyProfileId == Bot.ProfileId)
+                {
                     return float.MaxValue;
                 }
-                return getMaxVisionRange(enemyBot.CurrentAILimit);
+                return GetMaxVisionRange(enemyBot.CurrentAILimit);
             }
         }
 
-        private static float getMaxVisionRange(AILimitSetting aiLimit)
+        private static float GetMaxVisionRange(AILimitSetting aiLimit)
         {
-            switch (aiLimit) {
+            switch (aiLimit)
+            {
                 default:
                     return float.MaxValue;
 

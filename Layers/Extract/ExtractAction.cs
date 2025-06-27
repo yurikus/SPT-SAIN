@@ -1,11 +1,10 @@
 ﻿using Comfort.Common;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using EFT.Interactive;
 using SAIN.Components;
 using SAIN.Components.BotController;
-using SAIN.Helpers;
 using SAIN.SAINComponent.Classes.Memory;
-using System.Collections;
 using Systems.Effects;
 using UnityEngine;
 using UnityEngine.AI;
@@ -14,6 +13,10 @@ namespace SAIN.Layers
 {
     internal class ExtractAction : CombatAction, ISAINAction
     {
+        static ExtractAction()
+        {
+        }
+
         public void Toggle(bool value)
         {
             ToggleAction(value);
@@ -40,10 +43,11 @@ namespace SAIN.Layers
             BotOwner.Mover.MovementResume();
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             float stamina = Bot.Player.Physical.Stamina.NormalValue;
-            bool fightingEnemy = isFightingEnemy();
+            bool fightingEnemy = IsFightingEnemy();
             // Environment id of 0 means a bot is outside.
             if (Bot.Player.AIData.EnvironmentId != 0)
             {
@@ -82,7 +86,7 @@ namespace SAIN.Layers
 
             if (ExtractStarted)
             {
-                setStatus(EExtractStatus.ExtractingNow);
+                SetStatus(EExtractStatus.ExtractingNow);
                 StartExtract(point);
                 Bot.Mover.SetTargetPose(0f);
                 Bot.Mover.SetTargetMoveSpeed(0f);
@@ -96,11 +100,11 @@ namespace SAIN.Layers
             {
                 if (fightingEnemy)
                 {
-                    setStatus(EExtractStatus.Fighting);
+                    SetStatus(EExtractStatus.Fighting);
                 }
                 else
                 {
-                    setStatus(EExtractStatus.MovingTo);
+                    SetStatus(EExtractStatus.MovingTo);
                 }
                 MoveToExtract(distance, point);
                 Bot.Mover.SetTargetPose(1f);
@@ -109,17 +113,17 @@ namespace SAIN.Layers
 
             Bot.Steering.SteerByPriority();
             Shoot.CheckAimAndFire();
-
+            this.EndProfilingSample();
         }
 
-        private void setStatus(EExtractStatus status)
+        private void SetStatus(EExtractStatus status)
         {
             Bot.Memory.Extract.ExtractStatus = status;
         }
 
         private float _sayExitLocatedTime;
 
-        private bool isFightingEnemy()
+        private bool IsFightingEnemy()
         {
             return Bot.Enemy != null
                 && Bot.Enemy.Seen
@@ -158,7 +162,7 @@ namespace SAIN.Layers
 
                 Bot.Memory.Extract.ExtractStatus = EExtractStatus.MovingTo;
                 NavMeshPathStatus pathStatus = BotOwner.Mover.GoToPoint(point, true, 0.5f, false, false);
-                var pathController = HelpersGClass.GetPathControllerClass(BotOwner.Mover);
+                var pathController = BotOwner.Mover._pathController;
                 if (pathController?.CurPath != null)
                 {
                     float distanceToEndOfPath = Vector3.Distance(BotOwner.Position, pathController.CurPath.LastCorner());
@@ -177,7 +181,7 @@ namespace SAIN.Layers
             }
         }
 
-        private void StartExtract(Vector3 point)
+        public void StartExtract(Vector3 point)
         {
             Bot.Memory.Extract.ExtractStatus = EExtractStatus.ExtractingNow;
             if (ExtractTimer == -1f)
@@ -185,7 +189,7 @@ namespace SAIN.Layers
                 ExtractTimer = SAINBotController.Instance.BotExtractManager.GetExfilTime(Bot.Memory.Extract.ExfilPoint);
 
                 // Needed to get car extracts working
-                activateExfil(Bot.Memory.Extract.ExfilPoint);
+                ActivateExfil(Bot.Memory.Extract.ExfilPoint);
 
                 float timeRemaining = ExtractTimer - Time.time;
                 Logger.LogInfo($"{BotOwner.name} Starting Extract Timer of {timeRemaining}");
@@ -209,7 +213,7 @@ namespace SAIN.Layers
             }
         }
 
-        private void activateExfil(ExfiltrationPoint exfil)
+        private void ActivateExfil(ExfiltrationPoint exfil)
         {
             // Needed to start the car extract
             exfil.OnItemTransferred(Bot.Player);

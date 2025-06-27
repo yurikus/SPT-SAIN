@@ -1,7 +1,6 @@
-﻿using EFT;
-using SAIN.Helpers;
+﻿using DrakiaXYZ.BigBrain.Brains;
+using EFT;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -19,8 +18,9 @@ namespace SAIN.Layers.Combat.Solo.Cover
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             Bot.Steering.SteerByPriority();
             Shoot.CheckAimAndFire();
             if (NewPoint == null
@@ -43,6 +43,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 Bot.Decision.EnemyDecisions.ShiftCoverComplete = true;
             }
+            this.EndProfilingSample();
         }
 
         private float GetSpeed()
@@ -110,7 +111,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Bot.Decision.EnemyDecisions.ShiftCoverComplete = false;
         }
 
-        private readonly List<CoverPoint> UsedPoints = new List<CoverPoint>();
+        private readonly List<CoverPoint> UsedPoints = new();
         private CoverPoint NewPoint;
 
         public override void Stop()

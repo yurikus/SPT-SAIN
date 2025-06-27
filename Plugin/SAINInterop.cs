@@ -1,14 +1,10 @@
 ﻿using BepInEx.Bootstrap;
-using Comfort.Common;
 using EFT;
 using EFT.Interactive;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -96,7 +92,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_IgnoreHearingMethod == null) return false;
 
-            return (bool) _IgnoreHearingMethod.Invoke(null, new object[] { botOwner, value, ignoreUnderFire, duration });
+            return (bool)_IgnoreHearingMethod.Invoke(null, [botOwner, value, ignoreUnderFire, duration]);
         }
 
         /// <summary>
@@ -111,7 +107,7 @@ namespace SAIN.Plugin
             if (!Init()) return result;
             if (_GetPersonalityMethod == null) return result;
 
-            result = (string)_GetPersonalityMethod.Invoke(null, new object[] { botOwner });
+            result = (string)_GetPersonalityMethod.Invoke(null, [botOwner]);
             return result;
         }
 
@@ -126,7 +122,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_GetExtractedBotsMethod == null) return false;
 
-            _GetExtractedBotsMethod.Invoke(null, new object[] { list });
+            _GetExtractedBotsMethod.Invoke(null, [list]);
             return true;
         }
 
@@ -141,7 +137,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_GetExtractionInfosMethod == null) return false;
 
-            _GetExtractionInfosMethod.Invoke(null, new object[] { list });
+            _GetExtractionInfosMethod.Invoke(null, [list]);
             return true;
         }
 
@@ -153,7 +149,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_ExtractBotMethod == null) return false;
 
-            return (bool)_ExtractBotMethod.Invoke(null, new object[] { botOwner });
+            return (bool)_ExtractBotMethod.Invoke(null, [botOwner]);
         }
 
         /**
@@ -164,7 +160,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_SetExfilForBotMethod == null) return false;
 
-            return (bool)_SetExfilForBotMethod.Invoke(null, new object[] { botOwner });
+            return (bool)_SetExfilForBotMethod.Invoke(null, [botOwner]);
         }
 
         /**
@@ -175,7 +171,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_ResetDecisionsForBotMethod == null) return false;
 
-            return (bool)_ResetDecisionsForBotMethod.Invoke(null, new object[] { botOwner });
+            return (bool)_ResetDecisionsForBotMethod.Invoke(null, [botOwner]);
         }
 
         /// <summary>
@@ -191,7 +187,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_IsPathTowardEnemyMethod == null) return false;
 
-            return (bool)_IsPathTowardEnemyMethod.Invoke(null, new object[] { path, botOwner, ratioSameOverAll, sqrDistCheck });
+            return (bool)_IsPathTowardEnemyMethod.Invoke(null, [path, botOwner, ratioSameOverAll, sqrDistCheck]);
         }
 
 
@@ -208,7 +204,7 @@ namespace SAIN.Plugin
             if (!Init()) return false;
             if (_CanBotQuestMethod == null) return false;
 
-            return (bool)_CanBotQuestMethod.Invoke(null, new object[] { botOwner, questPosition, dotThreshold });
+            return (bool)_CanBotQuestMethod.Invoke(null, [botOwner, questPosition, dotThreshold]);
         }
 
         public static float TimeSinceSenseEnemy(BotOwner botOwner)
@@ -216,14 +212,14 @@ namespace SAIN.Plugin
             if (!Init()) return float.MaxValue;
             if (_TimeSinceSenseEnemyMethod == null) return float.MaxValue;
 
-            return (float)_TimeSinceSenseEnemyMethod.Invoke(null, new object[] { botOwner });
+            return (float)_TimeSinceSenseEnemyMethod.Invoke(null, [botOwner]);
         }
 
     }
 
     public class ExtractionInfo
     {
-        public ExtractionInfo(BotOwner bot, string reason, ExfiltrationPoint exfil) 
+        public ExtractionInfo(BotOwner bot, string reason, ExfiltrationPoint exfil)
         {
             BotNickname = bot.Profile.Nickname;
             ProfileID = bot.GetPlayer.ProfileId;

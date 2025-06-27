@@ -5,7 +5,7 @@ namespace SAIN.Components.BotController.PeacefulActions
 {
     public class PeacefulBotFinder : SAINControllerBase, IBotControllerClass
     {
-        public Dictionary<string, BotZoneData> ZoneDatas = new Dictionary<string, BotZoneData>();
+        public Dictionary<string, BotZoneData> ZoneDatas = new();
 
         public PeacefulBotFinder(SAINBotController controller) : base(controller)
         {
@@ -30,12 +30,14 @@ namespace SAIN.Components.BotController.PeacefulActions
         private void botAdded(BotComponent bot)
         {
             BotZone botZone = bot.BotOwner.BotsGroup.BotZone;
-            if (botZone == null) {
+            if (botZone == null)
+            {
                 Logger.LogWarning($"Null BotZone for [{bot.BotOwner.name}]");
                 return;
             }
 
-            if (!ZoneDatas.TryGetValue(botZone.NameZone, out BotZoneData data)) {
+            if (!ZoneDatas.TryGetValue(botZone.NameZone, out BotZoneData data))
+            {
                 data = new BotZoneData(botZone);
                 ZoneDatas.Add(data.Name, data);
             }
@@ -45,25 +47,30 @@ namespace SAIN.Components.BotController.PeacefulActions
 
         private void botRemoved(BotComponent bot)
         {
-            if (bot == null) {
+            if (bot == null)
+            {
                 Logger.LogWarning($"Null BotComponent");
                 return;
             }
-            if (bot.BotOwner == null) {
+            if (bot.BotOwner == null)
+            {
                 Logger.LogWarning($"Null BotOwner [{bot.Info.Profile.Name}]");
                 return;
             }
-            if (bot.BotOwner.BotsGroup == null) {
+            if (bot.BotOwner.BotsGroup == null)
+            {
                 Logger.LogWarning($"Null BotGroup [{bot.Info.Profile.Name}]");
                 return;
             }
             BotZone botZone = bot.BotOwner.BotsGroup.BotZone;
-            if (botZone == null) {
+            if (botZone == null)
+            {
                 Logger.LogWarning($"Null BotZone for [{bot.BotOwner.name}]");
                 return;
             }
             BotZoneData data;
-            if (!ZoneDatas.TryGetValue(botZone.NameZone, out data)) {
+            if (!ZoneDatas.TryGetValue(botZone.NameZone, out data))
+            {
                 return;
             }
             data.RemoveBot(bot);

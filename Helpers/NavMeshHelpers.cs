@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.AI;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace SAIN.Helpers
 {
@@ -12,7 +10,7 @@ namespace SAIN.Helpers
     {
         public static bool DoesCompletePathExist(Vector3 sourcePosition, Vector3 targetPosition)
         {
-            NavMeshPath path = new NavMeshPath();
+            NavMeshPath path = new();
             return NavMesh.CalculatePath(sourcePosition, targetPosition, -1, path) && (path.status == NavMeshPathStatus.PathComplete);
         }
 
@@ -29,7 +27,7 @@ namespace SAIN.Helpers
         public static IEnumerable<Vector3> GetNavMeshTestPoints(this BoxCollider collider, float radius, float densityFactor)
         {
             // The Bounds for exfiltration colliders are junk in EFT, so we need to regenerate them here
-            Bounds colliderBounds = new Bounds(collider.transform.position, collider.size);
+            Bounds colliderBounds = new(collider.transform.position, collider.size);
 
             IEnumerable<Vector3> colliderTestPoints = GetNavMeshTestPoints(colliderBounds, radius, densityFactor);
             return colliderTestPoints;
@@ -56,8 +54,8 @@ namespace SAIN.Helpers
             float heightSpacing = Math.Max(0, (bounds.size.y - (radius * 2)) / heightCount);
 
             // Create a 3D mesh of points within the bounds
-            List<Vector3> testPoints = new List<Vector3>();
-            Vector3 origin = new Vector3(bounds.min.x + radius, bounds.min.y + radius, bounds.min.z + radius);
+            List<Vector3> testPoints = new();
+            Vector3 origin = new(bounds.min.x + radius, bounds.min.y + radius, bounds.min.z + radius);
             for (int x = 0; x <= widthCount; x++)
             {
                 for (int y = 0; y <= heightCount; y++)

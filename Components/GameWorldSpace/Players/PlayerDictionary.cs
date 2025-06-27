@@ -66,6 +66,6 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        private readonly List<string> _ids = new List<string>();
+        private readonly List<string> _ids = new();
     }
 }

@@ -22,9 +22,10 @@ namespace SAIN.Components
         public void Update()
         {
             var bots = Bots;
-            if (bots != null && bots.Count > 0) {
+            if (bots != null && bots.Count > 0)
+            {
                 RaycastJobs.Update();
-                updateVisionForBots();
+                UpdateVisionForBots();
             }
         }
 
@@ -34,14 +35,15 @@ namespace SAIN.Components
             PlayerDistancesJob.Dispose();
         }
 
-        private void updateVisionForBots()
+        private void UpdateVisionForBots()
         {
             _localBotList.Clear();
             _localBotList.AddRange(Bots.Values);
             _localBotList.Sort((x, y) => x.LastCheckVisibleTime.CompareTo(y.LastCheckVisibleTime));
 
             int count = 0;
-            foreach (var bot in _localBotList) {
+            foreach (var bot in _localBotList)
+            {
                 if (bot == null) continue;
 
                 float frequency = bot.BotActive ? 0.05f : 0.25f;
@@ -50,9 +52,11 @@ namespace SAIN.Components
 
                 bot.LastCheckVisibleTime = Time.time;
                 int numUpdated = bot.Vision.BotLook.UpdateLook();
-                if (numUpdated > 0) {
+                if (numUpdated > 0)
+                {
                     count++;
-                    if (count >= maxBotsPerFrame) {
+                    if (count >= maxBotsPerFrame)
+                    {
                         break;
                     }
                 }
@@ -61,7 +65,7 @@ namespace SAIN.Components
         }
 
         private static int maxBotsPerFrame = 5;
-        private readonly List<BotComponent> _localBotList = new List<BotComponent>();
+        private readonly List<BotComponent> _localBotList = new();
 
         static BotJobsClass()
         {

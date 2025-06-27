@@ -1,17 +1,13 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using SAIN.Plugin;
+using SAIN.SAINComponent;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using SAIN.SAINComponent;
-using SAIN.Helpers;
-using System.Collections;
-using HarmonyLib;
-using SAIN.Plugin;
-using UnityEngine.Profiling;
 
 namespace SAIN.Components.BotController
 {
@@ -20,7 +16,7 @@ namespace SAIN.Components.BotController
         public BotExtractManager(SAINBotController botController) : base(botController) { }
 
         public float TotalRaidTime { get; private set; }
-        
+
         public void Update()
         {
             if (Singleton<AbstractGame>.Instance?.GameTimer == null)
@@ -44,16 +40,16 @@ namespace SAIN.Components.BotController
             ExtractedBots.Add(bot.GetPlayer.ProfileId);
         }
 
-        public readonly List<string> ExtractedBots = new List<string>();
-        public readonly List<ExtractionInfo> BotExtractionInfos = new List<ExtractionInfo>();
+        public readonly List<string> ExtractedBots = new();
+        public readonly List<ExtractionInfo> BotExtractionInfos = new();
 
-        private Dictionary<ExfiltrationPoint, float> exfilActivationTimes = new Dictionary<ExfiltrationPoint, float>();
+        private Dictionary<ExfiltrationPoint, float> exfilActivationTimes = new();
 
         public bool HasExfilBeenActivated(ExfiltrationPoint exfil)
         {
             // If all bots who paid for the car extract die, it will no longer leave. Therefore, the common extract time needs to be discarded. When this happens,
             // the exfil Status changes from EExfiltrationStatus.Countdown to EExfiltrationStatus.UncompleteRequirements.
-            if ((exfil.Settings.ExfiltrationType == EExfiltrationType.SharedTimer) 
+            if ((exfil.Settings.ExfiltrationType == EExfiltrationType.SharedTimer)
                 && (exfil.Status == EExfiltrationStatus.UncompleteRequirements))
             {
                 if (exfilActivationTimes.ContainsKey(exfil))
@@ -106,7 +102,7 @@ namespace SAIN.Components.BotController
         }
 
         private float exfilSearchRetryDelay = 10;
-        private Dictionary<BotComponent, float> botExfilSearchRetryTime = new Dictionary<BotComponent, float>();
+        private Dictionary<BotComponent, float> botExfilSearchRetryTime = new();
 
         public void ResetExfilSearchTime(BotComponent bot)
         {
@@ -145,7 +141,7 @@ namespace SAIN.Components.BotController
             {
                 return false;
             }
-            
+
             // If an exfil has already been assigned, don't continue searching
             if ((bot.Memory.Extract.ExfilPosition != null) && (bot.Memory.Extract.ExfilPoint != null))
             {
@@ -210,7 +206,7 @@ namespace SAIN.Components.BotController
         {
             // Check each valid extract to ensure the bot can use it and that it isn't too close. If this method is called when a bot is near an extract, it might be because
             // it got stuck. 
-            NavMeshPath path = new NavMeshPath();
+            NavMeshPath path = new();
             IDictionary<ExfiltrationPoint, Vector3> possibleExfils = validExfils
                     .Where(x => CanBotsUseExtract(x.Key))
                     .Where(x => Vector3.Distance(bot.Position, x.Value) > MinDistanceToExtract)

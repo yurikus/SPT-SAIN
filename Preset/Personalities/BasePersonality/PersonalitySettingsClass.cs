@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using SAIN.Attributes;
 using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.Preset.Personalities
@@ -20,9 +19,9 @@ namespace SAIN.Preset.Personalities
         public string Name;
         public string Description;
 
-        public PersonalityAssignmentSettings Assignment = new PersonalityAssignmentSettings();
-        public PersonalityBehaviorSettings Behavior = new PersonalityBehaviorSettings();
-        public DifficultySettings Difficulty = new DifficultySettings();
+        public PersonalityAssignmentSettings Assignment = new();
+        public PersonalityBehaviorSettings Behavior = new();
+        public DifficultySettings Difficulty = new();
 
         public override void Init()
         {

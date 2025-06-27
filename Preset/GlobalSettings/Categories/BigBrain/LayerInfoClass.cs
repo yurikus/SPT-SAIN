@@ -8,7 +8,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
         public string Name;
         public bool ConvertedToString;
         public string Description;
-        public Dictionary<Brain, int> UsedByBrains = new Dictionary<Brain, int>();
+        public Dictionary<Brain, int> UsedByBrains = new();
         public WildSpawnType[] UsedByWildSpawns;
     }
 }

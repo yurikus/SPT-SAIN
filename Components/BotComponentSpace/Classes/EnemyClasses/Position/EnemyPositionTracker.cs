@@ -1,8 +1,4 @@
-﻿using EFT;
-using SAIN.Helpers;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -41,7 +37,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void checkTrackMovement()
         {
-            if (_trackForTime < Time.time) {
+            if (_trackForTime < Time.time)
+            {
                 Vector3 moveDir = EnemyPlayer.MovementContext.MovementDirection.normalized;
                 EnemyMoveDirectionTrend += moveDir;
             }

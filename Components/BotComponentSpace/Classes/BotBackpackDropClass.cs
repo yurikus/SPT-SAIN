@@ -1,5 +1,6 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
+using SAIN.Models.Enums;
 using System.Collections;
 using UnityEngine;
 

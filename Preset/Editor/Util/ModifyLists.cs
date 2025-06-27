@@ -1,6 +1,7 @@
 ﻿using EFT;
 using EFT.UI;
 using SAIN.Helpers;
+using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings.Categories;
 using System.Collections.Generic;
@@ -43,7 +44,7 @@ namespace SAIN.Editor.Util
         {
             var dimensions = new GUILayoutOption[]
             {
-                Height(25f), Width(500f),
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(500f),
             };
 
             wasEdited = false;
@@ -52,13 +53,15 @@ namespace SAIN.Editor.Util
                 string categoryName = category.CategoryInfo.Name;
                 string categoryDesciption = category.CategoryInfo.Description;
                 // Display the value of the category. And make it a openable dropdown menu
-                if (string.IsNullOrEmpty(search)) {
-                    category.Open = BuilderClass.ExpandableMenu(categoryName, category.Open, categoryDesciption, 30f);
+                if (string.IsNullOrEmpty(search))
+                {
+                    category.Open = BuilderClass.ExpandableMenu(categoryName, category.Open, categoryDesciption, PresetHandler.EditorDefaults.ConfigEntryHeight);
                     if (!category.Open)
                         continue;
                 }
-                else {
-                    Label(categoryName, categoryDesciption, Height(30f));
+                else
+                {
+                    Label(categoryName, categoryDesciption, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
                 }
 
                 bool newEdit;
@@ -179,10 +182,10 @@ namespace SAIN.Editor.Util
             BeginHorizontal();
             Space(5);
             float width = (gridWidth / optionsPerLine).Round10();
-            dimensions = new GUILayoutOption[]
-            {
-                Height(25f), Width(width),
-            };
+            dimensions =
+            [
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(width),
+            ];
             return 0;
         }
 

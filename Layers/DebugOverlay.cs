@@ -1,12 +1,10 @@
 ﻿using EFT;
-using HarmonyLib;
 using SAIN.Helpers;
+using SAIN.Models.Enums;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 using UnityEngine;
 
@@ -14,104 +12,35 @@ namespace SAIN.Layers
 {
     public static class DebugOverlay
     {
-        static DebugOverlay()
-        {
-            TimeToAim = AccessTools.Field(Helpers.HelpersGClass.AimDataType, "float_7");
-            timeAiming = AccessTools.Field(Helpers.HelpersGClass.AimDataType, "float_5");
-
-            int count = 0;
-            foreach (var name in _overlayNames) {
-                _overlays.Add(count, name);
-                count++;
-            }
-        }
-
-        private static FieldInfo TimeToAim;
-        private static FieldInfo timeAiming;
-
-        private static readonly Dictionary<int, string> _overlays = new Dictionary<int, string>();
-
-        private static readonly string[] _overlayNames =
-        {
-            "Bot Info",
-            "Bot Properties",
-            "Current Enemy Info",
-            "All Enemies Info",
-        };
-
-        private static bool _changedOverlay;
-
-        public static void UpdateSelectedOverlay()
-        {
-            //if (_changedOverlay &&
-            //    SAINPlugin.NextDebugOverlay.Value.IsUp() &&
-            //    SAINPlugin.PreviousDebugOverlay.Value.IsUp()) {
-            //    _changedOverlay = false;
-            //}
-            //if (_changedOverlay) {
-            //    return;
-            //}
-            //
-            //if (SAINPlugin.NextDebugOverlay.Value.IsDown()) {
-            //    changeOverlay(true);
-            //    _changedOverlay = true;
-            //    return;
-            //}
-            //
-            //if (SAINPlugin.PreviousDebugOverlay.Value.IsDown()) {
-            //    changeOverlay(false);
-            //    _changedOverlay = true;
-            //    return;
-            //}
-        }
-
-        private static void changeOverlay(bool next)
-        {
-            int count = _overlays.Count - 1;
-            if (next) {
-                _selectedOverlay++;
-                if (_selectedOverlay > count) {
-                    _selectedOverlay = 0;
-                }
-            }
-            else {
-                _selectedOverlay--;
-                if (_selectedOverlay < 0) {
-                    _selectedOverlay = count;
-                }
-            }
-            Logger.LogDebug($"{_selectedOverlay} : {next}");
-        }
-
-        private static int _selectedOverlay;
-
         public static void AddBaseInfo(BotComponent bot, BotOwner botOwner, StringBuilder stringBuilder)
         {
-            UpdateSelectedOverlay();
-
-            try {
+            try
+            {
                 var debug = SAINPlugin.DebugSettings.Overlay;
 
                 var info = bot.Info;
-                if (debug.Overlay_Info) {
+                if (debug.Overlay_Info)
+                {
                     stringBuilder.AppendLine($"Name: [{bot.Person.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
                     stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("Steering", $"{bot.Steering.CurrentSteerPriority} : {bot.Steering.EnemySteerDir}", Color.white, Color.yellow);
                     stringBuilder.AppendLine($"AILimit [{bot.CurrentAILimit}] : HumanDist: [{bot.AILimit.ClosestPlayerDistanceSqr.Sqrt().Round10()}]");
-                    stringBuilder.AppendLine();
-                    if (debug.Overlay_Info_Expanded) {
+                    stringBuilder.AppendLine($"Suppression Num: [{bot.Suppression?.SuppressionNumber}] State: [{bot.Suppression?.CurrentState}] Last State: [{bot.Suppression?.LastState}]");
+
+                    if (debug.Overlay_Info_Expanded)
+                    {
                         stringBuilder.AppendLine($"CoverPoints: [{bot.Cover.CoverPoints.Count}] : StartSearchDelay [{info.TimeBeforeSearch}] : Hold Ground Time [{info.HoldGroundDelay}]");
-                        stringBuilder.AppendLine($"Suppression Num: [{bot.Suppression?.SuppressionNumber}] IsSuppressed: [{bot.Suppression?.IsSuppressed}] IsHeavySuppressed: [{bot.Suppression?.IsHeavySuppressed}]");
                         stringBuilder.AppendLine($"Indoors? {bot.Memory.Location.IsIndoors} EnvironmentID: {bot.Player?.AIData.EnvironmentId} In Bunker? {bot.PlayerComponent.AIData.PlayerLocation.InBunker}");
                         var members = bot.Squad.SquadInfo?.Members;
-                        if (members != null && members.Count > 1) {
+                        if (members != null && members.Count > 1)
+                        {
                             stringBuilder.AppendLine($"Squad Personality: [{bot.Squad.SquadInfo.SquadPersonality}]");
                         }
                     }
-                    stringBuilder.AppendLine();
                 }
 
-                if (debug.Overlay_Decisions) {
+                if (debug.Overlay_Decisions)
+                {
                     stringBuilder.AppendLine($"Main Decisn [{bot.Decision.CurrentCombatDecision}] : Last [{bot.Decision.PreviousCombatDecision}]");
                     stringBuilder.AppendLine($"Squad Decisn [{bot.Decision.CurrentSquadDecision}] : Last [{bot.Decision.PreviousSquadDecision}]");
                     stringBuilder.AppendLine($"Self Decisn [{bot.Decision.CurrentSelfDecision}] : Last [{bot.Decision.PreviousSelfDecision}]");
@@ -120,7 +49,8 @@ namespace SAIN.Layers
                     stringBuilder.Append(decisions);
                 }
 
-                if (debug.Overlay_EnemyLists) {
+                if (debug.Overlay_EnemyLists)
+                {
                     var lists = bot.EnemyController.EnemyLists;
                     var known = lists.GetEnemyList(EEnemyListType.Known);
                     var vis = lists.GetEnemyList(EEnemyListType.Visible);
@@ -131,34 +61,37 @@ namespace SAIN.Layers
                         $"Visible[{vis.Bots}/{vis.Humans}] " +
                         $"InLOS[{los.Bots}/{los.Humans}] " +
                         $"ActvThreat [{threats.Bots}/{threats.Humans}]");
-                    stringBuilder.AppendLine();
                 }
 
-                if (debug.OverLay_AimInfo) {
-                    if (bot.BotOwner.AimingData != null) {
+                if (debug.OverLay_AimInfo)
+                {
+                    if (bot.BotOwner.AimingManager.CurrentAiming != null && bot.BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
+                    {
                         stringBuilder.AppendLine($"AimData: Status [{bot.Aim.AimStatus}] " +
                             $"Last Aim Time: [{bot.Aim.LastAimTime}] " +
-                            $"AimingTime [{timeAiming.GetValue(bot.BotOwner.AimingData)}] " +
-                            $"TimeToFnsh: [{TimeToAim.GetValue(bot.BotOwner.AimingData)}]");
-                        stringBuilder.AppendLine($"AimOffsetMagnitude [{((bot.BotOwner.AimingData.RealTargetPoint - bot.BotOwner.AimingData.EndTargetPoint).magnitude).Round100()}] " +
+                            $"AimingTime [{aimClass.float_7}] " +
+                            $"TimeToFnsh: [{aimClass.float_5}]");
+                        stringBuilder.AppendLine($"AimOffsetMagnitude [{((bot.BotOwner.AimingManager.CurrentAiming.RealTargetPoint - bot.BotOwner.AimingManager.CurrentAiming.EndTargetPoint).magnitude).Round100()}] " +
                             $"Friendly Fire Status [{bot.FriendlyFire.FriendlyFireStatus}] " +
                             $"No Bush ESP Status: [{bot.NoBushESP.NoBushESPActive}]");
-                        stringBuilder.AppendLine();
                     }
                 }
 
-                if (debug.Overlay_EnemyInfo) {
+                if (debug.Overlay_EnemyInfo)
+                {
                     Enemy infoToShow = getEnemy2Show(bot);
-                    if (infoToShow != null) {
+                    if (infoToShow != null)
+                    {
                         CreateEnemyInfo(stringBuilder, infoToShow);
-                        stringBuilder.AppendLine();
                     }
                 }
 
-                if (debug.Overlay_Search) {
+                if (debug.Overlay_Search)
+                {
                     var enemyDecisions = bot.Decision.EnemyDecisions;
                     var shallSearch = enemyDecisions.DebugShallSearch;
-                    if (shallSearch != null) {
+                    if (shallSearch != null)
+                    {
                         if (shallSearch == true)
                             stringBuilder.AppendLabeledValue("Searching",
                                 $"Current State: {bot.Search.CurrentState} " +
@@ -186,7 +119,8 @@ namespace SAIN.Layers
                     }
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Logger.LogError(ex);
             }
         }
@@ -201,12 +135,15 @@ namespace SAIN.Layers
                         mainPlayer = enemy;
 
             Enemy closestHuman = null;
-            if (debug.OverLay_AlwaysShowClosestHumanInfo) {
+            if (debug.OverLay_AlwaysShowClosestHumanInfo)
+            {
                 float closest = float.MaxValue;
-                foreach (var enemy in bot.EnemyController.Enemies.Values) {
+                foreach (var enemy in bot.EnemyController.Enemies.Values)
+                {
                     if (enemy == null) continue;
                     if (enemy.IsAI) continue;
-                    if (enemy.RealDistance < closest) {
+                    if (enemy.RealDistance < closest)
+                    {
                         closest = enemy.RealDistance;
                         closestHuman = enemy;
                     }
@@ -220,7 +157,8 @@ namespace SAIN.Layers
         private static string decisionInfo(BotComponent sain)
         {
             string decisionInfo = string.Empty;
-            switch (sain.ActiveLayer) {
+            switch (sain.ActiveLayer)
+            {
                 case ESAINLayer.None:
                     break;
 
@@ -247,7 +185,8 @@ namespace SAIN.Layers
 
         private static void CreateEnemyInfo(StringBuilder stringBuilder, Enemy enemy)
         {
-            if (enemy == null) {
+            if (enemy == null)
+            {
                 return;
             }
 
@@ -256,23 +195,22 @@ namespace SAIN.Layers
                 $"RealDistance [{enemy.RealDistance}] " +
                 $"Power [{enemy.EnemyIPlayer?.AIData?.PowerOfEquipment}]");
 
-            stringBuilder.AppendLine();
             stringBuilder.AppendLine($"Visible [{enemy.IsVisible}] Seen [{enemy.Seen}]");
-            stringBuilder.AppendLine($"Illuminated [{enemy.Vision.Illuminated}] LightLevel [{enemy.Vision.IlluminationLevel}]");
-            stringBuilder.AppendLine();
 
             stringBuilder.AppendLine($"Aim/Scatter Multi [{enemy.Aim.AimAndScatterMultiplier}]");
-            stringBuilder.AppendLabeledValue("Time To Spot", $"{enemy.Vision.LastGainSightResult.Round100()}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("Time To Spot", $"{(1/enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
             float highestPercent = getPercentSpotted(enemy, out var partType);
             if (highestPercent > 0)
                 stringBuilder.AppendLabeledValue("Percent Spotted", $"{partType} : {highestPercent}", Color.white, Color.yellow, true);
 
             addPlaceInfo(stringBuilder, enemy.KnownPlaces.LastKnownPlace, "Last Known Position");
-            if (enemy.Seen && _expandedEnemyInfo) {
+            if (enemy.Seen && _expandedEnemyInfo)
+            {
                 addPlaceInfo(stringBuilder, enemy.KnownPlaces.LastSeenPlace, "Last Seen");
             }
 
-            if (_expandedEnemyInfo) {
+            if (_expandedEnemyInfo)
+            {
                 stringBuilder.AppendLine($"HorizAngle [{enemy.Vision.Angles.AngleToEnemyHorizontalSigned.Round100()}] VertiAngle [{enemy.Vision.Angles.AngleToEnemyVerticalSigned.Round100()}]");
                 stringBuilder.AppendLine($"GainSightMod [{enemy.Vision.GainSightCoef.Round100()}] VisionDistance [{(enemy.Bot.BotOwner.Settings.FileSettings.Core.VisibleDistance + enemy.Vision.VisionDistance).Round100()}]");
             }
@@ -280,13 +218,16 @@ namespace SAIN.Layers
 
             stringBuilder.AppendLabeledValue("Can Shoot", $"{enemy.Vision.VisionChecker.EnemyParts.CanShoot}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("In Line of Sight", $"{enemy.InLineOfSight}", Color.white, Color.yellow, true);
-            if (_expandedEnemyInfo) {
+            if (_expandedEnemyInfo)
+            {
                 var parts = enemy.Vision.VisionChecker.EnemyParts.Parts.Values;
                 int visCount = 0;
                 int partCount = 0;
                 int notChecked = 0;
-                foreach (var part in parts) {
-                    if (part.TimeSinceLastVisionCheck > 2f) {
+                foreach (var part in parts)
+                {
+                    if (part.TimeSinceLastVisionCheck > 2f)
+                    {
                         notChecked++;
                         continue;
                     }
@@ -298,18 +239,21 @@ namespace SAIN.Layers
             stringBuilder.AppendLine();
 
             stringBuilder.AppendLine($"Heard [{enemy.Heard}] Recently? [{enemy.Status.HeardRecently}]");
-            if (enemy.Heard && _expandedEnemyInfo) {
+            if (enemy.Heard && _expandedEnemyInfo)
+            {
                 addPlaceInfo(stringBuilder, enemy.KnownPlaces.LastHeardPlace, "Last Heard");
             }
         }
 
         private static float getPercentSpotted(Enemy enemy, out BodyPartType partType)
         {
-            float highestPercent = enemy.EnemyInfo.BodyData().Value?.PercentSpotted(out _) ?? 0f;
+            float highestPercent = enemy.EnemyInfo.BodyData().Value?.GetVisibilityLevel() ?? 0f;
             partType = BodyPartType.body;
-            foreach (var part in enemy.EnemyInfo.AllActiveParts) {
-                float percent = part.Value.PercentSpotted(out _);
-                if (percent > highestPercent) {
+            foreach (var part in enemy.EnemyInfo.AllActiveParts)
+            {
+                float percent = part.Value.GetVisibilityLevel();
+                if (percent > highestPercent)
+                {
                     highestPercent = percent;
                     partType = part.Key.BodyPartType;
                 }
@@ -321,7 +265,8 @@ namespace SAIN.Layers
 
         private static void addPlaceInfo(StringBuilder stringBuilder, EnemyPlace place, string name)
         {
-            if (place != null) {
+            if (place != null)
+            {
                 stringBuilder.AppendLine($"{name} Data");
                 stringBuilder.AppendLabeledValue("Time Since Updated", $"{place.TimeSincePositionUpdated.Round100()}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Enemy Distance", $"{place.DistanceToEnemyRealPosition.Round100()}", Color.white, Color.yellow, true);

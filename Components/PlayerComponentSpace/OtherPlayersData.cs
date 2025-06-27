@@ -5,7 +5,7 @@ namespace SAIN.Components.PlayerComponentSpace
 {
     public class OtherPlayersData : PlayerComponentBase
     {
-        public readonly Dictionary<string, OtherPlayerData> Datas = new Dictionary<string, OtherPlayerData>();
+        public readonly Dictionary<string, OtherPlayerData> Datas = new();
 
         public OtherPlayersData(PlayerComponent playerComponent) : base(playerComponent)
         {
@@ -31,21 +31,25 @@ namespace SAIN.Components.PlayerComponentSpace
 
         private void createExistingPlayers()
         {
-            foreach (var player in _spawns.AlivePlayers.Values) {
+            foreach (var player in _spawns.AlivePlayers.Values)
+            {
                 playerAdded(player);
             }
         }
 
         private void playerAdded(PlayerComponent playerComp)
         {
-            if (playerComp == null) {
+            if (playerComp == null)
+            {
                 return;
             }
             string profileId = playerComp.ProfileId;
-            if (profileId == PlayerComponent.ProfileId) {
+            if (profileId == PlayerComponent.ProfileId)
+            {
                 return;
             }
-            if (Datas.ContainsKey(profileId)) {
+            if (Datas.ContainsKey(profileId))
+            {
                 return;
             }
             Datas.Add(profileId, new OtherPlayerData(profileId));

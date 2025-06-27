@@ -1,22 +1,21 @@
 ﻿using SAIN.Attributes;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace SAIN.Preset.GlobalSettings
 {
     public class VisionSpeedSettings : SAINSettingsBase<VisionSpeedSettings>, ISAINSettings
     {
-        public ElevationVisionSettings Elevation = new ElevationVisionSettings();
+        public ElevationVisionSettings Elevation = new();
 
-        public MovementVisibilitySettings Movement = new MovementVisibilitySettings();
+        public MovementVisibilitySettings Movement = new();
 
-        public PartsVisibilitySettings PartsVisibility = new PartsVisibilitySettings();
+        public PartsVisibilitySettings PartsVisibility = new();
 
-        public PeripheralVisionSettings Peripheral = new PeripheralVisionSettings();
+        public PeripheralVisionSettings Peripheral = new();
 
-        public PoseVisibilitySettings Pose = new PoseVisibilitySettings();
+        public PoseVisibilitySettings Pose = new();
 
-        public ThirdPartySettings ThirdParty = new ThirdPartySettings();
+        public ThirdPartySettings ThirdParty = new();
 
         public override void Init(List<ISAINSettings> list)
         {

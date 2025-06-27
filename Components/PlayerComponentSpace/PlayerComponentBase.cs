@@ -1,8 +1,6 @@
-﻿using BepInEx.Logging;
-using EFT;
+﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
-using SAIN.Preset.GlobalSettings;
 using UnityEngine;
 
 namespace SAIN.SAINComponent

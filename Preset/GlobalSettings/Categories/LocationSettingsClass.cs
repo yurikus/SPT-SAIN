@@ -16,11 +16,13 @@ namespace SAIN.Preset.GlobalSettings
 
         private void addNewLocations()
         {
-            foreach (var type in EnumValues.GetEnum<ELocation>()) {
+            foreach (var type in EnumValues.GetEnum<ELocation>())
+            {
                 if (LocationSettings.ContainsKey(type))
                     continue;
 
-                if (type == ELocation.None || type == ELocation.Terminal || type == ELocation.Town) {
+                if (type == ELocation.None || type == ELocation.Terminal || type == ELocation.Town)
+                {
                     continue;
                 }
                 LocationSettings.Add(type, new DifficultySettings());
@@ -30,11 +32,13 @@ namespace SAIN.Preset.GlobalSettings
         public DifficultySettings Current()
         {
             var gameworld = GameWorldComponent.Instance;
-            if (gameworld == null || gameworld.Location == null) {
+            if (gameworld == null || gameworld.Location == null)
+            {
                 Logger.LogError($"gameworld or location class null");
                 return null;
             }
-            if (LocationSettings.TryGetValue(gameworld.Location.Location, out var settings)) {
+            if (LocationSettings.TryGetValue(gameworld.Location.Location, out var settings))
+            {
                 return settings;
             }
             Logger.LogError($"no settings for {gameworld.Location.Location}");
@@ -44,7 +48,7 @@ namespace SAIN.Preset.GlobalSettings
         [Name("Location Specific Modifiers")]
         [Description("These modifiers only apply to bots on the location they are assigned to. Applies to all bots equally.")]
         [MinMax(0.01f, 5f, 100f)]
-        public Dictionary<ELocation, DifficultySettings> LocationSettings = new Dictionary<ELocation, DifficultySettings>();
+        public Dictionary<ELocation, DifficultySettings> LocationSettings = new();
 
         public override void Init(List<ISAINSettings> list)
         {

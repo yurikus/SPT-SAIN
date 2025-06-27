@@ -23,7 +23,8 @@ namespace SAIN.Preset.GlobalSettings
             string fileName = FileAndFolderNames[JsonEnum.GlobalSettings];
             string presetsFolder = FileAndFolderNames[JsonEnum.Presets];
 
-            if (!Load.LoadObject(out GlobalSettingsClass result, fileName, presetsFolder, Preset.Name)) {
+            if (!Load.LoadObject(out GlobalSettingsClass result, fileName, presetsFolder, Preset.Name))
+            {
                 result = new GlobalSettingsClass();
                 SaveObjectToJson(result, fileName, presetsFolder, Preset.Name);
             }
@@ -37,36 +38,33 @@ namespace SAIN.Preset.GlobalSettings
             Update();
         }
 
-        public DifficultySettings Difficulty = new DifficultySettings();
+        public DifficultySettings Difficulty = new();
 
-        public GeneralSettings General = new GeneralSettings();
+        public GeneralSettings General = new();
 
-        public AimSettings Aiming = new AimSettings();
+        public AimSettings Aiming = new();
 
-        public HearingSettings Hearing = new HearingSettings();
+        public HearingSettings Hearing = new();
 
-        public LocationSettingsClass Location = new LocationSettingsClass();
+        public LocationSettingsClass Location = new();
 
-        public LookSettings Look = new LookSettings();
+        public LookSettings Look = new();
 
-        public MindSettings Mind = new MindSettings();
+        public MindSettings Mind = new();
 
-        public GlobalMoveSettings Move = new GlobalMoveSettings();
+        public MoveSettings Move = new();
 
-        [Advanced]
-        public SteeringSettings Steering = new SteeringSettings();
+        public SteeringSettings Steering = new();
 
-        public ShootSettings Shoot = new ShootSettings();
+        public ShootSettings Shoot = new();
 
-        public TalkSettings Talk = new TalkSettings();
+        public TalkSettings Talk = new();
 
         [Name("Squad Talk")]
-        public SquadTalkSettings SquadTalk = new SquadTalkSettings();
+        public SquadTalkSettings SquadTalk = new();
 
         [Name("Power Level Calculation")]
-        [Advanced]
-        [Hidden]
-        public PowerCalcSettings PowerCalc = new PowerCalcSettings();
+        public PowerCalcSettings PowerCalc = new();
 
         public override void InitList()
         {

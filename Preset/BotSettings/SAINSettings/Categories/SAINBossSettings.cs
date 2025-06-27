@@ -1,6 +1,5 @@
 ﻿using SAIN.Attributes;
 using SAIN.Preset.GlobalSettings;
-using System.ComponentModel;
 
 namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 {

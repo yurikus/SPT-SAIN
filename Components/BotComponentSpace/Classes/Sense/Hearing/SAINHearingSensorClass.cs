@@ -57,10 +57,12 @@ namespace SAIN.SAINComponent.Classes
             sound.Results.Heard = Analysis.CheckIfSoundHeard(sound);
             sound.BulletData.BulletFelt = BulletAnalysis.DoIFeelBullet(sound);
 
-            if (checkReact(sound)) {
+            if (checkReact(sound))
+            {
                 LastHeardSound = sound;
             }
-            else {
+            else
+            {
                 LastFailedSound = sound;
             }
         }
@@ -69,12 +71,14 @@ namespace SAIN.SAINComponent.Classes
         {
             bool heard = sound.Results.Heard;
             bool bulletFelt = sound.BulletData.BulletFelt;
-            if (!heard && !bulletFelt) {
+            if (!heard && !bulletFelt)
+            {
                 return false;
             }
 
             if (bulletFelt &&
-                BulletAnalysis.DidShotFlyByMe(sound)) {
+                BulletAnalysis.DidShotFlyByMe(sound))
+            {
                 LastHeardSound = sound;
                 float unheardDispersionModifier = heard ? 1f : GlobalSettingsClass.Instance.Hearing.HEAR_DISPERSION_BULLET_FELT_MOD;
                 sound.Results.EstimatedPosition = Dispersion.CalcRandomizedPosition(sound, unheardDispersionModifier);
@@ -82,11 +86,13 @@ namespace SAIN.SAINComponent.Classes
                 return true;
             }
 
-            if (!heard) {
+            if (!heard)
+            {
                 return false;
             }
             if (sound.Info.IsGunShot &&
-                !shallChaseGunshot(sound)) {
+                !shallChaseGunshot(sound))
+            {
                 return false;
             }
 
@@ -98,10 +104,12 @@ namespace SAIN.SAINComponent.Classes
         private bool shallChaseGunshot(BotSound sound)
         {
             var searchSettings = Bot.Info.PersonalitySettings.Search;
-            if (searchSettings.WillChaseDistantGunshots) {
+            if (searchSettings.WillChaseDistantGunshots)
+            {
                 return true;
             }
-            if (sound.Distance > searchSettings.AudioStraightDistanceToIgnore) {
+            if (sound.Distance > searchSettings.AudioStraightDistanceToIgnore)
+            {
                 return false;
             }
             return true;
@@ -109,14 +117,17 @@ namespace SAIN.SAINComponent.Classes
 
         private IEnumerator baseHearDelay(float distance, float soundSpeed = -1f)
         {
-            if (soundSpeed == -1f) {
+            if (soundSpeed == -1f)
+            {
                 soundSpeed = SPEED_OF_SOUND;
             }
             float delay = distance / soundSpeed;
-            if (Bot?.EnemyController?.AtPeace == true) {
+            if (Bot?.EnemyController?.AtPeace == true)
+            {
                 delay += SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseHearingDelayAtPeace;
             }
-            else {
+            else
+            {
                 delay += SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseHearingDelayWithEnemy;
             }
             yield return new WaitForSeconds(delay);
@@ -132,19 +143,22 @@ namespace SAIN.SAINComponent.Classes
             Enemy enemy = sound.Enemy;
             if (Bot != null &&
                 sound.Info.SourcePlayer != null &&
-                enemy?.CheckValid() == true) {
+                enemy?.CheckValid() == true)
+            {
                 float projDist = sound.BulletData.ProjectionPointDistance;
                 bool underFire = projDist <= SAINPlugin.LoadedPreset.GlobalSettings.Mind.MaxUnderFireDistance;
-                if (!underFire && SoundInput.IgnoreHearing) {
+                if (!underFire && SoundInput.IgnoreHearing)
+                {
                     yield break;
                 }
 
-                if (underFire) {
+                if (underFire)
+                {
                     BotOwner?.HearingSensor?.OnEnemySounHearded?.Invoke(sound.Results.EstimatedPosition, sound.Distance, sound.Info.SoundType.Convert());
                     Bot.Memory.SetUnderFire(enemy, sound.Results.EstimatedPosition);
+                    enemy.SetEnemyAsSniper(enemy.RealDistance > GlobalSettings.Mind.ENEMYSNIPER_DISTANCE);
                 }
-                Bot.Suppression.AddSuppression(enemy, projDist);
-                enemy.SetEnemyAsSniper(sound.Distance > 100f);
+                Bot.Suppression.CheckAddSuppression(enemy, projDist);
                 enemy.Status.ShotAtMeRecently = true;
                 addPointToSearch(sound);
             }
@@ -156,7 +170,8 @@ namespace SAIN.SAINComponent.Classes
 
             if (Bot != null &&
                 sound.Info.SourcePlayer != null &&
-                sound.Enemy?.CheckValid() == true) {
+                sound.Enemy?.CheckValid() == true)
+            {
                 addPointToSearch(sound);
             }
         }
@@ -169,8 +184,10 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckCalcGoal()
         {
-            if (BotOwner.Memory.GoalEnemy == null) {
-                try {
+            if (BotOwner.Memory.GoalEnemy == null)
+            {
+                try
+                {
                     BotOwner.BotsGroup.CalcGoalForBot(BotOwner);
                 }
                 catch { }

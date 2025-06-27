@@ -21,7 +21,7 @@ namespace SAIN.SAINComponent.Classes.Info
             IsFollower = EnumValues.WildSpawn.IsFollower(WildSpawnType);
             IsScav = EnumValues.WildSpawn.IsScav(WildSpawnType);
             IsPMC = EnumValues.WildSpawn.IsPMC(WildSpawnType);
-            IsPlayerScav = IsScav && SAINEnableClass.isPlayerScav(NickName);
+            IsPlayerScav = IsScav && SAINEnableClass.IsPlayerScav(NickName);
             SetDiffModifier(BotDifficulty);
         }
 

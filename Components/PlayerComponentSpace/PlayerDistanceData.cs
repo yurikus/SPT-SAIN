@@ -10,7 +10,7 @@ namespace SAIN.Components.PlayerComponentSpace
         public Vector3 DirectionNormal { get; private set; } = Vector3.zero;
         public float Distance { get; private set; } = float.MaxValue;
 
-        public readonly Dictionary<EBodyPart, float> BodyPartDistances = new Dictionary<EBodyPart, float>
+        public readonly Dictionary<EBodyPart, float> BodyPartDistances = new()
         {
             { EBodyPart.Head, float.MaxValue },
             { EBodyPart.Chest, float.MaxValue },

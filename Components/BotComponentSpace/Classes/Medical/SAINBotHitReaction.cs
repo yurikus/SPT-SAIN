@@ -1,5 +1,6 @@
 ﻿using EFT;
 using EFT.HealthSystem;
+using SAIN.Models.Enums;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -68,17 +69,20 @@ namespace SAIN.SAINComponent.Classes
         private float TimeStunHappened;
         private float StunTime;
 
-        public bool IsStunned {
+        public bool IsStunned
+        {
             get
             {
-                if (_isStunned && StunTime < Time.time) {
+                if (_isStunned && StunTime < Time.time)
+                {
                     _isStunned = false;
                 }
                 return _isStunned;
             }
             set
             {
-                if (value) {
+                if (value)
+                {
                     TimeStunHappened = Time.time;
                     StunTime = Time.time + BaseStunTime * UnityEngine.Random.Range(0.75f, 1.25f);
                 }
@@ -93,6 +97,6 @@ namespace SAIN.SAINComponent.Classes
             return false;
         }
 
-        public Dictionary<EBodyPart, BodyPartStatus> BodyParts = new Dictionary<EBodyPart, BodyPartStatus>();
+        public Dictionary<EBodyPart, BodyPartStatus> BodyParts = new();
     }
 }

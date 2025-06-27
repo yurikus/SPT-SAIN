@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using SAIN.Models.Enums;
+using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {

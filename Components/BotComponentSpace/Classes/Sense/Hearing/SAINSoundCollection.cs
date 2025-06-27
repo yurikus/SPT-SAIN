@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.Classes
 
         public void UpdatePlayer()
         {
-            if (getPlayerTimer < Time.time && Player == null && IPlayer != null) 
+            if (getPlayerTimer < Time.time && Player == null && IPlayer != null)
             {
                 getPlayerTimer = Time.time + 1f;
                 Player = GameWorldInfo.GetAlivePlayer(IPlayer);
@@ -105,7 +105,7 @@ namespace SAIN.SAINComponent.Classes
                     bool remove =
                         IPlayer == null
                         || Player == null
-                        || sound.IsTooOld 
+                        || sound.IsTooOld
                         || sound.IsTooFar;
 
                     if (remove)
@@ -170,6 +170,6 @@ namespace SAIN.SAINComponent.Classes
             return reason;
         }
 
-        private readonly List<SAINSound> SoundsToRemove = new List<SAINSound>();
+        private readonly List<SAINSound> SoundsToRemove = new();
     }
 }

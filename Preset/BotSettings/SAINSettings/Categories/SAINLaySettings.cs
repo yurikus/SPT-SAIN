@@ -1,7 +1,4 @@
-﻿using EFT;
-using Newtonsoft.Json;
-using SAIN.Preset.GlobalSettings;
-using System.Reflection;
+﻿using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 {

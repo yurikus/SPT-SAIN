@@ -1,5 +1,7 @@
-﻿using EFT;
+﻿using DrakiaXYZ.BigBrain.Brains;
+using EFT;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
@@ -18,34 +20,47 @@ namespace SAIN.Layers.Combat.Solo.Cover
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             Bot.Steering.SteerByPriority();
             Shoot.CheckAimAndFire();
-
-            CoverPoint coverInUse = CoverInUse;
-            if (coverInUse == null) {
-                Bot.Mover.DogFight.DogFightMove(true);
-                return;
-            }
-
-            adjustPosition();
-            Bot.Cover.DuckInCover();
-            checkSetProne();
-            checkSetLean();
+            checkPositionAdjustments();
+            this.EndProfilingSample();
         }
 
-        private void adjustPosition()
+        private void checkPositionAdjustments()
         {
-            if (_nextCheckPosTime < Time.time) {
+            CoverPoint coverInUse = CoverInUse;
+            if (coverInUse == null)
+            {
+                Bot.Mover.DogFight.DogFightMove(true);
+            }
+            else
+            {
+                adjustMyPosition();
+                Bot.Cover.DuckInCover();
+                checkSetProne();
+                checkSetLean();
+            }
+        }
+
+        private void adjustMyPosition()
+        {
+            if (_nextCheckPosTime < Time.time)
+            {
                 _nextCheckPosTime = Time.time + 1f;
                 Vector3 coverPos = CoverInUse.Position;
-                if (!Bot.Player.IsInPronePose && (coverPos - _position).sqrMagnitude > 0.5f) {
+                if (!Bot.Player.IsInPronePose
+                    && (coverPos - _position).sqrMagnitude > 0.5f)
+                {
                     _position = coverPos;
                     Bot.Mover.GoToPoint(coverPos, out _, 0.5f);
-                    return;
                 }
-                Bot.Mover.StopMove();
+                else
+                {
+                    Bot.Mover.StopMove();
+                }
             }
         }
 
@@ -54,36 +69,41 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         private void checkSetProne()
         {
+            if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
+            {
+                return;
+            }
             if (Bot.Enemy != null
                 && Bot.Player.MovementContext.CanProne
                 && Bot.Player.PoseLevel <= 0.1
                 && Bot.Enemy.IsVisible
-                && BotOwner.WeaponManager.Reload.Reloading) {
+                && BotOwner.WeaponManager.Reload.Reloading)
+            {
                 Bot.Mover.Prone.SetProne(true);
             }
         }
 
         private void checkSetLean()
         {
-            if (Bot.Suppression.IsSuppressed) {
+            if (!Bot.Info.FileSettings.Move.LEAN_INCOVER_TOGGLE
+                || !GlobalSettingsClass.Instance.Move.LEAN_INCOVER_TOGGLE
+                || Bot.Suppression.IsSuppressed
+                || Bot.Decision.CurrentSelfDecision != ESelfDecision.None)
+            {
                 Bot.Mover.FastLean(LeanSetting.None);
                 CurrentLean = LeanSetting.None;
                 return;
             }
 
-            if (Bot.Decision.CurrentSelfDecision != ESelfDecision.None) {
-                Bot.Mover.FastLean(LeanSetting.None);
-                CurrentLean = LeanSetting.None;
-                return;
-            }
-
-            if (CurrentLean != LeanSetting.None && ShallHoldLean()) {
+            if (CurrentLean != LeanSetting.None && ShallHoldLean())
+            {
                 Bot.Mover.FastLean(CurrentLean);
                 ChangeLeanTimer = Time.time + 0.66f;
                 return;
             }
 
-            if (ChangeLeanTimer < Time.time) {
+            if (ChangeLeanTimer < Time.time)
+            {
                 setLean();
             }
         }
@@ -91,7 +111,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
         private void setLean()
         {
             LeanSetting newLean;
-            switch (CurrentLean) {
+            switch (CurrentLean)
+            {
                 case LeanSetting.Left:
                 case LeanSetting.Right:
                     newLean = LeanSetting.None;
@@ -100,14 +121,16 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
                 default:
                     newLean = Bot.Mover.Lean.FindLeanFromBlindCornerAngle(Bot.Enemy);
-                    if (newLean == LeanSetting.None) {
+                    if (newLean == LeanSetting.None)
+                    {
                         newLean = EFTMath.RandomBool() ? LeanSetting.Left : LeanSetting.Right;
                     }
                     ChangeLeanTimer = Time.time + Random.Range(0.5f, 2f);
                     break;
             }
 
-            if (checkLeanIntoObject(newLean)) {
+            if (checkLeanIntoObject(newLean))
+            {
                 return;
             }
             CurrentLean = newLean;
@@ -120,7 +143,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
         {
             Vector3 headPos = Bot.Transform.HeadPosition;
             Vector3 rayEnd = lean == LeanSetting.Right ? Bot.Transform.DirectionData.Right() : Bot.Transform.DirectionData.Left();
-            switch (lean) {
+            switch (lean)
+            {
                 case LeanSetting.Right:
                 case LeanSetting.Left:
                     return Vector.Raycast(headPos, headPos + (rayEnd * RAYCAST_LEAN_HITOBJECT_DIST), LayerMaskClass.HighPolyWithTerrainMask);
@@ -132,17 +156,21 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         private bool ShallHoldLean()
         {
-            if (Bot.Suppression.IsSuppressed) {
+            if (Bot.Suppression.IsSuppressed)
+            {
                 return false;
             }
             Enemy enemy = Bot.Enemy;
-            if (enemy == null || !enemy.Seen) {
+            if (enemy == null || !enemy.Seen)
+            {
                 return false;
             }
-            if (enemy.IsVisible && enemy.CanShoot) {
+            if (enemy.IsVisible && enemy.CanShoot)
+            {
                 return true;
             }
-            if (enemy.TimeSinceSeen < 3f) {
+            if (enemy.TimeSinceSeen < 3f)
+            {
                 return true;
             }
             return false;
@@ -150,7 +178,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         private void Lean(LeanSetting setting, bool holdLean)
         {
-            if (holdLean) {
+            if (holdLean)
+            {
                 return;
             }
             CurrentLean = setting;
@@ -167,6 +196,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Toggle(true);
             ChangeLeanTimer = Time.time + 2f;
             CoverInUse = Bot.Cover.CoverInUse;
+            if (CoverInUse != null)
+            {
+                _position = CoverInUse.Position;
+            }
         }
 
         public override void Stop()
@@ -188,14 +221,17 @@ namespace SAIN.Layers.Combat.Solo.Cover
             stringBuilder.AppendLabeledValue("Current Cover Value", $"{CoverInUse?.HardData.Value}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("CoverFinder State", $"{cover.CurrentCoverFinderState}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Cover Count", $"{cover.CoverPoints.Count}", Color.white, Color.yellow, true);
-            if (Bot.CurrentTargetPosition != null) {
+            if (Bot.CurrentTargetPosition != null)
+            {
                 stringBuilder.AppendLabeledValue("Current Target Position", $"{Bot.CurrentTargetPosition.Value}", Color.white, Color.yellow, true);
             }
-            else {
+            else
+            {
                 stringBuilder.AppendLabeledValue("Current Target Position", null, Color.white, Color.yellow, true);
             }
 
-            if (CoverInUse != null) {
+            if (CoverInUse != null)
+            {
                 stringBuilder.AppendLine("Cover In Use");
                 stringBuilder.AppendLabeledValue("Status", $"{CoverInUse.StraightDistanceStatus}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Height / Value", $"{CoverInUse.CoverHeight} {CoverInUse.HardData.Value}", Color.white, Color.yellow, true);

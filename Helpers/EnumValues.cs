@@ -50,27 +50,27 @@ namespace SAIN.Helpers
             }
 
             public static WildSpawnType[] Scavs =
-            {
+            [
                 WildSpawnType.assault,
                 WildSpawnType.assaultGroup,
                 WildSpawnType.crazyAssaultEvent,
                 WildSpawnType.cursedAssault,
                 WildSpawnType.marksman
-            };
+            ];
 
             public static WildSpawnType[] Goons =
-            {
+            [
                 WildSpawnType.bossKnight,
                 WildSpawnType.followerBigPipe,
                 WildSpawnType.followerBirdEye,
-            };
+            ];
 
             public static WildSpawnType[] Cultists =
-            {
+            [
                 WildSpawnType.sectactPriestEvent,
                 WildSpawnType.sectantPriest,
                 WildSpawnType.sectantWarrior,
-            };
+            ];
 
             public static List<WildSpawnType> Bosses;
             public static List<WildSpawnType> Followers;
@@ -78,7 +78,7 @@ namespace SAIN.Helpers
 
         public static T Parse<T>(string value) => (T)Enum.Parse(typeof(T), value);
 
-        public static readonly BotDifficulty[] Difficulties = { BotDifficulty.easy, BotDifficulty.normal, BotDifficulty.hard, BotDifficulty.impossible };
+        public static readonly BotDifficulty[] Difficulties = [BotDifficulty.easy, BotDifficulty.normal, BotDifficulty.hard, BotDifficulty.impossible];
         public static readonly WildSpawnType[] WildSpawnTypes = GetEnum<WildSpawnType>();
 
         public static readonly ECaliber[] AmmoCalibers = GetEnum<ECaliber>();

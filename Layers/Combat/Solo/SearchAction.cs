@@ -1,5 +1,8 @@
-﻿using EFT;
+﻿using DrakiaXYZ.BigBrain.Brains;
+using EFT;
 using SAIN.Helpers;
+using SAIN.Models.Enums;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
 using UnityEngine;
@@ -38,48 +41,63 @@ namespace SAIN.Layers.Combat.Solo
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
+            this.StartProfilingSample("Update");
             setTargetEnemy();
+            updateSearch();
+            this.EndProfilingSample();
+        }
+
+        private void updateSearch()
+        {
             var enemy = _searchTarget;
-            if (enemy == null) return;
+            if (enemy != null)
+            {
+                bool isBeingStealthy = enemy.Hearing.EnemyHeardFromPeace;
+                if (isBeingStealthy)
+                {
+                    _sprintEnabled = false;
+                }
+                else
+                {
+                    checkShouldSprint();
+                    talk();
+                }
 
-            bool isBeingStealthy = enemy.Hearing.EnemyHeardFromPeace;
-            if (isBeingStealthy) {
-                _sprintEnabled = false;
-            }
-            else {
-                checkShouldSprint();
-                talk();
-            }
+                steer();
 
-            steer();
+                if (_nextUpdateSearchTime < Time.time)
+                {
+                    _nextUpdateSearchTime = Time.time + 0.1f;
+                    Search.Search(_sprintEnabled, enemy);
+                }
 
-            if (_nextUpdateSearchTime < Time.time) {
-                _nextUpdateSearchTime = Time.time + 0.1f;
-                Search.Search(_sprintEnabled, enemy);
-            }
-
-            if (!_sprintEnabled) {
-                Shoot.CheckAimAndFire();
-                if (!isBeingStealthy)
-                    checkWeapon();
+                if (!_sprintEnabled)
+                {
+                    Shoot.CheckAimAndFire();
+                    if (!isBeingStealthy)
+                        checkWeapon();
+                }
             }
         }
 
         private void checkClearEnemy(string profileId, Enemy enemy)
         {
-            if (_searchTarget == null) {
+            if (_searchTarget == null)
+            {
                 return;
             }
-            if (_searchTarget.EnemyProfileId == profileId) {
+            if (_searchTarget.EnemyProfileId == profileId)
+            {
                 clearSearchTarget();
             }
         }
 
         private void enemyChanged(Enemy enemy, Enemy lastEnemy)
         {
-            if (_searchTarget == null) {
+            if (_searchTarget == null)
+            {
                 return;
             }
             clearSearchTarget();
@@ -97,11 +115,13 @@ namespace SAIN.Layers.Combat.Solo
             if (_searchTarget != null &&
                 (!_searchTarget.EnemyKnown ||
                 !_searchTarget.Person.Active ||
-                !_searchTarget.CheckValid())) {
+                !_searchTarget.CheckValid()))
+            {
                 clearSearchTarget();
             }
             var activeEnemy = Bot.Enemy;
-            if (_searchTarget == null) {
+            if (_searchTarget == null)
+            {
                 if (activeEnemy == null) return;
                 setSearchTarget(activeEnemy);
             }
@@ -116,16 +136,19 @@ namespace SAIN.Layers.Combat.Solo
 
         private void talk()
         {
-            if (Search.FinalDestination == null) {
+            if (Search.FinalDestination == null)
+            {
                 return;
             }
 
             // Scavs will speak out and be more vocal
             if (!_haveTalked &&
                 Bot.Info.Profile.IsScav &&
-                (BotOwner.Position - Search.FinalDestination.Value).sqrMagnitude < 50f * 50f) {
+                (BotOwner.Position - Search.FinalDestination.Value).sqrMagnitude < 50f * 50f)
+            {
                 _haveTalked = true;
-                if (EFTMath.RandomBool(40)) {
+                if (EFTMath.RandomBool(40))
+                {
                     Bot.Talk.Say(EPhraseTrigger.OnMutter, ETagStatus.Aware, true);
                 }
             }
@@ -133,9 +156,11 @@ namespace SAIN.Layers.Combat.Solo
 
         private void checkWeapon()
         {
-            if (_nextCheckWeaponTime < Time.time) {
+            if (_nextCheckWeaponTime < Time.time)
+            {
                 _nextCheckWeaponTime = Time.time + 180f * Random.Range(0.5f, 1.5f);
-                if (_searchTarget.TimeSinceLastKnownUpdated > 30f) {
+                if (_searchTarget.TimeSinceLastKnownUpdated > 30f)
+                {
                     if (EFTMath.RandomBool())
                         Bot.Player.HandsController.FirearmsAnimator.CheckAmmo();
                     else
@@ -147,36 +172,49 @@ namespace SAIN.Layers.Combat.Solo
         private void checkShouldSprint()
         {
             //  || Search.CurrentState == ESearchMove.MoveToDangerPoint
-            if (Search.CurrentState == ESearchMove.MoveToEndPeek || Search.CurrentState == ESearchMove.Wait) {
+            if (Search.CurrentState == ESearchMove.MoveToEndPeek || Search.CurrentState == ESearchMove.Wait)
+            {
                 _sprintEnabled = false;
                 return;
             }
 
             //  || Bot.Enemy?.InLineOfSight == true
-            if (_searchTarget?.IsVisible == true) {
+            if (_searchTarget?.IsVisible == true)
+            {
                 _sprintEnabled = false;
                 return;
             }
 
-            if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Help) {
+            if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Help)
+            {
+                _sprintEnabled = true;
+                return;
+            }
+
+            if (_searchTarget.IsSniper && GlobalSettingsClass.Instance.Mind.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH)
+            {
                 _sprintEnabled = true;
                 return;
             }
 
             var persSettings = Bot.Info.PersonalitySettings;
             float chance = persSettings.Search.SprintWhileSearchChance;
-            if (_sprintTimer < Time.time && chance > 0) {
+            if (_sprintTimer < Time.time && chance > 0)
+            {
                 float myPower = Bot.Info.Profile.PowerLevel;
-                if (Bot.Enemy?.EnemyPlayer != null && Bot.Enemy.EnemyPlayer.AIData.PowerOfEquipment < myPower * 0.5f) {
+                if (_searchTarget?.EnemyPlayer != null && _searchTarget.EnemyPlayer.AIData.PowerOfEquipment < myPower * 0.5f)
+                {
                     chance = 100f;
                 }
 
                 _sprintEnabled = EFTMath.RandomBool(chance);
                 float timeAdd;
-                if (_sprintEnabled) {
+                if (_sprintEnabled)
+                {
                     timeAdd = 4f * Random.Range(0.5f, 2.00f);
                 }
-                else {
+                else
+                {
                     timeAdd = 4f * Random.Range(0.5f, 1.5f);
                 }
                 _sprintTimer = Time.time + timeAdd;
@@ -185,14 +223,16 @@ namespace SAIN.Layers.Combat.Solo
 
         private void steer()
         {
-            if (!Bot.Steering.SteerByPriority(_searchTarget, false)) {
+            if (!Bot.Steering.SteerByPriority(_searchTarget, false))
+            {
                 Bot.Steering.LookToMovingDirection();
             }
         }
 
         private void subscribeToBotEvents()
         {
-            if (!_subscribed) {
+            if (!_subscribed)
+            {
                 Bot.EnemyController.Events.OnEnemyRemoved += checkClearEnemy;
                 Bot.EnemyController.Events.OnEnemyChanged += enemyChanged;
                 _subscribed = true;

@@ -1,20 +1,16 @@
 ﻿using EFT.UI;
 using SAIN.Attributes;
-using SAIN.Editor.Util;
-using SAIN.Helpers;
 using SAIN.Plugin;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using UnityEngine;
 using static SAIN.Editor.SAINLayout;
 
 namespace SAIN.Editor.GUISections
 {
     public static class BotSettingsEditor
     {
-        private static readonly StringBuilder _stringBuilder = new StringBuilder();
+        private static readonly StringBuilder _stringBuilder = new();
+
         public static void ShowAllSettingsGUI(object settings, out bool wasEdited, string name, string savePath, float height, out bool Saved)
         {
             BeginHorizontal();
@@ -27,15 +23,15 @@ namespace SAIN.Editor.GUISections
 
             var container = SettingsContainers.GetContainer(settings.GetType(), name);
             container.SearchPattern = TextField(
-                container.SearchPattern, 
-                null, 
-                Width(250), 
+                container.SearchPattern,
+                null,
+                Width(250),
                 Height(height));
 
             if (Button(
-                "Clear", 
-                EUISoundType.MenuContextMenu, 
-                Width(80), 
+                "Clear",
+                EUISoundType.MenuContextMenu,
+                Width(80),
                 Height(height)))
             {
                 container.SearchPattern = string.Empty;
@@ -57,12 +53,11 @@ namespace SAIN.Editor.GUISections
 
             Saved = Button(
                 "Save and Export",
-                ConfigEditingTracker.GetUnsavedValuesString(), 
+                ConfigEditingTracker.GetUnsavedValuesString(),
                 EUISoundType.InsuranceInsured,
                 Height(height));
 
             EndHorizontal();
-
 
             container.Scroll = BeginScrollView(container.Scroll);
 
@@ -115,7 +110,7 @@ namespace SAIN.Editor.GUISections
                 }
                 else
                 {
-                    Box(attributes.Name, attributes.Description, Height(EntryConfig.EntryHeight));
+                    Box(attributes.Name, attributes.Description, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
                 }
 
                 EndHorizontal(30);
@@ -131,6 +126,6 @@ namespace SAIN.Editor.GUISections
             }
         }
 
-        private static readonly GUIEntryConfig EntryConfig = new GUIEntryConfig(30f);
+        private static readonly GUIEntryConfig EntryConfig = new();
     }
 }

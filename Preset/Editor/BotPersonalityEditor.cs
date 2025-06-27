@@ -3,7 +3,6 @@ using SAIN.Plugin;
 using SAIN.Preset;
 using System.Collections.Generic;
 using static SAIN.Attributes.AttributesGUI;
-using static SAIN.Editor.SAINLayout;
 
 namespace SAIN.Editor.GUISections
 {
@@ -19,30 +18,34 @@ namespace SAIN.Editor.GUISections
             string toolTip = $"Apply Values set below to Personalities. " +
                 $"Exports edited values to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}/Personalities folder";
 
-            if (BuilderClass.SaveChanges(ConfigEditingTracker.GetUnsavedValuesString(), 35)) {
+            if (BuilderClass.SaveChanges(ConfigEditingTracker.GetUnsavedValuesString(), 35))
+            {
                 SAINPresetClass.ExportAll(SAINPlugin.LoadedPreset);
             }
 
-            var personalities = SAINPresetClass.Instance.PersonalityManager.PersonalityDictionary;
-            if (_options.Count == 0) {
-                _options.AddRange(personalities.Keys);
-            }
-
-            _selected = BuilderClass.SelectionGrid(_selected, 35f, 4, _options);
-            if (_selected == EPersonality.None) {
-                return;
-            }
-
-            if (personalities.TryGetValue(_selected, out var settings)) {
+            _selected = SelectPersonality(_selected, 35f, 4);
+            if (_selected != EPersonality.None &&
+                SAINPresetClass.Instance.PersonalityManager.PersonalityDictionary.TryGetValue(_selected, out var settings))
+            {
                 EditAllValuesInObj(settings, out bool newEdit, null, null, 1);
             }
+            ;
+        }
+
+        public static EPersonality SelectPersonality(EPersonality selected, float height, int optionsPerLine)
+        {
+            if (_options.Count == 0)
+            {
+                _options.AddRange(SAINPresetClass.Instance.PersonalityManager.PersonalityDictionary.Keys);
+            }
+            return BuilderClass.SelectionGrid(selected, height, optionsPerLine, _options);
         }
 
         private static EPersonality _selected = EPersonality.None;
         public static bool PersonalitiesWereEdited => ConfigEditingTracker.UnsavedChanges;
 
-        private static List<EPersonality> _options = new List<EPersonality>();
+        private static List<EPersonality> _options = new();
 
-        private static readonly Dictionary<string, bool> OpenPersMenus = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, bool> OpenPersMenus = new();
     }
 }

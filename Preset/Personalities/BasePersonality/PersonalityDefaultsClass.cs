@@ -1,6 +1,5 @@
 ﻿using EFT;
 using System.Collections.Generic;
-using static SAIN.Helpers.EnumValues;
 
 namespace SAIN.Preset.Personalities
 {
@@ -95,7 +94,8 @@ namespace SAIN.Preset.Personalities
 
             addPMCs(settings.Assignment.AllowedTypes);
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -162,7 +162,8 @@ namespace SAIN.Preset.Personalities
 
             addAllTypes(settings.Assignment.AllowedTypes);
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -230,7 +231,8 @@ namespace SAIN.Preset.Personalities
 
             addPMCs(settings.Assignment.AllowedTypes);
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -299,7 +301,8 @@ namespace SAIN.Preset.Personalities
 
             addPMCs(settings.Assignment.AllowedTypes);
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -375,7 +378,8 @@ namespace SAIN.Preset.Personalities
             allowedTypes.Remove(WildSpawnType.pmcBot);
 
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -451,7 +455,8 @@ namespace SAIN.Preset.Personalities
             allowedTypes.Remove(WildSpawnType.pmcBot);
 
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -502,7 +507,8 @@ namespace SAIN.Preset.Personalities
             allowedTypes.Remove(WildSpawnType.pmcBot);
 
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -559,7 +565,8 @@ namespace SAIN.Preset.Personalities
             addAllTypes(allowedTypes);
 
             Personalities.Add(personality, settings);
-            if (Preset.Info.IsCustom == true) {
+            if (Preset.Info.IsCustom == true)
+            {
                 SAINPresetClass.Export(settings, Preset.Info.Name, personality.ToString(), nameof(Personalities));
             }
         }
@@ -573,7 +580,8 @@ namespace SAIN.Preset.Personalities
         private static void addAllTypes(List<WildSpawnType> allowedTypes)
         {
             allowedTypes.Clear();
-            foreach (var botType in BotTypeDefinitions.BotTypes) {
+            foreach (var botType in BotTypeDefinitions.BotTypes)
+            {
                 allowedTypes.Add(botType.Key);
             }
         }

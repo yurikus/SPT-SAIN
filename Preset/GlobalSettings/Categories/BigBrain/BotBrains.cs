@@ -25,7 +25,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
         public static readonly List<Brain> AllBrainsList = AllBrains.ToList();
 
         public static readonly Brain[] Bosses =
-        {
+        [
             Brain.BossBully,
             Brain.BossGluhar,
             Brain.Knight,
@@ -35,10 +35,13 @@ namespace SAIN.Preset.GlobalSettings.Categories
             //Brain.BossZryachiy,
             Brain.Killa,
             Brain.SectantPriest,
-        };
+            Brain.BossBoar,
+            Brain.BossKolontay,
+            Brain.BossPartisan,
+        ];
 
         public static readonly Brain[] Followers =
-        {
+        [
             Brain.FollowerBully,
             Brain.FollowerGluharAssault,
             Brain.FollowerGluharProtect,
@@ -50,21 +53,27 @@ namespace SAIN.Preset.GlobalSettings.Categories
             Brain.SectantWarrior,
             Brain.BigPipe,
             Brain.BirdEye,
-        };
+            Brain.FollowerBoar,
+            Brain.FollowerBoarClose1,
+            Brain.FollowerBoarClose2,
+            Brain.BossBoarSniper,
+            Brain.FollowerKolontayAssault,
+            Brain.FollowerKolontaySecurity,
+        ];
 
         public static readonly Brain[] Goons =
-        {
+        [
             Brain.Knight,
             Brain.BigPipe,
             Brain.BirdEye,
-        };
+        ];
 
         public static readonly Brain[] Special =
-        {
+        [
             Brain.BossTest,
             Brain.Obdolbs,
             Brain.Gifter,
             Brain.CursAssault,
-        };
+        ];
     }
 }

@@ -1,6 +1,8 @@
 ﻿using EFT;
 using HarmonyLib;
 using SAIN.Helpers;
+using SAIN.Models.Enums;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Reflection;
 using UnityEngine;
@@ -9,6 +11,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 {
     public class ProneClass : BotBase, IBotClass
     {
+        private float _nextChangeProneTime { get; set; }
+        private bool _canshoot { get; set; }
+        private float _nextCheckShootTime { get; set; }
+
         public ProneClass(BotComponent sain) : base(sain)
         {
         }
@@ -26,22 +32,17 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
         }
 
-        static ProneClass()
-        {
-            _isProneProperty = AccessTools.Property(typeof(BotOwner), "BotLay").PropertyType.GetProperty("IsLay");
-        }
-
-        private static readonly PropertyInfo _isProneProperty;
-
-        public bool IsProne => BotOwner.BotLay.IsLay;
-
         public void SetProne(bool value)
         {
-            _isProneProperty.SetValue(BotLay, value);
+            BotOwner.BotLay.IsLay = value;
         }
 
         public bool ShallProne(bool withShoot, float mindist = 25f)
         {
+            if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
+            {
+                return false;
+            }
             if (Player.MovementContext.CanProne)
             {
                 var enemy = Bot.Enemy;
@@ -63,6 +64,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool ShallProneHide(float mindist = 10f)
         {
+            if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
+            {
+                return false;
+            }
             if (_nextChangeProneTime > Time.time)
             {
                 return Player.IsInPronePose;
@@ -90,7 +95,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfDecision.None || Bot.Suppression.IsHeavySuppressed;
-            bool shallProne = isUnderDuress || !checkShootProne(lastKnownPos.Value, enemy);
+            bool shallProne = isUnderDuress || !CheckShootProne(lastKnownPos.Value, enemy);
             if (shallProne)
             {
                 _nextChangeProneTime = Time.time + 3f;
@@ -98,9 +103,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             return shallProne;
         }
 
-        private float _nextChangeProneTime;
-
-        private bool checkShootProne(Vector3? lastKnownPos, Enemy enemy)
+        private bool CheckShootProne(Vector3? lastKnownPos, Enemy enemy)
         {
             if (_nextCheckShootTime > Time.time)
             {
@@ -120,12 +123,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             return _canshoot;
         }
 
-        private bool _canshoot;
-        private float _nextCheckShootTime;
-
         public bool ShallGetUp(float mindist = 30f)
         {
-            if (BotLay.IsLay)
+            if (BotOwner.BotLay.IsLay)
             {
                 var enemy = Bot.Enemy;
                 if (enemy == null)
@@ -159,7 +159,5 @@ namespace SAIN.SAINComponent.Classes.Mover
             float lay_DOWN_ANG_SHOOT = HelpersGClass.LAY_DOWN_ANG_SHOOT;
             return num <= Mathf.Abs(lay_DOWN_ANG_SHOOT) && Vector.CanShootToTarget(new ShootPointClass(target, 1f), vector, BotOwner.LookSensor.Mask, true);
         }
-
-        public BotLay BotLay => BotOwner.BotLay;
     }
 }

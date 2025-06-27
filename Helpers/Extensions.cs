@@ -1,11 +1,8 @@
-﻿using Comfort.Common;
-using EFT;
+﻿using EFT;
 using EFT.UI;
 using JetBrains.Annotations;
-using Newtonsoft.Json.Linq;
 using SAIN.Editor;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -20,7 +17,8 @@ namespace SAIN.Helpers
         public static void Shuffle<T>(this IList<T> list)
         {
             int n = list.Count;
-            while (n > 1) {
+            while (n > 1)
+            {
                 n--;
                 int k = ThreadSafeRandom.ThisThreadsRandom.Next(n + 1);
                 T value = list[k];
@@ -45,9 +43,10 @@ namespace SAIN.Helpers
             return place.Position;
         }
 
-        public static bool isLegs(this EBodyPart part)
+        public static bool IsLegs(this EBodyPart part)
         {
-            switch (part) {
+            switch (part)
+            {
                 case EBodyPart.LeftLeg:
                 case EBodyPart.RightLeg:
                     return true;
@@ -57,23 +56,24 @@ namespace SAIN.Helpers
             }
         }
 
-        public static bool isPMC(this WildSpawnType type)
+        public static bool IsPMC(this WildSpawnType type)
         {
-            switch (type) {
+            switch (type)
+            {
                 case WildSpawnType.pmcBEAR:
                 case WildSpawnType.pmcUSEC:
                     return true;
 
-                    default:
+                default:
                     return false;
             }
         }
 
-        public static bool isBoss(this WildSpawnType type)
+        public static bool IsBoss(this WildSpawnType type)
         {
-            switch (type) {
+            switch (type)
+            {
                 case WildSpawnType.bossBoar:
-                case WildSpawnType.bossBoarSniper:
                 case WildSpawnType.bossTagilla:
                 case WildSpawnType.bossKilla:
                 case WildSpawnType.bossBully:
@@ -82,35 +82,39 @@ namespace SAIN.Helpers
                 case WildSpawnType.bossKojaniy:
                 case WildSpawnType.bossKolontay:
                 case WildSpawnType.bossZryachiy:
+                case WildSpawnType.bossPartisan:
                     return true;
 
-                    default:
+                default:
                     return false;
             }
         }
 
-        public static bool isOther(this WildSpawnType type)
+        public static bool IsOther(this WildSpawnType type)
         {
-            switch (type) {
+            switch (type)
+            {
                 case WildSpawnType.pmcBot:
                 case WildSpawnType.exUsec:
                 case WildSpawnType.arenaFighter:
                 case WildSpawnType.arenaFighterEvent:
                     return true;
-                    default:
+                default:
                     return false;
             }
         }
 
-        public static bool isFollower(this WildSpawnType type)
+        public static bool IsFollower(this WildSpawnType type)
         {
-            switch (type) {
+            switch (type)
+            {
                 case WildSpawnType.followerBigPipe:
                 case WildSpawnType.followerTagilla:
                 case WildSpawnType.followerBirdEye:
                 case WildSpawnType.followerBoar:
                 case WildSpawnType.followerBoarClose1:
                 case WildSpawnType.followerBoarClose2:
+                case WildSpawnType.bossBoarSniper:
                 case WildSpawnType.followerBully:
                 case WildSpawnType.followerGluharAssault:
                 case WildSpawnType.followerGluharScout:
@@ -121,40 +125,43 @@ namespace SAIN.Helpers
                 case WildSpawnType.followerZryachiy:
                     return true;
 
-                    default:
+                default:
                     return false;
             }
         }
 
-        public static bool isScav(this WildSpawnType type)
+        public static bool IsScav(this WildSpawnType type)
         {
-            switch (type) {
+            switch (type)
+            {
                 case WildSpawnType.assault:
                 case WildSpawnType.assaultGroup:
                 case WildSpawnType.marksman:
                 case WildSpawnType.crazyAssaultEvent:
                 case WildSpawnType.cursedAssault:
                     return true;
-                    default:
+                default:
                     return false;
             }
         }
 
-        public static bool isGoons(this WildSpawnType type)
+        public static bool IsGoons(this WildSpawnType type)
         {
-            switch (type) {
+            switch (type)
+            {
                 case WildSpawnType.bossKnight:
                 case WildSpawnType.followerBirdEye:
                 case WildSpawnType.followerBigPipe:
                     return true;
-                    default:
+                default:
                     return false;
             }
         }
 
-        public static bool isArms(this EBodyPart part)
+        public static bool IsArms(this EBodyPart part)
         {
-            switch (part) {
+            switch (part)
+            {
                 case EBodyPart.LeftArm:
                 case EBodyPart.RightArm:
                     return true;
@@ -175,7 +182,8 @@ namespace SAIN.Helpers
 
         public static SAINSoundType Convert(this AISoundType aiSoundType)
         {
-            switch (aiSoundType) {
+            switch (aiSoundType)
+            {
                 case AISoundType.silencedGun:
                     return SAINSoundType.SuppressedShot;
 
@@ -189,7 +197,8 @@ namespace SAIN.Helpers
 
         public static AISoundType Convert(this SAINSoundType sainSoundType)
         {
-            switch (sainSoundType) {
+            switch (sainSoundType)
+            {
                 case SAINSoundType.SuppressedShot:
                     return AISoundType.silencedGun;
 
@@ -203,7 +212,8 @@ namespace SAIN.Helpers
 
         public static bool IsGunShot(this SAINSoundType sainSoundType)
         {
-            switch (sainSoundType) {
+            switch (sainSoundType)
+            {
                 case SAINSoundType.SuppressedShot:
                 case SAINSoundType.Shot:
                     return true;
@@ -216,7 +226,8 @@ namespace SAIN.Helpers
         public static Vector3? GetCornerAtIndex(this NavMeshPath path, int index)
         {
             Vector3[] corners = path.corners;
-            if (corners == null) {
+            if (corners == null)
+            {
                 return null;
             }
             return GetVector3AtIndex(corners, index);
@@ -224,7 +235,8 @@ namespace SAIN.Helpers
 
         public static Vector3? GetVector3AtIndex(this List<Vector3> list, int index)
         {
-            if (GetItemAtIndex(list, index, out Vector3 result)) {
+            if (GetItemAtIndex(list, index, out Vector3 result))
+            {
                 return result;
             }
             return null;
@@ -232,7 +244,8 @@ namespace SAIN.Helpers
 
         public static Vector3? GetVector3AtIndex(this Vector3[] array, int index)
         {
-            if (GetItemAtIndex(array, index, out Vector3 result)) {
+            if (GetItemAtIndex(array, index, out Vector3 result))
+            {
                 return result;
             }
             return null;
@@ -241,7 +254,8 @@ namespace SAIN.Helpers
         public static bool GetItemAtIndex<T>(this T[] array, int i, out T result)
         {
             int count = array.Length;
-            if (i >= count) {
+            if (i >= count)
+            {
                 result = default(T);
                 return false;
             }
@@ -252,7 +266,8 @@ namespace SAIN.Helpers
         public static bool GetItemAtIndex<T>(this List<T> list, int i, out T result)
         {
             int count = list.Count;
-            if (i >= count) {
+            if (i >= count)
+            {
                 result = default(T);
                 return false;
             }
@@ -264,7 +279,8 @@ namespace SAIN.Helpers
         {
             magnitude = value.magnitude;
 
-            if (magnitude > 1E-05f) {
+            if (magnitude > 1E-05f)
+            {
                 return value / magnitude;
             }
             return Vector3.zero;
@@ -272,11 +288,13 @@ namespace SAIN.Helpers
 
         public static Vector3? LastElement(this Vector3[] array)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 return null;
             }
             int length = array.Length;
-            if (length == 0) {
+            if (length == 0)
+            {
                 return null;
             }
             return array[length - 1];
@@ -284,12 +302,14 @@ namespace SAIN.Helpers
 
         public static Vector3? LastElement(this Vector3[] array, out int length)
         {
-            if (array == null) {
+            if (array == null)
+            {
                 length = 0;
                 return null;
             }
             length = array.Length;
-            if (length == 0) {
+            if (length == 0)
+            {
                 return null;
             }
             return array[length - 1];
@@ -346,7 +366,8 @@ namespace SAIN.Helpers
 
         private static bool CompareValuePlaySound(object oldValue, object newValue, EUISoundType? sound = null)
         {
-            if (oldValue.ToString() != newValue.ToString() && sound != null) {
+            if (oldValue.ToString() != newValue.ToString() && sound != null)
+            {
                 SAIN.Editor.Sounds.PlaySound(sound.Value);
                 return true;
             }
@@ -361,7 +382,8 @@ namespace SAIN.Helpers
         public static float RandomizeSum(this float value, float a = -1, float b = 1, float min = 0.001f)
         {
             float randomValue = value + Random(a, b);
-            if (randomValue < min) {
+            if (randomValue < min)
+            {
                 randomValue = min;
             }
             return randomValue.Round100();
@@ -403,7 +425,8 @@ namespace SAIN.Helpers
     {
         [ThreadStatic] private static System.Random Local;
 
-        public static System.Random ThisThreadsRandom {
+        public static System.Random ThisThreadsRandom
+        {
             get { return Local ?? (Local = new System.Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
         }
     }

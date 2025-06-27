@@ -15,12 +15,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
         }
 
-        public float AimAndScatterMultiplier {
+        public float AimAndScatterMultiplier
+        {
             get
             {
-                if (_getModTime < Time.time) {
+                if (_getModTime < Time.time)
+                {
                     _getModTime = Time.time + (Enemy.IsAI ? CALC_SCATTER_FREQ_AI : CALC_SCATTER_FREQ);
-                    _modifier = _poseFactor * _visibilityFactor * _opticFactor * _injuryFactor * _velocityFactor;
+                    _modifier = PoseFactor * VisibilityFactor * OpticFactor * InjuryFactor * VelocityFactor;
                 }
                 return _modifier;
             }
@@ -29,48 +31,59 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private float _modifier;
         private float _getModTime;
 
-        private float _injuryFactor => Bot.Info.WeaponInfo.Recoil.ArmInjuryModifier;
+        private float InjuryFactor => Bot.Info.WeaponInfo.Recoil.ArmInjuryModifier;
 
-        private static AimSettings _aimSettings => SAINPlugin.LoadedPreset.GlobalSettings.Aiming;
+        private static AimSettings AimSettings => SAINPlugin.LoadedPreset.GlobalSettings.Aiming;
 
-        private float _opticFactor {
+        private float OpticFactor
+        {
             get
             {
                 var weapon = Enemy.Bot.PlayerComponent.Equipment.CurrentWeapon;
-                if (weapon == null) {
+                if (weapon == null)
+                {
                     return 1f;
                 }
 
                 float enemyDistance = Enemy.RealDistance;
 
-                if (weapon.HasOptic) {
-                    if (enemyDistance >= _aimSettings.OpticFarDistance) {
-                        return _aimSettings.OpticFarMulti;
+                if (weapon.HasOptic)
+                {
+                    if (enemyDistance >= AimSettings.OpticFarDistance)
+                    {
+                        return AimSettings.OpticFarMulti;
                     }
-                    else if (enemyDistance <= _aimSettings.OpticCloseDistance) {
-                        return _aimSettings.OpticCloseMulti;
+                    else if (enemyDistance <= AimSettings.OpticCloseDistance)
+                    {
+                        return AimSettings.OpticCloseMulti;
                     }
                 }
 
-                if (weapon.HasRedDot) {
-                    if (enemyDistance <= _aimSettings.RedDotCloseDistance) {
-                        return _aimSettings.RedDotCloseMulti;
+                if (weapon.HasRedDot)
+                {
+                    if (enemyDistance <= AimSettings.RedDotCloseDistance)
+                    {
+                        return AimSettings.RedDotCloseMulti;
                     }
-                    else if (enemyDistance >= _aimSettings.RedDotFarDistance) {
-                        return _aimSettings.RedDotFarMulti;
+                    else if (enemyDistance >= AimSettings.RedDotFarDistance)
+                    {
+                        return AimSettings.RedDotFarMulti;
                     }
                 }
 
                 if (!weapon.HasRedDot &&
-                    !weapon.HasOptic) {
-                    float min = _aimSettings.IronSightScaleDistanceStart;
-                    if (enemyDistance < min) {
+                    !weapon.HasOptic)
+                {
+                    float min = AimSettings.IronSightScaleDistanceStart;
+                    if (enemyDistance < min)
+                    {
                         return 1f;
                     }
 
-                    float multi = _aimSettings.IronSightFarMulti;
-                    float max = _aimSettings.IronSightScaleDistanceEnd;
-                    if (enemyDistance > max) {
+                    float multi = AimSettings.IronSightFarMulti;
+                    float max = AimSettings.IronSightScaleDistanceEnd;
+                    if (enemyDistance > max)
+                    {
                         return multi;
                     }
                     float num = max - min;
@@ -86,14 +99,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private float PoseLevel => EnemyPlayer.PoseLevel;
 
-        private float _poseFactor {
+        private float PoseFactor
+        {
             get
             {
-                if (EnemyPlayer.IsInPronePose) {
-                    return _aimSettings.ProneScatterMulti;
+                if (EnemyPlayer.IsInPronePose)
+                {
+                    return AimSettings.ScatterMulti_Prone;
                 }
 
-                float min = _aimSettings.PoseLevelScatterMulti;
+                float min = AimSettings.ScatterMulti_PoseLevel;
                 float max = 1f;
                 float result = Mathf.Lerp(min, max, PoseLevel);
 
@@ -101,51 +116,59 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private float _visibilityFactor {
+        private float VisibilityFactor
+        {
             get
             {
-                if (_checkVisTime < Time.time) {
+                if (_checkVisTime < Time.time)
+                {
                     _checkVisTime = Time.time + _checkVisFreq;
-                    _visFactor = calcVisFactor();
+                    _visFactor = CalcVisFactor();
                 }
                 return _visFactor;
             }
         }
 
-        private float _velocityFactor {
+        private float VelocityFactor
+        {
             get
             {
-                if (Enemy.Player.IsSprintEnabled) {
-                    return _aimSettings.EnemySprintingScatterMulti;
+                if (Enemy.Player.IsSprintEnabled)
+                {
+                    return AimSettings.EnemySprintingScatterMulti;
                 }
-                return Mathf.Lerp(_aimSettings.EnemyVelocityMaxDebuff, _aimSettings.EnemyVelocityMaxBuff, 1f - Enemy.EnemyTransform.VelocityMagnitudeNormal);
+                return Mathf.Lerp(AimSettings.EnemyVelocityMaxDebuff, AimSettings.EnemyVelocityMaxBuff, 1f - Enemy.EnemyTransform.VelocityMagnitudeNormal);
             }
         }
 
-        private float calcVisFactor()
+        private float CalcVisFactor()
         {
             var enemyParts = Enemy.EnemyInfo.AllActiveParts;
-            if (enemyParts == null || enemyParts.Count < 1) {
+            if (enemyParts == null || enemyParts.Count < 1)
+            {
                 return 1f;
             }
             int visCount = 0;
             int totalCount = 0;
-            foreach (var part in enemyParts) {
+            foreach (var part in enemyParts)
+            {
                 totalCount++;
-                if (part.Value.IsVisible) {
+                if (part.Value.IsVisible)
+                {
                     visCount++;
                 }
             }
 
             totalCount++;
             var bodyPart = Enemy.EnemyInfo.BodyData().Value;
-            if (bodyPart.IsVisible) {
+            if (bodyPart.IsVisible)
+            {
                 visCount++;
             }
 
             float ratio = (float)visCount / (float)totalCount;
 
-            float min = _aimSettings.PartVisScatterMulti;
+            float min = AimSettings.ScatterMulti_PartVis;
             float max = 1f;
 
             float result = Mathf.Lerp(min, max, ratio);

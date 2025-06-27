@@ -1,15 +1,8 @@
-﻿using SPT.Reflection.Patching;
-using EFT;
-using EFT.UI.Ragfair;
-using HarmonyLib;
+﻿using EFT;
 using SAIN.SAINComponent;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -157,9 +150,9 @@ namespace SAIN.Helpers
 
         private static Vector3 CalculateForce(Vector3 from, Vector3 force)
         {
-            Vector3 v = new Vector3(force.x, 0f, force.z);
+            Vector3 v = new(force.x, 0f, force.z);
 
-            Vector2 vector = new Vector2(v.magnitude, force.y);
+            Vector2 vector = new(v.magnitude, force.y);
 
             float num = 2f * vector.x * vector.y / HelpersGClass.Gravity;
 
@@ -179,7 +172,7 @@ namespace SAIN.Helpers
             }
             bool flag = false;
             Vector3 vector = shootToPoint.Point - firePos;
-            Ray ray = new Ray(firePos, vector);
+            Ray ray = new(firePos, vector);
             float magnitude = vector.magnitude;
             if (!Physics.Raycast(ray, out RaycastHit raycastHit, magnitude * shootToPoint.DistCoef, mask))
             {
@@ -231,7 +224,7 @@ namespace SAIN.Helpers
                 Vector3 randomDirection = RandomVector3(1, 0, 1).normalized * magnitude;
                 if (NavMesh.SamplePosition(randomDirection + point, out var hit, sampleDistance, -1))
                 {
-                    NavMeshPath Path = new NavMeshPath();
+                    NavMeshPath Path = new();
                     if (NavMesh.CalculatePath(point, hit.position, -1, Path))
                     {
                         if (Path.status == NavMeshPathStatus.PathPartial)
@@ -483,7 +476,7 @@ namespace SAIN.Helpers
 
         public static float SqrDistance(this Vector3 a, Vector3 b)
         {
-            Vector3 vector = new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+            Vector3 vector = new(a.x - b.x, a.y - b.y, a.z - b.z);
             return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
         }
 
@@ -557,7 +550,7 @@ namespace SAIN.Helpers
 
         public static Vector3? GetCrossPoint(Vector3 a1, Vector3 b1, Vector3 a2, Vector3 b2)
         {
-            CrossPoint? _cross = cross(new CrossPoint(a1), new CrossPoint(b1), new CrossPoint(a2), new CrossPoint(b2));
+            CrossPoint? _cross = Cross(new CrossPoint(a1), new CrossPoint(b1), new CrossPoint(a2), new CrossPoint(b2));
             if (_cross != null)
             {
                 return new Vector3?(new Vector3(_cross.Value.x, a1.y, _cross.Value.y));
@@ -565,7 +558,7 @@ namespace SAIN.Helpers
             return null;
         }
 
-        public static CrossPoint? cross(CrossPoint p1, CrossPoint p2, CrossPoint p3, CrossPoint p4)
+        public static CrossPoint? Cross(CrossPoint p1, CrossPoint p2, CrossPoint p3, CrossPoint p4)
         {
             float num = (p1.x - p2.x) * (p4.y - p3.y) - (p1.y - p2.y) * (p4.x - p3.x);
             if (num == 0f)
@@ -613,7 +606,7 @@ namespace SAIN.Helpers
             public Vector3 b;
         }
 
-        private static readonly Dictionary<Vector3, Vector3[]> dictionary_0 = new Dictionary<Vector3, Vector3[]>();
+        private static readonly Dictionary<Vector3, Vector3[]> dictionary_0 = new();
     }
 
     public enum SideTurn

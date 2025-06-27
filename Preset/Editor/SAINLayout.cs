@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using EFT.UI;
+﻿using EFT.UI;
 using UnityEngine;
 
 namespace SAIN.Editor
@@ -356,11 +355,5 @@ namespace SAIN.Editor
         {
             return GUI.Window(id, viewRect, func, title, GetStyle(Style.window));
         }
-
-        public static GUILayoutOption StandardHeight => Height(BaseHeight);
-        public static GUILayoutOption ExtendedHeight => Height(TallHeight);
-
-        private static float BaseHeight = 22.5f;
-        private static float TallHeight = 35f;
     }
 }

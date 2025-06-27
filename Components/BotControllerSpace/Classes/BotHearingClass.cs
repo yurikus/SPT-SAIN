@@ -1,5 +1,4 @@
 ﻿using EFT;
-using SAIN.Components.BotController;
 using SAIN.Components.PlayerComponentSpace;
 using System;
 using System.Collections;
@@ -28,11 +27,13 @@ namespace SAIN.Components.BotControllerSpace.Classes
 
         public void PlayerTalked(EPhraseTrigger phrase, ETagStatus mask, Player player)
         {
-            if (phrase == EPhraseTrigger.OnDeath) {
+            if (phrase == EPhraseTrigger.OnDeath)
+            {
                 return;
             }
             if (player == null ||
-                player.HealthController.IsAlive == false) {
+                player.HealthController.IsAlive == false)
+            {
                 return;
             }
 
@@ -41,7 +42,7 @@ namespace SAIN.Components.BotControllerSpace.Classes
 
         public void PlayShootSound(string profileId)
         {
-            BotController.StartCoroutine(playShootSoundCoroutine(profileId));
+            BotController?.StartCoroutine(playShootSoundCoroutine(profileId));
         }
 
         private IEnumerator playShootSoundCoroutine(string profileId)
@@ -49,22 +50,26 @@ namespace SAIN.Components.BotControllerSpace.Classes
             yield return null;
 
             PlayerComponent component = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(profileId);
-            if (component != null && component.IsActive) {
+            if (component != null && component.IsActive)
+            {
                 component.Equipment.PlayAIShootSound();
             }
         }
 
         public void PlayAISound(PlayerComponent playerComponent, SAINSoundType soundType, Vector3 position, float range, float volume, bool limitFreq)
         {
-            if (playerComponent == null) {
+            if (playerComponent == null)
+            {
                 Logger.LogError("Player Component Null");
                 return;
             }
-            if (!playerComponent.IsActive) {
+            if (!playerComponent.IsActive)
+            {
                 return;
             }
             if (limitFreq &&
-                !playerComponent.AIData.AISoundPlayer.ShallPlayAISound(range)) {
+                !playerComponent.AIData.AISoundPlayer.ShallPlayAISound(range))
+            {
                 return;
             }
 
@@ -74,7 +79,8 @@ namespace SAIN.Components.BotControllerSpace.Classes
 
         public void PlayAISound(string profileId, SAINSoundType soundType, Vector3 position, float range, float volume)
         {
-            if (profileId.IsNullOrEmpty()) {
+            if (profileId.IsNullOrEmpty())
+            {
                 return;
             }
 
@@ -87,7 +93,8 @@ namespace SAIN.Components.BotControllerSpace.Classes
         private IEnumerator delaySoundHeard(SAINSoundType soundType, PlayerComponent playerComponent, Vector3 position, float range, float volume, float delay = 0.1f)
         {
             AISoundPlayed?.Invoke(soundType, position, playerComponent, range, volume);
-            if (playerComponent.Player.IsYourPlayer) {
+            if (playerComponent.Player.IsYourPlayer)
+            {
                 //Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
             }
 
@@ -95,7 +102,8 @@ namespace SAIN.Components.BotControllerSpace.Classes
 
             if (playerComponent == null ||
                 playerComponent.Player == null ||
-                !playerComponent.Player.HealthController.IsAlive) {
+                !playerComponent.Player.HealthController.IsAlive)
+            {
                 yield break;
             }
 
@@ -111,7 +119,8 @@ namespace SAIN.Components.BotControllerSpace.Classes
         private AISoundType getBaseSoundType(SAINSoundType soundType)
         {
             AISoundType baseSoundType;
-            switch (soundType) {
+            switch (soundType)
+            {
                 case SAINSoundType.Shot:
                     baseSoundType = AISoundType.gun;
                     break;

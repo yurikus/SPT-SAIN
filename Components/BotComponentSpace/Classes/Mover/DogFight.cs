@@ -32,14 +32,14 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void DogFightMove(bool aggressive)
         {
-            if (Player.IsInPronePose && 
-                Bot.Enemy?.IsVisible == true && 
+            if (Player.IsInPronePose &&
+                Bot.Enemy?.IsVisible == true &&
                 Bot.Enemy.CanShoot)
             {
                 Bot.Mover.Lean.HoldLean(1f);
                 return;
             }
-            
+
             if (stopMoveToShoot())
             {
                 Status = EDogFightStatus.Shooting;
@@ -69,7 +69,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (canMoveToEnemy() && 
+            if (canMoveToEnemy() &&
                 Bot.Mover.GoToEnemy(Bot.Enemy, -1, false, false))
             {
                 Status = EDogFightStatus.MovingToEnemy;
@@ -93,8 +93,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            return Status == EDogFightStatus.MovingToEnemy && 
-                (enemy.InLineOfSight || enemy.IsVisible) && 
+            return Status == EDogFightStatus.MovingToEnemy &&
+                (enemy.InLineOfSight || enemy.IsVisible) &&
                 enemy.CanShoot;
         }
 
@@ -182,6 +182,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             return path.CalculatePathLength() < straighDist * 1.5f;
         }
 
-        private readonly NavMeshPath dogFightPath = new NavMeshPath();
+        private readonly NavMeshPath dogFightPath = new();
     }
 }

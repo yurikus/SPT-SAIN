@@ -1,8 +1,8 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using System;
 
 namespace SAIN.Helpers
 {
@@ -78,7 +78,7 @@ namespace SAIN.Helpers
             return methodInfo != null;
         }
 
-        private static readonly List<string> NoDisposeMethods = new List<string>();
+        private static readonly List<string> NoDisposeMethods = new();
 
         private static void LogError(Exception ex, string message)
         {
@@ -95,7 +95,7 @@ namespace SAIN.Helpers
             ListHelpers.ClearCache(DisposeMethods);
         }
 
-        private static readonly Dictionary<Type, MethodInfo> DisposeMethods = new Dictionary<Type, MethodInfo>();
+        private static readonly Dictionary<Type, MethodInfo> DisposeMethods = new();
 
         public static T GetOrAddComponent<T, K>(K original) where T : Component where K : Component
         {

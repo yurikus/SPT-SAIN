@@ -66,7 +66,7 @@ namespace SAIN.Components
         private static float Frequency => Settings.NoBushESPFrequency;
         private static bool DebugMode => Settings.NoBushESPDebugMode;
 
-        private void Update()
+        public void Update()
         {
             if (BotOwner == null || !UserToggle)
             {
@@ -177,7 +177,7 @@ namespace SAIN.Components
                     enemy.SetCanShoot(false);
                     enemy.SetVisible(false);
 
-                    BotOwner.AimingData?.LoseTarget();
+                    BotOwner.AimingManager.CurrentAiming?.LoseTarget();
 
                     var vision = SAIN?.EnemyController.GetEnemy(enemy.ProfileId, false)?.Vision;
                     if (vision != null)
@@ -191,7 +191,6 @@ namespace SAIN.Components
         }
 
         private static LayerMask NoBushMask = 0;
-        private static readonly List<string> ExclusionList = new List<string> 
-        { "filbert", "fibert", "tree", "pine", "plant", "birch", "collider", "timber", "spruce", "bush", "metal", "wood", "grass" };
+        private static readonly List<string> ExclusionList = new() { "filbert", "fibert", "tree", "pine", "plant", "birch", "collider", "timber", "spruce", "bush", "metal", "wood", "grass" };
     }
 }

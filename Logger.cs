@@ -1,40 +1,36 @@
 ﻿using BepInEx.Logging;
+using EFT.Communications;
+using EFT.UI;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using EFT.Communications;
 using UnityEngine;
-using static Mono.Security.X509.X520;
-using SAIN.Helpers;
-using EFT.UI;
-using Diz.LanguageExtensions;
 
 namespace SAIN
 {
     internal static class Logger
     {
-        public static void LogInfo(object data) 
+        public static void LogInfo(object data)
             => Log(LogLevel.Info, data);
-        public static void LogDebug(object data) 
+        public static void LogDebug(object data)
             => Log(LogLevel.Debug, data);
-        public static void LogWarning(object data) 
+        public static void LogWarning(object data)
             => Log(LogLevel.Warning, data);
-        public static void LogError(object data) 
+        public static void LogError(object data)
             => Log(LogLevel.Error, data);
 
-        public static void NotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default) 
+        public static void NotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
             => NotifyMessage(data, duration, ENotificationIconType.Note);
-        public static void NotifyDebug(object data, ENotificationDurationType duration = ENotificationDurationType.Default) 
+        public static void NotifyDebug(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
             => NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
-        public static void NotifyWarning(object data, ENotificationDurationType duration = ENotificationDurationType.Default) 
+        public static void NotifyWarning(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
             => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
-        public static void NotifyError(object data, ENotificationDurationType duration = ENotificationDurationType.Long) 
+        public static void NotifyError(object data, ENotificationDurationType duration = ENotificationDurationType.Long)
             => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.red, true);
 
         public static void LogAndNotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
         {
-            Log(LogLevel.Info, data); 
+            Log(LogLevel.Info, data);
             NotifyMessage(data, duration, ENotificationIconType.Note);
         }
 
@@ -57,7 +53,7 @@ namespace SAIN
             NotificationManagerClass.DisplayMessageNotification(message, duration, ENotificationIconType.Alert, Color.red);
         }
 
-        public static void NotifyMessage(object data, 
+        public static void NotifyMessage(object data,
             ENotificationDurationType durationType = ENotificationDurationType.Default,
             ENotificationIconType iconType = ENotificationIconType.Default,
             UnityEngine.Color? textColor = null, bool Error = false)
@@ -72,7 +68,7 @@ namespace SAIN
 
         private static string CreateErrorMessage(object data)
         {
-            StackTrace stackTrace = new StackTrace();
+            StackTrace stackTrace = new();
             int max = Mathf.Clamp(stackTrace.FrameCount, 0, 10);
             for (int i = 0; i < max; i++)
             {
@@ -95,7 +91,7 @@ namespace SAIN
             if (level != LogLevel.Debug)
             {
                 int max = GetMaxFrames(level);
-                StackTrace stackTrace = new StackTrace(2);
+                StackTrace stackTrace = new(2);
                 max = Mathf.Clamp(max, 0, stackTrace.FrameCount);
                 for (int i = 0; i < max; i++)
                 {
@@ -142,15 +138,15 @@ namespace SAIN
             switch (level)
             {
                 case LogLevel.Debug:
-                case LogLevel.Info: 
+                case LogLevel.Info:
                     return 1;
-                case LogLevel.Warning: 
+                case LogLevel.Warning:
                     return 2;
-                case LogLevel.Error: 
+                case LogLevel.Error:
                     return 3;
-                case LogLevel.Fatal: 
+                case LogLevel.Fatal:
                     return 4;
-                default: 
+                default:
                     return 1;
             }
         }

@@ -1,13 +1,43 @@
 ﻿using EFT;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.Info;
 using System.Collections.Generic;
 using UnityEngine;
+using JsonUtility = SAIN.Helpers.JsonUtility;
 
 namespace SAIN.Preset.Personalities
 {
     public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySettingsClass>
     {
+        static PersonalityDictionary()
+        {
+            if (!JsonUtility.Load.LoadObject(out _nicknames, "NicknamePersonalities"))
+            {
+                _nicknames = new NickNames();
+                JsonUtility.SaveObjectToJson(_nicknames, "NicknamePersonalities");
+            }
+        }
+
+        private class NickNames
+        {
+            public string Description = "Names are not case sensitive. Any bot nick name that contains one of the entries here will be forced to use the matching personality.";
+
+            public Dictionary<string, EPersonality> NicknamePersonalityMatches = new() {
+                { "steve", EPersonality.Wreckless},
+                { "solarint", EPersonality.GigaChad},
+                { "lvndmark", EPersonality.SnappingTurtle},
+                { "chomp", EPersonality.Chad},
+                { "senko", EPersonality.Chad},
+                { "kaeno", EPersonality.Timmy},
+                { "justnu", EPersonality.Timmy},
+                { "ratthew", EPersonality.Rat},
+                { "choccy", EPersonality.Rat},
+            };
+        }
+
+        private static readonly NickNames _nicknames;
+
         public EPersonality GetPersonality(SAINBotInfoClass infoClass, out PersonalitySettingsClass settings)
         {
             if (checkForcePersonality(out EPersonality result))
@@ -50,7 +80,8 @@ namespace SAIN.Preset.Personalities
 
         public PersonalitySettingsClass GetSettings(EPersonality personality)
         {
-            if (this.TryGetValue(personality, out var result)) {
+            if (this.TryGetValue(personality, out var result))
+            {
                 return result;
             }
             return null;
@@ -70,55 +101,32 @@ namespace SAIN.Preset.Personalities
             return false;
         }
 
+        public Dictionary<EPersonality, List<string>> Nickname_Personalities = new();
+
         private EPersonality setNicknamePersonality(string nickname)
         {
-            if (nickname.Contains("solarint"))
+            if (nickname.IsNullOrEmpty())
             {
-                return EPersonality.GigaChad;
+                return EPersonality.Normal;
             }
-            if (nickname.Contains("chomp") || nickname.Contains("senko"))
+            string lowerNick = nickname.ToLower();
+            foreach (KeyValuePair<string, EPersonality> kvp in _nicknames.NicknamePersonalityMatches)
             {
-                return EPersonality.Chad;
-            }
-            if (nickname.Contains("kaeno") || nickname.Contains("justnu"))
-            {
-                return EPersonality.Timmy;
-            }
-            if (nickname.Contains("ratthew") || nickname.Contains("choccy"))
-            {
-                return EPersonality.Rat;
+                if (lowerNick.Contains(kvp.Key.ToLower()))
+                {
+                    return kvp.Value;
+                }
             }
             return EPersonality.Normal;
         }
 
         private EPersonality setBossPersonality(WildSpawnType wildSpawnType)
         {
-            switch (wildSpawnType)
+            if (GlobalSettingsClass.Instance.Mind.PERS_BOSSES.TryGetValue(wildSpawnType, out EPersonality bossPersonality))
             {
-                case WildSpawnType.bossKilla:
-                case WildSpawnType.bossTagilla:
-                case WildSpawnType.bossKolontay:
-                    return EPersonality.Wreckless;
-
-                case WildSpawnType.bossKnight:
-                case WildSpawnType.followerBigPipe:
-                    return EPersonality.GigaChad;
-
-                case WildSpawnType.followerBirdEye:
-                case WildSpawnType.bossGluhar:
-                    return EPersonality.SnappingTurtle;
-
-                case WildSpawnType.bossKojaniy:
-                    return EPersonality.Rat;
-
-                case WildSpawnType.bossBully:
-                case WildSpawnType.bossSanitar:
-                case WildSpawnType.bossBoar:
-                    return EPersonality.Coward;
-
-                default:
-                    return EPersonality.Normal;
+                return bossPersonality;
             }
+            return EPersonality.Normal;
         }
 
         private bool canBotBePersonality(SAINBotInfoClass infoClass, EPersonality personality)

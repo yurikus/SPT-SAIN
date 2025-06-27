@@ -1,5 +1,4 @@
 ﻿using EFT;
-using SAIN.Helpers;
 using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace.PersonClasses
@@ -12,7 +11,7 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
 
         public void Update()
         {
-            Root = _weaponRootTransform.position; 
+            Root = _weaponRootTransform.position;
             getWeaponTransforms();
         }
 

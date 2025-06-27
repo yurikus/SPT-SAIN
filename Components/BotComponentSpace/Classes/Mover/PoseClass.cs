@@ -1,8 +1,8 @@
 ﻿using EFT;
-using UnityEngine;
 using SAIN.Helpers;
-using System;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
@@ -32,6 +32,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool SetPoseToCover()
         {
+            if (!Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE)
+            {
+                return false;
+            }
             FindObjectsInFront();
             return SetTargetPose(ObjectTargetPoseCover);
         }
@@ -79,7 +83,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         }
 
         private float UpdateFindObjectTimer { get; set; }
-        private float UpdateFindObjectInCoverTimer {get; set;}
+        private float UpdateFindObjectInCoverTimer { get; set; }
 
         private bool FindCrouchFromCover(out float targetPose, bool useCollider = false)
         {

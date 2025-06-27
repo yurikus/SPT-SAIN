@@ -1,8 +1,7 @@
 ﻿using EFT;
-using EFT.InventoryLogic;
-using UnityEngine;
-using SAIN.SAINComponent;
 using EFT.Interactive;
+using SAIN.SAINComponent;
+using UnityEngine;
 
 namespace SAIN.Layers
 {

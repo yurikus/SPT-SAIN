@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UIElements;
 
 namespace SAIN.Plugin
 {
@@ -16,7 +15,7 @@ namespace SAIN.Plugin
     {
         public static bool IgnoreHearing(BotOwner bot, bool value, bool ignoreUnderFire, float duration)
         {
-            var component = getBotComponent(bot);
+            var component = GetBotComponent(bot);
             if (component == null)
             {
                 return false;
@@ -28,7 +27,7 @@ namespace SAIN.Plugin
 
         public static string GetPersonality(BotOwner bot)
         {
-            var component = getBotComponent(bot);
+            var component = GetBotComponent(bot);
             if (component == null)
             {
                 return string.Empty;
@@ -36,7 +35,7 @@ namespace SAIN.Plugin
             return component.Info.Personality.ToString();
         }
 
-        private static BotComponent getBotComponent(BotOwner bot)
+        private static BotComponent GetBotComponent(BotOwner bot)
         {
             if (SAINBotController.Instance?.GetSAIN(bot, out BotComponent botComponent) == true)
             {
@@ -47,7 +46,7 @@ namespace SAIN.Plugin
 
         public static bool ExtractBot(BotOwner bot)
         {
-            var component = getBotComponent(bot);
+            var component = GetBotComponent(bot);
             if (component == null)
             {
                 return false;
@@ -96,7 +95,7 @@ namespace SAIN.Plugin
 
         public static bool TrySetExfilForBot(BotOwner bot)
         {
-            var component = getBotComponent(bot);
+            var component = GetBotComponent(bot);
             if (component == null)
             {
                 return false;
@@ -119,14 +118,14 @@ namespace SAIN.Plugin
 
         public static bool ResetDecisionsForBot(BotOwner bot)
         {
-            var component = getBotComponent(bot);
+            var component = GetBotComponent(bot);
             if (component == null)
             {
                 return false;
             }
 
             // Do not do anything if the bot is currently in combat
-            if (isBotInCombat(component, out ECombatReason reason))
+            if (IsBotInCombat(component, out ECombatReason reason))
             {
                 if (DebugExternal)
                     Logger.LogInfo($"{bot.name} is currently engaging an enemy; cannot reset its decisions. Reason: [{reason}]");
@@ -170,7 +169,7 @@ namespace SAIN.Plugin
 
         public static float TimeSinceSenseEnemy(BotOwner botOwner)
         {
-            var component = getBotComponent(botOwner);
+            var component = GetBotComponent(botOwner);
             if (component == null)
             {
                 return float.MaxValue;
@@ -187,7 +186,7 @@ namespace SAIN.Plugin
 
         public static bool IsPathTowardEnemy(NavMeshPath path, BotOwner botOwner, float ratioSameOverAll = 0.25f, float sqrDistCheck = 0.05f)
         {
-            var component = getBotComponent(botOwner);
+            var component = GetBotComponent(botOwner);
             if (component == null)
             {
                 return false;
@@ -210,12 +209,12 @@ namespace SAIN.Plugin
 
         public static bool CanBotQuest(BotOwner botOwner, Vector3 questPosition, float dotProductThresh = 0.33f)
         {
-            var component = getBotComponent(botOwner);
+            var component = GetBotComponent(botOwner);
             if (component == null)
             {
                 return false;
             }
-            if (isBotInCombat(component, out var reason))
+            if (IsBotInCombat(component, out var reason))
             {
                 if (DebugExternal)
                     Logger.LogInfo($"{botOwner.name} is currently engaging an enemy, cannot quest. Reason: [{reason}]");
@@ -256,7 +255,7 @@ namespace SAIN.Plugin
             return false;
         }
 
-        private static bool isBotInCombat(BotComponent component, out ECombatReason reason)
+        private static bool IsBotInCombat(BotComponent component, out ECombatReason reason)
         {
             const float TimeSinceSeenThreshold = 10f;
             const float TimeSinceHeardThreshold = 5f;

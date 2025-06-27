@@ -122,7 +122,7 @@ namespace SAIN.Helpers.Events
             }
         }
 
-        public ToggleEvent(bool defaultValue = false) : base (defaultValue) { }
+        public ToggleEvent(bool defaultValue = false) : base(defaultValue) { }
     }
 
     public class ToggleEvent<A, B> : ToggleEventBase

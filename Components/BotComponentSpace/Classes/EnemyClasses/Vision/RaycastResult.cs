@@ -19,12 +19,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _lastCheckTime = time;
             LastRaycastHit = raycastHit;
 
-            if (raycastHit.collider == null) {
+            if (raycastHit.collider == null)
+            {
                 LastSuccessBodyPart = bodyPartCollider;
                 LastSuccessPoint = castPoint;
                 _lastSuccessTime = time;
             }
-            else {
+            else
+            {
                 LastSuccessBodyPart = null;
                 LastSuccessPoint = null;
             }

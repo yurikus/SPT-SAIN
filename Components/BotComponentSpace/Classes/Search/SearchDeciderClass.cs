@@ -91,7 +91,7 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private bool shallSearch(Enemy enemy, out EWantToSearchReason reason)
         {
-            if (enemy.Hearing.EnemyHeardFromPeace && 
+            if (enemy.Hearing.EnemyHeardFromPeace &&
                 Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior == EHeardFromPeaceBehavior.SearchNow)
             {
                 reason = EWantToSearchReason.HeardFromPeaceSearchNow;
@@ -165,14 +165,14 @@ namespace SAIN.SAINComponent.Classes.Search
                 reason = EWantToSearchReason.NewSearch_PowerLevel;
                 return true;
             }
-            if (enemy.Seen && 
+            if (enemy.Seen &&
                 enemy.TimeSinceSeen >= timeBeforeSearch)
             {
                 reason = EWantToSearchReason.NewSearch_EnemyNotSeen;
                 return true;
             }
             var squadSeenPlace = enemy.KnownPlaces.LastSquadSeenPlace;
-            if (squadSeenPlace != null && 
+            if (squadSeenPlace != null &&
                 squadSeenPlace.TimeSincePositionUpdated >= timeBeforeSearch)
             {
                 reason = EWantToSearchReason.NewSearch_EnemyNotSeen_Squad;

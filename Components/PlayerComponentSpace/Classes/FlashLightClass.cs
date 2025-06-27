@@ -6,7 +6,6 @@ using SAIN.SAINComponent;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace SAIN.Components
@@ -26,7 +25,7 @@ namespace SAIN.Components
         public bool WhiteLight => ActiveModes.Contains(DeviceMode.WhiteLight);
         public LightDetectionClass LightDetection { get; }
 
-        public readonly List<DeviceMode> ActiveModes = new List<DeviceMode>();
+        public readonly List<DeviceMode> ActiveModes = new();
 
         public FlashLightClass(PlayerComponent component) : base(component)
         {
@@ -35,12 +34,12 @@ namespace SAIN.Components
 
         public void Update()
         {
-            clearPoints();
-            createPoints();
-            detectPoints();
+            ClearPoints();
+            CreatePoints();
+            DetectPoints();
         }
 
-        private void clearPoints()
+        private void ClearPoints()
         {
             var points = LightDetection.LightPoints;
             if (points.Count > 0)
@@ -49,10 +48,10 @@ namespace SAIN.Components
             }
         }
 
-        private void createPoints()
+        private void CreatePoints()
         {
             if (!PlayerComponent.IsAI &&
-                _nextPointCreateTime < Time.time && 
+                _nextPointCreateTime < Time.time &&
                 ActiveModes.Count > 0)
             {
                 _nextPointCreateTime = Time.time + 0.15f;
@@ -62,9 +61,9 @@ namespace SAIN.Components
             }
         }
 
-        private void detectPoints()
+        private void DetectPoints()
         {
-            if (PlayerComponent.IsAI && 
+            if (PlayerComponent.IsAI &&
                 _nextPointCheckTime < Time.time)
             {
                 _nextPointCheckTime = Time.time + 0.05f;
@@ -75,7 +74,7 @@ namespace SAIN.Components
         public void CheckDevice()
         {
             ActiveModes.Clear();
-            checkUsingLightModes();
+            CheckUsingLightModes();
 
             bool wasUsingLight = UsingLight;
             UsingLight = ActiveModes.Contains(DeviceMode.WhiteLight) || ActiveModes.Contains(DeviceMode.IRLight);
@@ -92,7 +91,7 @@ namespace SAIN.Components
             }
         }
 
-        private void checkUsingLightModes()
+        private void CheckUsingLightModes()
         {
             Player player = Player;
             if (player == null) return;
@@ -132,7 +131,7 @@ namespace SAIN.Components
                 foreach (var mode in tacticalModes)
                 {
                     // Skip disabled modes
-                    if (!mode.gameObject.activeInHierarchy) 
+                    if (!mode.gameObject.activeInHierarchy)
                         continue;
 
                     foreach (var child in mode.GetChildren())
@@ -145,7 +144,7 @@ namespace SAIN.Components
                             if (_debugMode) Logger.LogDebug("Found Light!");
                             ActiveModes.Add(DeviceMode.WhiteLight);
                         }
-                        if (!foundVisibleLaser && 
+                        if (!foundVisibleLaser &&
                             child.name.StartsWith("VIS_"))
                         {
                             foundVisibleLaser = true;
@@ -159,7 +158,7 @@ namespace SAIN.Components
                             if (_debugMode) Logger.LogDebug("Found IR Light!");
                             ActiveModes.Add(DeviceMode.IRLight);
                         }
-                        if (!FoundIRLaser && 
+                        if (!FoundIRLaser &&
                             child.name.StartsWith("IR_"))
                         {
                             if (_debugMode) Logger.LogDebug("Found IR Laser!");
@@ -169,87 +168,6 @@ namespace SAIN.Components
                     }
                 }
             }
-        }
-
-        private bool CheckVisibleLaser(List<Transform> tacticalModes)
-        {
-            foreach (Transform tacticalMode in tacticalModes)
-            {
-                // Skip disabled modes
-                if (!tacticalMode.gameObject.activeInHierarchy) continue;
-
-                // Try to find a "light" under the mode, here's hoping BSG stay consistent
-                foreach (Transform child in tacticalMode.GetChildren())
-                {
-                    if (child.name.StartsWith("VIS_"))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        private bool CheckIRLight(List<Transform> tacticalModes)
-        {
-            foreach (Transform tacticalMode in tacticalModes)
-            {
-                // Skip disabled modes
-                if (!tacticalMode.gameObject.activeInHierarchy) continue;
-
-                // Try to find a "VolumetricLight", hopefully only visible flashlights have these
-                IkLight irLight = tacticalMode.GetComponentInChildren<IkLight>();
-                if (irLight != null)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool CheckIRLaser(List<Transform> tacticalModes)
-        {
-            foreach (Transform tacticalMode in tacticalModes)
-            {
-                // Skip disabled modes
-                if (!tacticalMode.gameObject.activeInHierarchy) continue;
-
-                if (SAINPlugin.DebugMode)
-                {
-                    Logger.LogInfo(tacticalMode.name);
-                }
-
-                // Try to find a "light" under the mode, here's hoping BSG stay consistent
-                foreach (Transform child in tacticalMode.GetChildren())
-                {
-                    if (SAINPlugin.DebugMode)
-                    {
-                        Logger.LogInfo(child.name);
-                    }
-                    if (child.name.StartsWith("IR_"))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        private bool CheckWhiteLight(List<Transform> tacticalModes)
-        {
-            foreach (Transform tacticalMode in tacticalModes)
-            {
-                // Skip disabled modes
-                if (!tacticalMode.gameObject.activeInHierarchy) continue;
-
-                // Try to find a "VolumetricLight", hopefully only visible flashlights have these
-                VolumetricLight volumetricLight = tacticalMode.GetComponentInChildren<VolumetricLight>();
-                if (volumetricLight != null)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private float _nextPointCheckTime;

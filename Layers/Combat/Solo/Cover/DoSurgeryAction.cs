@@ -1,5 +1,5 @@
-﻿using EFT;
-using System.Collections;
+﻿using DrakiaXYZ.BigBrain.Brains;
+using EFT;
 using System.Text;
 using UnityEngine;
 
@@ -16,16 +16,26 @@ namespace SAIN.Layers.Combat.Solo.Cover
             ToggleAction(value);
         }
 
-        public override void Update()
+        public override void Update(CustomLayer.ActionData data)
         {
-            if (Bot.Medical.Surgery.AreaClearForSurgery) {
+            this.StartProfilingSample("Update");
+            checkDoSurgery();
+            handleSteering();
+            this.EndProfilingSample();
+        }
+
+        private void checkDoSurgery()
+        {
+            if (Bot.Medical.Surgery.AreaClearForSurgery)
+            {
                 Bot.Mover.PauseMovement(30);
                 Bot.Mover.SprintController.CancelRun();
                 Bot.Mover.SetTargetMoveSpeed(0f);
                 Bot.Cover.DuckInCover();
                 tryStartSurgery();
             }
-            else {
+            else
+            {
                 BotOwner.Mover.MovementResume();
                 Bot.Mover.SetTargetMoveSpeed(1);
                 Bot.Mover.SetTargetPose(1);
@@ -34,19 +44,25 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 Bot.Medical.TryCancelHeal();
                 Bot.Mover.DogFight.DogFightMove(false);
             }
+        }
 
+        private void handleSteering()
+        {
             if (!Bot.Steering.SteerByPriority(null, false) &&
-                !Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy)) {
+                !Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy))
+            {
                 Bot.Steering.LookToRandomPosition();
             }
         }
 
         private bool tryStartSurgery()
         {
-            if (tryStart()) {
+            if (tryStart())
+            {
                 return true;
             }
-            if (checkFullHeal()) {
+            if (checkFullHeal())
+            {
                 return true;
             }
             return false;
@@ -57,7 +73,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
             var surgery = BotOwner.Medecine.SurgicalKit;
             if (_startSurgeryTime < Time.time
                 && !surgery.Using
-                && surgery.ShallStartUse()) {
+                && surgery.ShallStartUse())
+            {
                 Bot.Medical.Surgery.SurgeryStarted = true;
                 surgery.ApplyToCurrentPart(new System.Action(onSurgeryDone));
                 return true;
@@ -68,7 +85,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
         private bool checkFullHeal()
         {
             if (Bot.Medical.Surgery.SurgeryStarted = true &&
-                _actionStartedTime + 30f < Time.time) {
+                _actionStartedTime + 30f < Time.time)
+            {
                 Bot.Player?.ActiveHealthController?.RestoreFullHealth();
                 Bot.Decision.ResetDecisions(true);
                 return true;
@@ -82,8 +100,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
             _actionStartedTime = Time.time;
             _startSurgeryTime = Time.time + 1f;
 
-            if (BotOwner.Medecine.SurgicalKit.HaveWork) {
-                if (Bot.Enemy == null || Bot.Enemy.TimeSinceSeen > 90f) {
+            if (BotOwner.Medecine.SurgicalKit.HaveWork)
+            {
+                if (Bot.Enemy == null || Bot.Enemy.TimeSinceSeen > 90f)
+                {
                     Bot.Player?.ActiveHealthController?.RestoreFullHealth();
                     Bot.Decision.ResetDecisions(true);
                 }

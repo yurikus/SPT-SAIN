@@ -15,16 +15,18 @@ namespace SAIN.Components.BotController.PeacefulActions
 
             List<BotComponent> peaceBots = data.AllPeacefulBots;
             int peaceCount = peaceBots.Count;
-            if ( peaceCount < 2 ) return false;
+            if (peaceCount < 2) return false;
 
             Logger.LogDebug($"Currently [{peaceCount}] peaceful bots in BotZone [{data.Name}]");
 
             localList.Clear();
             localList.AddRange(peaceBots);
 
-            for (int i = allCount - 1; i >= 0; i--) {
+            for (int i = allCount - 1; i >= 0; i--)
+            {
                 BotComponent bot = localList[i];
-                if (!selectedList.findFriendlyBotsandFilter(localList, bot, maxRangeSqr)) {
+                if (!selectedList.findFriendlyBotsandFilter(localList, bot, maxRangeSqr))
+                {
                     continue;
                 }
                 return true;

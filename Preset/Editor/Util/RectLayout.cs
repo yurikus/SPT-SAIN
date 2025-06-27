@@ -16,7 +16,7 @@ namespace SAIN.Editor
             return new Vector2(scaling, scaling);
         }
 
-        public static Rect MainWindow = new Rect(0, 0, 1920, 1080);
+        public static Rect MainWindow = new(0, 0, 1920, 1080);
 
         private const float RectHeight = 30f;
         private const float ExitWidth = 30f;
@@ -28,9 +28,9 @@ namespace SAIN.Editor
         private static readonly float AdvRectStartX = SaveAllStartX - AdvWidth - 5;
         private static readonly float DragWidth = AdvRectStartX - 5;
 
-        public static Rect ExitRect = new Rect(ExitStartX, 0, ExitWidth, RectHeight);
-        public static Rect DragRect = new Rect(0, 0, DragWidth, RectHeight);
-        public static Rect SaveAllRect = new Rect(SaveAllStartX, 0, SaveAllWidth, RectHeight);
-        public static Rect AdvRect = new Rect(AdvRectStartX, 0, AdvWidth, RectHeight);
+        public static Rect ExitRect = new(ExitStartX, 0, ExitWidth, RectHeight);
+        public static Rect DragRect = new(0, 0, DragWidth, RectHeight);
+        public static Rect SaveAllRect = new(SaveAllStartX, 0, SaveAllWidth, RectHeight);
+        public static Rect AdvRect = new(AdvRectStartX, 0, AdvWidth, RectHeight);
     }
 }

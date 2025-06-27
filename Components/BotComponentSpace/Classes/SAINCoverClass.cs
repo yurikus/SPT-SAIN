@@ -1,6 +1,7 @@
 ﻿using EFT;
 using JetBrains.Annotations;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,9 @@ namespace SAIN.SAINComponent.Classes
     public class SAINCoverClass : BotBase, IBotClass
     {
         public event Action<CoverPoint> OnNewCoverInUse;
+
         public event Action<CoverPoint> OnEnterCover;
+
         public event Action OnSpottedInCover;
 
         public CoverPoint CoverInUse
@@ -38,9 +41,8 @@ namespace SAIN.SAINComponent.Classes
 
         public CoverPoint CoverPointImAt
         {
-            get 
+            get
             {
-            
                 var cover = CoverInUse;
                 if (cover == null)
                 {
@@ -89,7 +91,6 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-
         public void Dispose()
         {
             try
@@ -105,14 +106,14 @@ namespace SAIN.SAINComponent.Classes
             for (int i = 0; i < CoverPoints.Count; i++)
             {
                 CoverPoint point = CoverPoints[i];
-                if (point != null && 
-                    !point.Spotted && 
+                if (point != null &&
+                    !point.Spotted &&
                     !point.CoverData.IsBad)
                 {
                     Vector3 coverPosition = point.Position;
                     Vector3 directionToPoint = botPosition - coverPosition;
 
-                    if (directionToPoint.sqrMagnitude > minDistance * minDistance 
+                    if (directionToPoint.sqrMagnitude > minDistance * minDistance
                         && Vector3.Dot(directionToPoint.normalized, direction.normalized) > dotThreshold)
                     {
                         return point;
@@ -133,12 +134,12 @@ namespace SAIN.SAINComponent.Classes
 
             if (!_coverEntered)
             {
-                _coverEntered= true;
+                _coverEntered = true;
                 OnEnterCover?.Invoke(coverImAt);
             }
         }
 
-        private bool checkMoving([NotNull]CoverPoint cover)
+        private bool checkMoving([NotNull] CoverPoint cover)
         {
             // our straight distance to the cover position is less than the set threshold, we are in cover, so not moving to cover
             if (!isMovingTo(cover, cover.StraightDistanceStatus))
@@ -231,7 +232,7 @@ namespace SAIN.SAINComponent.Classes
             if (decision != ECombatDecision.MoveToCover
                 && decision != ECombatDecision.RunToCover
                 && decision != ECombatDecision.Retreat
-                && decision != ECombatDecision.HoldInCover 
+                && decision != ECombatDecision.HoldInCover
                 && decision != ECombatDecision.ShiftCover)
             {
                 Bot.Cover.CoverInUse = null;
@@ -250,10 +251,12 @@ namespace SAIN.SAINComponent.Classes
             {
                 var move = Bot.Mover;
                 var prone = move.Prone;
-                bool shallProne = prone.ShallProneHide();
-
-                if (shallProne && 
-                    (Bot.Decision.CurrentSelfDecision != ESelfDecision.None || Bot.Suppression.IsHeavySuppressed))
+                var myMoveSettings = Bot.Info.FileSettings.Move;
+                var globalMoveSettings = GlobalSettingsClass.Instance.Move;
+                bool shallProne = myMoveSettings.PRONE_TOGGLE && globalMoveSettings.PRONE_TOGGLE && prone.ShallProneHide();
+                if (shallProne
+                    && (Bot.Decision.CurrentSelfDecision != ESelfDecision.None
+                    || (myMoveSettings.PRONE_SUPPRESS_TOGGLE && globalMoveSettings.PRONE_SUPPRESS_TOGGLE && Bot.Suppression.IsHeavySuppressed)))
                 {
                     prone.SetProne(true);
                     return true;
@@ -262,7 +265,7 @@ namespace SAIN.SAINComponent.Classes
                 {
                     return true;
                 }
-                if (shallProne && 
+                if (shallProne &&
                     point.Collider.bounds.size.y < 0.85f)
                 {
                     prone.SetProne(true);

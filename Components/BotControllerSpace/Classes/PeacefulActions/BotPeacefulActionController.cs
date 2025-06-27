@@ -1,6 +1,4 @@
-﻿using GPUInstancer;
-using SAIN.Components;
-using SAIN.Layers.Peace;
+﻿using SAIN.Models.Enums;
 using System.Text;
 using UnityEngine;
 
@@ -42,10 +40,12 @@ namespace SAIN.Components.BotController.PeacefulActions
 
         private void logDatas()
         {
-            if (_nextLogTime < Time.time) {
+            if (_nextLogTime < Time.time)
+            {
                 _nextLogTime = Time.time + 10;
-                StringBuilder stringBuilder = new StringBuilder();
-                foreach (var datas in PeacefulBotFinder.ZoneDatas) {
+                StringBuilder stringBuilder = new();
+                foreach (var datas in PeacefulBotFinder.ZoneDatas)
+                {
                     stringBuilder.AppendLine($"{datas.Key} : [{datas.Value.AllContainedBots.Count.ToString()}] : [{datas.Value.AllPeacefulBots.Count.ToString()}]");
                 }
                 Logger.LogDebug(stringBuilder.ToString());

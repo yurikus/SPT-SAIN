@@ -1,4 +1,5 @@
-﻿using SAIN.SAINComponent;
+﻿using SAIN.Models.Enums;
+using SAIN.SAINComponent;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -34,7 +35,8 @@ namespace SAIN.Components.BotController.PeacefulActions
         private void findConvoTargetsAndExecute(BotZoneData data)
         {
             _selectedBots.Clear();
-            if (PeacefulActionHelpers.findBotsForPeacefulAction(data, _localList, _selectedBots, MAX_START_CONVO_RANGE_SQR)) {
+            if (PeacefulActionHelpers.findBotsForPeacefulAction(data, _localList, _selectedBots, MAX_START_CONVO_RANGE_SQR))
+            {
                 logConvoStart(data);
             }
         }
@@ -42,16 +44,13 @@ namespace SAIN.Components.BotController.PeacefulActions
         private IEnumerator executeConversation(params BotComponent[] bots)
         {
             bool finishedConvo = false;
-            while (!finishedConvo){
+            while (!finishedConvo)
+            {
                 if (!recheckBots(bots))
                 {
                     finishedConvo = true;
                     break;
                 }
-
-                // finish code
-                break;
-
                 yield return null;
             }
         }
@@ -68,7 +67,7 @@ namespace SAIN.Components.BotController.PeacefulActions
         {
             if (SAINPlugin.DebugMode || true)
             {
-                StringBuilder stringBuilder = new StringBuilder();
+                StringBuilder stringBuilder = new();
                 stringBuilder.AppendLine($"Conversation [{_conversations++}]");
                 stringBuilder.AppendLine($"Selected [{_selectedBots.Count}] Bots");
                 stringBuilder.AppendLine($"Name: [{data.Name}]");
@@ -83,8 +82,8 @@ namespace SAIN.Components.BotController.PeacefulActions
         }
 
         private int _conversations;
-        private readonly List<BotComponent> _selectedBots = new List<BotComponent>();
-        private readonly List<BotComponent> _localList = new List<BotComponent>();
+        private readonly List<BotComponent> _selectedBots = new();
+        private readonly List<BotComponent> _localList = new();
         private float _nextCheckTime;
     }
 }

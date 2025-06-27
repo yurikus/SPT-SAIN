@@ -1,6 +1,4 @@
-﻿using SAIN.Attributes;
-
-namespace SAIN
+﻿namespace SAIN
 {
     public enum ECombatDecision
     {
@@ -96,9 +94,9 @@ namespace SAIN
         Caliber127x108,
         Caliber68x51,
         Caliber20x1,
-		Caliber127x33,
-		Caliber9x18PMM
-	}
+        Caliber127x33,
+        Caliber9x18PMM
+    }
 
     public enum CoverStatus
     {

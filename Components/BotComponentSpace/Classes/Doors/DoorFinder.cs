@@ -23,15 +23,17 @@ namespace SAIN.SAINComponent.Classes.Mover
         private const float DOORS_UPDATE_VOXEL_FREQ = 0.5f;
 
         public event Action<NavGraphVoxelSimple, NavGraphVoxelSimple> OnNewVoxel;
+
         public event Action<List<DoorData>> OnNewCloseDoorsFound;
-        public event Action<List<DoorData>> OnNewInteractionDoorsFound;
 
         public List<DoorData> InteractionDoors { get; } = new List<DoorData>();
         public List<DoorData> CloseDoors { get; } = new List<DoorData>();
         public List<DoorData> AllDoors { get; } = new List<DoorData>();
         public NavGraphVoxelSimple CurrentVoxel { get; private set; }
 
-        public DoorFinder(DoorOpener opener) : base(opener) { }
+        public DoorFinder(DoorOpener opener) : base(opener)
+        {
+        }
 
         public void Init()
         {
@@ -105,9 +107,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 _nextCheckDistanceTime = Time.time + DOORS_FIND_CLOSE_FREQ;
 
                 foreach (var link in voxel.DoorLinks)
-                    if (isDoorOpenable(link.Door)) {
+                    if (isDoorOpenable(link.Door))
+                    {
                         AllDoors.Add(new DoorData(link));
-                        GameWorldComponent.Instance.Doors.CheckAddDoorTrigger(link);
                     }
 
                 updateAllDoors(true);
@@ -116,13 +118,13 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool isDoorOpenable(Door door)
         {
-            if (!door.enabled || 
+            if (!door.enabled ||
                 !door.gameObject.activeInHierarchy ||
                 !door.Operatable)
             {
                 return false;
             }
-            if (GlobalSettings.General.Doors.DisableAllDoors && 
+            if (GlobalSettings.General.Doors.DisableAllDoors &&
                 GameWorldComponent.Instance.Doors.DisableDoor(door))
             {
                 return false;
@@ -141,7 +143,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             findDoorsToInteract(botPosition, force);
         }
 
-
         private void findDoorsToInteract(Vector3 botPosition, bool force)
         {
             if (force || _nextUpdateInteractTime < Time.time)
@@ -151,7 +152,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 findDoorsInRange(DOORS_INTERACTION_DISTANCE, CloseDoors, InteractionDoors);
                 //
                 //Vector3 targetMovePos;
-                //if (BotOwner.Mover.HavePath)
+                //if (BotOwner.Mover.HasPathAndNoComplete)
                 //    targetMovePos = BotOwner.Mover.RealDestPoint;
                 //else if (Bot.Mover.SprintController.Running)
                 //    targetMovePos = Bot.Mover.SprintController.CurrentCornerDestination();

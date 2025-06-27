@@ -48,7 +48,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool checkDecisions()
         {
-            if (!BotOwner.WeaponManager.HaveBullets || 
+            if (!BotOwner.WeaponManager.HaveBullets ||
                 BotOwner.WeaponManager.Reload.Reloading)
             {
                 return false;
@@ -70,8 +70,8 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallClearDogfightTarget(Enemy enemy)
         {
-            if (enemy == null || 
-                !enemy.EnemyKnown || 
+            if (enemy == null ||
+                !enemy.EnemyKnown ||
                 enemy.Player?.HealthController.IsAlive == false)
             {
                 return true;
@@ -161,7 +161,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             return null;
         }
 
-        private readonly List<Enemy> _dogFightTargets = new List<Enemy>();
+        private readonly List<Enemy> _dogFightTargets = new();
 
         public Enemy DogFightTarget { get; set; }
 
@@ -176,9 +176,9 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallDogFightEnemy(Enemy enemy)
         {
-            return enemy?.CheckValid() == true && 
-                enemy.IsVisible && 
-                enemy.EnemyKnown && 
+            return enemy?.CheckValid() == true &&
+                enemy.IsVisible &&
+                enemy.EnemyKnown &&
                 enemy.Path.PathDistance <= _dogFightStartDist;
         }
 
