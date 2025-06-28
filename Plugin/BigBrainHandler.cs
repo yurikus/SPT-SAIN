@@ -39,8 +39,15 @@ namespace SAIN
             {
                 if (_SAINLayers.Count == 0)
                 {
-                    _SAINLayers.AddRange(typeof(SAINPlugin).Assembly.GetTypes()
-                        .Where(type => type.IsSubclassOf(typeof(SAINLayer))));
+                    Type[] allTypes = typeof(SAINPlugin).Assembly.GetTypes();
+                    for (int i = 0; i < allTypes.Length; i++)
+                    {
+                        Type type = allTypes[i];
+                        if (type.IsSubclassOf(typeof(SAINLayer)))
+                        {
+                            _SAINLayers.Add(type);
+                        }
+                    }
                 }
 
                 return _SAINLayers;

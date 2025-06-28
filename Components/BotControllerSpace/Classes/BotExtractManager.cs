@@ -6,6 +6,7 @@ using SAIN.SAINComponent;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -195,35 +196,69 @@ namespace SAIN.Components.BotController
         private bool TryAssignExfilForBot(BotComponent bot)
         {
             IDictionary<ExfiltrationPoint, Vector3> validExfils = GameWorldHandler.SAINGameWorld.ExtractFinder.GetValidExfilsForBot(bot);
-            bot.Memory.Extract.ExfilPoint = selectExfilForBot(bot, validExfils);
+            bot.Memory.Extract.ExfilPoint = SelectExfilForBot(bot, validExfils);
 
             return bot.Memory.Extract.ExfilPoint != null;
         }
 
         public static float MinDistanceToExtract { get; private set; } = 10f;
 
-        private ExfiltrationPoint selectExfilForBot(BotComponent bot, IDictionary<ExfiltrationPoint, Vector3> validExfils)
+        private ExfiltrationPoint SelectExfilForBot(BotComponent bot, IDictionary<ExfiltrationPoint, Vector3> validExfils)
         {
             // Check each valid extract to ensure the bot can use it and that it isn't too close. If this method is called when a bot is near an extract, it might be because
             // it got stuck. 
             NavMeshPath path = new();
-            IDictionary<ExfiltrationPoint, Vector3> possibleExfils = validExfils
-                    .Where(x => CanBotsUseExtract(x.Key))
-                    .Where(x => Vector3.Distance(bot.Position, x.Value) > MinDistanceToExtract)
-                    .Where(x => NavMesh.CalculatePath(bot.Position, x.Value, -1, path) && (path.status == NavMeshPathStatus.PathComplete))
-                    .ToDictionary(x => x.Key, x => x.Value);
+            Dictionary<ExfiltrationPoint, Vector3> possibleExfils = new();
 
-            if (!possibleExfils.Any())
+            foreach (var kvp in validExfils)
+            {
+                ExfiltrationPoint exfil = kvp.Key;
+                Vector3 position = kvp.Value;
+
+                // Check if bots can use the exfil point
+                if (!CanBotsUseExtract(exfil))
+                {
+                    continue;
+                }
+
+                // Check if exfil point is far enough
+                if (Vector3.Distance(bot.Position, position) <= MinDistanceToExtract)
+                {
+                    continue;
+                }
+
+                // Check if the navmesh path to the exfil is complete
+                if (!NavMesh.CalculatePath(bot.Position, position, -1, path) || path.status != NavMeshPathStatus.PathComplete)
+                {
+                    continue;
+                }
+
+                // Add valid exfil to the list
+                possibleExfils.Add(exfil, position);
+            }
+
+            if (possibleExfils.Count == 0)
             {
                 if (SAINPlugin.DebugMode)
                 {
-                    Logger.LogInfo($"Could not assign bot {bot.name} to any of {validExfils.Count} valid exfils: " + string.Join(", ", validExfils.Select(x => x.Key.Settings.Name)));
+                    StringBuilder sb = new();
+                    sb.Append($"Could not assign bot {bot.name} to any of {validExfils.Count} valid exfils: ");
+                    bool first = true;
+                    foreach (var kvp in validExfils)
+                    {
+                        if (!first) sb.Append(", ");
+                        sb.Append(kvp.Key.Settings.Name);
+                        first = false;
+                    }
+                    Logger.LogInfo(sb.ToString());
                 }
 
                 return null;
             }
 
-            KeyValuePair<ExfiltrationPoint, Vector3> selectedExfil = possibleExfils.Random();
+            // Pick a random valid exfil
+            KeyValuePair<ExfiltrationPoint, Vector3> selectedExfil = possibleExfils.Random(); // Assumes Random() is an extension method that works with Dictionary
+
             bot.Memory.Extract.ExfilPosition = selectedExfil.Value;
 
             if (SAINPlugin.DebugMode)
