@@ -50,7 +50,12 @@ namespace SAIN.Preset.GlobalSettings.Categories
     {
         public static List<Brain> GetAllowedScavBrains()
         {
-            return Scavs;
+            List<Brain> ScavBrains = Scavs;
+
+            // Needed for assaultGroup Scavs
+            ScavBrains.Add(Brain.PMC);
+
+            return ScavBrains;
         }
 
         public static List<Brain> GetAllowedPlayerScavBrains()
@@ -113,7 +118,6 @@ namespace SAIN.Preset.GlobalSettings.Categories
 
         public static readonly List<Brain> Followers = new()
         {
-            Brain.BossBully,
             Brain.FollowerBully,
             Brain.FollowerGluharAssault,
             Brain.FollowerGluharProtect,

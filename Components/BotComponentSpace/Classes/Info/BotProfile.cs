@@ -12,7 +12,6 @@ namespace SAIN.SAINComponent.Classes.Info
 
             var profile = sain.BotOwner.Profile;
             Side = profile.Side;
-            NickName = profile.Nickname;
             WildSpawnType = profile.Info.Settings.Role;
             BotDifficulty = profile.Info.Settings.BotDifficulty;
             PlayerLevel = profile.Info.Level;
@@ -21,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.Info
             IsFollower = EnumValues.WildSpawn.IsFollower(WildSpawnType);
             IsScav = EnumValues.WildSpawn.IsScav(WildSpawnType);
             IsPMC = EnumValues.WildSpawn.IsPMC(WildSpawnType);
-            IsPlayerScav = IsScav && SAINEnableClass.IsPlayerScav(NickName);
+            IsPlayerScav = IsScav && SAINEnableClass.IsPlayerScav(profile);
             SetDiffModifier(BotDifficulty);
         }
 
