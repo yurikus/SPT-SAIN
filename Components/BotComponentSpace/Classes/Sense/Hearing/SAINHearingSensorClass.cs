@@ -124,11 +124,11 @@ namespace SAIN.SAINComponent.Classes
             float delay = distance / soundSpeed;
             if (Bot?.EnemyController?.AtPeace == true)
             {
-                delay += SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseHearingDelayAtPeace;
+                delay += SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseHearingDelaySettings.AtPeace;
             }
             else
             {
-                delay += SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseHearingDelayWithEnemy;
+                delay += SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseHearingDelaySettings.ActiveEnemy;
             }
             yield return new WaitForSeconds(delay);
         }

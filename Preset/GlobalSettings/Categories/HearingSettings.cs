@@ -1,9 +1,22 @@
-﻿using Newtonsoft.Json;
+﻿using EFT;
+using Newtonsoft.Json;
 using SAIN.Attributes;
+using SAIN.Components.PlayerComponentSpace;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace SAIN.Preset.GlobalSettings
 {
+    public struct HearingDelaySettings(float PeaceDelay, float ActiveEnemyDelay, float OtherEnemyDelay, float UnknownEnemyDelay, float InRandomizationMin = 0.75f, float InRandomizationMax = 1.25f)
+    {
+        public float AtPeace = PeaceDelay;
+        public float ActiveEnemy = ActiveEnemyDelay;
+        public float OtherEnemy_Known = OtherEnemyDelay;
+        public float OtherEnemy_Unknown = UnknownEnemyDelay;
+        public float RandomizationMin = InRandomizationMin;
+        public float RandomizationMax = InRandomizationMax;
+    }
+
     public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     {
         static HearingSettings()
@@ -53,6 +66,31 @@ namespace SAIN.Preset.GlobalSettings
             const float defaultDistance = 125;
             Helpers.ListHelpers.PopulateKeys(HearingDistancesDefaults, defaultDistance);
         }
+        
+        [Name("Door Open Sound Range")]
+        [Description("The Maximum range a bot can hear a door opening")]
+        [Category("Hearing Distance")]
+        [MinMax(0, 100, 1)]
+        public float DOOR_OPEN_SOUND_RANGE = 40;
+
+        [Name("Door Kick Sound Range")]
+        [Description("The Maximum range a bot can hear a door being kicked")]
+        [Category("Hearing Distance")]
+        [MinMax(0, 100, 1)]
+        public float DOOR_KICK_SOUND_RANGE = 65;
+
+        [Name("Jump Sound Range")]
+        [Description("The Maximum range a bot can hear someone jumping")]
+        [Category("Hearing Distance")]
+        [MinMax(0, 100, 1)]
+        public float JUMP_SOUND_RANGE = 65;
+
+        [Name("Door Kick Sound Range")]
+        [Description("The Maximum range a bot can hear a door being kicked")]
+        [Category("Hearing Distance")]
+        [MinMax(0, 100, 1)]
+        [Advanced]
+        public float JUMP_SOUND_INTERVAL = 0.5f;
 
         [Name("Rain Sound Multiplier - Outdoors")]
         [Description("If it is raining, reduce heard distances by up to X amount. Depending on intensity of rain. Scales linearly with rain value.")]
@@ -410,14 +448,31 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Hearing Distance")]
         [Name("Max Squad Communication Range - No Headphones")]
         public float MaxRangeToReportEnemyActionNoHeadset = 50f;
-
-        [Name("Hearing Delay / Reaction Time with Active Enemy")]
+        
+        [Name("Base Hearing Delay Settings")]
         [MinMax(0.0f, 1f, 100f)]
-        public float BaseHearingDelayWithEnemy = 0.2f;
+        [Category("Hearing Delay / Reaction Delay")]
+        public HearingDelaySettings BaseHearingDelaySettings = new(0.5f, 0.1f, 0.25f, 0.66f);
 
-        [Name("Hearing Delay / Reaction Time while At Peace")]
+        [Name("Sound Type based Hearing Delay / Reaction Time")]
+        [Description("Optional: If a soundtype is defined here, it will override the Base Hearing Delays defined above.")]
         [MinMax(0.0f, 1f, 100f)]
-        public float BaseHearingDelayAtPeace = 0.35f;
+        [Category("Hearing Delay / Reaction Delay")]
+        [Advanced]
+        public Dictionary<SAINSoundType, HearingDelaySettings> HEARINGDELAY_SETTINGS = new() {
+            { SAINSoundType.Shot, new HearingDelaySettings(0.25f, 0.1f, 0.2f, 0.6f) },
+            { SAINSoundType.SuppressedShot, new HearingDelaySettings(0.3f, 0.1f, 0.25f, 0.65f) },
+            { SAINSoundType.BulletImpact, new HearingDelaySettings(0.25f, 0.1f, 0.2f, 0.6f) },
+        };
+
+        public HearingDelaySettings GetDelaySettings(SAINSoundType soundType)
+        {
+            if (HEARINGDELAY_SETTINGS.ContainsKey(soundType))
+            {
+                return HEARINGDELAY_SETTINGS[soundType];
+            }
+            return BaseHearingDelaySettings;
+        }
 
         [Name("Global Gunshot Audible Range Multiplier")]
         [MinMax(0.1f, 2f, 100f)]

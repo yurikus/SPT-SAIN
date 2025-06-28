@@ -5,7 +5,9 @@ using SAIN.Components.PlayerComponentSpace.Classes;
 using SAIN.Components.PlayerComponentSpace.Classes.Equipment;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent;
+using SAIN.SAINComponent.Classes.Info;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,8 +16,99 @@ using UnityEngine.AI;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
+    public struct AISoundData(SoundEvent InSound, BotComponent InBot, float InPlayerDistance)
+    {
+        public bool Reported = false;
+        public readonly SoundEvent Sound = InSound;
+        public readonly BotComponent Bot = InBot;
+        public readonly float PlayerDistance = InPlayerDistance;
+        public readonly float SoundTravelTime = InPlayerDistance / InSound.SoundSpeed;
+
+        public readonly bool CanReport(float ReactionDelay) => Sound.IsValid() && Time.time - Sound.TimeCreated >= SoundTravelTime + ReactionDelay;
+    }
+
+    public readonly struct SoundEvent(SAINSoundType InSoundType, Vector3 InPosition, PlayerComponent InPlayerComponent, float InRange, float InVolume, float InSoundSpeed, EPhraseTrigger InPhrase = EPhraseTrigger.None, ETagStatus InTagStatus = ETagStatus.Unaware)
+    {
+        public readonly SAINSoundType SoundType = InSoundType;
+        public readonly EPhraseTrigger Phrase = InPhrase;
+        public readonly ETagStatus TagStatus = InTagStatus;
+        public readonly Vector3 Position = InPosition;
+        public readonly float SoundSpeed = InSoundSpeed;
+        public readonly float Range = InRange;
+        public readonly float Volume = InVolume;
+        public readonly float BaseRangeWithVolume = InRange * InVolume;
+        public readonly PlayerComponent PlayerComponent = InPlayerComponent;
+        public readonly float TimeCreated = Time.time;
+
+        public readonly bool IsValid() => PlayerComponent != null && PlayerComponent.IsActive;
+
+        public readonly Player GetPlayer() => PlayerComponent?.Player;
+    }
+
     public class PlayerComponent : MonoBehaviour
     {
+        // WIP - Solarint
+        private const int MaxCachedSounds = 4;
+
+        public List<SoundEvent> AISoundCachedEvents { get; private set; } = [];
+        private int OverCapCount = 0;
+
+        public void AddCachedAISoundEvent(SAINSoundType InSoundType, Vector3 InPosition, float InRange, float InVolume, EPhraseTrigger Phrase = EPhraseTrigger.None, ETagStatus TagStatus = ETagStatus.Unaware)
+        {
+            float SoundSpeed = 343;
+            if (InSoundType.IsGunShot())
+            {
+                WeaponInfo Weapon = Equipment?.CurrentWeapon;
+                if (Weapon != null)
+                {
+                    SoundSpeed = Weapon.BulletSpeed;
+                }
+            }
+            int Count = AISoundCachedEvents.Count;
+            if (Count >= MaxCachedSounds)
+            {
+                OverCapCount++;
+                Logger.LogDebug($"Over Capacity [{OverCapCount}] Times");
+                bool ShallInsert = false;
+                float BaseRange = InRange * InVolume;
+                for (int i = 0; i < Count; i++)
+                {
+                    if (BaseRange < AISoundCachedEvents[i].BaseRangeWithVolume)
+                    {
+                        continue;
+                    }
+                    ShallInsert = true;
+                    break;
+                }
+                if (!ShallInsert)
+                {
+                    return;
+                }
+                Logger.LogDebug("Inserting...");
+                AISoundCachedEvents.Add(new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus));
+                AISoundCachedEvents.Sort((a, b) => b.BaseRangeWithVolume.CompareTo(a.BaseRangeWithVolume));
+                AISoundCachedEvents.RemoveAt(AISoundCachedEvents.Count - 1);
+                return;
+            }
+            OverCapCount = 0;
+            Logger.LogDebug($"Adding [{Count}] Index");
+            AISoundCachedEvents.Add(new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus));
+        }
+
+        public void ProcessSoundsForPlayer(List<SoundEvent> Sounds, PlayerComponent OtherPlayer, float OtherPlayerDistance)
+        {
+            BotComponent OtherPlayerBot = Person?.AIInfo?.BotComponent;
+            if (OtherPlayerBot != null)
+            {
+                OtherPlayerBot.AddCachedAISoundEvents(Sounds, OtherPlayerDistance);
+            }
+            else
+            {
+            }
+        }
+
+        //
+
         public OtherPlayersData OtherPlayersData { get; private set; }
         public BodyPartsClass BodyParts { get; private set; }
 
@@ -292,14 +385,6 @@ namespace SAIN.Components.PlayerComponentSpace
         }
 
         private Coroutine _gearCoroutine;
-
-        public float DistanceToClosestHuman
-        {
-            get
-            {
-                return 0f;
-            }
-        }
 
         private void navRayCastAllDir()
         {

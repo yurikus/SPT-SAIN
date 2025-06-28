@@ -67,7 +67,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private bool checkValid(string id, Enemy enemy)
         {
-            if (enemy == null || enemy.CheckValid() == false)
+            if (enemy == null || !enemy.CheckValid())
             {
                 _invalidIdsToRemove.Add(id);
                 return false;

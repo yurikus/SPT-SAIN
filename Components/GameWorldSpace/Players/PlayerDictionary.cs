@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EFT;
+using System;
 using System.Collections.Generic;
 
 namespace SAIN.Components.PlayerComponentSpace
@@ -6,6 +7,16 @@ namespace SAIN.Components.PlayerComponentSpace
     public class PlayerDictionary : Dictionary<string, PlayerComponent>
     {
         public event Action<string> OnPlayerComponentRemoved;
+        
+        public PlayerComponent GetPlayerComponent(IPlayer Player)
+        {
+            if (Player != null && 
+                this.TryGetValue(Player.ProfileId, out PlayerComponent component))
+            {
+                return component;
+            }
+            return null;
+        }
 
         public PlayerComponent GetPlayerComponent(string profileId)
         {

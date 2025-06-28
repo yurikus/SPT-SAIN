@@ -36,19 +36,20 @@ namespace SAIN.Patches.Talk
         [PatchPrefix]
         public static void PatchPrefix(Player __instance, EPlayerState nextState)
         {
-            if (nextState != EPlayerState.Jump || !__instance.IsAI)
-            {
-                return;
-            }
-
-            if (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers))
-            {
-                if (__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftLegDamaged) ||
-                    __instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightLegDamaged))
-                {
-                    __instance.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false);
-                }
-            }
+            // Solarint - This patch is unnecessary, previously there were odd checks to prevent ai from yelling out in pain
+            //if (nextState != EPlayerState.Jump || !__instance.IsAI)
+            //{
+            //    return;
+            //}
+            //
+            //if (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers))
+            //{
+            //    if (__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftLegDamaged) ||
+            //        __instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightLegDamaged))
+            //    {
+            //        __instance.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false);
+            //    }
+            //}
         }
     }
 

@@ -24,9 +24,42 @@ namespace SAIN.Components
 
         public void Update()
         {
+            UpdateMyAISoundCaches();
             Doors?.Update();
             Location?.Update();
             findSpawnPointMarkers();
+        }
+
+        private void UpdateMyAISoundCaches()
+        {
+            if (PlayerTracker != null)
+            {
+                var AlivePlayers = PlayerTracker.AlivePlayers.Values;
+                foreach (PlayerComponent Player in AlivePlayers)
+                {
+                    if (Player != null)
+                    {
+                        List<SoundEvent> soundEvents = Player.AISoundCachedEvents;
+                        if (soundEvents.Count > 0)
+                        {
+                            foreach (PlayerComponent OtherPlayer in AlivePlayers)
+                            {
+                                if (OtherPlayer != null &&
+                                    OtherPlayer.IsAI &&
+                                    OtherPlayer != Player &&
+                                    Player.OtherPlayersData.Datas.TryGetValue(OtherPlayer.ProfileId, out OtherPlayerData Data))
+                                {
+                                    OtherPlayer.ProcessSoundsForPlayer(soundEvents, Player, Data.DistanceData.Distance);
+                                }
+                            }
+                        }
+                    }
+                }
+                foreach (PlayerComponent Player in AlivePlayers)
+                {
+                    Player?.Person?.AIInfo?.BotComponent?.ProcessAISoundCache();
+                }
+            }
         }
 
         private void findSpawnPointMarkers()

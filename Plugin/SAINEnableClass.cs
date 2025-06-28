@@ -16,62 +16,55 @@ namespace SAIN
             GameWorld.OnDispose += Clear;
         }
 
+        private static readonly HashSet<string> ExcludedBots = [];
+        private static readonly HashSet<string> EnabledBots = [];
+
+        /// <summary>
+        /// Checks if this bot has SAIN enabled or if it is a vanilla bot.
+        /// </summary>
         public static bool IsSAINDisabledForBot(BotOwner botOwner)
         {
             if (botOwner == null)
-            {
                 return true;
-            }
-
-            if (_excludedBots.Contains(botOwner.name))
+            Player player = botOwner.GetPlayer;
+            if (player == null) 
                 return true;
 
-            if (_enabledBots.Contains(botOwner.name))
+            string id = player.ProfileId;
+            if (ExcludedBots.Contains(id))
+                return true;
+            if (EnabledBots.Contains(id))
                 return false;
-
-            return ShallExclude(botOwner);
-        }
-
-        private static bool ShallExclude(BotOwner botOwner)
-        {
-            bool exluded = IsBotExcluded(botOwner);
-            if (botOwner.GetPlayer == null)
-            {
-                return exluded;
-            }
+            
+            ProfileInfoSettingsClass settings = botOwner.Profile?.Info?.Settings;
+            if (settings == null)
+                return true;
 
             botOwner.GetPlayer.OnIPlayerDeadOrUnspawn += ClearBot;
 
-            if (exluded)
-            {
-                _excludedBots.Add(botOwner.name);
+            if (IsBotExcluded(botOwner)) {
+                ExcludedBots.Add(id);
+                Logger.LogDebug($"Added Excluded Bot [{player.Profile.Nickname},{id}]");
                 return true;
             }
-            _enabledBots.Add(botOwner.name);
+            EnabledBots.Add(id);
+            Logger.LogDebug($"Added Enabled Bot [{player.Profile.Nickname},{id}]");
             return false;
         }
 
-        private static readonly List<string> _excludedBots = new();
-
-        private static readonly List<string> _enabledBots = new();
-
         private static void Clear()
         {
-            if (_excludedBots.Count > 0)
-                _excludedBots.Clear();
-
-            if (_enabledBots.Count > 0)
-                _enabledBots.Clear();
+            ExcludedBots.Clear();
+            EnabledBots.Clear();
         }
 
         private static void ClearBot(IPlayer player)
         {
-            if (player != null)
-            {
+            if (player != null) {
                 player.OnIPlayerDeadOrUnspawn -= ClearBot;
                 string id = player.ProfileId;
-                _excludedBots.Remove(id);
-                _enabledBots.Remove(id);
+                ExcludedBots.Remove(id);
+                EnabledBots.Remove(id);
             }
         }
 
@@ -79,20 +72,17 @@ namespace SAIN
         {
             var settings = botOwner.Profile?.Info?.Settings;
             if (settings == null)
-            {
                 return true;
-            }
-            WildSpawnType wildSpawnType = settings.Role;
-            if (BotSpawnController.StrictExclusionList.Contains(wildSpawnType))
-            {
-                return true;
-            }
-            if (IsAlwaysEnabled(wildSpawnType, botOwner))
-            {
-                return false;
-            }
 
-            return ShallExludeByWildSpawnType(wildSpawnType, botOwner);
+            WildSpawnType type = settings.Role;
+
+            if (BotSpawnController.StrictExclusionList.Contains(type))
+                return true;
+
+            if (IsAlwaysEnabled(type, botOwner))
+                return false;
+
+            return ShallExludeByWildSpawnType(type, botOwner);
         }
 
         public static bool ShallExludeByWildSpawnType(WildSpawnType wildSpawnType, BotOwner botOwner)
@@ -142,13 +132,11 @@ namespace SAIN
         private static bool ExcludeOthers(WildSpawnType wildSpawnType)
         {
             if (SAINEnabled.VanillaCultists &&
-                WildSpawn.IsCultist(wildSpawnType))
-            {
+                WildSpawn.IsCultist(wildSpawnType)) {
                 return true;
             }
             if (SAINEnabled.VanillaRogues &&
-                wildSpawnType == WildSpawnType.exUsec)
-            {
+                wildSpawnType == WildSpawnType.exUsec) {
                 return true;
             }
             // Raiders have the same brain type as PMCs, so I'll need a new solution to have them excluded
@@ -157,11 +145,9 @@ namespace SAIN
             //{
             //    return true;
             //}
-            if (SAINEnabled.VanillaBloodHounds)
-            {
+            if (SAINEnabled.VanillaBloodHounds) {
                 if (wildSpawnType == WildSpawnType.arenaFighter ||
-                    wildSpawnType == WildSpawnType.arenaFighterEvent)
-                {
+                    wildSpawnType == WildSpawnType.arenaFighterEvent) {
                     return true;
                 }
             }
@@ -173,8 +159,7 @@ namespace SAIN
             // Pattern: xxx (xxx)
             string pattern = "\\w+.[(]\\w+[)]";
             Regex regex = new(pattern);
-            if (regex.Matches(nickname).Count > 0)
-            {
+            if (regex.Matches(nickname).Count > 0) {
                 return true;
             }
             return false;
@@ -183,12 +168,10 @@ namespace SAIN
         public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)
         {
             sain = null;
-            if (IsSAINDisabledForBot(botOwner))
-            {
+            if (IsSAINDisabledForBot(botOwner)) {
                 return false;
             }
-            if (SAINBotController.Instance == null)
-            {
+            if (SAINBotController.Instance == null) {
                 //Logger.LogError($"Bot Controller Null");
                 return false;
             }

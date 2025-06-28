@@ -100,6 +100,7 @@ namespace SAIN
             new Patches.Movement.PoseStaminaPatch(),
             new Patches.Movement.AimStaminaPatch(),
             new Patches.Movement.GlobalShootSettingsPatch(),
+            //new Patches.Movement.StopShootCauseAnimatorPatch(),
             new Patches.Movement.GlobalLookPatch(),
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
@@ -119,6 +120,7 @@ namespace SAIN
             new Patches.Hearing.FootstepSoundPatch(),
             new Patches.Hearing.SprintSoundPatch(),
             new Patches.Hearing.GenericMovementSoundPatch(),
+            new Patches.Hearing.SpecificStepAudioControllerPatch(),
             new Patches.Hearing.JumpSoundPatch(),
             new Patches.Hearing.DryShotPatch(),
             new Patches.Hearing.ProneSoundPatch(),
@@ -197,6 +199,11 @@ namespace SAIN
 
         public void OnGUI() => SAINEditor.OnGUI();
 
+        /// <summary>
+        /// Checks if this bot has SAIN enabled or if it is a vanilla bot.
+        /// </summary>
+        /// <param name="botOwner">The bot to check.</param>
+        /// <returns>True if the bot is Vanilla; false if they are a SAIN bot.</returns>
         public static bool IsBotExluded(BotOwner botOwner) => SAINEnableClass.IsSAINDisabledForBot(botOwner);
     }
 }

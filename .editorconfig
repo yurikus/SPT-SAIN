@@ -8,3 +8,6 @@ tab_width = 4
 indent_size = 4
 end_of_line = crlf
 indent_style = space
+
+# S1104: Fields should not have public accessibility
+dotnet_diagnostic.S1104.severity = none

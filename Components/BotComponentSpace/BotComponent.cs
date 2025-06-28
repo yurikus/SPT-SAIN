@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
@@ -23,6 +24,162 @@ namespace SAIN.SAINComponent
 {
     public class BotComponent : BotComponentBase
     {
+        public readonly List<AISoundData> SoundDataToReactTo = [];
+        public readonly List<AISoundData> AISoundCachedEvents = [];
+        public readonly List<AISoundData> AISoundCachedEvents_Conversations = [];
+        public readonly List<AISoundData> AISoundCachedEvents_Gunshots = [];
+        public readonly List<AISoundData> AISoundCachedEvents_Gunshots_Suppressed = [];
+        
+        public void AddCachedAISoundEvents(List<SoundEvent> Sounds, float PlayerDistance)
+        {
+            foreach (var Sound in Sounds)
+                if (Sound.BaseRangeWithVolume >= PlayerDistance)
+                    AddCachedAISoundEvent(Sound, PlayerDistance);
+        }
+
+        public void AddCachedAISoundEvent(SoundEvent SoundCache, float PlayerDistance)
+        {
+            if (EnemyController != null)
+            {
+                if (EnemyController.CheckAddEnemy(SoundCache.GetPlayer()) == null)
+                {
+                    switch (SoundCache.SoundType)
+                    {
+                        case SAINSoundType.Conversation:
+                            break;
+
+                        default:
+                            return;
+                    }
+                }
+                AISoundData Data = new(SoundCache, this, PlayerDistance);
+                switch (SoundCache.SoundType)
+                {
+                    case SAINSoundType.Shot:
+                        AISoundCachedEvents_Gunshots.Add(Data);
+                        break;
+
+                    case SAINSoundType.SuppressedShot:
+                        AISoundCachedEvents_Gunshots_Suppressed.Add(Data);
+                        break;
+
+                    case SAINSoundType.Conversation:
+                        AISoundCachedEvents_Conversations.Add(Data);
+                        break;
+
+                    default:
+                        AISoundCachedEvents.Add(Data);
+                        break;
+                }
+            }
+        }
+
+        public void ProcessAISoundCache()
+        {
+            bool DeafeningShot = false;
+            bool AlreadyDeafened = IsBotDeafened;
+            
+            // Process gunshots first, since they can trigger a bot to be deaf to other sounds
+            if (AISoundCachedEvents_Gunshots.Count > 0)
+            {
+                float DeafenCoef = 0.2f;
+                if (ProcessSounds(AISoundCachedEvents_Gunshots, AlreadyDeafened, DeafenCoef, true, SoundDataToReactTo))
+                {
+                    DeafeningShot = true;
+                    AlreadyDeafened = true;
+                }
+            }
+            if (AISoundCachedEvents_Gunshots_Suppressed.Count > 0)
+            {
+                float DeafenCoef_Suppressed = 0.15f;
+                if (ProcessSounds(AISoundCachedEvents_Gunshots_Suppressed, AlreadyDeafened, DeafenCoef_Suppressed, true, SoundDataToReactTo))
+                {
+                    DeafeningShot = true;
+                    AlreadyDeafened = true;
+                }
+            }
+
+            // Process most sounds if we aren't deafened
+            if (AISoundCachedEvents.Count > 0)
+            {
+                float DeafenCoef_Generic = 0.15f;
+                ProcessSounds(AISoundCachedEvents, AlreadyDeafened, DeafenCoef_Generic, false, SoundDataToReactTo);
+            }
+            if (AISoundCachedEvents_Conversations.Count > 0)
+            {
+                float DeafenCoef_Convo = 0.25f;
+                ProcessSounds(AISoundCachedEvents, AlreadyDeafened, DeafenCoef_Convo, false, SoundDataToReactTo);
+            }
+
+            bool SoundRemoved = false;
+            for (int i = SoundDataToReactTo.Count - 1; i >= 0; i--)
+            {
+                if (SoundDataToReactTo[i].CanReport(0.2f))
+                {
+                    TryReactToSound(SoundDataToReactTo[i]);
+                    SoundDataToReactTo.RemoveAt(i);
+                    SoundRemoved = true;
+                }
+            }
+
+            if (SoundRemoved)
+                SoundDataToReactTo.TrimExcess();
+            if (DeafeningShot)
+                _BotDeafedTime = Time.time;
+        }
+
+        public bool IsBotDeafened {
+            get
+            {
+                if (_BotDeafedTime > 0)
+                {
+                    if (_BotDeafedTime < Time.time)
+                    {
+                        return true;
+                    }
+                    _BotDeafedTime = -1;
+                }
+                return false;
+            }
+        }
+
+        private void TryReactToSound(AISoundData Sound)
+        {
+            Logger.LogDebug(Sound.ToString());
+        }
+
+        private float _BotDeafedTime = -1;
+
+        private static bool ProcessSounds(List<AISoundData> Sounds, bool PreviouslyDeaf, float DeafenCoef, bool IsGunShots, List<AISoundData> Results)
+        {
+            bool DeafeningShot = false;
+            int Count = Sounds.Count;
+            if (Count > 0)
+            {
+                Sounds.Sort((a, b) => a.PlayerDistance.CompareTo(b.PlayerDistance));
+                for (int i = 0; i < Count; i++)
+                {
+                    AISoundData Sound = Sounds[i];
+                    // If Sounds is closer than or equal to the input fraction of the Baserange of this sound, always report it. If we are checking gunshots, then this sound will deafen the bot for a duration.
+                    if (Sound.PlayerDistance <= Sound.Sound.BaseRangeWithVolume * DeafenCoef)
+                    {
+                        if (IsGunShots)
+                        {
+                            DeafeningShot = true;
+                        }
+                        Results.Add(Sound);
+                    }
+                    // If we weren't previously deaf, and we didn't hear a newly deafening sound, report it to the bot.
+                    else if (!PreviouslyDeaf && !DeafeningShot)
+                    {
+                        Results.Add(Sound);
+                    }
+                }
+                Sounds.Clear();
+            }
+            return DeafeningShot;
+        }
+
         public bool IsCheater { get; private set; }
 
         public bool BotActive => BotActivation.BotActive;
@@ -73,8 +230,7 @@ namespace SAIN.SAINComponent
         public SAINSteeringClass Steering { get; private set; }
         public AimClass Aim { get; private set; }
 
-        public bool ShallExecuteRequests
-        {
+        public bool ShallExecuteRequests {
             get
             {
                 BotRequest currRequest = BotOwner.BotRequestController.CurRequest;
@@ -99,8 +255,7 @@ namespace SAIN.SAINComponent
         public bool GameEnding => BotActivation.GameEnding;
         public bool SAINLayersActive => BotActivation.SAINLayersActive;
 
-        public float DistanceToAimTarget
-        {
+        public float DistanceToAimTarget {
             get
             {
                 if (BotOwner.AimingManager.CurrentAiming != null)
@@ -113,8 +268,7 @@ namespace SAIN.SAINComponent
 
         public float LastCheckVisibleTime;
 
-        public ESAINLayer ActiveLayer
-        {
+        public ESAINLayer ActiveLayer {
             get
             {
                 return BotActivation.ActiveLayer;

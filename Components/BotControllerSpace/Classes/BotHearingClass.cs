@@ -3,6 +3,7 @@ using SAIN.Components.PlayerComponentSpace;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace SAIN.Components.BotControllerSpace.Classes
 {
@@ -31,8 +32,7 @@ namespace SAIN.Components.BotControllerSpace.Classes
             {
                 return;
             }
-            if (player == null ||
-                player.HealthController.IsAlive == false)
+            if (player == null || !player.HealthController.IsAlive)
             {
                 return;
             }
@@ -42,18 +42,32 @@ namespace SAIN.Components.BotControllerSpace.Classes
 
         public void PlayShootSound(string profileId)
         {
-            BotController?.StartCoroutine(playShootSoundCoroutine(profileId));
+            PlayerComponent component = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(profileId);
+            if (component != null && component.IsActive && component.gameObject.activeInHierarchy)
+            {
+                component.Equipment.PlayAIShootSound();
+            }
         }
 
-        private IEnumerator playShootSoundCoroutine(string profileId)
+        public void PlayShootSound(IPlayer Player)
         {
-            yield return null;
-
-            PlayerComponent component = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(profileId);
+            PlayerComponent component = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(Player);
             if (component != null && component.IsActive)
             {
                 component.Equipment.PlayAIShootSound();
             }
+        }
+
+        public void PlayAISound(string profileId, SAINSoundType soundType, Vector3 position, float range, float volume)
+        {
+            PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(profileId);
+            PlayAISound(playerComponent, soundType, position, range, volume, true);
+        }
+
+        public void PlayAISound(IPlayer Player, SAINSoundType soundType, Vector3 position, float range, float volume)
+        {
+            PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(Player);
+            PlayAISound(playerComponent, soundType, position, range, volume, true);
         }
 
         public void PlayAISound(PlayerComponent playerComponent, SAINSoundType soundType, Vector3 position, float range, float volume, bool limitFreq)
@@ -72,42 +86,22 @@ namespace SAIN.Components.BotControllerSpace.Classes
             {
                 return;
             }
-
-            BotController.StartCoroutine(
-                delaySoundHeard(soundType, playerComponent, position, range, volume));
-        }
-
-        public void PlayAISound(string profileId, SAINSoundType soundType, Vector3 position, float range, float volume)
-        {
-            if (profileId.IsNullOrEmpty())
-            {
-                return;
-            }
-
-            PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(profileId);
-
-            if (playerComponent != null && playerComponent.IsActive)
-                PlayAISound(playerComponent, soundType, position, range, volume, true);
-        }
-
-        private IEnumerator delaySoundHeard(SAINSoundType soundType, PlayerComponent playerComponent, Vector3 position, float range, float volume, float delay = 0.1f)
-        {
+            //playerComponent.AddCachedAISoundEvent(soundType, position, range, volume);
             AISoundPlayed?.Invoke(soundType, position, playerComponent, range, volume);
             if (playerComponent.Player.IsYourPlayer)
             {
-                //Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
+                Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
             }
+            BotController.StartCoroutine(WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume));
+        }
 
+        private IEnumerator WaitDelayThenPlayDefaultBotEvent(SAINSoundType soundType, PlayerComponent playerComponent, Vector3 position, float range, float volume, float delay = 0.1f)
+        {
             yield return new WaitForSeconds(delay);
-
-            if (playerComponent == null ||
-                playerComponent.Player == null ||
-                !playerComponent.Player.HealthController.IsAlive)
+            if (playerComponent?.Player?.HealthController?.IsAlive == true && playerComponent.IsActive)
             {
-                yield break;
+                playBotEvent(playerComponent.Player, position, range * volume, soundType);
             }
-
-            playBotEvent(playerComponent.Player, position, range * volume, soundType);
         }
 
         private void playBotEvent(Player player, Vector3 position, float range, SAINSoundType soundType)

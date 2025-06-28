@@ -15,11 +15,12 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public event Action<string, PlayerComponent> OnPlayerRemoved;
 
-        public readonly PlayerDictionary AlivePlayers = new();
+        public readonly PlayerDictionary AlivePlayers = [];
 
-        public readonly Dictionary<string, Player> DeadPlayers = new();
+        public readonly Dictionary<string, Player> DeadPlayers = [];
 
         public PlayerComponent GetPlayerComponent(string profileId) => AlivePlayers.GetPlayerComponent(profileId);
+        public PlayerComponent GetPlayerComponent(IPlayer Player) => AlivePlayers.GetPlayerComponent(Player);
 
         public PlayerComponent FindClosestHumanPlayer(out float closestPlayerSqrMag, Vector3 targetPosition, out Player player)
         {

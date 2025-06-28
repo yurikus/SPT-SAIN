@@ -1,6 +1,7 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
@@ -150,9 +151,17 @@ namespace SAIN.Patches.Generic.Fixes
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(ref BotOwner ___botOwner_0)
+        public static bool PatchPrefix(BotMover __instance, ref BotOwner ___botOwner_0)
         {
-            return SAINPlugin.IsBotExluded(___botOwner_0);
+            if (__instance.HasPathAndNoComplete)
+            {
+                return false;
+            }
+            if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && BotComponent.Mover.SprintController.Running)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -62,7 +62,7 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
             if (_nextPlaySoundTime < Time.time)
             {
                 _nextPlaySoundTime = Time.time + (PlayerComponent.IsAI ? 0.5f : 0.1f);
-                SAINBotController.Instance?.BotHearing.PlayAISound(PlayerComponent, weapon.SoundType, PlayerComponent.Transform.WeaponFirePort, weapon.CalculatedAudibleRange, 1f, false);
+                SAINBotController.Instance?.BotHearing?.PlayAISound(PlayerComponent, weapon.SoundType, PlayerComponent.Transform.WeaponFirePort, weapon.CalculatedAudibleRange, 1f, false);
             }
             return true;
         }
