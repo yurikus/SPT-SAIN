@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using EFT;
 using SAIN.Editor;
 using SAIN.Helpers;
+using SAIN.Patches.Hearing;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
@@ -83,6 +84,17 @@ namespace SAIN
             new Patches.Generic.AllowRequestPatch(),
             new Patches.Generic.FindRequestForMePatch(),
 
+            new Patches.Generic.SetInHands.SetInHands_Empty(),
+            new Patches.Generic.SetInHands.SetInHands_Food_Patch(),
+            new Patches.Generic.SetInHands.SetInHands_Grenade_Patch(),
+            new Patches.Generic.SetInHands.SetInHands_Knife_Patch(),
+            new Patches.Generic.SetInHands.SetInHands_Meds_Patch1(),
+            new Patches.Generic.SetInHands.SetInHands_Meds_Patch2(),
+            new Patches.Generic.SetInHands.SetInHands_QuickUse_Patch1(),
+            new Patches.Generic.SetInHands.SetInHands_QuickUse_Patch2(),
+            new Patches.Generic.SetInHands.SetInHands_Weapon_Patch(),
+            new Patches.Generic.SetInHands.SetInHands_Weapon_Stationary_Patch(),
+
             new Patches.Generic.Fixes.StopSetToNavMeshPatch(),
             new Patches.Generic.Fixes.FightShallReloadFixPatch(),
             new Patches.Generic.Fixes.EnableVaultPatch(),
@@ -105,6 +117,8 @@ namespace SAIN
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
             new Patches.Hearing.OnMakingShotPatch(),
+            new Patches.Hearing.RegisterShotPatch(),
+            new Patches.Hearing.OnWeaponModifiedPatch(),
             new Patches.Hearing.HearingSensorPatch(),
 
             new Patches.Hearing.GrenadeCollisionPatch(),
@@ -128,9 +142,6 @@ namespace SAIN
             new Patches.Hearing.SoundClipNameCheckerPatch2(),
             new Patches.Hearing.AimSoundPatch(),
             new Patches.Hearing.LootingSoundPatch(),
-            new Patches.Hearing.SetInHandsGrenadePatch(),
-            new Patches.Hearing.SetInHandsFoodPatch(),
-            new Patches.Hearing.SetInHandsMedsPatch(),
 
             new Patches.Talk.JumpPainPatch(),
             new Patches.Talk.PlayerHurtPatch(),

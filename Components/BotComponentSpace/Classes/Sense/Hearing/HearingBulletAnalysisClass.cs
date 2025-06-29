@@ -26,37 +26,28 @@ namespace SAIN.SAINComponent.Classes
         {
         }
 
-        public bool DoIFeelBullet(BotSound sound)
+        public bool DoIFeelBullet(AISoundData sound)
         {
-            if (!sound.Info.IsGunShot)
+            if (sound.PlayerDistance > BULLET_FEEL_MAX_DIST)
             {
                 return false;
             }
-            if (sound.Distance > BULLET_FEEL_MAX_DIST)
-            {
-                return false;
-            }
-            Vector3 directionToBot = (Bot.Position - sound.Info.Position).normalized;
-            float dot = Vector3.Dot(sound.Info.SourcePlayer.LookDirection, directionToBot);
+            Vector3 directionToBot = (Bot.Position - sound.Position).normalized;
+            float dot = Vector3.Dot(sound.HeardPlayer.LookDirection, directionToBot);
             return dot >= BULLET_FEEL_DOT_THRESHOLD;
         }
 
-        public bool DidShotFlyByMe(BotSound sound)
+        public bool DidShotFlyByMe(AISoundData sound, out Vector3 ProjectionPoint, out float ProjectionPointDistance)
         {
-            if (!sound.BulletData.BulletFelt)
-            {
-                return false;
-            }
+            ProjectionPointDistance = 0;
+            ProjectionPoint = Vector3.zero;
             if (BaseClass.SoundInput.IgnoreUnderFire)
             {
                 return false;
             }
 
-            var player = sound.Info.SourcePlayer;
-            Vector3 projectionPoint = calcProjectionPoint(player, sound.Distance);
-            float pointDistanceSqr = (projectionPoint - Bot.Position).sqrMagnitude;
-
-            sound.BulletData.ProjectionPoint = projectionPoint;
+            ProjectionPoint = CalcProjectionPoint(sound.HeardPlayerComponent, sound.PlayerDistance);
+            float pointDistanceSqr = (ProjectionPoint - Bot.Position).sqrMagnitude;
 
             float maxDist = SAINPlugin.LoadedPreset.GlobalSettings.Mind.SUPP_DISTANCE_SCALE_END;
             float maxDistSqr = maxDist * maxDist;
@@ -66,25 +57,28 @@ namespace SAIN.SAINComponent.Classes
             }
 
             // if the direction the player shot hits a wall, and the point that they hit is further than our input max distance, the shot did not fly by the bot.
-            Vector3 firePort = player.Transform.WeaponFirePort;
-            Vector3 direction = projectionPoint - firePort;
-            if (Physics.Raycast(firePort, direction, out var hit, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask) &&
-                (hit.point - Bot.Position).sqrMagnitude > maxDistSqr)
+            if (!sound.Enemy.InLineOfSight)
             {
-                return false;
+                Vector3 firePort = sound.HeardPlayerComponent.Transform.WeaponFirePort;
+                Vector3 direction = ProjectionPoint - firePort;
+                if (Physics.Raycast(firePort, direction, out var hit, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask) &&
+                    (hit.point - Bot.Position).sqrMagnitude > maxDistSqr)
+                {
+                    return false;
+                }
             }
 
             if (SAINPlugin.DebugSettings.Logs.DebugHearing)
             {
-                DebugGizmos.Sphere(projectionPoint, 0.25f, Color.red, true, 60f);
-                DebugGizmos.Line(projectionPoint, firePort, Color.red, 0.1f, true, 60f, true);
+                DebugGizmos.Sphere(ProjectionPoint, 0.25f, Color.red, true, 60f);
+                DebugGizmos.Line(ProjectionPoint, sound.HeardPlayerComponent.Transform.WeaponFirePort, Color.red, 0.1f, true, 60f, true);
             }
 
-            sound.BulletData.ProjectionPointDistance = Mathf.Sqrt(pointDistanceSqr);
+            ProjectionPointDistance = Mathf.Sqrt(pointDistanceSqr);
             return true;
         }
 
-        private Vector3 calcProjectionPoint(PlayerComponent playerComponent, float realDistance)
+        private static Vector3 CalcProjectionPoint(PlayerComponent playerComponent, float realDistance)
         {
             Vector3 weaponPointDir = playerComponent.Transform.WeaponPointDirection;
             Vector3 shotPos = playerComponent.Transform.WeaponFirePort;

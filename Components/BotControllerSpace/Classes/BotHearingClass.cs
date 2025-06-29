@@ -36,25 +36,17 @@ namespace SAIN.Components.BotControllerSpace.Classes
             {
                 return;
             }
-
-            PlayerTalk?.Invoke(phrase, mask, player);
-        }
-
-        public void PlayShootSound(string profileId)
-        {
-            PlayerComponent component = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(profileId);
-            if (component != null && component.IsActive && component.gameObject.activeInHierarchy)
+            
+            PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(player);
+            if (playerComponent != null)
             {
-                component.Equipment.PlayAIShootSound();
-            }
-        }
-
-        public void PlayShootSound(IPlayer Player)
-        {
-            PlayerComponent component = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(Player);
-            if (component != null && component.IsActive)
-            {
-                component.Equipment.PlayAIShootSound();
+                var Range = phrase switch {
+                    EPhraseTrigger.OnBreath => 35,
+                    EPhraseTrigger.OnBeingHurt or EPhraseTrigger.OnAgony => 70,
+                    _ => (float)(mask == ETagStatus.Unaware ? 40 : 70),
+                };
+                playerComponent.PlayAISound(SAINSoundType.Conversation, player.Position, Range, 1, phrase, mask);
+                PlayerTalk?.Invoke(phrase, mask, player);
             }
         }
 
@@ -81,12 +73,11 @@ namespace SAIN.Components.BotControllerSpace.Classes
             {
                 return;
             }
-            if (limitFreq &&
-                !playerComponent.AIData.AISoundPlayer.ShallPlayAISound(range))
+            if (!playerComponent.AIData.AISoundPlayer.ShallPlayAISound())
             {
                 return;
             }
-            //playerComponent.AddCachedAISoundEvent(soundType, position, range, volume);
+            playerComponent.PlayAISound(soundType, position, range, volume);
             AISoundPlayed?.Invoke(soundType, position, playerComponent, range, volume);
             if (playerComponent.Player.IsYourPlayer)
             {

@@ -79,8 +79,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            Vector3? targetPos = Bot.Steering.FindLastKnownTarget(Bot.Enemy);
-            if (targetPos == null || (lastKnownPos.Value - targetPos.Value).sqrMagnitude > 10f)
+            if (!Bot.Steering.FindLastKnownTarget(Bot.Enemy, out Vector3 targetPos) || (lastKnownPos.Value - targetPos).sqrMagnitude > 10f)
             {
                 ResetBlindFire();
                 _changeBlindFireTime = Time.time + 0.5f;
@@ -88,7 +87,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             int lastBlindFire = _blindFire;
-            _blindFire = checkBlindFire(targetPos.Value);
+            _blindFire = checkBlindFire(targetPos);
 
             if (_blindFire == 0)
             {
@@ -107,7 +106,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 _nextUpdateAimTargetTime = Time.time + 1.5f;
                 Vector3 start = Bot.Position;
-                Vector3 blindFireDirection = Vector.Rotate(targetPos.Value - start, Vector.RandomRange(3), Vector.RandomRange(3), Vector.RandomRange(3));
+                Vector3 blindFireDirection = Vector.Rotate(targetPos - start, Vector.RandomRange(3), Vector.RandomRange(3), Vector.RandomRange(3));
                 BlindFireTargetPos = blindFireDirection + start;
             }
             TryShoot();

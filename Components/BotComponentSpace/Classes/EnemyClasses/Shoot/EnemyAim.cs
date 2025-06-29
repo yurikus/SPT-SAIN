@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             get
             {
-                var weapon = Enemy.Bot.PlayerComponent.Equipment.CurrentWeapon;
+                var weapon = Enemy.Bot.PlayerComponent.Equipment.CurrentWeaponInfo;
                 if (weapon == null)
                 {
                     return 1f;

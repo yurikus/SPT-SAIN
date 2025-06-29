@@ -1,14 +1,20 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.EnvironmentEffect;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes.EnemyClasses;
 using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+
+using QuickGrenadeUseCallbackType = GInterface179;
+using FoodAndMedsEquipCallbackType = GInterface176;
+using SetInHandsMedsStruct = GStruct353<EBodyPart>;
 
 namespace SAIN.Patches.Generic
 {
@@ -21,6 +27,198 @@ namespace SAIN.Patches.Generic
                 botOwner.gameObject.transform != null &&
                 botOwner.Transform != null &&
                 !botOwner.IsDead;
+        }
+    }
+
+    namespace SetInHands
+    {
+        public static class Helpers
+        {
+            public static void SetItemEquiped(IPlayer Player, Item Item)
+            {
+                if (GameWorldComponent.TryGetPlayerComponent(Player, out PlayerComponent PlayerComponent))
+                {
+                    PlayerComponent.SetItemEquippedInHands(Item);
+                }
+            }
+        }
+
+        public class SetInHands_Empty : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return AccessTools.Method(typeof(Player), nameof(Player.SetEmptyHands));
+            }
+
+            [PatchPostfix]
+            public static void Patch(Player __instance)
+            {
+                Helpers.SetItemEquiped(__instance, null);
+            }
+        }
+
+        public class SetInHands_Weapon_Patch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(Weapon), typeof(Callback<IFirearmHandsController>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPostfix]
+            public static void Patch(Player __instance, Weapon weapon)
+            {
+                Helpers.SetItemEquiped(__instance, weapon);
+            }
+        }
+
+        public class SetInHands_Weapon_Stationary_Patch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return AccessTools.Method(typeof(Player), nameof(Player.SetStationaryWeapon));
+            }
+
+            [PatchPostfix]
+            public static void Patch(Player __instance, Weapon weapon)
+            {
+                Helpers.SetItemEquiped(__instance, weapon);
+            }
+        }
+
+        public class SetInHands_Knife_Patch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(KnifeComponent), typeof(Callback<IKnifeController>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPostfix]
+            public static void Patch(Player __instance, KnifeComponent knife)
+            {
+                Helpers.SetItemEquiped(__instance, knife?.Item);
+            }
+        }
+
+        public class SetInHands_Grenade_Patch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(ThrowWeapItemClass), typeof(Callback<IHandsThrowController>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(Player __instance, ThrowWeapItemClass throwWeap)
+            {
+                float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_GrenadePinDraw;
+                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GrenadeDraw, __instance.Position, range, 1f);
+                Helpers.SetItemEquiped(__instance, throwWeap);
+            }
+        }
+
+        public class SetInHands_Food_Patch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(FoodDrinkItemClass), typeof(float), typeof(int), typeof(Callback<FoodAndMedsEquipCallbackType>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(Player __instance, FoodDrinkItemClass foodDrink)
+            {
+                float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_EatDrink;
+                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Food, __instance.Position, range, 1f);
+                Helpers.SetItemEquiped(__instance, foodDrink);
+            }
+        }
+
+        public class SetInHands_Meds_Patch1 : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(MedsItemClass), typeof(EBodyPart), typeof(int), typeof(Callback<FoodAndMedsEquipCallbackType>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(MedsItemClass meds, Player __instance)
+            {
+                SAINSoundType soundType;
+                float range;
+                if (meds != null && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart]))
+                {
+                    soundType = SAINSoundType.Surgery;
+                    range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Surgery;
+                }
+                else
+                {
+                    soundType = SAINSoundType.Heal;
+                    range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
+                }
+                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
+                Helpers.SetItemEquiped(__instance, meds);
+            }
+        }
+
+        public class SetInHands_Meds_Patch2 : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(MedsItemClass), typeof(SetInHandsMedsStruct), typeof(int), typeof(Callback<FoodAndMedsEquipCallbackType>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(MedsItemClass meds, Player __instance)
+            {
+                SAINSoundType soundType;
+                float range;
+                if (meds != null && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart]))
+                {
+                    soundType = SAINSoundType.Surgery;
+                    range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Surgery;
+                }
+                else
+                {
+                    soundType = SAINSoundType.Heal;
+                    range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
+                }
+                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
+                Helpers.SetItemEquiped(__instance, meds);
+            }
+        }
+
+        public class SetInHands_QuickUse_Patch1 : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(Item), typeof(Callback<IOnHandsUseCallback>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHandsForQuickUse), Params);
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(Item quickUseItem, Player __instance)
+            {
+                Helpers.SetItemEquiped(__instance, quickUseItem);
+            }
+        }
+
+        public class SetInHands_QuickUse_Patch2 : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(ThrowWeapItemClass), typeof(Callback<QuickGrenadeUseCallbackType>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHandsForQuickUse), Params);
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(ThrowWeapItemClass throwWeap, Player __instance)
+            {
+                Helpers.SetItemEquiped(__instance, throwWeap);
+            }
         }
     }
 

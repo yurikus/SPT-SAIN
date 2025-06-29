@@ -7,6 +7,7 @@ using EFT.UI;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.Helpers;
+using SAIN.Components.PlayerComponentSpace;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using Systems.Effects;
@@ -261,7 +262,8 @@ namespace SAIN.Patches.Hearing
                     if (StepSourceObj != null) {
                         if (StepSourceObj is BetterSource NestedStepSoundSource) {
                             //SAINBotController.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
-                            Logger.LogInfo($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
+                            if (player.IsYourPlayer)
+                                Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                         }
                         else {
                             Logger.LogError("StepSourceObj is not BetterSource NestedStepSoundSource");
@@ -340,15 +342,42 @@ namespace SAIN.Patches.Hearing
         }
 
         [PatchPrefix]
-        public static void PatchPrefix(Player __instance)
+        public static void PatchPrefix(Player __instance, IWeapon weapon, Vector3 force)
         {
-            SAINBotController botController = SAINBotController.Instance;
-            if (botController == null) {
-                return;
+            if (GameWorldComponent.TryGetPlayerComponent(__instance, out PlayerComponent PlayerComponent))
+            {
+                PlayerComponent.OnMakingShot(weapon, force);
             }
-            botController.BotHearing?.PlayShootSound(__instance.ProfileId);
-            if (__instance.IsAI && SAINEnableClass.GetSAIN(__instance, out var sain)) {
-                sain.Info.WeaponInfo.Recoil.WeaponShot();
+        }
+    }
+    
+    public class RegisterShotPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.RegisterShot));
+        }
+
+        [PatchPrefix]
+        public static void PatchPrefix(Player ____player, Item weapon, EftBulletClass shot)
+        {
+            GameWorldComponent.RegisterShot(____player, shot, weapon);
+        }
+    }
+
+    public class OnWeaponModifiedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.WeaponModified));
+        }
+
+        [PatchPrefix]
+        public static void PatchPrefix(Player.FirearmController __instance, Player ____player)
+        {
+            if (GameWorldComponent.TryGetPlayerComponent(____player, out PlayerComponent PlayerComponent))
+            {
+                PlayerComponent.Equipment.WeaponModified(__instance.Weapon);
             }
         }
     }
@@ -495,63 +524,6 @@ namespace SAIN.Patches.Hearing
         {
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_AimingandGearRattle;
             SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, baseRange, volume);
-        }
-    }
-
-    public class SetInHandsGrenadePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player), "SetInHands",
-                [typeof(ThrowWeapItemClass), typeof(Callback<IHandsThrowController>)]);
-        }
-
-        [PatchPrefix]
-        public static void PatchPrefix(Player __instance)
-        {
-            float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_GrenadePinDraw;
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GrenadeDraw, __instance.Position, range, 1f);
-        }
-    }
-
-    public class SetInHandsFoodPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player), "SetInHands",
-                [typeof(FoodDrinkItemClass), typeof(float), typeof(int), typeof(Callback<GInterface176>)]);
-        }
-
-        [PatchPrefix]
-        public static void PatchPrefix(Player __instance)
-        {
-            float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_EatDrink;
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Food, __instance.Position, range, 1f);
-        }
-    }
-
-    public class SetInHandsMedsPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player), "SetInHands",
-                [typeof(MedsItemClass), typeof(EBodyPart), typeof(int), typeof(Callback<GInterface176>)]);
-        }
-
-        [PatchPrefix]
-        public static void PatchPrefix(MedsItemClass meds, Player __instance)
-        {
-            SAINSoundType soundType;
-            float range;
-            if (meds != null && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart])) {
-                soundType = SAINSoundType.Surgery;
-                range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Surgery;
-            }
-            else {
-                soundType = SAINSoundType.Heal;
-                range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
-            }
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
         }
     }
 

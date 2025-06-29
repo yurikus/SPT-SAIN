@@ -172,7 +172,7 @@ namespace SAIN.Preset.GlobalSettings
         {
             float result = 0f;
 
-            WeaponInfo weaponInfo = player.Equipment.CurrentWeapon ?? player.Equipment.WeaponInInventory;
+            WeaponInfo weaponInfo = player.Equipment.CurrentWeaponInfo ?? player.Equipment.WeaponInInventory;
             if (weaponInfo == null)
             {
                 //Logger.LogError("weaponInfo Null");

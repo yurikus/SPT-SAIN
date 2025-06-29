@@ -12,7 +12,6 @@ namespace SAIN.SAINComponent.Classes.Mover
     public class SAINSteeringClass : BotBase, IBotClass
     {
         private static SteeringSettings _steerSettings => GlobalSettingsClass.Instance.Steering;
-        private float STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE_SQR => _steerSettings.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr();
         public ESteerPriority CurrentSteerPriority => _steerPriorityClass.CurrentSteerPriority;
         public ESteerPriority LastSteerPriority => _steerPriorityClass.LastSteerPriority;
         public EEnemySteerDir EnemySteerDir { get; private set; }
@@ -70,12 +69,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public bool LookToLastKnownEnemyPosition(Enemy enemy, Vector3? lastKnown = null)
+        public bool LookToLastKnownEnemyPosition(Enemy enemy)
         {
-            Vector3? place = lastKnown ?? FindLastKnownTarget(enemy);
-            if (place != null)
+            if (FindLastKnownTarget(enemy, out Vector3 Position))
             {
-                LookToPoint(place.Value);
+                LookToPoint(Position);
                 return true;
             }
             return false;
@@ -232,42 +230,23 @@ namespace SAIN.SAINComponent.Classes.Mover
             return lastKnownPlace.GroundedPosition();
         }
 
-        public Vector3? FindLastKnownTarget(Enemy enemy)
+        public bool FindLastKnownTarget(Enemy enemy, out Vector3 Result)
         {
-            EnemySteerDir = EEnemySteerDir.None;
             if (enemy == null)
             {
                 EnemySteerDir = EEnemySteerDir.NullEnemy_ERROR;
-                return null;
+                Result = Vector3.zero;
+                return false;
             }
-            if (enemy.IsVisible)
+            if (enemy.FindLookPoint(WeaponRootOffset, out Vector3 Position, out EEnemySteerDir EnumValue, _steerSettings))
             {
-                EnemySteerDir = EEnemySteerDir.VisibleEnemyPos;
-                return enemy.EnemyPosition + WeaponRootOffset;
+                EnemySteerDir = EnumValue;
+                Result = Position;
+                return true;
             }
-            var lastKnown = enemy.KnownPlaces.LastKnownPlace;
-            if (lastKnown == null)
-            {
-                EnemySteerDir = EEnemySteerDir.NullLastKnown_ERROR;
-                return null;
-            }
-            var lastSeen = enemy.KnownPlaces.LastSeenPlace;
-            if (lastSeen != null)
-            {
-                if (lastSeen == lastKnown)
-                {
-                    EnemySteerDir = EEnemySteerDir.LastSeenPos;
-                    return lastSeen.Position + WeaponRootOffset;
-                }
-                if ((lastSeen.Position - lastKnown.Position).sqrMagnitude < STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE_SQR)
-                {
-                    EnemySteerDir = EEnemySteerDir.LastSeenPos;
-                    return lastSeen.Position + WeaponRootOffset;
-                }
-            }
-
-            EnemySteerDir = EEnemySteerDir.LastKnownPos;
-            return lastKnown.Position + WeaponRootOffset;
+            EnemySteerDir = EEnemySteerDir.None;
+            Result = Vector3.zero;
+            return false;
         }
 
         private void lookToUnderFirePos()
@@ -280,10 +259,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             var enemyWhoShotMe = _steerPriorityClass.EnemyWhoLastShotMe;
             if (enemyWhoShotMe != null)
             {
-                Vector3? lastKnown = FindLastKnownTarget(enemyWhoShotMe);
-                if (lastKnown != null)
+                if (FindLastKnownTarget(enemyWhoShotMe, out Vector3 Result))
                 {
-                    LookToPoint(lastKnown.Value);
+                    LookToPoint(Result);
                     return;
                 }
                 var lastShotPos = enemyWhoShotMe.Status.LastShotPosition;

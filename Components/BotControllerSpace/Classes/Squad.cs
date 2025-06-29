@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Models.Structs;
@@ -154,31 +155,22 @@ namespace SAIN.BotController.Classes
             Flashlight,
         }
 
-        public void AddPointToSearch(BotSound sound, BotComponent sain)
+        public void AddPointToSearch(Enemy Enemy, Vector3 EstimatedPosition, AISoundData Sound, BotComponent sain)
         {
-            Enemy enemy = sound.Enemy;
-            if (enemy == null)
-            {
-                Logger.LogError($"Could not find enemy!");
-                return;
-            }
-
-            bool isDanger = checkSoundIsDanger(sound);
-            enemy.Hearing.LastSoundHeard = sound;
-            addPlaceForCheck(sound.Results.EstimatedPosition, sound.Info.SoundType, sain, enemy, true, isDanger);
+            AddPlaceForCheck(EstimatedPosition, Sound.SoundType, sain, Enemy, true, CheckSoundIsDanger(Sound));
         }
 
-        private bool checkSoundIsDanger(BotSound sound)
+        private static bool CheckSoundIsDanger(AISoundData sound)
         {
-            if (sound.Results.VisibleSource)
+            if (sound.Enemy.InLineOfSight)
             {
                 return true;
             }
-            if (sound.Distance < SOUND_DIST_ALWAYS_DANGER)
+            if (sound.PlayerDistance < SOUND_DIST_ALWAYS_DANGER)
             {
                 return true;
             }
-            if (sound.Info.IsGunShot && sound.Distance < SOUND_DIST_GUNSHOT_ALWAYS_DANGER)
+            if (sound.IsGunShot && sound.PlayerDistance < SOUND_DIST_GUNSHOT_ALWAYS_DANGER)
             {
                 return true;
             }
@@ -188,7 +180,7 @@ namespace SAIN.BotController.Classes
         private const float SOUND_DIST_ALWAYS_DANGER = 25f;
         private const float SOUND_DIST_GUNSHOT_ALWAYS_DANGER = 100f;
 
-        private void addPlaceForCheck(Vector3 position, SAINSoundType soundType, BotComponent bot, Enemy enemy, bool heard, bool isDanger)
+        private void AddPlaceForCheck(Vector3 position, SAINSoundType soundType, BotComponent bot, Enemy enemy, bool heard, bool isDanger)
         {
             if (BotsGroup == null)
             {
@@ -197,10 +189,10 @@ namespace SAIN.BotController.Classes
 
             position.y = enemy.EnemyPosition.y;
 
-            AISoundType baseSoundType = soundType.Convert();
-            PlaceForCheckType checkType = isDanger ? PlaceForCheckType.danger : PlaceForCheckType.simple;
-            PlaceForCheck newPlace = addNewPlaceForCheck(bot.BotOwner, position, checkType, enemy.EnemyIPlayer);
-            Vector3 pos = newPlace?.Position ?? position;
+            //AISoundType baseSoundType = soundType.Convert();
+            //PlaceForCheckType checkType = isDanger ? PlaceForCheckType.danger : PlaceForCheckType.simple;
+            //PlaceForCheck newPlace = addNewPlaceForCheck(bot.BotOwner, position, checkType, enemy.EnemyIPlayer);
+            //Vector3 pos = newPlace?.Position ?? position;
 
             SAINHearingReport report = new()
             {
@@ -226,7 +218,7 @@ namespace SAIN.BotController.Classes
             }
 
             bool isDanger = (position - sain.Position).sqrMagnitude < SOUND_DIST_ALWAYS_DANGER * SOUND_DIST_ALWAYS_DANGER;
-            addPlaceForCheck(position, soundType.Convert(), sain, enemy, false, isDanger);
+            AddPlaceForCheck(position, soundType.Convert(), sain, enemy, false, isDanger);
         }
 
         private PlaceForCheck addNewPlaceForCheck(BotOwner botOwner, Vector3 position, PlaceForCheckType checkType, IPlayer player)

@@ -1,4 +1,6 @@
-﻿using SAIN.Preset.GlobalSettings;
+﻿using SAIN.Components.PlayerComponentSpace;
+using SAIN.Preset.GlobalSettings;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
@@ -22,25 +24,23 @@ namespace SAIN.SAINComponent.Classes
         {
         }
 
-        public Vector3 CalcRandomizedPosition(BotSound sound, float addDispersion)
+        public Vector3 CalcRandomizedPosition(AISoundData Sound, float addDispersion)
         {
-            float distance = sound.Distance;
-            float baseDispersion = getBaseDispersion(distance, sound.Info.SoundType);
-            float dispersionMod = getDispersionModifier(sound) * addDispersion;
+            float baseDispersion = getBaseDispersion(Sound.PlayerDistance, Sound.SoundType);
+            float dispersionMod = getDispersionModifier(Sound.Enemy) * addDispersion;
             float finalDispersion = baseDispersion * dispersionMod;
 
             HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;
             finalDispersion = Mathf.Clamp(finalDispersion, 0f, hearingSettings.HEAR_DISPERSION_MAX_DISPERSION);
-            sound.Dispersion.Dispersion = finalDispersion;
-            float min = distance < hearingSettings.HEAR_DISPERSION_MIN_DISTANCE_THRESH ? 0f : hearingSettings.HEAR_DISPERSION_MIN;
+            float min = Sound.PlayerDistance < hearingSettings.HEAR_DISPERSION_MIN_DISTANCE_THRESH ? 0f : hearingSettings.HEAR_DISPERSION_MIN;
             Vector3 randomdirection = getRandomizedDirection(finalDispersion, min);
 
             if (SAINPlugin.DebugSettings.Logs.DebugHearing)
-                Logger.LogDebug($"Dispersion: [{randomdirection.magnitude}] Distance: [{distance}] Base Dispersion: [{baseDispersion}] DispersionModifier [{dispersionMod}] Final Dispersion: [{finalDispersion}] : SoundType: [{sound.Info.SoundType}]");
+                Logger.LogDebug($"Dispersion: [{randomdirection.magnitude}] Distance: [{ Sound.PlayerDistance}] Base Dispersion: [{baseDispersion}] DispersionModifier [{dispersionMod}] Final Dispersion: [{finalDispersion}] : SoundType: [{Sound.SoundType}]");
 
-            Vector3 estimatedEnemyPos = sound.Info.Position + randomdirection;
+            Vector3 estimatedEnemyPos = Sound.Position + randomdirection;
             Vector3 dirToRandomPos = estimatedEnemyPos - Bot.Position;
-            Vector3 result = Bot.Position + (dirToRandomPos.normalized * distance);
+            Vector3 result = Bot.Position + (dirToRandomPos.normalized * Sound.PlayerDistance);
             return result;
         }
 
@@ -50,14 +50,14 @@ namespace SAIN.SAINComponent.Classes
             if (hearingSettings.HEAR_DISPERSION_VALUES.TryGetValue(soundType, out float dispersionValue) == false)
             {
                 dispersionValue = 12.5f;
-                Logger.LogWarning($"Could not find [{soundType}] in Hearing Dispersion Dictionary!");
+                //Logger.LogWarning($"Could not find [{soundType}] in Hearing Dispersion Dictionary!");
             }
             return enemyDistance / dispersionValue;
         }
 
-        private float getDispersionModifier(BotSound sound)
+        private float getDispersionModifier(Enemy Enemy)
         {
-            float dotProduct = Vector3.Dot(Bot.LookDirection.normalized, sound.Enemy.EnemyDirectionNormal);
+            float dotProduct = Vector3.Dot(Bot.LookDirection.normalized, Enemy.EnemyDirectionNormal);
             float scaled = (dotProduct + 1) / 2;
 
             HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;

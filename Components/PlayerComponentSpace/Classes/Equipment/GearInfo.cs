@@ -31,11 +31,7 @@ namespace SAIN.SAINComponent.Classes.Info
             Equipment = equipment;
         }
 
-        public void Update()
-        {
-        }
-
-        private const float GEAR_UPDATE_FREQ = 10f;
+        private const float GEAR_UPDATE_FREQ = 2f;
 
         public IEnumerator GearUpdateLoop()
         {

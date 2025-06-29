@@ -94,7 +94,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             float gearMod = CalcGearMod();
 
             bool flareEnabled = EnemyPlayer.AIData?.GetFlare == true &&
-                Enemy.EnemyPlayerComponent?.Equipment.CurrentWeapon?.HasSuppressor == false;
+                Enemy.EnemyPlayerComponent?.Equipment.CurrentWeaponInfo?.HasSuppressor == false;
 
             bool underFire = Bot.BotOwner.Memory.IsUnderFire && Bot.Memory.LastUnderFireEnemy == Enemy;
 

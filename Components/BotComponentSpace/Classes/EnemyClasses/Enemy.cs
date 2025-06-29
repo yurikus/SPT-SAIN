@@ -5,6 +5,7 @@ using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset;
+using SAIN.Preset.GlobalSettings;
 using System;
 using UnityEngine;
 
@@ -111,6 +112,36 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Path.Dispose();
             Hearing.Dispose();
             Status.Dispose();
+        }
+
+        public bool FindLookPoint(Vector3 WeaponRootOffset, out Vector3 Position, out EEnemySteerDir EnemySteerDir, SteeringSettings Settings)
+        {
+            Position = Vector3.zero;
+            if (IsVisible)
+            {
+                EnemySteerDir = EEnemySteerDir.VisibleEnemyPos;
+                Position = EnemyPosition + WeaponRootOffset;
+                return true;
+            }
+            EnemyKnownPlaces Places = KnownPlaces;
+            EnemyPlace lastKnown = Places.LastKnownPlace;
+            if (lastKnown == null)
+            {
+                EnemySteerDir = EEnemySteerDir.NullLastKnown_ERROR;
+                return false;
+            }
+            var lastSeen = Places.LastSeenPlace;
+            if (lastSeen != null && 
+                (lastSeen == lastKnown || (lastSeen.Position - lastKnown.Position).sqrMagnitude < Settings.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr()))
+            {
+                EnemySteerDir = EEnemySteerDir.LastSeenPos;
+                Position = lastSeen.Position + WeaponRootOffset;
+                return true;
+            }
+
+            EnemySteerDir = EEnemySteerDir.LastKnownPos;
+            Position = lastKnown.Position + WeaponRootOffset;
+            return true;
         }
 
         public bool EnemyKnown => Events.OnEnemyKnownChanged.Value;

@@ -28,18 +28,21 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private Vector3? findRandomLookPos(out bool isRandomLook)
         {
-            isRandomLook = false;
-            Vector3 randomLookPosition = Vector3.zero;
             if (_lookRandomToggle)
             {
-                randomLookPosition = generateRandomLookPos();
+                Vector3 randomLookPosition = generateRandomLookPos();
                 if (randomLookPosition != Vector3.zero)
                 {
                     isRandomLook = true;
                     return randomLookPosition;
                 }
             }
-            return BaseClass.FindLastKnownTarget(Bot.Enemy);
+            isRandomLook = false;
+            if (BaseClass.FindLastKnownTarget(Bot.Enemy, out Vector3 EnemyPosition))
+            {
+                return EnemyPosition;
+            }
+            return null;
         }
 
         private Vector3 generateRandomLookPos()

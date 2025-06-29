@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.Game.Spawning;
+using EFT.InventoryLogic;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using System;
@@ -13,6 +14,82 @@ namespace SAIN.Components
 {
     public class GameWorldComponent : MonoBehaviour
     {
+        public static bool TryGetPlayerComponent(IPlayer Player, out PlayerComponent PlayerComponent)
+        {
+            if (Player == null)
+            {
+                Logger.LogError("Player Null");
+                PlayerComponent = null;
+                return false;
+            }
+            PlayerSpawnTracker PlayerTracker = Instance?.PlayerTracker;
+            if (PlayerTracker == null)
+            {
+                Logger.LogError("GameWorld Component Null, can't get Player Component");
+                PlayerComponent = null;
+                return false;
+            }
+            PlayerComponent = PlayerTracker.AlivePlayers.GetPlayerComponent(Player);
+            return PlayerComponent != null;
+        }
+
+        public static void RegisterShot(Player Player, EftBulletClass Bullet, Item Weapon)
+        {
+            //ActiveBullets.Add(Bullet);
+            if (TryGetPlayerComponent(Player, out PlayerComponent PlayerComponent))
+            {
+                Instance.StartCoroutine(TrackBullet(PlayerComponent, Bullet));
+            }
+        }
+
+        private static IEnumerator TrackBullet(PlayerComponent Player, EftBulletClass Bullet)
+        {
+            Vector3 LastPosition = Bullet.StartPosition;
+            var OtherPlayerData = Player.OtherPlayersData.Datas;
+            Vector3 PlayerLookDir = Player.LookDirection;
+
+            List<OtherPlayerData> PlayersToCheck = [];
+            PlayersToCheck.AddRange(from Data in OtherPlayerData
+                                    let OtherPlayerDirNormal = Data.Value.DistanceData.DirectionNormal
+                                    let PlayerComponent = Data.Value.PlayerComponent
+                                    where PlayerComponent?.IsAI == true && PlayerComponent.IsActive && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
+                                    select Data.Value);
+
+            const float MaxFlyByDistSqr = 10 * 10;
+
+            if (PlayersToCheck.Count > 0)
+            {
+                while (!Bullet.IsShotFinished && Player?.IsActive == true && PlayersToCheck.Count > 0)
+                {
+                    Vector3 BulletPosition = Bullet.CurrentPosition;
+                    DebugGizmos.Sphere(BulletPosition, 0.3f, Color.red, true, 3.0f);
+                    DebugGizmos.Line(BulletPosition, LastPosition, Color.red, 0.05f, true, 3, true);
+
+                    for (int i = PlayersToCheck.Count - 1; i >= 0; i--)
+                    {
+                        OtherPlayerData Data = PlayersToCheck[i];
+                        if (Data?.PlayerComponent?.IsActive == false)
+                        {
+                            PlayersToCheck.RemoveAt(i);
+                            continue;
+                        }
+                        Vector3 PlayerPosition = Data.DistanceData.Position;
+                        float BulletDistSqr = (PlayerPosition - BulletPosition).sqrMagnitude;
+                        if (BulletDistSqr < MaxFlyByDistSqr)
+                        {
+                            Data.PlayerComponent.RegisterFlyBy(Player, Bullet);
+                            PlayersToCheck.RemoveAt(i);
+                            continue;
+                        }
+                    }
+                    LastPosition = BulletPosition;
+                    yield return null;
+                }
+            }
+        }
+
+        private static List<EftBulletClass> ActiveBullets = [];
+
         public static GameWorldComponent Instance { get; private set; }
         public GameWorld GameWorld { get; private set; }
         public PlayerSpawnTracker PlayerTracker { get; private set; }
@@ -24,43 +101,63 @@ namespace SAIN.Components
 
         public void Update()
         {
-            UpdateMyAISoundCaches();
+            UpdateAIHearingEvents();
             Doors?.Update();
             Location?.Update();
             findSpawnPointMarkers();
         }
 
-        private void UpdateMyAISoundCaches()
+        private void UpdateAIHearingEvents()
         {
-            if (PlayerTracker != null)
+            if (Time.time >= _UpdateSoundEventsTimer)
             {
-                var AlivePlayers = PlayerTracker.AlivePlayers.Values;
-                foreach (PlayerComponent Player in AlivePlayers)
+                _UpdateSoundEventsTimer = Time.time + 0.1f;
+                if (PlayerTracker != null)
                 {
-                    if (Player != null)
+                    var AlivePlayers = PlayerTracker.AlivePlayers.Values;
+
+                    TriggerSoundEvents(AlivePlayers);
+                    
+                    UnityEngine.Profiling.Profiler.BeginSample("Process Sounds For Bots");
+                    foreach (PlayerComponent Player in AlivePlayers)
                     {
-                        List<SoundEvent> soundEvents = Player.AISoundCachedEvents;
-                        if (soundEvents.Count > 0)
+                        Player?.Person?.AIInfo?.BotComponent?.Hearing.SoundInput.ProcessAISoundCache();
+                    }
+                    UnityEngine.Profiling.Profiler.EndSample();
+                }
+            }
+        }
+
+        private static void TriggerSoundEvents(Dictionary<string, PlayerComponent>.ValueCollection AlivePlayers)
+        {
+            UnityEngine.Profiling.Profiler.BeginSample("Player Sound Event Triggering");
+            foreach (PlayerComponent Player in AlivePlayers)
+            {
+                if (Player != null)
+                {
+                    var events = Player.AISoundCachedEvents;
+                    if (Player.IsActive)
+                    {
+                        foreach (var OtherPlayerData in Player.OtherPlayersData.Datas.Values)
                         {
-                            foreach (PlayerComponent OtherPlayer in AlivePlayers)
+                            PlayerComponent OtherPlayer = OtherPlayerData?.PlayerComponent;
+                            if (OtherPlayer != null && OtherPlayer.IsActive && OtherPlayer.IsSAINBot)
                             {
-                                if (OtherPlayer != null &&
-                                    OtherPlayer.IsAI &&
-                                    OtherPlayer != Player &&
-                                    Player.OtherPlayersData.Datas.TryGetValue(OtherPlayer.ProfileId, out OtherPlayerData Data))
+                                float Distance = OtherPlayerData.DistanceData.Distance;
+                                foreach (var soundEvent in events)
                                 {
-                                    OtherPlayer.ProcessSoundsForPlayer(soundEvents, Player, Data.DistanceData.Distance);
+                                    OtherPlayer.Person.AIInfo.BotComponent.Hearing.SoundInput.CheckAddSoundToCache(soundEvent, Distance);
                                 }
                             }
                         }
                     }
-                }
-                foreach (PlayerComponent Player in AlivePlayers)
-                {
-                    Player?.Person?.AIInfo?.BotComponent?.ProcessAISoundCache();
+                    events.Clear();
                 }
             }
+            UnityEngine.Profiling.Profiler.EndSample();
         }
+
+        private float _UpdateSoundEventsTimer;
 
         private void findSpawnPointMarkers()
         {

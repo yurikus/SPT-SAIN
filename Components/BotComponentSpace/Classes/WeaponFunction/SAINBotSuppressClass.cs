@@ -108,7 +108,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             const float defaultNum = 2f;
 
-            WeaponInfo weapon = enemy.EnemyPlayerComponent.Equipment.CurrentWeapon;
+            WeaponInfo weapon = enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo;
             if (weapon == null)
             {
                 if (SAINPlugin.DebugMode)

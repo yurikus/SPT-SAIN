@@ -97,7 +97,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             float minAngle = 15f;
             if (angleToEnemy <= minAngle)
             {
-                if (Bot.PlayerComponent.Equipment.CurrentWeapon?.HasOptic == true)
+                if (Bot.PlayerComponent.Equipment.CurrentWeaponInfo?.HasOptic == true)
                 {
                     return 3f;
                 }
@@ -127,7 +127,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             // if player shot a weapon recently
             // if player is using suppressed weapon, and has shot recently, don't increase vis distance as much.
             bool flareEnabled = EnemyPlayer.AIData.GetFlare;
-            bool usingSuppressor = Enemy.EnemyPlayerComponent?.Equipment.CurrentWeapon?.HasSuppressor == true;
+            bool usingSuppressor = Enemy.EnemyPlayerComponent?.Equipment.CurrentWeaponInfo?.HasSuppressor == true;
 
             float flareMod;
             if (flareEnabled && !usingSuppressor)

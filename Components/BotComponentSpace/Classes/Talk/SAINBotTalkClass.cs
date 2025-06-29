@@ -244,13 +244,11 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 SAINBotController.Instance?.BotHearing.PlayerTalked(trigger, etagStatus, Player);
                 BotOwner.BotsGroup.GroupTalk.PhraseSad(BotOwner, trigger);
-
                 if (_phraseDictionary.TryGetValue(trigger, out var phrase))
                 {
                     phrase.TimeLastSaid = Time.time;
                 }
             }
-            //Player.Speaker.Play(trigger, Bot.Memory.Health.HealthStatus | mask | etagStatus, true, null);
         }
 
         private ETagStatus SetETagMask(ETagStatus? additionaMask = null)

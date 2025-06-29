@@ -2,6 +2,7 @@
 using EFT.InventoryLogic;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
+using SAIN.SAINComponent.Classes.Info;
 using System.Text;
 using UnityEngine;
 
@@ -11,9 +12,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
     {
         public Vector3 CurrentRecoilOffset { get; private set; } = Vector3.zero;
 
-        private Vector3 _lookDir => Player.LookDirection * 3f;
         public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
-        private readonly StringBuilder _debugString = new();
         private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
         private static float _recoilDecayCoef => SAINPlugin.LoadedPreset.GlobalSettings.Shoot.RECOIL_DECAY_COEF;
         private float _barrelRecoveryTime;
@@ -27,6 +26,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void Init()
         {
+            PlayerComponent.OnShoot += WeaponShot;
         }
 
         public void Update()
@@ -36,6 +36,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void Dispose()
         {
+            PlayerComponent.OnShoot -= WeaponShot;
         }
 
         private void calcDecay()
@@ -59,27 +60,25 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             CurrentRecoilOffset = Vector3.Lerp(CurrentRecoilOffset, Vector3.zero, _barrelRecoveryTime);
         }
 
-        public void WeaponShot()
+        public void WeaponShot(WeaponInfo WeaponInfo, Vector3 force)
         {
             if (Bot.IsCheater)
             {
                 Logger.LogDebug("cheato");
                 return;
             }
-
-            calculateRecoil();
-            _recoilFinished = false;
+            calculateRecoil(WeaponInfo.Weapon);
         }
 
-        private void calculateRecoil()
+        private void calculateRecoil(Weapon weapon)
         {
-            Weapon weapon = Bot.Info?.WeaponInfo?.CurrentWeapon;
             if (weapon == null)
             {
                 Logger.LogError("Weapon Null!");
                 return;
             }
-
+            
+            _recoilFinished = false;
             float addRecoil = SAINPlugin.LoadedPreset.GlobalSettings.Shoot.AddRecoil;
             float recoilMod = calcRecoilMod();
             float recoilTotal = weapon.RecoilTotal;

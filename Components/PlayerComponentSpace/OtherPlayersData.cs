@@ -52,7 +52,7 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 return;
             }
-            Datas.Add(profileId, new OtherPlayerData(profileId));
+            Datas.Add(profileId, new OtherPlayerData(profileId, playerComp));
         }
 
         private void playerRemoved(string profileId, PlayerComponent playerComp)

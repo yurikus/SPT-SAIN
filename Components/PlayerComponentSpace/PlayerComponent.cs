@@ -1,12 +1,14 @@
 ﻿using EFT;
 using EFT.Ballistics;
 using EFT.Interactive;
+using EFT.InventoryLogic;
+using SAIN.Components.BotController;
 using SAIN.Components.PlayerComponentSpace.Classes;
 using SAIN.Components.PlayerComponentSpace.Classes.Equipment;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
-using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Info;
 using System;
 using System.Collections;
@@ -16,13 +18,188 @@ using UnityEngine.AI;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
-    public struct AISoundData(SoundEvent InSound, BotComponent InBot, float InPlayerDistance)
+    /// <summary>
+    /// A struct to pre-cache all relevant position data for a player for quicker memory access.
+    /// struct is updated from SAIN Gameworld Component in a batch.
+    /// </summary>
+    public struct PlayerPositionData
+    {
+        public PlayerPositionData(Player Player)
+        {
+            if (Player == null)
+            {
+                Logger.LogError($"Player == null");
+                return;
+            }
+            if (Player.Profile == null)
+            {
+                Logger.LogError($"Player.Profile == null");
+            }
+            PlayerNickname = Player.Profile.Nickname;
+            if (Player.MainParts == null)
+            {
+                Logger.LogError($"Player.MainParts == null");
+                return;
+            }
+            BodyParts = Player.MainParts;
+            if (BodyParts.TryGetValue(BodyPartType.head, out var head))
+            {
+                Head = head;
+            }
+            if (BodyParts.TryGetValue(BodyPartType.body, out var body))
+            {
+                MainBody = body;
+            }
+        }
+
+        private readonly Dictionary<BodyPartType, EnemyPart> BodyParts;
+        private readonly string PlayerNickname;
+
+        public readonly EnemyPart Head;
+        public readonly EnemyPart MainBody;
+
+        public Vector3 Forward;
+        public Vector3 Right;
+
+        /// <summary>
+        /// Cache all properties in this struct.
+        /// </summary>
+        public void Update(Player Player)
+        {
+            // The excessive null checks here are just to verify no mistakes are made. If there are no errors during gameplay during testing we should be able to safely remove them and remove some overhead  - Solarint
+            if (Player == null)
+            {
+                Logger.LogError($"Player Null");
+                return;
+            }
+            /////
+            Vector3 Zero = Vector3.zeroVector;
+
+            BifacialTransform Transform = Player.Transform;
+            if (Transform == null)
+            {
+                Logger.LogError($"Player Transform Null");
+            }
+            else
+            {
+                Position = Transform.position;
+            }
+            /////
+            MovementContext movementContext = Player.MovementContext;
+            if (movementContext == null)
+            {
+                Logger.LogError($"Player MovementContext Null");
+            }
+            else
+            {
+                LookDirection = movementContext.LookDirection;
+                Forward = movementContext.PlayerRealForward;
+                Right = movementContext.PlayerRealRight;
+            }
+            /////
+            EnemyPart MyHeadPart = Head;
+            if (MyHeadPart == null)
+            {
+                Logger.LogError($"{PlayerNickname}'s Head Part is null");
+                HeadPosition = Zero;
+            }
+            else
+            {
+                HeadPosition = MyHeadPart.Position;
+            }
+            /////
+            EnemyPart MyMainBodyPart = MainBody;
+            if (MyMainBodyPart == null)
+            {
+                Logger.LogError($"{PlayerNickname}'s MainBody Part is null");
+                BodyPosition = Zero;
+            }
+            else
+            {
+                BodyPosition = MyMainBodyPart.Position;
+            }
+            /////
+            BifacialTransform WeaponRoot = Player.WeaponRoot;
+            if (WeaponRoot == null)
+            {
+                HasWeaponEquipped = false;
+                WeaponFireport = Zero;
+                WeaponPointDirection = Zero;
+            }
+            else
+            {
+                HasWeaponEquipped = true;
+                WeaponFireport = WeaponRoot.position;
+                WeaponPointDirection = WeaponRoot.forward;
+            }
+        }
+
+        public readonly bool GetBodyPartPosition(BodyPartType PartType, out Vector3 Result)
+        {
+            Result = PartType switch {
+                BodyPartType.head => HeadPosition,
+                BodyPartType.body => BodyPosition,
+                _ => GetBodyPartPosition(PartType),
+            };
+            return Result != Vector3.zero;
+        }
+
+        private readonly Vector3 GetBodyPartPosition(BodyPartType PartType)
+        {
+            EnemyPart Part = GetBodyPart(PartType);
+            return Part != null ? Part.Position : Vector3.zero;
+        }
+
+        private readonly EnemyPart GetBodyPart(BodyPartType PartType)
+        {
+            EnemyPart Result = null;
+            if (BodyParts == null)
+            {
+                Logger.LogError($"[{PlayerNickname}] Body Parts Dictionary Null");
+                return Result;
+            }
+            if (!BodyParts.TryGetValue(PartType, out Result))
+            {
+                Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary");
+                return null;
+            }
+            if (Result == null)
+            {
+                Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is Null");
+            }
+            return Result;
+        }
+
+        public Vector3 Position;
+        public Vector3 LookDirection;
+        public Vector3 HeadPosition;
+        public Vector3 BodyPosition;
+
+        public bool HasWeaponEquipped;
+        public Vector3 WeaponFireport;
+        public Vector3 WeaponPointDirection;
+
+        public bool IsOnNavMesh;
+        public Vector3 NavMeshPosition;
+        public Vector3 LastValidNavMeshPosition;
+    }
+
+    public struct AISoundData(SoundEvent InSound, BotComponent InBot, float InPlayerDistance, Enemy InEnemy)
     {
         public bool Reported = false;
         public readonly SoundEvent Sound = InSound;
         public readonly BotComponent Bot = InBot;
+        public readonly Enemy Enemy = InEnemy;
         public readonly float PlayerDistance = InPlayerDistance;
         public readonly float SoundTravelTime = InPlayerDistance / InSound.SoundSpeed;
+        public readonly Player HeardPlayer => Sound.GetPlayer();
+        public readonly PlayerComponent HeardPlayerComponent => Sound.PlayerComponent;
+        public readonly SAINSoundType SoundType => Sound.SoundType;
+        public readonly bool IsGunShot => Sound.IsGunShot;
+        public readonly string HeardProfileId => Sound.ProfileId;
+        public readonly bool IsAI => Sound.IsAI;
+        public readonly int EnvironmentId => Sound.EnvironmentId;
+        public Vector3 Position => Sound.Position;
 
         public readonly bool CanReport(float ReactionDelay) => Sound.IsValid() && Time.time - Sound.TimeCreated >= SoundTravelTime + ReactionDelay;
     }
@@ -39,6 +216,10 @@ namespace SAIN.Components.PlayerComponentSpace
         public readonly float BaseRangeWithVolume = InRange * InVolume;
         public readonly PlayerComponent PlayerComponent = InPlayerComponent;
         public readonly float TimeCreated = Time.time;
+        public readonly bool IsGunShot = InSoundType.IsGunShot();
+        public readonly string ProfileId = InPlayerComponent.ProfileId;
+        public readonly bool IsAI = InPlayerComponent.IsAI;
+        public readonly int EnvironmentId = InPlayerComponent.Player.AIData.EnvironmentId;
 
         public readonly bool IsValid() => PlayerComponent != null && PlayerComponent.IsActive;
 
@@ -47,28 +228,145 @@ namespace SAIN.Components.PlayerComponentSpace
 
     public class PlayerComponent : MonoBehaviour
     {
+        public event Action<WeaponInfo, Vector3> OnShoot;
+        public event Action<PlayerComponent, EftBulletClass> OnBulletFlyBy;
+
+        public void RegisterFlyBy(PlayerComponent Source, EftBulletClass Bullet)
+        {
+            OnBulletFlyBy?.Invoke(Source, Bullet);
+        }
+
+        public void OnMakingShot(IWeapon Weapon, Vector3 Force)
+        {
+            if (Player.IsYourPlayer)
+            {
+                //Logger.LogDebug($"Shoot");
+            }
+            if (IsActive)
+            {
+                WeaponInfo WeaponInfo = Equipment.CurrentWeaponInfo;
+                if (WeaponInfo != null)
+                {
+                    OnShoot?.Invoke(WeaponInfo, Force);
+                    PlayAISound(WeaponInfo.SoundType, Transform.WeaponFirePort, WeaponInfo.CalculatedAudibleRange, 1);
+                    if (Player.IsYourPlayer)
+                    {
+                        //Logger.LogDebug($"Shoot");
+                    }
+                }
+                else
+                {
+                    //Logger.LogError("WeaponInfo Null");
+                }
+            }
+            else
+            {
+                //Logger.LogDebug("Player Not Active");
+            }
+        }
+
+        public event Action<Weapon, Weapon> OnWeaponEquipped;
+
+        private Weapon _currentWeapon = null;
+
+        public Weapon CurrentWeapon {
+            get
+            {
+                return _currentWeapon;
+            }
+            private set
+            {
+                if (_currentWeapon != value)
+                {
+                    Weapon LastWeapon = _currentWeapon;
+                    Logger.LogDebug($"[{Player?.Profile.Nickname}] Equipped Weapon [{value?.ShortName}] Last Weapon [{LastWeapon?.ShortName}]");
+                    _currentWeapon = value;
+                    OnWeaponEquipped?.Invoke(value, LastWeapon);
+                }
+            }
+        }
+
+        public event Action<Item, Item> OnItemEquipped;
+
+        private Item _currentItem = null;
+
+        public Item ItemInHands {
+            get
+            {
+                return _currentItem;
+            }
+            private set
+            {
+                if (_currentItem != value)
+                {
+                    Item LastItem = _currentItem;
+                    Logger.LogDebug($"[{Player?.Profile.Nickname}] Equipped Item [{value?.ShortName}] Last Item [{LastItem?.ShortName}]");
+                    _currentItem = value;
+                    OnItemEquipped?.Invoke(value, LastItem);
+                }
+            }
+        }
+
+        public void SetItemEquippedInHands(Item Item)
+        {
+            ItemInHands = Item;
+            CurrentWeapon = Item as Weapon;
+        }
+
         // WIP - Solarint
         private const int MaxCachedSounds = 4;
 
         public List<SoundEvent> AISoundCachedEvents { get; private set; } = [];
         private int OverCapCount = 0;
 
-        public void AddCachedAISoundEvent(SAINSoundType InSoundType, Vector3 InPosition, float InRange, float InVolume, EPhraseTrigger Phrase = EPhraseTrigger.None, ETagStatus TagStatus = ETagStatus.Unaware)
+        public void PlayAISound(SAINSoundType InSoundType, Vector3 InPosition, float InRange, float InVolume, EPhraseTrigger Phrase = EPhraseTrigger.None, ETagStatus TagStatus = ETagStatus.Unaware)
+        {
+            if (IsActive && AIData.AISoundPlayer.ShallPlayAISound())
+            {
+                if (Player.IsYourPlayer)
+                {
+                    Logger.LogDebug($"Sound Cached: [{InSoundType}, {InRange}, {InVolume}]");
+                }
+                AddCachedAISoundEvent(InSoundType, InPosition, InRange, InVolume, Phrase, TagStatus);
+            }
+        }
+
+        protected void AddCachedAISoundEvent(SAINSoundType InSoundType, Vector3 InPosition, float InRange, float InVolume, EPhraseTrigger Phrase = EPhraseTrigger.None, ETagStatus TagStatus = ETagStatus.Unaware)
         {
             float SoundSpeed = 343;
             if (InSoundType.IsGunShot())
             {
-                WeaponInfo Weapon = Equipment?.CurrentWeapon;
+                WeaponInfo Weapon = Equipment?.CurrentWeaponInfo;
                 if (Weapon != null)
                 {
                     SoundSpeed = Weapon.BulletSpeed;
+                }
+                InVolume *= SAINPlugin.LoadedPreset.GlobalSettings.Hearing.GunshotAudioMultiplier;
+            }
+            else
+            {
+                InVolume *= SAINPlugin.LoadedPreset.GlobalSettings.Hearing.FootstepAudioMultiplier;
+            }
+            if (!AIData.PlayerLocation.InBunker)
+            {
+                var weather = SAINWeatherClass.Instance;
+                if (weather != null)
+                {
+                    if (Player.AIData.EnvironmentId == 0)
+                    {
+                        InVolume *= weather.RainSoundModifierOutdoor;
+                    }
+                    else
+                    {
+                        InVolume *= weather.RainSoundModifierIndoor;
+                    }
                 }
             }
             int Count = AISoundCachedEvents.Count;
             if (Count >= MaxCachedSounds)
             {
                 OverCapCount++;
-                Logger.LogDebug($"Over Capacity [{OverCapCount}] Times");
+                //Logger.LogDebug($"Over Capacity [{OverCapCount}] Times");
                 bool ShallInsert = false;
                 float BaseRange = InRange * InVolume;
                 for (int i = 0; i < Count; i++)
@@ -84,27 +382,24 @@ namespace SAIN.Components.PlayerComponentSpace
                 {
                     return;
                 }
-                Logger.LogDebug("Inserting...");
+                //Logger.LogDebug("Inserting...");
                 AISoundCachedEvents.Add(new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus));
                 AISoundCachedEvents.Sort((a, b) => b.BaseRangeWithVolume.CompareTo(a.BaseRangeWithVolume));
                 AISoundCachedEvents.RemoveAt(AISoundCachedEvents.Count - 1);
                 return;
             }
             OverCapCount = 0;
-            Logger.LogDebug($"Adding [{Count}] Index");
+            //Logger.LogDebug($"Adding [{Count}] Index");
             AISoundCachedEvents.Add(new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus));
         }
 
-        public void ProcessSoundsForPlayer(List<SoundEvent> Sounds, PlayerComponent OtherPlayer, float OtherPlayerDistance)
+        public float GetDistanceToPlayer(string ProfileId)
         {
-            BotComponent OtherPlayerBot = Person?.AIInfo?.BotComponent;
-            if (OtherPlayerBot != null)
+            if (OtherPlayersData.Datas.TryGetValue(ProfileId, out var Data))
             {
-                OtherPlayerBot.AddCachedAISoundEvents(Sounds, OtherPlayerDistance);
+                return Data.DistanceData.Distance;
             }
-            else
-            {
-            }
+            return float.MaxValue;
         }
 
         //
@@ -281,8 +576,12 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             while (true)
             {
-                yield return playPhrases(EPhraseTrigger.LostVisual);
-                yield return playPhrases(EPhraseTrigger.OnLostVisual);
+                yield return playPhrases(EPhraseTrigger.Warning);
+                yield return playPhrases(EPhraseTrigger.Mooing);
+                yield return playPhrases(EPhraseTrigger.NeedHelp);
+                yield return playPhrases(EPhraseTrigger.Greetings);
+                yield return playPhrases(EPhraseTrigger.Toxic);
+                yield return playPhrases(EPhraseTrigger.StartHeal);
                 yield return null;
             }
         }
@@ -324,6 +623,7 @@ namespace SAIN.Components.PlayerComponentSpace
             if (speaker.PhrasesBanks.TryGetValue(trigger, out var phrasesBank))
             {
                 int count = phrasesBank.Clips.Length;
+                Logger.LogDebug($" Playing {trigger} {count}");
                 for (int i = 0; i < count; i++)
                 {
                     bool said = false;
@@ -332,12 +632,16 @@ namespace SAIN.Components.PlayerComponentSpace
                         if (!speaker.Speaking && !speaker.Busy)
                         {
                             speaker.PlayDirect(trigger, i);
-                            Logger.LogInfo($"{trigger} :: {phrasesBank.Clips[i].Clip.name} :: {i}");
+                            Logger.LogDebug($"{trigger} :: {phrasesBank.Clips[i].Clip.name} :: {i}");
                             said = true;
                         }
                         yield return null;
                     }
                 }
+            }
+            else
+            {
+                Logger.LogDebug($"{trigger} no phrases");
             }
         }
 
@@ -463,6 +767,7 @@ namespace SAIN.Components.PlayerComponentSpace
             }
             //Logger.LogDebug($"{Person.Nickname} Player Component Created");
             StartCoroutine(delayInit());
+            //StartCoroutine(voiceTest());
             return true;
         }
 
@@ -478,6 +783,10 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             yield return null;
             Equipment.Init();
+            if (Player.HandsController?.Item != null)
+            {
+                SetItemEquippedInHands(Player.HandsController.Item);
+            }
         }
 
         public void InitBotOwner(BotOwner botOwner)
@@ -485,7 +794,6 @@ namespace SAIN.Components.PlayerComponentSpace
             Person.ActivationClass.OnPlayerActiveChanged -= handleCoroutines;
             Person.ActivationClass.OnBotActiveChanged += handleCoroutines;
             Person.InitBot(botOwner);
-            AIData.AISoundPlayer.InitAI();
         }
 
         public void InitBotComponent(BotComponent bot)

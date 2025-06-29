@@ -1,8 +1,10 @@
-﻿using EFT.InventoryLogic;
+﻿using EFT;
+using EFT.InventoryLogic;
 using SAIN.Helpers;
 using SAIN.Plugin;
 using SAIN.Preset;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Info
@@ -18,6 +20,25 @@ namespace SAIN.SAINComponent.Classes.Info
             PresetHandler.OnPresetUpdated += updateSettings;
         }
 
+        public EWeaponClass WeaponClass { get; private set; }
+        public ECaliber AmmoCaliber { get; private set; }
+        public float CalculatedAudibleRange { get; private set; }
+        public AISoundType AISoundType => HasSuppressor ? AISoundType.silencedGun : AISoundType.gun;
+        public SAINSoundType SoundType => HasSuppressor ? SAINSoundType.SuppressedShot : SAINSoundType.Shot;
+        public bool HasRedDot => RedDot != null;
+        public bool HasOptic => Optic != null;
+        public bool HasSuppressor { get; private set; }
+        public float BaseAudibleRange { get; private set; } = 150f;
+        public float MuzzleLoudness { get; private set; }
+        public bool Subsonic => Weapon != null && BulletSpeed < SuperSonicSpeed;
+        public Mod Suppressor { get; private set; }
+        public Mod RedDot { get; private set; }
+        public Mod Optic { get; private set; }
+        public float BulletSpeed { get; private set; } = 600f;
+        public float EngagementDistance { get; private set; } = 150f;
+        public Weapon Weapon { get; private set; }
+        public float Durability => Weapon.Repairable.Durability / (float)Weapon.Repairable.TemplateDurability;
+
         private void updateSettings(SAINPresetClass preset)
         {
             if (preset.GlobalSettings.Shoot.EngagementDistance.TryGetValue(WeaponClass, out float distance))
@@ -30,21 +51,42 @@ namespace SAIN.SAINComponent.Classes.Info
             }
         }
 
-        public bool Update()
+        public void Update(Player Player)
         {
-            if (_nextUpdateTime > Time.time)
-            {
-                return false;
-            }
-            _nextUpdateTime = Time.time + 10f;
-
             if (Weapon != null)
-                BulletSpeed = Weapon.CurrentAmmoTemplate.InitialSpeed * SpeedFactor;
+            {
+                UpdateWeaponData(Player, Weapon.Mods);
+            }
+        }
 
-            checkAllMods();
+        private void UpdateWeaponData(Player Player, IEnumerable<Mod> mods)
+        {
+            Suppressor = FindModType(mods, EModType.Suppressor);
+            RedDot = FindModType(mods, EModType.RedDot);
+            Optic = FindModType(mods, EModType.Optic);
+            MuzzleLoudness = Suppressor != null ? Suppressor.Template.Loudness : 0f;
+            BulletSpeed = Weapon.CurrentAmmoTemplate.InitialSpeed * Weapon.SpeedFactor;
+            CalculatedAudibleRange = BaseAudibleRange + MuzzleLoudness;
+            if (Suppressor != null || (Player.HandsController is Player.FirearmController firearmController && firearmController.IsSilenced))
+            {
+                CalculatedAudibleRange *= SuppressorModifier(BulletSpeed);
+                HasSuppressor = true;
+            }
+            else
+            {
+                HasSuppressor = false;
+            }
             //Log();
+        }
+        
+        public void WeaponEquiped(Player player)
+        {
+            Update(player);
+        }
 
-            return true;
+        public void WeaponModified(Player player)
+        {
+            Update(player);
         }
 
         public void Dispose()
@@ -52,218 +94,64 @@ namespace SAIN.SAINComponent.Classes.Info
             PresetHandler.OnPresetUpdated -= updateSettings;
         }
 
-        public float BulletSpeed { get; private set; } = 600f;
-
-        public float EngagementDistance { get; private set; } = 150f;
-
-        public Weapon Weapon { get; private set; }
-
-        public float Durability
+        private static Mod FindModType(IEnumerable<Mod> mods, EModType ModType)
         {
-            get
+            if (mods != null)
             {
-                return Weapon.Repairable.Durability / (float)Weapon.Repairable.TemplateDurability;
-            }
-        }
-
-        public EWeaponClass WeaponClass { get; private set; }
-        public ECaliber AmmoCaliber { get; private set; }
-        public float CalculatedAudibleRange { get; private set; }
-        public AISoundType AISoundType => HasSuppressor ? AISoundType.silencedGun : AISoundType.gun;
-        public SAINSoundType SoundType => HasSuppressor ? SAINSoundType.SuppressedShot : SAINSoundType.Shot;
-
-        public float BaseAudibleRange { get; private set; } = 150f;
-
-        public float MuzzleLoudness { get; private set; }
-        public float MuzzleLoudnessRealism { get; private set; }
-
-        public float SuppressorModifier
-        {
-            get
-            {
-                float supmod = 1f;
-                bool suppressed = HasSuppressor;
-
-                if (suppressed && Subsonic)
+                foreach (Mod mod in mods)
                 {
-                    supmod *= SAINPlugin.LoadedPreset.GlobalSettings.Hearing.SubsonicModifier;
-                }
-                else if (suppressed)
-                {
-                    supmod *= SAINPlugin.LoadedPreset.GlobalSettings.Hearing.SuppressorModifier;
-                }
-                return supmod;
-            }
-        }
-
-        public float SpeedFactor => 2f - Weapon.SpeedFactor;
-
-        public bool Subsonic
-        {
-            get
-            {
-                if (Weapon == null)
-                {
-                    return false;
-                }
-                return BulletSpeed < SuperSonicSpeed;
-            }
-        }
-
-        public bool HasRedDot { get; private set; }
-        public bool HasOptic { get; private set; }
-        public bool HasSuppressor { get; private set; }
-
-        private void checkAllMods()
-        {
-            var mods = Weapon?.Mods;
-            if (mods == null)
-            {
-                return;
-            }
-
-            float realismLoudness = 0;
-            float loudness = 0;
-
-            HasSuppressor = false;
-            HasRedDot = false;
-            HasOptic = false;
-
-            foreach (var item in mods)
-            {
-                checkItemType(item.GetType());
-                calcLoudness(item, ref loudness, ref realismLoudness);
-
-                foreach (var slot in item.Slots)
-                {
-                    if (slot.ContainedItem != null &&
-                        slot.ContainedItem is Mod mod)
-                    {
-                        checkItemType(mod.GetType());
-                        calcLoudness(mod, ref loudness, ref realismLoudness);
-                    }
+                    if (CheckItemType(mod.GetType()) == ModType)
+                        return mod;
+                    Slot[] Slots = mod.Slots;
+                    foreach (Slot slot in Slots)
+                        if (slot.ContainedItem is Mod ContainedMod && CheckItemType(ContainedMod.GetType()) == ModType)
+                            return ContainedMod;
                 }
             }
-
-            if (ModDetection.RealismLoaded)
-            {
-                MuzzleLoudnessRealism = (realismLoudness / 200) + 1f;
-                CalculatedAudibleRange = BaseAudibleRange * SuppressorModifier * MuzzleLoudnessRealism;
-            }
-            else
-            {
-                MuzzleLoudness = loudness / 4f;
-                CalculatedAudibleRange = BaseAudibleRange * SuppressorModifier + MuzzleLoudness;
-            }
+            return null;
         }
 
-        private static void calcLoudness(Mod mod, ref float loudness, ref float realismLoudness)
+        private static float SuppressorModifier(float bulletspeed)
         {
-            // Calculate loudness
-            if (!ModDetection.RealismLoaded)
+            if (bulletspeed < SuperSonicSpeed)
             {
-                loudness += mod.Template.Loudness;
+                return SAINPlugin.LoadedPreset.GlobalSettings.Hearing.SubsonicModifier;
             }
-            else
+            return SAINPlugin.LoadedPreset.GlobalSettings.Hearing.SuppressorModifier;
+        }
+
+        private static EModType CheckItemType(Type type)
+        {
+            if (CheckTemplateType(type, SuppressorTypeId))
             {
-                // For RealismMod: if the muzzle device has a silencer attached to it then it shouldn't contribute to the loudness stat.
-                Item containedItem = null;
-                if (mod.Slots.Length > 0)
+                return EModType.Suppressor;
+            }
+            for (int i = 0; i < RedDotTypes.Length; i++)
+            {
+                if (CheckTemplateType(type, RedDotTypes[i]))
                 {
-                    containedItem = mod.Slots[0].ContainedItem;
-                }
-                if (containedItem == null
-                    || (containedItem is Mod modItem && IsModSuppressor(modItem, out var suppressor)))
-                {
-                    realismLoudness += mod.Template.Loudness;
+                    return EModType.RedDot;
                 }
             }
-        }
-
-        private static bool IsModSuppressor(Mod mod, out Item suppressor)
-        {
-            suppressor = null;
-            if (mod.Slots.Length > 0)
+            for (int i = 0; i < OpticTypes.Length; i++)
             {
-                Item item = mod.Slots[0].ContainedItem;
-                if (item != null && mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[SuppressorTypeId])
+                if (CheckTemplateType(type, OpticTypes[i]))
                 {
-                    suppressor = item;
+                    return EModType.Optic;
                 }
             }
-            return suppressor != null;
-        }
-
-        private void CheckModForSuppresorAndSights(Mod mod)
-        {
-            if (mod != null)
-            {
-                Type modType = mod.GetType();
-                checkItemType(modType);
-            }
-        }
-
-        private void checkItemType(Type type)
-        {
-            if (!HasSuppressor &&
-                isSuppressor(type))
-            {
-                HasSuppressor = true;
-            }
-            else if (!HasOptic &&
-                IsOptic(type))
-            {
-                HasOptic = true;
-            }
-            else if (!HasRedDot &&
-                IsRedDot(type))
-            {
-                HasRedDot = true;
-            }
-        }
-
-        private static bool isSuppressor(Type modType)
-        {
-            return modType == TemplateIdToObjectMappingsClass.TypeTable[SuppressorTypeId];
-        }
-
-        private static bool IsOptic(Type modType)
-        {
-            return CheckTemplates(modType, AssaultScopeTypeId, OpticScopeTypeId, SpecialScopeTypeId);
-        }
-
-        private static bool IsRedDot(Type modType)
-        {
-            return CheckTemplates(modType, CollimatorTypeId, CompactCollimatorTypeId);
-        }
-
-        private static bool CheckTemplates(Type modType, params string[] templateIDs)
-        {
-            for (int i = 0; i < templateIDs.Length; i++)
-            {
-                if (CheckTemplateType(modType, templateIDs[i]))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return EModType.None;
         }
 
         private static bool CheckTemplateType(Type modType, string id)
         {
-            if (TemplateIdToObjectMappingsClass.TypeTable.TryGetValue(id, out Type result))
+            if (TemplateIdToObjectMappingsClass.TypeTable.TryGetValue(id, out Type result) && result == modType)
             {
-                if (result == modType)
-                {
-                    return true;
-                }
+                return true;
             }
-            if (TemplateIdToObjectMappingsClass.TemplateTypeTable.TryGetValue(id, out result))
+            if (TemplateIdToObjectMappingsClass.TemplateTypeTable.TryGetValue(id, out result) && result == modType)
             {
-                if (result == modType)
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
@@ -290,33 +178,43 @@ namespace SAIN.SAINComponent.Classes.Info
 
         private void Log()
         {
-            if (SAINPlugin.DebugMode)
-            {
-                Logger.LogWarning(
-                    $"Found Weapon Info: " +
-                    $"Weapon: [{Weapon.ShortName}] " +
-                    $"Weapon Class: [{WeaponClass}] " +
-                    $"Ammo Caliber: [{AmmoCaliber}] " +
-                    $"Calculated Audible Range: [{CalculatedAudibleRange}] " +
-                    $"Base Audible Range: [{BaseAudibleRange}] " +
-                    $"Muzzle Loudness: [{MuzzleLoudness}] " +
-                    $"Muzzle Loudness Realism: [{MuzzleLoudnessRealism}] " +
-                    $"Speed Factor: [{SpeedFactor}] " +
-                    $"Subsonic: [{Subsonic}] " +
-                    $"Has Red Dot? [{HasRedDot}] " +
-                    $"Has Optic? [{HasOptic}] " +
-                    $"Has Suppressor? [{HasSuppressor}]");
-            }
+            Logger.LogDebug(
+                $"Found Weapon Info: " +
+                $"Weapon: [{Weapon.ShortName}] " +
+                $"Weapon Class: [{WeaponClass}] " +
+                $"Ammo Caliber: [{AmmoCaliber}] " +
+                $"Calculated Audible Range: [{CalculatedAudibleRange}] " +
+                $"Base Audible Range: [{BaseAudibleRange}] " +
+                $"Muzzle Loudness: [{MuzzleLoudness}] " +
+                $"Speed Factor: [{Weapon.SpeedFactor}] " +
+                $"Subsonic: [{Subsonic}] " +
+                $"Has Red Dot? [{HasRedDot}] " +
+                $"Has Optic? [{HasOptic}] " +
+                $"Has Suppressor? [{HasSuppressor}]");
         }
 
-        private float _nextUpdateTime;
         private const float SuperSonicSpeed = 343.2f;
+
+        //private static readonly string FlashHiderTypeId = "550aa4bf4bdc2dd6348b456b";
+        //private static readonly string MuzzleTypeId = "5448fe394bdc2d0d028b456c";
         private static readonly string SuppressorTypeId = "550aa4cd4bdc2dd8348b456c";
+
         private static readonly string CollimatorTypeId = "55818ad54bdc2ddc698b4569";
         private static readonly string CompactCollimatorTypeId = "55818acf4bdc2dde698b456b";
         private static readonly string AssaultScopeTypeId = "55818add4bdc2d5b648b456f";
         private static readonly string OpticScopeTypeId = "55818ae44bdc2dde698b456c";
         private static readonly string SpecialScopeTypeId = "55818aeb4bdc2ddc698b456a";
+
+        private static readonly string[] OpticTypes = { AssaultScopeTypeId, OpticScopeTypeId, SpecialScopeTypeId };
+        private static readonly string[] RedDotTypes = { CollimatorTypeId, CompactCollimatorTypeId };
+    }
+
+    public enum EModType
+    {
+        None,
+        Suppressor,
+        RedDot,
+        Optic,
     }
 
     public class OpticAIConfig
