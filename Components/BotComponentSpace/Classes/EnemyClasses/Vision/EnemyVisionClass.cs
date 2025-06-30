@@ -78,13 +78,32 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             UpdateCanShootState(false);
         }
 
+        private bool isAnyPartVisible()
+        {
+            foreach (var part in VisionChecker.EnemyParts.Parts.Values)
+            {
+                if (part?.IsVisible == true) return true;
+            }
+            return false;
+        }
+
         public void UpdateVisibleState(bool forceOff)
         {
             bool wasVisible = IsVisible;
             if (forceOff)
                 IsVisible = false;
             else
-                IsVisible = EnemyInfo.IsVisible && Angles.CanBeSeen;
+            {
+                if (!isAnyPartVisible())
+                {
+                    EnemyInfo.IsVisible = false;
+                    IsVisible = false;
+                }
+                else
+                {
+                    IsVisible = EnemyInfo.IsVisible;
+                }
+            }
 
             if (IsVisible)
             {

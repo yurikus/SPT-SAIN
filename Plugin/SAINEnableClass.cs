@@ -126,7 +126,7 @@ namespace SAIN
         {
             return SAINEnabled.VanillaScavs
             && WildSpawn.IsScav(wildSpawnType) &&
-            !IsPlayerScav(botOwner.Profile.Nickname);
+            !IsPlayerScav(botOwner.Profile);
         }
 
         private static bool ExcludeOthers(WildSpawnType wildSpawnType)
@@ -154,15 +154,15 @@ namespace SAIN
             return false;
         }
 
-        public static bool IsPlayerScav(string nickname)
+        public static bool IsPlayerScav(Profile profile)
         {
-            // Pattern: xxx (xxx)
-            string pattern = "\\w+.[(]\\w+[)]";
-            Regex regex = new(pattern);
-            if (regex.Matches(nickname).Count > 0) {
+            // Handle the old version of creating player Scavs
+            if (profile.Info.Nickname.Contains(" ("))
+            {
                 return true;
             }
-            return false;
+            // Check for player Scavs created by SPT
+            return profile.Info.Settings.Role == WildSpawnType.assault && !string.IsNullOrEmpty(profile.Info.MainProfileNickname);
         }
 
         public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)

@@ -1,5 +1,4 @@
-﻿using SAIN.Components.PlayerComponentSpace;
-using SAIN.Helpers;
+﻿using SAIN.Helpers;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.Types.Jobs;
@@ -21,234 +20,28 @@ namespace SAIN.Components
             Direction = DirectionNormal * Magnitude;
         }
 
+        public RandomDir(float magnitude)
+        {
+            Magnitude = magnitude;
+            DirectionNormal = UnityEngine.Random.onUnitSphere;
+            Direction = DirectionNormal * Magnitude;
+        }
+
+        public RandomDir(float magnitude, Vector3 directionNormal)
+        {
+            Magnitude = magnitude;
+            DirectionNormal = directionNormal;
+            Direction = DirectionNormal * Magnitude;
+        }
+
         public readonly Vector3 Direction;
         public readonly Vector3 DirectionNormal;
         public readonly float Magnitude;
     }
 
-    public class RandomVisiblePointGeneratorJob : SainJobTemplate, IDisposable
-    {
-        public RandomVisiblePointGeneratorJob(SAINBotController botcontroller) : base("Random Visible Point Generator", botcontroller, true)
-        {
-            //Start();
-        }
-
-        protected readonly List<RaycastJob> RaycastJobs = [];
-
-        protected override IEnumerator PrimaryFunction()
-        {
-            //RandomDir[] ShortRandomDirections = GenerateRandomDirections(100, 0.5f, 5.0f);
-            //RandomDir[] MidRangeRandomDirections = GenerateRandomDirections(100, 5f, 12.0f);
-            RandomDir[] LongRandomDirections = GenerateRandomDirections(500, 0.5f, 100.0f);
-            foreach (var player in AlivePlayers.Values)
-            {
-                if (player?.IsActive == true)
-                {
-                    //RaycastJobs.Add(new RaycastJob(ShortRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                    //RaycastJobs.Add(new RaycastJob(MidRangeRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                    RaycastJobs.Add(new RaycastJob(LongRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                }
-            }
-            int Total = RaycastJobs.Count;
-            if (Total > 0)
-            {
-                ScheduleJobs(Total);
-                yield return AwaitCompletion(Total);
-
-                for (int i = 0; i < Total; i++)
-                {
-                    RaycastJob Job = RaycastJobs[i];
-                    Job.Complete();
-                    NativeArray<RaycastHit> Hits = Job.Hits;
-                    NativeArray<RaycastCommand> Commands = Job.Commands;
-
-                    if (GameWorldComponent.TryGetPlayerComponent(Job.Owner, out PlayerComponent Player))
-                    {
-                        for (int j = Hits.Length - 1; j >= 0; j--)
-                        {
-                            RaycastHit Hit = Hits[j];
-                            if (Hit.collider == null)
-                            {
-                                RaycastCommand Command = Commands[j];
-                                Vector3 Point = Command.from + Command.direction * Command.distance;
-                                Color RandomColor = DebugGizmos.RandomColor;
-                                if (Player.Player.IsYourPlayer)
-                                {
-                                    DebugGizmos.Sphere(Point, 0.025f, RandomColor, true, 0.05f);
-                                    //DebugGizmos.Line(Command.from, Point, RandomColor, 0.01f, true, 0.05f);
-                                }
-                                if (Command.distance > 3)
-                                {
-                                    if (NavMesh.SamplePosition(Point, out NavMeshHit NavHit, 1.5f, -1))
-                                    {
-                                        if (Player.Player.IsYourPlayer)
-                                        {
-                                            DebugGizmos.Sphere(NavHit.position, 0.1f, RandomColor, true, 0.05f);
-                                            DebugGizmos.Line(NavHit.position, NavHit.position + Vector3.up * 1.5f, RandomColor, 0.025f, true, 0.05f);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                Dispose();
-                // Logger.LogDebug($"Completed {Total}");
-            }
-        }
-
-        private void ScheduleJobs(int Total)
-        {
-            for (int i = 0; i < Total; i++)
-                RaycastJobs[i].Schedule();
-        }
-
-        private void ReadResults(int Total)
-        {
-            for (int i = 0; i < Total; i++)
-            {
-                RaycastJob Job = RaycastJobs[i];
-                Job.Complete();
-                NativeArray<RaycastHit> Hits = Job.Hits;
-                NativeArray<RaycastCommand> Commands = Job.Commands;
-
-                if (GameWorldComponent.TryGetPlayerComponent(Job.Owner, out PlayerComponent Player))
-                {
-                    for (int j = Hits.Length - 1; j >= 0; j--)
-                    {
-                        RaycastHit Hit = Hits[j];
-                        if (Hit.collider == null)
-                        {
-                            RaycastCommand Command = Commands[j];
-                            Vector3 Point = Command.from + Command.direction * Command.distance;
-                            if (Player.Player.IsYourPlayer)
-                            {
-                                Color RandomColor = DebugGizmos.RandomColor;
-                                DebugGizmos.Sphere(Point, 0.05f, RandomColor, true, 0.1f);
-                                DebugGizmos.Line(Command.from, Point, RandomColor, 0.025f, true, 0.1f);
-                            }
-                        }
-                    }
-                }
-            }
-            //for (int i = 0; i < Total; i++)
-            //{
-            //    RaycastJob Job = RaycastJobs[i];
-            //    Job.Complete();
-            //    NativeArray<RaycastHit> Hits = Job.Hits;
-            //    NativeArray<RaycastCommand> Commands = Job.Commands;
-            //
-            //    if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
-            //    {
-            //        Enemy Enemy = Bot.EnemyController.GetEnemy(Job.Target?.ProfileId, false);
-            //        if (Enemy != null)
-            //        {
-            //            bool PointFound = false;
-            //            for (int j = Hits.Length - 1; j >= 0; j--)
-            //            {
-            //                RaycastHit Hit = Hits[j];
-            //                if (Hit.collider == null)
-            //                {
-            //                    RaycastCommand Command = Commands[j];
-            //                    Vector3 Point = Command.from + Command.direction * Command.distance;
-            //                    DebugGizmos.Sphere(Point, 0.05f, 0.1f);
-            //                    //if (NavMesh.SamplePosition(LastVisiblePoint, out NavMeshHit hit, 2, -1))
-            //                    //{
-            //                    //    PointFound = true;
-            //                    //    break;
-            //                    //}
-            //                }
-            //            }
-            //            if (!PointFound)
-            //            {
-            //                Enemy.ClearVisiblePathPoint();
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
-        protected static RandomDir[] GenerateRandomDirections(int Count, float LengthMin, float LengthMax)
-        {
-            RandomDir[] Result = new RandomDir[Count];
-            for (int i = 0; i < Count; i++)
-            {
-                Result[i] = new RandomDir(LengthMin, LengthMax);
-            }
-            return Result;
-        }
-
-        private void CreateJobs()
-        {
-            RandomDir[] RandomDirections = GenerateRandomDirections(100, 0.5f, 8.0f);
-            foreach (var player in AlivePlayers.Values)
-            {
-                if (player?.IsActive == true)
-                {
-                    RaycastJobs.Add(new RaycastJob(RandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                }
-            }
-            //foreach (var bot in AliveBots.Values)
-            //{
-            //    if (bot?.BotActive == true)
-            //    {
-            //        foreach (Enemy enemy in bot.EnemyController.Enemies.Values)
-            //        {
-            //            if (enemy?.EnemyKnown == true)
-            //            {
-            //                RaycastJobs.Add(new RaycastJob(RandomDirections, enemy.EnemyHeadPosition, LayerMaskClass.HighPolyWithTerrainMask, bot.Player, enemy.EnemyPlayer));
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
-        private IEnumerator AwaitCompletion(int Total)
-        {
-            int FramesWaited = 0;
-            float DeltaTimeWaited = 0;
-            const int MaxFramesToWait = 10;
-            bool JobsComplete = false;
-            while (!JobsComplete && FramesWaited < MaxFramesToWait)
-            {
-                for (int i = 0; i < Total; i++)
-                {
-                    if (!RaycastJobs[i].IsCompleted)
-                        continue;
-                    JobsComplete = true;
-                }
-                yield return null;
-                FramesWaited++;
-                DeltaTimeWaited += Time.deltaTime;
-            }
-
-            // Logger.LogDebug($"Took {FramesWaited} frames or {DeltaTimeWaited} seconds To Complete Navmesh Raycasts Jobs");
-        }
-
-        protected override bool CanProceed()
-        {
-            var bots = SAINBotController?.BotSpawnController?.BotDictionary;
-            return bots != null && bots.Count > 0;
-        }
-
-        protected override bool LoopCondition()
-        {
-            return SAINGameWorld != null;
-        }
-
-        public void Dispose()
-        {
-            foreach (RaycastJob Job in RaycastJobs)
-            {
-                Job.Dispose();
-            }
-            RaycastJobs.Clear();
-        }
-    }
-
     public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
     {
-        public EnemyPathVisibilityRaycastJob(SAINBotController botcontroller) : base("Path Visibility Job", botcontroller, true)
+        public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : base("Path Visibility Job", botcontroller, true, 1f / 10f)
         {
             Start();
         }
@@ -283,6 +76,7 @@ namespace SAIN.Components
                 Job.RaycastJob.Complete();
                 NativeArray<RaycastHit> Hits = Job.RaycastJob.Hits;
                 NativeArray<RaycastCommand> Commands = Job.RaycastJob.Commands;
+
                 //Vector3 HeadPosition = Job.Owner.MainParts[BodyPartType.head].Position;
                 //for (int j = 0; j < Hits.Length; j++)
                 //{
@@ -300,7 +94,7 @@ namespace SAIN.Components
                         for (int j = Hits.Length - 1; j >= 0; j--)
                         {
                             RaycastHit Hit = Hits[j];
-                            if (Hit.collider == null)
+                            if (Hit.collider == null || j == 0)
                             {
                                 RaycastCommand Command = Commands[j];
                                 Vector3 LastVisiblePoint = Command.from + Command.direction * Command.distance;
@@ -391,10 +185,9 @@ namespace SAIN.Components
                 {
                     foreach (Enemy enemy in bot.EnemyController.Enemies.Values)
                     {
-                        NavMeshPath Path = enemy?.Path?.PathToEnemy;
-                        if (Path != null && Path.status != NavMeshPathStatus.PathInvalid)
+                        if (enemy != null && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionCheckPoints.Count > 0)
                         {
-                            RaycastJobs.Add(NavMeshPathRaycastJob.Create(Path.corners, 5, LayerMaskClass.HighPolyWithTerrainMask, bot.Player, enemy.EnemyPlayer));
+                            RaycastJobs.Add(NavMeshPathRaycastJob.Create([.. enemy.Path.VisionCheckPoints], 5, LayerMaskClass.HighPolyWithTerrainMask, bot.Player, enemy.EnemyPlayer));
                         }
                     }
                 }

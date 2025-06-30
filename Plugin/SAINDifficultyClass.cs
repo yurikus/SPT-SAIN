@@ -3,6 +3,7 @@ using SAIN.Helpers;
 using SAIN.Preset;
 using System.Collections.Generic;
 using UnityEngine;
+using static HBAO_Core;
 
 namespace SAIN.Plugin
 {
@@ -135,6 +136,57 @@ namespace SAIN.Plugin
                     setting.Value.Core.ScatteringClosePerMeter += 0.1f;
                 }
             }
+            foreach (var botsetting in preset.BotSettings.SAINSettings)
+            {
+                if (botsetting.Key.IsBossOrFollower())
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.4f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.5f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.55f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.65f;
+                }
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                {
+                    var pmcSettings = botsetting.Value.Settings;
+
+                    var easy = pmcSettings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.4f;
+
+                    var normal = pmcSettings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.5f;
+
+                    var hard = pmcSettings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.55f;
+
+                    var impossible = pmcSettings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.75f;
+                }
+                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.4f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.45f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.45f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.5f;
+                }
+            }
             return preset;
         }
 
@@ -162,18 +214,172 @@ namespace SAIN.Plugin
                     setting.Value.Look.MinimumVisionSpeed = 0.1f;
                 }
             }
+
+            foreach (var botsetting in preset.BotSettings.SAINSettings)
+            {
+                if (botsetting.Key.IsBossOrFollower())
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.5f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.65f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.8f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                {
+                    var pmcSettings = botsetting.Value.Settings;
+
+                    var easy = pmcSettings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.4f;
+
+                    var normal = pmcSettings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.6f;
+
+                    var hard = pmcSettings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.7f;
+
+                    var impossible = pmcSettings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.9f;
+                }
+                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.35f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.45f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.5f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.65f;
+                }
+            }
             return preset;
         }
 
         private static SAINPresetClass CreateHardPreset()
         {
             var preset = new SAINPresetClass(SAINDifficulty.hard);
+            foreach (var botsetting in preset.BotSettings.SAINSettings)
+            {
+                if (botsetting.Key.IsBossOrFollower())
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.6f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.75f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.85f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                {
+                    var pmcSettings = botsetting.Value.Settings;
+
+                    var easy = pmcSettings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.5f;
+
+                    var normal = pmcSettings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.65f;
+
+                    var hard = pmcSettings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.75f;
+
+                    var impossible = pmcSettings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.9f;
+                }
+                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.5f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.55f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.6f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.65f;
+                }
+            }
             return preset;
         }
 
         private static SAINPresetClass CreateHarderPMCsPreset()
         {
             var preset = new SAINPresetClass(SAINDifficulty.harderpmcs);
+            foreach (var botsetting in preset.BotSettings.SAINSettings)
+            {
+                if (botsetting.Key.IsBossOrFollower())
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.5f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.65f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.8f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                {
+                    var pmcSettings = botsetting.Value.Settings;
+
+                    var easy = pmcSettings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.4f;
+
+                    var normal = pmcSettings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.6f;
+
+                    var hard = pmcSettings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.7f;
+
+                    var impossible = pmcSettings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.9f;
+                }
+                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.35f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.45f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.5f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.65f;
+                }
+            }
             ApplyHarderPMCs(preset);
             return preset;
         }
@@ -260,6 +466,57 @@ namespace SAIN.Plugin
                     setting.Value.Aiming.AimCenterMass = false;
                 }
             }
+            foreach (var botsetting in preset.BotSettings.SAINSettings)
+            {
+                if (botsetting.Key.IsBossOrFollower())
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.75f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.85f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.9f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.75f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.85f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.9f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.65f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.7f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.75f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 0.9f;
+                }
+            }
             return preset;
         }
 
@@ -290,6 +547,57 @@ namespace SAIN.Plugin
                     setting.Value.Aiming.AimCenterMass = false;
                     setting.Value.Core.VisibleAngle = 180;
                     setting.Value.Core.GainSightCoef *= 0.66f;
+                }
+            }
+            foreach (var botsetting in preset.BotSettings.SAINSettings)
+            {
+                if (botsetting.Key.IsBossOrFollower())
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.85f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.9f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 1f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.75f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.9f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 1.0f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
+                }
+                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+                {
+                    var settings = botsetting.Value.Settings;
+
+                    var easy = settings[BotDifficulty.easy];
+                    easy.Move.STRAFE_SPEED = 0.65f;
+
+                    var normal = settings[BotDifficulty.normal];
+                    normal.Move.STRAFE_SPEED = 0.75f;
+
+                    var hard = settings[BotDifficulty.hard];
+                    hard.Move.STRAFE_SPEED = 0.9f;
+
+                    var impossible = settings[BotDifficulty.impossible];
+                    impossible.Move.STRAFE_SPEED = 1.0f;
                 }
             }
             return preset;

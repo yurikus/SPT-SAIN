@@ -37,7 +37,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             else
             {
                 BotOwner.Mover.MovementResume();
-                Bot.Mover.SetTargetMoveSpeed(1);
+                //Bot.Mover.SetTargetMoveSpeed(1);
                 Bot.Mover.SetTargetPose(1);
 
                 Bot.Medical.Surgery.SurgeryStarted = false;

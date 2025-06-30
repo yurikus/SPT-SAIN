@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using HarmonyLib;
 using SAIN.Helpers;
 using SAIN.SAINComponent;
 using System.Collections;
@@ -128,19 +129,26 @@ namespace SAIN.Components.Extract
                 return false;
             }
 
-            AllExfils = ExfilController.ExfiltrationPoints;
-            if (DebugMode && AllExfils != null)
+            // Wait for exfiltration points to be initialized to prevent NRE spam
+            if (ExfilController.ExfiltrationPoints == null)
+            {
+                return false;
+            }
+
+            AllExfils = ExfilController.ExfiltrationPoints.AddRangeToArray(ExfilController.SecretExfiltrationPoints);
+            if (DebugMode)
             {
                 Logger.LogInfo($"Found {AllExfils?.Length} possible Exfil Points in this map.");
             }
 
-            AllScavExfils = ExfilController.ScavExfiltrationPoints;
-            if (DebugMode && AllScavExfils != null)
+            ExfiltrationPoint[] secretScavExfils = ExfilController.GetScavSecretExits();
+            AllScavExfils = ExfilController.ScavExfiltrationPoints.AddRangeToArray(secretScavExfils);
+            if (DebugMode)
             {
                 Logger.LogInfo($"Found {AllScavExfils?.Length} possible Scav Exfil Points in this map.");
             }
 
-            return (AllExfils != null) && (AllScavExfils != null);
+            return true;
         }
 
         private IEnumerator FindAllExfils()

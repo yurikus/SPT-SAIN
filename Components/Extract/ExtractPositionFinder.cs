@@ -282,30 +282,60 @@ namespace SAIN.Components.Extract
                 return;
             }
 
-            IEnumerable<Vector3> navMeshPoints = GameWorldHandler.SAINGameWorld.GetAllSpawnPointPositionsOnNavMesh();
-            if (!navMeshPoints.Any())
+            List<Vector3> navMeshPoints = GameWorldHandler.SAINGameWorld.GetAllSpawnPointPositionsOnNavMesh()?.ToList();
+            if (navMeshPoints == null || navMeshPoints.Count == 0)
             {
                 return;
             }
 
             // Create a dictionary of the distance between each spawn point and the extract test point, but deprioritize points with
             // much different elevation
-            Dictionary<Vector3, float> navMeshPointDistances = navMeshPoints
-                .ToDictionary(x => x, x => Vector3.Distance(x, testPoint) + (Math.Abs(x.y - testPoint.y) * pathEndpointHeightDeprioritizationFactor));
+            Dictionary<Vector3, float> navMeshPointDistances = new Dictionary<Vector3, float>(navMeshPoints.Count);
+            foreach (var point in navMeshPoints)
+            {
+                float distance = Vector3.Distance(point, testPoint);
+                float elevationPenalty = Math.Abs(point.y - testPoint.y) * pathEndpointHeightDeprioritizationFactor;
+                navMeshPointDistances[point] = distance + elevationPenalty;
+            }
 
             // Select the desired number of endpoints ensuring they are not too close together
             for (int i = 0; i < maxPathEndpoints; i++)
             {
-                IEnumerable<Vector3> sortedNavMeshPoints = navMeshPoints
-                    .Where(x => pathEndpoints.All(y => Vector3.Distance(x, y) > minDistanceBetweenPathEndpoints))
-                    .OrderBy(x => navMeshPointDistances[x]);
+                Vector3? bestPoint = null;
+                float bestScore = float.MaxValue;
 
-                if (!sortedNavMeshPoints.Any())
+                foreach (var point in navMeshPoints)
                 {
-                    break;
+                    bool tooClose = false;
+                    foreach (var existing in pathEndpoints)
+                    {
+                        if (Vector3.Distance(point, existing) <= minDistanceBetweenPathEndpoints)
+                        {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+
+                    if (tooClose)
+                        continue;
+
+                    float score = navMeshPointDistances[point];
+                    if (score < bestScore)
+                    {
+                        bestScore = score;
+                        bestPoint = point;
+                    }
                 }
 
-                pathEndpoints.Add(sortedNavMeshPoints.First());
+                if (bestPoint.HasValue)
+                {
+                    pathEndpoints.Add(bestPoint.Value);
+                }
+                else
+                {
+                    // No suitable point found
+                    break;
+                }
             }
         }
     }

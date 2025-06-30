@@ -1,3 +1,4 @@
+using BSG.CameraEffects;
 using Comfort.Common;
 using EFT;
 using SAIN.Helpers;
@@ -8,13 +9,10 @@ using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
-    public class LightDetectionClass : PlayerComponentBase
+    public class LightDetectionClass(PlayerComponent component) : PlayerComponentBase(component)
     {
-        public List<FlashLightPoint> LightPoints { get; } = new List<FlashLightPoint>();
-
-        public LightDetectionClass(PlayerComponent component) : base(component)
-        {
-        }
+        public List<FlashLightPoint> LightPoints { get; } = [];
+        public List<Vector3> LightPoints2 { get; } = [];
 
         public void CreateDetectionPoints(bool visibleLight, bool onlyLaser)
         {
@@ -149,7 +147,7 @@ namespace SAIN.Components.PlayerComponentSpace
             enemy.NextCheckFlashLightTime = Time.time + 0.2f;
 
             var flashLight = enemy.EnemyPlayerComponent.Flashlight;
-            if (!checkIsBeamVisible(flashLight, usingNVGs))
+            if (!CheckIsBeamVisible(flashLight))
             {
                 return;
             }
@@ -185,8 +183,8 @@ namespace SAIN.Components.PlayerComponentSpace
             }
 
             // all checks are passed, estimate the enemy position and try to investigate
-            Vector3 estimatedPosition = estimatePosition(enemy.EnemyPosition, lightPoint.Point, botPos, 20f);
-            tryToInvestigate(estimatedPosition);
+           // Vector3 estimatedPosition = estimatePosition(enemy.EnemyPosition, lightPoint.Point, botPos, 20f);
+            //tryToInvestigate(estimatedPosition);
             _searchTime = Time.time + 1f;
         }
 
@@ -211,16 +209,16 @@ namespace SAIN.Components.PlayerComponentSpace
             return true;
         }
 
-        private bool checkIsBeamVisible(FlashLightClass flashLight, bool usingNVGs)
+        public bool CheckIsBeamVisible(FlashLightClass EnemyFlashlight)
         {
             // If this isn't visible light, and the bot doesn't have night vision, ignore it
-            if (!flashLight.WhiteLight &&
-                !flashLight.Laser &&
-                !usingNVGs)
+            if (!EnemyFlashlight.WhiteLight &&
+                !EnemyFlashlight.Laser &&
+                Player.AIData?.BotOwner?.NightVision?.UsingNow == false)
             {
                 return false;
             }
-            if (flashLight.LightDetection.LightPoints.Count <= 0)
+            if (EnemyFlashlight.LightDetection.LightPoints2.Count <= 0)
             {
                 return false;
             }
@@ -241,8 +239,9 @@ namespace SAIN.Components.PlayerComponentSpace
             return !Physics.Raycast(botPos, direction, direction.magnitude, mask);
         }
 
-        private void tryToInvestigate(Vector3 estimatedPosition)
+        public void TryToInvestigate(IPlayer Player)
         {
+            Vector3 estimatedPosition = EstimatePosition(Player.Position, PlayerComponent.GetDistanceToPlayer(Player.ProfileId), 10f);
             var botComponent = PlayerComponent.BotComponent;
             if (botComponent != null)
             {
@@ -251,7 +250,7 @@ namespace SAIN.Components.PlayerComponentSpace
                     25f,
                     botComponent,
                     AISoundType.step,
-                    Singleton<GameWorld>.Instance.MainPlayer,
+                    Player,
                     SAIN.BotController.Classes.Squad.ESearchPointType.Flashlight);
             }
             else
@@ -260,20 +259,13 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        private Vector3 estimatePosition(Vector3 playerPos, Vector3 flashPos, Vector3 botPos, float dispersion)
+        public static Vector3 EstimatePosition(Vector3 playerPos, float distance, float dispersion)
         {
             Vector3 estimatedPosition = playerPos;
-            // Vector3 estimatedPosition = Vector3.Lerp(playerPos, flashPos, Random.Range(0.0f, 0.25f));
-
-            float distance = (playerPos - botPos).magnitude;
-
             float maxDispersion = Mathf.Clamp(distance, 0f, 50f);
-
             float positionDispersion = maxDispersion / dispersion;
-
             float x = EFTMath.Random(-positionDispersion, positionDispersion);
             float z = EFTMath.Random(-positionDispersion, positionDispersion);
-
             return new Vector3(estimatedPosition.x + x, estimatedPosition.y, estimatedPosition.z + z);
         }
 

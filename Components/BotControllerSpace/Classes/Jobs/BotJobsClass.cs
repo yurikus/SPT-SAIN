@@ -7,31 +7,25 @@ using UnityEngine;
 
 namespace SAIN.Components
 {
-    public class BotJobsClass : SAINControllerBase
+    public class BotJobsClass(SAINBotController botController) : SAINControllerBase(botController)
     {
-        public BotRaycastJobs RaycastJobs { get; }
-
-        public PlayerDistancesJob PlayerDistancesJob { get; }
-
-        public BotJobsClass(SAINBotController botController) : base(botController)
-        {
-            RaycastJobs = new BotRaycastJobs(BotController);
-            PlayerDistancesJob = new PlayerDistancesJob(BotController);
-        }
+        public PlayerDistancesJob PlayerDistancesJob { get; } = new PlayerDistancesJob(botController);
+        public VisionRaycastJob VisionJob { get; } = new VisionRaycastJob(botController);
+        public EnemyPlaceRaycastJob EnemyPlaceJob { get; } = new EnemyPlaceRaycastJob(botController);
 
         public void Update()
         {
             var bots = Bots;
             if (bots != null && bots.Count > 0)
             {
-                RaycastJobs.Update();
                 UpdateVisionForBots();
             }
         }
 
         public void Dispose()
         {
-            RaycastJobs.Dispose();
+            VisionJob.Dispose();
+            EnemyPlaceJob.Dispose();
             PlayerDistancesJob.Dispose();
         }
 

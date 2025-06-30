@@ -10,33 +10,33 @@ using UnityEngine;
 
 namespace SAIN.Components
 {
-    public class FlashLightClass : PlayerComponentBase
+    public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(component)
     {
         public event Action<bool> OnLightToggle;
 
         public event Action<bool> OnLaserToggle;
 
+        public List<TacticalComboVisualController> TacticalDevices { get; private set; }
+
         public bool UsingLight { get; private set; }
         public bool UsingLaser { get; private set; }
+
+        public bool LaserOnly => !WhiteLight && !IRLight && (Laser || IRLaser);
+        public bool DeviceActive => ActiveModes.Count > 0;
 
         public bool IRLaser => ActiveModes.Contains(DeviceMode.IRLaser);
         public bool IRLight => ActiveModes.Contains(DeviceMode.IRLight);
         public bool Laser => ActiveModes.Contains(DeviceMode.VisibleLaser);
         public bool WhiteLight => ActiveModes.Contains(DeviceMode.WhiteLight);
-        public LightDetectionClass LightDetection { get; }
+        public LightDetectionClass LightDetection { get; } = new LightDetectionClass(component);
 
-        public readonly List<DeviceMode> ActiveModes = new();
-
-        public FlashLightClass(PlayerComponent component) : base(component)
-        {
-            LightDetection = new LightDetectionClass(component);
-        }
+        private readonly List<DeviceMode> activeModes = [];
 
         public void Update()
         {
-            ClearPoints();
-            CreatePoints();
-            DetectPoints();
+            //ClearPoints();
+            //CreatePoints();
+            //DetectPoints();
         }
 
         private void ClearPoints()
@@ -73,7 +73,6 @@ namespace SAIN.Components
 
         public void CheckDevice()
         {
-            ActiveModes.Clear();
             CheckUsingLightModes();
 
             bool wasUsingLight = UsingLight;
@@ -93,6 +92,7 @@ namespace SAIN.Components
 
         private void CheckUsingLightModes()
         {
+            ActiveModes.Clear();
             Player player = Player;
             if (player == null) return;
 
@@ -112,8 +112,8 @@ namespace SAIN.Components
 
             // Get the list of tacticalComboVisualControllers for the current weapon (One should exist for every flashlight, laser, or combo device)
             Transform weaponRoot = firearmController.WeaponRoot;
-            List<TacticalComboVisualController> tacticalComboVisualControllers = weaponRoot.GetComponentsInChildrenActiveIgnoreFirstLevel<TacticalComboVisualController>();
-            if (tacticalComboVisualControllers == null)
+            TacticalDevices = weaponRoot.GetComponentsInChildrenActiveIgnoreFirstLevel<TacticalComboVisualController>();
+            if (TacticalDevices == null)
             {
                 Logger.LogError("Could find not find tacticalComboVisualControllers");
                 return;
@@ -125,7 +125,7 @@ namespace SAIN.Components
             bool FoundIRLaser = false;
 
             // Loop through all of the tacticalComboVisualControllers, then its modes, then that modes children, and look for a light
-            foreach (TacticalComboVisualController tacticalComboVisualController in tacticalComboVisualControllers)
+            foreach (TacticalComboVisualController tacticalComboVisualController in TacticalDevices)
             {
                 List<Transform> tacticalModes = _tacticalModesField.GetValue(tacticalComboVisualController) as List<Transform>;
                 foreach (var mode in tacticalModes)
@@ -173,6 +173,8 @@ namespace SAIN.Components
         private float _nextPointCheckTime;
         private float _nextPointCreateTime;
         static bool _debugMode => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash;
+
+        public List<DeviceMode> ActiveModes => activeModes;
 
         static FlashLightClass()
         {

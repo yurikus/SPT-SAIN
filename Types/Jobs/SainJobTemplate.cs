@@ -46,7 +46,7 @@ namespace SAIN.Types.Jobs
         }
     }
 
-    public abstract class SainJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 60.0f) : ISainJob
+    public abstract class SainJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 30.0f) : ISainJob
     {
         protected readonly string Name = InName;
         protected readonly bool Looping = InLooping;
@@ -63,7 +63,8 @@ namespace SAIN.Types.Jobs
 
         protected virtual IEnumerator Loop()
         {
-            Logger.LogDebug($"Starting [{Name}]");
+            Logger.LogDebug($"Starting Job: [{Name}]");
+            WaitForSeconds Wait = new(LoopInterval);
             while (LoopCondition())
             {
                 if (!CanProceed())
@@ -75,9 +76,9 @@ namespace SAIN.Types.Jobs
                 OnExecutionStarted?.Invoke();
                 yield return PrimaryFunction();
                 OnExecutionFinished?.Invoke();
-                yield return null;
+                yield return Wait;
             }
-            Logger.LogDebug($"Loop Ended [{Name}]");
+            Logger.LogDebug($"Job Ended [{Name}]");
         }
 
         protected virtual IEnumerator PrimaryFunction()
