@@ -49,7 +49,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     _timeLastCanShoot = time;
                 }
 
-                if (!inSight && part.LineOfSight)
+                if (!inSight && part.IsVisible)
                 {
                     inSight = true;
                     _timeLastInSight = time;

@@ -11,8 +11,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public Dictionary<ERaycastCheck, RaycastResult> RaycastResults { get; private set; } = [];
         public float TimeSeen { get; private set; }
         public bool IsVisible { get; private set; }
-        public float TimeSinceLastVisionCheck => RaycastResults[ERaycastCheck.LineofSight].TimeSinceChecked;
-        public float TimeSinceLastVisionSuccess => RaycastResults[ERaycastCheck.LineofSight].TimeSinceSuccess;
+        public float TimeSinceLastVisionCheck => Mathf.Max(RaycastResults[ERaycastCheck.LineofSight].TimeSinceChecked, RaycastResults[ERaycastCheck.Vision].TimeSinceChecked);
+        public float TimeSinceLastVisionSuccess => Mathf.Max(RaycastResults[ERaycastCheck.LineofSight].TimeSinceSuccess, RaycastResults[ERaycastCheck.Vision].TimeSinceSuccess);
         public bool LineOfSight => RaycastResults[ERaycastCheck.LineofSight].InSight;
         public bool CanShoot => RaycastResults[ERaycastCheck.Shoot].InSight;
 
@@ -40,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void Update(Enemy enemy)
         {
-            IsVisible = enemy.Vision.Angles.CanBeSeen && RaycastResults[ERaycastCheck.Vision].InSight && RaycastResults[ERaycastCheck.LineofSight].InSight;
+            IsVisible = enemy.Vision.Angles.CanBeSeen && TimeSinceLastVisionSuccess < 0.25f;
 
             if (!IsVisible)
             {

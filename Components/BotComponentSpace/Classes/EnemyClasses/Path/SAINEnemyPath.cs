@@ -7,10 +7,20 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class SAINEnemyPath : EnemyBase, IBotEnemyClass
+    public struct PathSegment
     {
-        public EPathDistance EPathDistance
-        {
+        public Vector3 Corner;
+        public Vector3 EndPoint;
+        public Vector3 Direction;
+        public Vector3 DirectionNormal;
+        public float SegmentLength;
+        public int Index;
+        public List<Vector3> SegmentPoints;
+    }
+
+    public class SAINEnemyPath(Enemy enemy) : EnemyBase(enemy), IBotEnemyClass
+    {
+        public EPathDistance EPathDistance {
             get
             {
                 float distance = PathDistance;
@@ -41,42 +51,41 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public float PathDistance { get; private set; } = float.MaxValue;
 
-        public EnemyCornerDictionary EnemyCorners { get; private set; }
+        public float DistanceToEnemyPositionFromLastCorner { get; private set; }
 
-        public bool CanSeeLastCornerToEnemy
-        {
+        public EnemyCornerDictionary EnemyCorners { get; private set; } = new EnemyCornerDictionary(enemy.Bot.Transform, enemy.BotOwner.WeaponRoot);
+
+        public bool CanSeeLastCornerToEnemy {
             get
             {
-                var last = EnemyCorners.EyeLevelPosition(ECornerType.Last);
-                if (last == null)
-                {
-                    return false;
-                }
-
-                if (_nextCheckLast > Time.time)
-                {
-                    return _canSeeLast;
-                }
-                _nextCheckLast = Time.time + 0.2f;
-
-                Vector3 cornerTarget = last.Value + Vector3.up;
-                Vector3 headPos = Bot.Transform.EyePosition;
-                Vector3 direction = cornerTarget - headPos;
-                _canSeeLast = !Physics.Raycast(headPos, direction, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask);
-
-                return _canSeeLast;
+                return false;
+                //var last = EnemyCorners.EyeLevelPosition(ECornerType.Last);
+                //if (last == null)
+                //{
+                //    return false;
+                //}
+                //
+                //if (_nextCheckLast > Time.time)
+                //{
+                //    return _canSeeLast;
+                //}
+                //_nextCheckLast = Time.time + 0.2f;
+                //
+                //Vector3 cornerTarget = last.Value + Vector3.up;
+                //Vector3 headPos = Bot.Transform.EyePosition;
+                //Vector3 direction = cornerTarget - headPos;
+                //_canSeeLast = !Physics.Raycast(headPos, direction, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask);
+                //
+                //return _canSeeLast;
             }
         }
 
-        public NavMeshPath PathToEnemy { get; }
+        public NavMeshPath PathToEnemy { get; } = new NavMeshPath();
         public NavMeshPathStatus PathToEnemyStatus { get; private set; }
 
-        public SAINEnemyPath(Enemy enemy) : base(enemy)
-        {
-            PathToEnemy = new NavMeshPath();
-            EnemyCorners = new EnemyCornerDictionary(enemy.Bot.Transform, enemy.BotOwner.WeaponRoot);
-            _blindCornerFinder = new BlindCornerFinder(enemy);
-        }
+        protected List<PathSegment> PathVisionSegments = [];
+        public Vector3[] PathCorners { get; private set; }
+        public List<Vector3> VisionCheckPoints { get; private set; } = [];
 
         public void Init()
         {
@@ -85,111 +94,128 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
-            toggleCoroutine(known);
-        }
-
-        private void toggleCoroutine(bool value)
-        {
-            switch (value)
+            if (!known)
             {
-                case true:
-                    if (_calcPathCoroutine == null)
-                    {
-                        _calcPathCoroutine = Bot.StartCoroutine(calcPathLoop());
-                    }
-                    break;
-
-                case false:
-                    if (_calcPathCoroutine != null)
-                    {
-                        Bot.StopCoroutine(_calcPathCoroutine);
-                        _calcPathCoroutine = null;
-                    }
-                    Clear();
-                    break;
+                Clear();
             }
         }
-
-        private Coroutine _calcPathCoroutine;
 
         public void Update()
         {
-            if (_calcPathCoroutine == null &&
-                Enemy.EnemyKnown)
-            {
-                Logger.LogWarning($"Enemy Known but coroutine was not started!");
-                toggleCoroutine(true);
-            }
+            CheckCalcPath();
         }
 
         public void Dispose()
         {
-            toggleCoroutine(false);
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
         }
 
-        public readonly Dictionary<int, bool> PathCornerVisibility = [];
-
-        private IEnumerator calcPathLoop()
+        public void CheckCalcPath()
         {
-            while (true)
+            if (!ShallCalcNewPath())
             {
-                float timeAdd = calcDelayOnDistance();
-                if (_calcPathTime + timeAdd > Time.time)
-                {
-                    yield return null;
-                    continue;
-                }
-
-                _calcPathTime = Time.time;
-
-                bool isCurrentEnemy = Enemy.IsCurrentEnemy;
-                if (!isCurrentEnemy && !isEnemyInRange())
-                {
-                    yield return null;
-                    continue;
-                }
-
-                // We should always have a not null LastKnownPosition here, but have the real position as a fallback just in case
-                Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition ?? EnemyCurrentPosition;
-                Vector3 botPosition = Bot.Position;
-
-                // Did we already check the current enemy position and has the bot not moved? dont recalc path then
-                if (!checkPositionsChanged(botPosition, enemyPosition))
-                {
-                    yield return null;
-                    continue;
-                }
-
-                PathToEnemy.ClearCorners();
-                NavMesh.CalculatePath(botPosition, enemyPosition, -1, PathToEnemy);
-                PathToEnemyStatus = PathToEnemy.status;
-
-                Vector3[] corners = PathToEnemy.corners;
-                PathDistance = CalculatePathLength(corners);
-
-                yield return null;
-
-                switch (PathToEnemyStatus)
-                {
-                    case NavMeshPathStatus.PathInvalid:
-                        EnemyCorners.Clear();
-                        break;
-
-                    case NavMeshPathStatus.PathPartial:
-                    case NavMeshPathStatus.PathComplete:
-                        findCorners(enemyPosition, PathToEnemyStatus, corners);
-                        if (isCurrentEnemy)
-                            yield return _blindCornerFinder.FindBlindCorner(corners, enemyPosition);
-                        else
-                            EnemyCorners.Remove(ECornerType.Blind);
-
-                        break;
-                }
-
-                Enemy.Events.PathUpdated(PathToEnemyStatus);
-                yield return null;
+                return;
             }
+
+            Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
+            PathToEnemy.ClearCorners();
+            NavMesh.CalculatePath(Bot.Position, enemyPosition, -1, PathToEnemy);
+            PathToEnemyStatus = PathToEnemy.status;
+            PathCorners = PathToEnemy.corners;
+            CalcPathDistanceAndCreateVisionCheckSegments();
+            switch (PathToEnemyStatus)
+            {
+                case NavMeshPathStatus.PathInvalid:
+                    EnemyCorners.Clear();
+                    break;
+
+                case NavMeshPathStatus.PathPartial:
+                case NavMeshPathStatus.PathComplete:
+                    findCorners(enemyPosition, PathToEnemyStatus, PathCorners);
+                    break;
+            }
+
+            Enemy.Events.PathUpdated(PathToEnemyStatus);
+        }
+
+        public bool ShallCalcNewPath()
+        {
+            if (Enemy?.EnemyKnown == false)
+            {
+                return false;
+            }
+
+            Vector3? LastKnown = Enemy.KnownPlaces.LastKnownPosition;
+            if (LastKnown == null)
+            {
+                return false;
+            }
+
+            bool isCurrentEnemy = Enemy.IsCurrentEnemy;
+            if (!isCurrentEnemy && !isEnemyInRange())
+            {
+                return false;
+            }
+
+            // Did we already check the current enemy position and has the bot not moved? dont recalc path then
+            if (!checkPositionsChanged(Bot.Position, LastKnown.Value))
+            {
+                return false;
+            }
+
+            if (_calcPathTime + calcDelayOnDistance() > Time.time)
+            {
+                return false;
+            }
+            _calcPathTime = Time.time;
+            return true;
+        }
+
+        private void CalcPathDistanceAndCreateVisionCheckSegments()
+        {
+            int CornerCount = PathCorners.Length;
+            const float DistToCheckVision = 50.0f;
+            const float DistanceBetweenPoints = 0.5f;
+            PathVisionSegments.Clear();
+            VisionCheckPoints.Clear();
+            PathDistance = 0f;
+            for (int i = 0; i < CornerCount - 1; i++)
+            {
+                Vector3 Corner = PathCorners[i];
+                Vector3 End = PathCorners[i + 1];
+                Vector3 Direction = Corner - End;
+                float Magnitude = Direction.magnitude;
+                PathDistance += Magnitude;
+                // Dont include the first corner, as it is what the bot's position is, we dont need to see if thats visible or not. Only add a segment if we are under our maximum length, or if we have no segments at all.
+                if (i > 0 && (PathDistance <= DistToCheckVision || i == 1))
+                {
+                    PathSegment Segment = new() {
+                        Corner = Corner,
+                        EndPoint = End,
+                        Direction = Direction,
+                        DirectionNormal = Direction.normalized,
+                        SegmentLength = Magnitude,
+                        Index = i,
+                        //SegmentPoints = [],
+                    };
+                    //Segment.SegmentPoints.Add(Segment.Corner);
+                    VisionCheckPoints.Add(Segment.Corner);
+                    // Create Equal dist points along the line between two corners.
+                    int PointsToAdd = Mathf.RoundToInt(Segment.SegmentLength / DistanceBetweenPoints);
+                    for (int j = 0; j < PointsToAdd; j++)
+                    {
+                        Vector3 GeneratedPoint = Segment.Corner + (Segment.DirectionNormal * DistanceBetweenPoints);
+                        //Segment.SegmentPoints.Add(GeneratedPoint);
+                        VisionCheckPoints.Add(GeneratedPoint);
+                    }
+                    //PathVisionSegments.Add(Segment);
+                }
+            }
+
+            if (CornerCount > 0)
+                DistanceToEnemyPositionFromLastCorner = (Enemy.LastKnownPosition.Value - PathCorners[CornerCount - 1]).magnitude;
+            else
+                DistanceToEnemyPositionFromLastCorner = 0;
         }
 
         private void findCorners(Vector3 enemyPosition, NavMeshPathStatus status, Vector3[] corners)
@@ -206,10 +232,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void Clear()
         {
+            _calcPathTime = 0;
             PathToEnemy.ClearCorners();
             PathToEnemyStatus = NavMeshPathStatus.PathInvalid;
             EnemyCorners.Clear();
             PathDistance = float.MaxValue;
+            PathCorners = null;
+            DistanceToEnemyPositionFromLastCorner = 0;
+            PathVisionSegments.Clear();
+            VisionCheckPoints.Clear();
         }
 
         private float calcDelayOnDistance()
@@ -366,7 +397,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private float _nextCheckLast;
         private Vector3? _enemyLastPosChecked;
         private Vector3 _botLastPosChecked;
-        private readonly BlindCornerFinder _blindCornerFinder;
+        private readonly BlindCornerFinder _blindCornerFinder = new BlindCornerFinder(enemy);
         private float _calcPathTime = 0f;
     }
 }

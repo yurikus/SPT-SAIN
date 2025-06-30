@@ -99,6 +99,7 @@ namespace SAIN.Components
         public DoorHandler Doors { get; private set; }
         public LocationClass Location { get; private set; }
         public SpawnPointMarker[] SpawnPointMarkers { get; private set; }
+        public JobManager JobManager { get; private set; }
 
         public void Update()
         {
@@ -225,6 +226,7 @@ namespace SAIN.Components
             Doors = new DoorHandler(this);
             Location = new LocationClass(this);
             ExtractFinder = this.GetOrAddComponent<Extract.ExtractFinderComponent>();
+            JobManager = new JobManager(this);
             GameWorld.OnDispose += Dispose;
 
             try

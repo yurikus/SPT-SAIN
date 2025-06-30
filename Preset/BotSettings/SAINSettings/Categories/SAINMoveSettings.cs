@@ -6,6 +6,11 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 {
     public class SAINMoveSettings : SAINSettingsBase<SAINMoveSettings>, ISAINSettings
     {
+        [Name("Strafe Speed")]
+        [Description("How fast a bot will strafe when fighting an enemy at close range")]
+        [MinMax(0, 1, 100)]
+        public float STRAFE_SPEED = 0.5f;
+
         [Name("Can Lean")]
         [Description("Can this bot lean while peeking and while outside of cover?")]
         [Category("Movement Option Toggles")]

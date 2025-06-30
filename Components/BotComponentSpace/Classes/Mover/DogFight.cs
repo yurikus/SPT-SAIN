@@ -39,6 +39,8 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Bot.Mover.Lean.HoldLean(1f);
                 return;
             }
+            
+            Bot.Mover.SetTargetMoveSpeed(Bot.Info.FileSettings.Move.STRAFE_SPEED);
 
             if (stopMoveToShoot())
             {
@@ -72,6 +74,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (canMoveToEnemy() &&
                 Bot.Mover.GoToEnemy(Bot.Enemy, -1, false, false))
             {
+                Bot.Mover.SetTargetMoveSpeed(0.9f);
                 Status = EDogFightStatus.MovingToEnemy;
                 float timeAdd = Mathf.Clamp(0.1f * UnityEngine.Random.Range(0.5f, 1.25f), 0.05f, 0.66f);
                 _updateDogFightTimer = Time.time + timeAdd;

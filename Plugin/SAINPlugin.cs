@@ -32,7 +32,7 @@ namespace SAIN
     public class SAINPlugin : BaseUnityPlugin
     {
         public static DebugSettings DebugSettings => LoadedPreset.GlobalSettings.General.Debug;
-        public static bool DebugMode => true;
+        public static bool DebugMode => DebugSettings.Logs.GlobalDebugMode;
         public static bool ProfilingMode => DebugSettings.Logs.GlobalProfilingToggle;
         public static bool DrawDebugGizmos => DebugSettings.Gizmos.DrawDebugGizmos;
         public static PresetEditorDefaults EditorDefaults => PresetHandler.EditorDefaults;

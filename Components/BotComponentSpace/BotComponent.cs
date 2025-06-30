@@ -17,6 +17,7 @@ using SAIN.SAINComponent.Classes.Talk;
 using SAIN.SAINComponent.Classes.WeaponFunction;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SAIN.SAINComponent
@@ -372,13 +373,39 @@ namespace SAIN.SAINComponent
 
         private bool verifyBrain(PersonClass person)
         {
-            if (Info.Profile.IsPMC &&
-                person.AIInfo.BotOwner.Brain.BaseBrain.ShortName() != Brain.PMC.ToString())
+            string assignedBrainName = person?.AIInfo?.BotOwner?.Brain?.BaseBrain?.ShortName();
+
+            if (Info.Profile.IsPMC)
             {
-                Logger.LogAndNotifyError($"{BotOwner.name} is a PMC but does not have [PMC] Base Brain! Current Brain Assignment: [{person.AIInfo.BotOwner.Brain.BaseBrain.ShortName()}] : SAIN Server mod is either missing or another mod is overwriting it. Destroying SAIN for this bot...");
-                return false;
+                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedPMCBrains().Select(brain => brain.ToString());
+                return isAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "PMC") ? true : false;
             }
+
+            if (Info.Profile.IsPlayerScav)
+            {
+                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedPlayerScavBrains().Select(brain => brain.ToString());
+                return isAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "PlayerScav") ? true : false;
+            }
+
+            if (Info.Profile.IsScav)
+            {
+                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains().Select(brain => brain.ToString());
+                return isAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "Scav") ? true : false;
+            }
+
             return true;
+        }
+
+        private bool isAssignedBrainAllowed(string assignedBrainName, IEnumerable<string> allowedBrainNames, string botCategory)
+        {
+            if (allowedBrainNames.Contains(assignedBrainName))
+            {
+                return true;
+            }
+
+            Logger.LogAndNotifyError($"{BotOwner.name} is a ${botCategory} but does not have any of these BaseBrains: ${string.Join(", ", allowedBrainNames)}! Current Brain Assignment: [{assignedBrainName}] : SAIN Server mod is either missing or another mod is overwriting it. Destroying SAIN for this bot...");
+
+            return false;
         }
 
         private void OnDisable()

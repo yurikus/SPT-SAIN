@@ -204,29 +204,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 EnemyCornerDictionary corners = Path.EnemyCorners;
 
-                Vector3? blindCorner = corners.EyeLevelPosition(ECornerType.Blind);
-                if (blindCorner != null &&
-                    isTargetInSuppRange(enemyLastKnown.Value, blindCorner.Value))
+                if (VisiblePathPoint != null && isTargetInSuppRange(enemyLastKnown.Value, VisiblePathPoint.Value))
                 {
-                    return blindCorner;
+                    return VisiblePathPoint.Value;
                 }
 
-                Vector3? lastCorner = corners.EyeLevelPosition(ECornerType.Last);
-                if (lastCorner != null &&
-                    Path.CanSeeLastCornerToEnemy &&
-                    isTargetInSuppRange(enemyLastKnown.Value, lastCorner.Value))
-                {
-                    return lastCorner;
-                }
+                //Vector3? lastCorner = corners.EyeLevelPosition(ECornerType.Last);
+                //if (lastCorner != null &&
+                //    Path.CanSeeLastCornerToEnemy &&
+                //    isTargetInSuppRange(enemyLastKnown.Value, lastCorner.Value))
+                //{
+                //    return lastCorner;
+                //}
 
-                if (HidingBehindObject != null)
-                {
-                    Vector3 pos = HidingBehindObject.transform.position + HidingBehindObject.bounds.size.z * Vector3.up;
-                    if (isTargetInSuppRange(enemyLastKnown.Value, pos))
-                    {
-                        return pos;
-                    }
-                }
+                //if (HidingBehindObject != null)
+                //{
+                //    Vector3 pos = HidingBehindObject.transform.position + HidingBehindObject.bounds.size.z * Vector3.up;
+                //    if (isTargetInSuppRange(enemyLastKnown.Value, pos))
+                //    {
+                //        return pos;
+                //    }
+                //}
                 return null;
             }
         }
@@ -248,7 +246,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         }
 
         private const float MAX_TARGET_SUPPRESS_DIST = 5f * 5f;
-        private const float MAX_TARGET_SUPPRESS_ANGLE = 20f;
+        private const float MAX_TARGET_SUPPRESS_ANGLE = 45f;
 
         public Vector3? CenterMass {
             get
