@@ -200,6 +200,24 @@ namespace SAIN.Helpers
             return sphere;
         }
 
+        public static void UpdateSphere(GameObject Sphere, Vector3 position, float size, Color color)
+        {
+            if (!DrawGizmos)
+            {
+                return;
+            }
+            if (!SAINPlugin.DebugMode)
+            {
+                return;
+            }
+            if (Sphere != null)
+            {
+                Sphere.GetComponent<Renderer>().material.color = color;
+                Sphere.transform.position = new Vector3(position.x, position.y, position.z);
+                Sphere.transform.localScale = new Vector3(size, size, size);
+            }
+        }
+
         public static GameObject Box(Vector3 position, float length, float height, Color color, float expiretime = -1f)
         {
             if (!DrawGizmos)
@@ -270,6 +288,29 @@ namespace SAIN.Helpers
             AddGizmo(lineObject, expiretime);
 
             return lineObject;
+        }
+        public static void UpdateLine(GameObject Line, Vector3 startPoint, Vector3 endPoint, float lineWidth, Color color)
+        {
+            if (!SAINPlugin.DebugMode)
+            {
+                return;
+            }
+            if (Line == null)
+            {
+                return;
+            }
+            var lineRenderer = Line.GetComponent<LineRenderer>();
+            if (lineRenderer != null)
+            {
+                // Modify the color and width of the line
+                lineRenderer.material.color = color;
+                lineRenderer.startWidth = lineWidth;
+                lineRenderer.endWidth = lineWidth;
+
+                // Modify the start and end points of the line
+                lineRenderer.SetPosition(0, startPoint);
+                lineRenderer.SetPosition(1, endPoint);
+            }
         }
 
         public static void UpdatePositionLine(Vector3 a, Vector3 b, GameObject gameObject)

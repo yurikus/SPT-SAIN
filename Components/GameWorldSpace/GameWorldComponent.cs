@@ -4,6 +4,7 @@ using EFT.Game.Spawning;
 using EFT.InventoryLogic;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
+using SAIN.SAINComponent;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -121,7 +122,11 @@ namespace SAIN.Components
                     UnityEngine.Profiling.Profiler.BeginSample("Process Sounds For Bots");
                     foreach (PlayerComponent Player in AlivePlayers)
                     {
-                        Player?.Person?.AIInfo?.BotComponent?.Hearing.SoundInput.ProcessAISoundCache();
+                        BotComponent Bot = Player?.Person?.AIInfo?.BotComponent;
+                        if (Bot != null)
+                        {
+                            Bot.Hearing.SoundInput.ProcessAISoundCache();
+                        }
                     }
                     UnityEngine.Profiling.Profiler.EndSample();
                 }

@@ -6,7 +6,6 @@ using SAIN.Components.BotController;
 using SAIN.Components.BotController.PeacefulActions;
 using SAIN.Components.BotControllerSpace.Classes;
 using SAIN.Helpers;
-using SAIN.Layers;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
@@ -107,8 +106,7 @@ namespace SAIN.Components
                             random.y = 0;
                             Vector3 estimatedThrowPosition = enemy.EnemyPosition + random;
 
-                            SAINHearingReport report = new()
-                            {
+                            SAINHearingReport report = new() {
                                 position = estimatedThrowPosition,
                                 soundType = SAINSoundType.GrenadeExplosion,
                                 placeType = EEnemyPlaceType.Hearing,
@@ -155,8 +153,7 @@ namespace SAIN.Components
         public GameWorld GameWorld => SAINGameWorld.GameWorld;
         public IBotGame BotGame => Singleton<IBotGame>.Instance;
 
-        public BotEventHandler BotEventHandler
-        {
+        public BotEventHandler BotEventHandler {
             get
             {
                 if (_eventHandler == null)
@@ -176,8 +173,7 @@ namespace SAIN.Components
         public GameWorldComponent SAINGameWorld { get; private set; }
         public BotsController DefaultController { get; set; }
 
-        public BotSpawner BotSpawner
-        {
+        public BotSpawner BotSpawner {
             get
             {
                 return _spawner;
@@ -249,8 +245,28 @@ namespace SAIN.Components
             WeatherVision.Update();
             BotJobs.Update();
             PeacefulActions.Update();
+
+            TickBots();
         }
 
+        private void TickBots()
+        {
+            if (BotTickTimer <= Time.time)
+            {
+                BotTickTimer = Time.time + BotTickRate;
+
+                foreach (var Bot in Bots.Values)
+                {
+                    if (Bot != null)
+                    {
+                        Bot.ManualUpdate();
+                    }
+                }
+            }
+        }
+
+        private float BotTickRate = 1.0f / 30.0f;
+        private float BotTickTimer = 0;
         private readonly Dictionary<BotComponent, GUIObject> _debugObjects = new();
 
         public void BotDeath(BotOwner bot)

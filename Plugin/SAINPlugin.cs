@@ -114,6 +114,7 @@ namespace SAIN
             new Patches.Movement.GlobalShootSettingsPatch(),
             //new Patches.Movement.StopShootCauseAnimatorPatch(),
             new Patches.Movement.GlobalLookPatch(),
+            new Patches.Movement.DisableLocalAvoidancePatch(),
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
             new Patches.Hearing.OnMakingShotPatch(),

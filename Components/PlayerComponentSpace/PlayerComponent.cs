@@ -1,5 +1,7 @@
 ﻿using EFT;
 using EFT.Ballistics;
+using EFT.CameraControl;
+using EFT.HealthSystem;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using SAIN.Components.BotController;

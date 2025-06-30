@@ -52,10 +52,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 _nextCheckPosTime = Time.time + 1f;
                 Vector3 coverPos = CoverInUse.Position;
                 if (!Bot.Player.IsInPronePose
-                    && (coverPos - _position).sqrMagnitude > 0.5f)
+                    && (coverPos - _position).sqrMagnitude > 0.5f * 0.5f)
                 {
                     _position = coverPos;
-                    Bot.Mover.GoToPoint(coverPos, out _, 0.5f);
+                    Bot.Mover.GoToPoint(coverPos, out _);
                 }
                 else
                 {

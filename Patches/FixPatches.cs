@@ -157,7 +157,7 @@ namespace SAIN.Patches.Generic.Fixes
             {
                 return false;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && BotComponent.Mover.SprintController.Running)
+            if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && BotComponent.SAINLayersActive)
             {
                 return false;
             }

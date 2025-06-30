@@ -138,7 +138,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (_ungroundedTime + 1f < Time.time)
             {
-                ResetToNavMesh();
+                //ResetToNavMesh();
             }
         }
 
@@ -199,7 +199,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             //}
             if (reachDist < 0f)
             {
-                reachDist = SAINPlugin.LoadedPreset.GlobalSettings.General.BaseReachDistance;
+                //reachDist = SAINPlugin.LoadedPreset.GlobalSettings.General.BaseReachDistance;
+				reachDist = BotOwner.Settings.FileSettings.Move.REACH_DIST;
             }
 
             bool wasMoving = Moving;

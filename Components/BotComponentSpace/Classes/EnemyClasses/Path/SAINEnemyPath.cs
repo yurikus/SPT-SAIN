@@ -1,6 +1,7 @@
 ﻿using SAIN.Helpers;
 using SAIN.Models.Enums;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -126,6 +127,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             toggleCoroutine(false);
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
         }
+
+        public readonly Dictionary<int, bool> PathCornerVisibility = [];
 
         private IEnumerator calcPathLoop()
         {

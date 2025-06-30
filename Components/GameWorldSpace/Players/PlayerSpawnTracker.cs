@@ -17,7 +17,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public readonly PlayerDictionary AlivePlayers = [];
 
-        public readonly Dictionary<string, Player> DeadPlayers = [];
+        public readonly List<IPlayer> DeadPlayers = [];
 
         public PlayerComponent GetPlayerComponent(string profileId) => AlivePlayers.GetPlayerComponent(profileId);
         public PlayerComponent GetPlayerComponent(IPlayer Player) => AlivePlayers.GetPlayerComponent(Player);
@@ -137,11 +137,7 @@ namespace SAIN.Components.PlayerComponentSpace
             if (player != null &&
                 !player.HealthController.IsAlive)
             {
-                if (DeadPlayers.Count > _maxDeadTracked)
-                {
-                    DeadPlayers.Remove(DeadPlayers.First().Key);
-                }
-                DeadPlayers.Add(player.ProfileId, player);
+                DeadPlayers.Add(player);
             }
         }
 

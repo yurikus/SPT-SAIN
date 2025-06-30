@@ -133,7 +133,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return;
             }
-            if (!place.VisibleSourceOnLastUpdate)
+            if (!place.Visible)
             {
                 return;
             }
@@ -160,7 +160,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void setLastVisSound(EnemyPlace place, Enemy enemy)
         {
-            if (place.VisibleSourceOnLastUpdate && place.PlaceData.OwnerID == Bot.ProfileId)
+            if (place.Visible && place.PlaceData.OwnerID == Bot.ProfileId)
             {
                 LastHeardVisibleDanger = new SoundStruct(enemy, place);
                 return;

@@ -33,7 +33,7 @@ namespace SAIN.Patches.Movement
         [PatchPostfix]
         public static void PatchPrefix(BotGlobalShootData __instance)
         {
-            __instance.CAN_STOP_SHOOT_CAUSE_ANIMATOR = true;
+            __instance.CAN_STOP_SHOOT_CAUSE_ANIMATOR = false;
             __instance.MAX_DIST_COEF = 100f;
         }
     }
@@ -84,6 +84,35 @@ namespace SAIN.Patches.Movement
                 return false;
             }
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Disable specific functions in Manual Update that might be causing erratic movement in sain bots.
+    /// </summary>
+    public class DisableLocalAvoidancePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotMover), nameof(BotMover.ManualUpdate));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(BotMover __instance, BotOwner ___botOwner_0)
+        {
+            if (SAINEnableClass.IsBotExcluded(___botOwner_0))
+            {
+                return true;
+            }
+            //__instance.method_16();
+            __instance.method_15();
+            __instance.method_11();
+            //__instance.LocalAvoidance.ManualUpdate();
+            if (DebugBotData.UseDebugData && DebugBotData.Instance.CheckStuck)
+            {
+                __instance.method_0();
+            }
+            return false;
         }
     }
 

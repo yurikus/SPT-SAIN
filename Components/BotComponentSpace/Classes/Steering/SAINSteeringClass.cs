@@ -81,14 +81,30 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void LookToMovingDirection(float rotateSpeed = 150f, bool sprint = false)
         {
-            if (sprint || Player.IsSprintEnabled)
+            var Steering = BotOwner.Steering;
+            if (Steering == null) return;
+            float speed = sprint || Player.IsSprintEnabled ? 500f : rotateSpeed;
+            if (BotOwner?.Mover?.HasPathAndNoComplete == true)
             {
-                BotOwner.Steering.LookToMovingDirection(500f);
+                Vector3 CurrentCorner = BotOwner.Mover.CurrentCornerPoint;
+                Vector3 WeaponRoot = BotOwner.WeaponRoot.position;
+                Vector3 Dir = CurrentCorner + WeaponRootOffset - WeaponRoot;
+                if (Dir.sqrMagnitude > 0.5f * 0.5f)
+                {
+                    Steering.LookToDirection(Dir, speed);
+                }
             }
-            else
-            {
-                BotOwner.Steering.LookToMovingDirection(rotateSpeed);
-            }
+            //if (BotOwner.Destination != null)
+            //{
+            //    Steering.LookToPathDestPoint(speed);
+            //}
+            //else if (Steering.CanSteerToMovingDirection())
+            //{
+            //    Steering.LookToMovingDirection(speed);
+            //}
+            //else
+            //{
+            //}
         }
 
         public void LookToPoint(Vector3 point, float minTurnSpeed = -1, float maxTurnSpeed = -1f)

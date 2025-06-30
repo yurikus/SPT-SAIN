@@ -1,6 +1,7 @@
 ﻿using SAIN.Models.Structs;
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -29,7 +30,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EEnemyPlaceType PlaceType { get; }
         public SAINSoundType? SoundType { get; set; }
 
-        public bool VisibleSourceOnLastUpdate { get; private set; }
+        public bool Visible { get; private set; }
         public bool IsDanger { get; set; }
 
         public bool ShallClear
@@ -73,6 +74,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
+        public void SetDistances(float BotDistanceToPlace, float EnemyDistanceToPlace)
+        {
+            DistanceToBot = BotDistanceToPlace;
+            DistanceToEnemyRealPosition = EnemyDistanceToPlace;
+        }
+
+        public void SetVisibilityOfPlace(bool Value)
+        {
+            Visible = Value;
+        }
+
         private const float ENEMY_DIST_TO_PLACE_CHECK_FREQ = 10;
         private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE = 150;
         private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE_AI = 100f;
@@ -81,7 +93,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
         {
             PlaceData = placeData;
-            VisibleSourceOnLastUpdate = placeData.Enemy.InLineOfSight;
+            Visible = placeData.Enemy.InLineOfSight;
             IsDanger = isDanger;
             PlaceType = placeType;
             SoundType = soundType;
@@ -94,7 +106,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyPlace(PlaceData placeData, SAINHearingReport report)
         {
             PlaceData = placeData;
-            VisibleSourceOnLastUpdate = placeData.Enemy.InLineOfSight;
+            Visible = placeData.Enemy.InLineOfSight;
             IsDanger = report.isDanger;
             PlaceType = report.placeType;
             SoundType = report.soundType;
@@ -136,7 +148,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 checkNewValue(value, _position);
                 _position = value;
                 _timeLastUpdated = Time.time;
-                VisibleSourceOnLastUpdate = PlaceData.Enemy.InLineOfSight;
+                Visible = PlaceData.Enemy.InLineOfSight;
                 OnPositionUpdated?.Invoke(this);
             }
         }
@@ -155,10 +167,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void checkUpdateDistance()
         {
-            if (_nextCheckDistTime <= Time.time)
-            {
-                updateDistancesNow(_position);
-            }
+            //if (_nextCheckDistTime <= Time.time)
+            //{
+            //    updateDistancesNow(_position);
+            //}
         }
 
         private void updateDistancesNow(Vector3 position)
@@ -259,18 +271,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool CheckLineOfSight(Vector3 origin, LayerMask mask)
         {
-            if (_nextCheckSightTime < Time.time)
-            {
-                _nextCheckSightTime = Time.time + 0.33f;
-                Vector3 pos = Position + Vector3.up;
-                Vector3 direction = pos - origin;
-                _inSightNow = !Physics.Raycast(pos, direction, out var hit, direction.magnitude, mask);
-                if (!_inSightNow)
-                    BlockedHit = hit;
-                else
-                    BlockedHit = null;
-            }
-            return _inSightNow;
+            //if (_nextCheckSightTime < Time.time)
+            //{
+            //    _nextCheckSightTime = Time.time + 0.33f;
+            //    Vector3 pos = Position + Vector3.up;
+            //    Vector3 direction = pos - origin;
+            //    _inSightNow = !Physics.Raycast(pos, direction, out var hit, direction.magnitude, mask);
+            //    if (!_inSightNow)
+            //        BlockedHit = hit;
+            //    else
+            //        BlockedHit = null;
+            //}
+            return Visible;
         }
 
         public RaycastHit? BlockedHit { get; private set; }

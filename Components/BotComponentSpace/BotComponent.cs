@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
@@ -123,53 +122,53 @@ namespace SAIN.SAINComponent
             }
         }
 
-        public void Update()
+        public void ManualUpdate()
         {
+            UnityEngine.Profiling.Profiler.BeginSample("SAIN Bot Update");
+
             BotActivation.Update();
-            if (!BotActive)
+            if (BotActive)
             {
-                return;
+                AILimit.Update();
+                CurrentTarget.Update();
+                EnemyController.Update();
+                BotStuck.Update();
+                Decision.Update();
+                GlobalEvents.Update();
+
+                if (!BotInStandBy)
+                {
+                    Info.Update();
+                    BusyHandsDetector.Update();
+                    WeightManagement.Update();
+                    DoorOpener.Update();
+                    Aim.Update();
+                    Search.Update();
+                    Memory.Update();
+                    FriendlyFire.Update();
+                    Vision.Update();
+                    Mover.Update();
+                    Hearing.Update();
+                    Talk.Update();
+                    Cover.Update();
+                    Squad.Update();
+                    SelfActions.Update();
+                    Grenade.Update();
+                    Steering.Update();
+                    Vault.Update();
+                    Suppression.Update();
+                    AimDownSightsController.Update();
+                    SpaceAwareness.Update();
+                    Medical.Update();
+                    BotLight.Update();
+                    ManualShoot.Update();
+                    Shoot.Update();
+
+                    handleDumbShit();
+                }
             }
 
-            AILimit.Update();
-            CurrentTarget.Update();
-            EnemyController.Update();
-            BotStuck.Update();
-            Decision.Update();
-            GlobalEvents.Update();
-
-            if (BotInStandBy)
-            {
-                return;
-            }
-
-            Info.Update();
-            BusyHandsDetector.Update();
-            WeightManagement.Update();
-            DoorOpener.Update();
-            Aim.Update();
-            Search.Update();
-            Memory.Update();
-            FriendlyFire.Update();
-            Vision.Update();
-            Mover.Update();
-            Hearing.Update();
-            Talk.Update();
-            Cover.Update();
-            Squad.Update();
-            SelfActions.Update();
-            Grenade.Update();
-            Steering.Update();
-            Vault.Update();
-            Suppression.Update();
-            AimDownSightsController.Update();
-            SpaceAwareness.Update();
-            Medical.Update();
-            BotLight.Update();
-            ManualShoot.Update();
-            Shoot.Update();
-
-            handleDumbShit();
+            UnityEngine.Profiling.Profiler.EndSample();
         }
 
         public bool InitializeBot(PersonClass person)

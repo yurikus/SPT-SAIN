@@ -5,12 +5,8 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class HearingDispersionClass : BotSubClass<SAINHearingSensorClass>, IBotClass
+    public class HearingDispersionClass(SAINHearingSensorClass hearing) : BotSubClass<SAINHearingSensorClass>(hearing), IBotClass
     {
-        public HearingDispersionClass(SAINHearingSensorClass hearing) : base(hearing)
-        {
-        }
-
         public void Init()
         {
             base.SubscribeToPreset(null);

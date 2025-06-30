@@ -114,6 +114,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Status.Dispose();
         }
 
+        public void ClearVisiblePathPoint()
+        {
+            VisiblePathPoint = null;
+        }
+
+        public void SetLastVisiblePathPoint(Vector3 Point)
+        {
+            VisiblePathPoint = Point;
+        }
+
+        protected Vector3? VisiblePathPoint = null;
+
         public bool FindLookPoint(Vector3 WeaponRootOffset, out Vector3 Position, out EEnemySteerDir EnemySteerDir, SteeringSettings Settings)
         {
             Position = Vector3.zero;
@@ -121,6 +133,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 EnemySteerDir = EEnemySteerDir.VisibleEnemyPos;
                 Position = EnemyPosition + WeaponRootOffset;
+                return true;
+            }
+            if (VisiblePathPoint != null)
+            {
+                Position = VisiblePathPoint.Value + WeaponRootOffset;
+                EnemySteerDir = EEnemySteerDir.PathNode;
                 return true;
             }
             EnemyKnownPlaces Places = KnownPlaces;
@@ -131,7 +149,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return false;
             }
             var lastSeen = Places.LastSeenPlace;
-            if (lastSeen != null && 
+            if (lastSeen != null &&
                 (lastSeen == lastKnown || (lastSeen.Position - lastKnown.Position).sqrMagnitude < Settings.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr()))
             {
                 EnemySteerDir = EEnemySteerDir.LastSeenPos;
@@ -156,8 +174,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public float TimeSinceCurrentEnemy => _hasBeenActive ? Time.time - _timeLastActive : float.MaxValue;
 
-        public Collider HidingBehindObject
-        {
+        public Collider HidingBehindObject {
             get
             {
                 float time = Time.time;
@@ -176,8 +193,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public Vector3? SuppressionTarget
-        {
+        public Vector3? SuppressionTarget {
             get
             {
                 Vector3? enemyLastKnown = KnownPlaces.LastKnownPosition;
@@ -234,8 +250,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float MAX_TARGET_SUPPRESS_DIST = 5f * 5f;
         private const float MAX_TARGET_SUPPRESS_ANGLE = 20f;
 
-        public Vector3? CenterMass
-        {
+        public Vector3? CenterMass {
             get
             {
                 if (EnemyIPlayer == null)
@@ -261,8 +276,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public Vector3? LastKnownPosition => KnownPlaces.LastKnownPosition;
 
-        public Vector3 EnemyMoveDirection
-        {
+        public Vector3 EnemyMoveDirection {
             get
             {
                 if (_nextCalcMoveDirTime < Time.time)
