@@ -1,11 +1,9 @@
 ﻿using EFT;
-using HarmonyLib;
 using SAIN.Components;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -115,57 +113,6 @@ namespace SAIN.Plugin
         }
 
         private static bool DebugExternal => SAINPlugin.DebugSettings.Logs.DebugExternal;
-
-        public static bool ResetDecisionsForBot(BotOwner bot)
-        {
-            var component = GetBotComponent(bot);
-            if (component == null)
-            {
-                return false;
-            }
-
-            // Do not do anything if the bot is currently in combat
-            if (IsBotInCombat(component, out ECombatReason reason))
-            {
-                if (DebugExternal)
-                    Logger.LogInfo($"{bot.name} is currently engaging an enemy; cannot reset its decisions. Reason: [{reason}]");
-
-                return true;
-            }
-
-            if (IsBotSearching(component))
-            {
-                if (DebugExternal)
-                    Logger.LogInfo($"{bot.name} is currently searching and hasn't cleared last known position, cannot reset its decisions.");
-
-                return false;
-            }
-
-            if (DebugExternal)
-                Logger.LogInfo($"Forcing {bot.name} to reset its decisions...");
-
-            PropertyInfo enemyLastSeenTimeSenseProperty = AccessTools.Property(typeof(BotSettingsClass), "EnemyLastSeenTimeSense");
-            if (enemyLastSeenTimeSenseProperty == null)
-            {
-                Logger.LogError($"Could not reset EnemyLastSeenTimeSense for {bot.name}'s enemies");
-                return false;
-            }
-
-            // Force the bot to think it has not seen any enemies in a long time
-            foreach (IPlayer player in bot.BotsGroup.Enemies.Keys)
-            {
-                bot.BotsGroup.Enemies[player].Clear();
-                enemyLastSeenTimeSenseProperty.SetValue(bot.BotsGroup.Enemies[player], 1);
-            }
-
-            // Force the bot to "forget" what it was doing
-            bot.Memory.GoalTarget.Clear();
-            bot.Memory.GoalEnemy = null;
-            component.EnemyController.ClearEnemy();
-            component.Decision.ResetDecisions(true);
-
-            return true;
-        }
 
         public static float TimeSinceSenseEnemy(BotOwner botOwner)
         {

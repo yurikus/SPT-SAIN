@@ -401,15 +401,19 @@ namespace SAIN.SAINComponent.Classes
 
         public bool SetIgnoreHearingExternal(bool value, bool ignoreUnderFire, float duration, out string reason)
         {
-            if (Bot.Enemy?.IsVisible == true)
+            // Only allow the bot to ignore hearing if it's not in combat
+            if (value)
             {
-                reason = "Enemy Visible";
-                return false;
-            }
-            if (BotOwner.Memory.IsUnderFire && !ignoreUnderFire)
-            {
-                reason = "Under Fire";
-                return false;
+                if (Bot.Enemy?.IsVisible == true)
+                {
+                    reason = "Enemy Visible";
+                    return false;
+                }
+                if (BotOwner.Memory.IsUnderFire && !ignoreUnderFire)
+                {
+                    reason = "Under Fire";
+                    return false;
+                }
             }
 
             IgnoreUnderFire = ignoreUnderFire;
