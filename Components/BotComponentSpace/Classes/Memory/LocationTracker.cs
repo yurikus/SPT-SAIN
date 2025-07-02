@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Memory
 {
-    public class LocationTracker : BotBase, IBotClass
+    public class LocationTracker : BotBase
     {
         public Collider BotZoneCollider => BotZone?.Collider;
         public AIPlaceInfo BotZone => BotOwner.AIData.PlaceInfo;
@@ -13,21 +13,14 @@ namespace SAIN.SAINComponent.Classes.Memory
         {
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             if (_checkIndoorsTime < Time.time)
             {
                 _checkIndoorsTime = Time.time + 0.2f;
                 IsIndoors = Player.AIData.EnvironmentId != 0;
             }
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private float _checkIndoorsTime;

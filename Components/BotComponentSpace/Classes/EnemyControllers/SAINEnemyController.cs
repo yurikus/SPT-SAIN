@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class SAINEnemyController : BotBase, IBotClass
+    public class SAINEnemyController : BotComponentClassBase
     {
         public Dictionary<string, Enemy> Enemies => _listController.Enemies;
         public EnemyControllerEvents Events { get; }
@@ -19,30 +19,31 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public SAINEnemyController(BotComponent sain) : base(sain)
         {
-            Events = new EnemyControllerEvents(this);
-            EnemyLists = new EnemyListsClass(this);
+            TickRequirement = ESAINTickState.OnlyBotActive;
+
             _listController = new EnemyListController(this);
-            _enemyChooser = new EnemyChooserClass(this);
+
+            Events = new EnemyControllerEvents(this);
+            AddSubClass(Events);
+            EnemyLists = new EnemyListsClass(this);
+            AddSubClass(EnemyLists);
             _enemyUpdater = new EnemyUpdaterClass(sain);
+            AddSubClass(_enemyUpdater);
+            _enemyChooser = new EnemyChooserClass(this);
+            AddSubClass(_enemyChooser);
         }
 
-        public void Init()
+        public override void Init()
         {
             _listController.Init();
-            Events.Init();
-            EnemyLists.Init();
-            _enemyChooser.Init();
-            _enemyUpdater.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            _enemyUpdater.Update();
-            Events.Update();
-            _listController.Update();
-            _enemyChooser.Update();
-            EnemyLists.Update();
+            _listController.ManualUpdate();
             updateDebug();
+            base.ManualUpdate();
         }
 
         public void LateUpdate()
@@ -50,14 +51,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _enemyUpdater.LateUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             // must be first, so all enemies are removed properly and their events are triggered!
             _listController.Dispose();
-            Events.Dispose();
-            EnemyLists.Dispose();
-            _enemyChooser.Dispose();
-            _enemyUpdater.Dispose();
+            base.Dispose();
         }
 
         private void updateDebug()

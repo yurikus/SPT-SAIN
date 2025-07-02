@@ -14,20 +14,23 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public EnemyListController(SAINEnemyController controller) : base(controller)
         {
+            //TickInterval = 1.0f;
         }
 
-        public void Init()
+        public override void Init()
         {
             GameWorldComponent.Instance.PlayerTracker.AlivePlayers.OnPlayerComponentRemoved += RemoveEnemy;
             BotOwner.Memory.OnAddEnemy += enemyAdded;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             compareEnemyLists();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             GameWorldComponent.Instance.PlayerTracker.AlivePlayers.OnPlayerComponentRemoved -= RemoveEnemy;
             BotMemoryClass memory = BotOwner?.Memory;
@@ -40,7 +43,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 destroyEnemy(enemy.Value);
             }
-            Enemies?.Clear();
+            Enemies.Clear();
+            base.Dispose();
         }
 
         public Enemy GetEnemy(string profileID, bool mustBeActive)

@@ -24,7 +24,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         Canceling,
     }
 
-    public class SAINSprint : BotBase, IBotClass
+    public class SAINSprint : BotBase
     {
         public event Action<Vector3, Vector3> OnNewCornerMoveTo;
 
@@ -33,15 +33,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         public event Action OnSprintEnd;
 
         public SAINSprint(BotComponent sain) : base(sain)
-        {
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
         {
         }
 
@@ -580,10 +571,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             Vector3 vector = Quaternion.Euler(0f, 0f, Player.Rotation.x) * new Vector2(direction.x, direction.z);
             return new Vector2(vector.x, vector.y);
-        }
-
-        public void Dispose()
-        {
         }
 
         private bool IsSprintEnabled => Player.IsSprintEnabled;

@@ -33,23 +33,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             OnVisionChange = new EnemyToggleEventTimeTracked(enemy, false);
             OnSearch = new EnemyToggleEventTimeTracked(enemy, false);
             OnEnemyCanShootChanged = new EnemyToggleEventTimeTracked(enemy, false);
+            CanEverTick = false;
         }
 
-        public void Init()
+        public override void Init()
         {
             EnemyPlayer.BeingHitAction += enemyHit;
+            base.Init();
         }
 
-        public void Update()
-        {
-
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             var player = EnemyPlayer;
             if (player != null)
                 player.BeingHitAction -= enemyHit;
+            base.Dispose();
         }
 
         public void EnemyLocationsSearched()

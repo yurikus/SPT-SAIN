@@ -1,7 +1,6 @@
 ﻿using SAIN.Models.Structs;
 using System;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -21,9 +20,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         Injury,
     }
 
-    public class EnemyPlace
+    public class EnemyPlace : IDisposable
     {
         public event Action<EnemyPlace> OnPositionUpdated;
+
         public event Action<EnemyPlace> OnDispose;
 
         public PlaceData PlaceData { get; }
@@ -33,8 +33,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool Visible { get; private set; }
         public bool IsDanger { get; set; }
 
-        public bool ShallClear
-        {
+        public bool ShallClear {
             get
             {
                 var person = PlaceData.Enemy?.EnemyPerson;
@@ -55,8 +54,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private bool playerLeftArea
-        {
+        private bool playerLeftArea {
             get
             {
                 if (_nextCheckLeaveTime < Time.time)
@@ -88,7 +86,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float ENEMY_DIST_TO_PLACE_CHECK_FREQ = 10;
         private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE = 150;
         private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE_AI = 100f;
-        private const float ENEMY_DIST_UPDATE_FREQ = 0.25f;
 
         public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
         {
@@ -116,11 +113,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _timeLastUpdated = Time.time;
         }
 
-        public void Update()
-        {
-            checkUpdateDistance();
-        }
-
         public void Dispose()
         {
             OnDispose?.Invoke(this);
@@ -136,9 +128,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return pos + (Vector3.down * range);
         }
 
-
-        public Vector3 Position
-        {
+        public Vector3 Position {
             get
             {
                 return _position;
@@ -165,18 +155,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float DistanceToBot { get; private set; }
         public float DistanceToEnemyRealPosition { get; private set; }
 
-        private void checkUpdateDistance()
-        {
-            //if (_nextCheckDistTime <= Time.time)
-            //{
-            //    updateDistancesNow(_position);
-            //}
-        }
-
         private void updateDistancesNow(Vector3 position)
         {
-            _nextCheckSightTime = 0f;
-            _nextCheckDistTime = Time.time + ENEMY_DIST_UPDATE_FREQ;
             DistanceToBot = (position - PlaceData.Owner.Position).magnitude;
             DistanceToEnemyRealPosition = (position - PlaceData.Enemy.EnemyTransform.Position).magnitude;
         }
@@ -191,8 +171,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return (_position - toPoint).sqrMagnitude;
         }
 
-        public bool HasArrivedPersonal
-        {
+        public bool HasArrivedPersonal {
             get
             {
                 return _hasArrivedPers;
@@ -208,8 +187,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool HasArrivedSquad
-        {
+        public bool HasArrivedSquad {
             get
             {
                 return _hasArrivedSquad;
@@ -224,8 +202,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool HasSeenPersonal
-        {
+        public bool HasSeenPersonal {
             get
             {
                 return _hasSeenPers;
@@ -240,8 +217,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool HasSeenSquad
-        {
+        public bool HasSeenSquad {
             get
             {
                 return _hasSquadSeen;
@@ -256,7 +232,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private float _nextCheckDistTime;
         private Vector3 _position;
         private float _nextCheckLeaveTime;
         public float _timeLastUpdated;
@@ -271,23 +246,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool CheckLineOfSight(Vector3 origin, LayerMask mask)
         {
-            //if (_nextCheckSightTime < Time.time)
-            //{
-            //    _nextCheckSightTime = Time.time + 0.33f;
-            //    Vector3 pos = Position + Vector3.up;
-            //    Vector3 direction = pos - origin;
-            //    _inSightNow = !Physics.Raycast(pos, direction, out var hit, direction.magnitude, mask);
-            //    if (!_inSightNow)
-            //        BlockedHit = hit;
-            //    else
-            //        BlockedHit = null;
-            //}
             return Visible;
         }
-
-        public RaycastHit? BlockedHit { get; private set; }
-
-        private bool _inSightNow;
-        private float _nextCheckSightTime;
     }
 }

@@ -1,58 +1,101 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
+using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
-using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace SAIN.SAINComponent
 {
-    public abstract class BotBase
+    /// <summary>
+    /// This class serves as an abstract class for all the different SAIN classes to inherit from, mostly serves as a way to store a reference to the bot that owns the class, and shortcuts to properties related to the bot.
+    /// </summary>
+    public abstract class BotBase(BotComponent bot) : IBotClass
     {
-        public BotComponent Bot { get; }
+        public BotComponent Bot { get; } = bot;
         public PersonClass Person => Bot.Person;
         public PlayerComponent PlayerComponent => Bot.PlayerComponent;
         public BotOwner BotOwner => Bot.BotOwner;
         public Player Player => Bot.Player;
-        public IPlayer IPlayer => Bot.Person.IPlayer;
 
-        protected GlobalSettingsClass GlobalSettings => GlobalSettingsClass.Instance;
-        protected SAINPresetClass Preset => SAINPresetClass.Instance;
+        protected static GlobalSettingsClass GlobalSettings => GlobalSettingsClass.Instance;
 
-        public BotBase(BotComponent bot)
+        public virtual void Init()
         {
-            Bot = bot;
+            PresetHandler.OnPresetUpdated += UpdatePresetSettings;
         }
 
-        protected virtual void SubscribeToPreset(Action<SAINPresetClass> func)
+        public virtual bool ShallTick(float CurrentTime)
         {
-            if (func != null)
-            {
-                func.Invoke(SAINPresetClass.Instance);
-                _autoUpdater.Subscribe(func);
-                Bot.OnDispose += this.UnSubscribeToPreset;
-            }
+            return CanEverTick && (TickInterval <= 0 || LastTickTime + TickInterval >= CurrentTime);
         }
 
-        protected virtual void UnSubscribeToPreset()
+        public virtual void ManualUpdate()
         {
-            if (_autoUpdater.Subscribed)
-            {
-                _autoUpdater.UnSubscribe();
-                Bot.OnDispose -= this.UnSubscribeToPreset;
-            }
+            LastTickTime = Time.time;
         }
 
-        protected readonly PresetAutoUpdater _autoUpdater = new();
+        protected virtual void UpdatePresetSettings(SAINPresetClass preset)
+        {
+        }
+
+        public virtual void Dispose()
+        {
+            PresetHandler.OnPresetUpdated -= UpdatePresetSettings;
+        }
+
+        public ESAINTickState TickRequirement { get; protected set; } = ESAINTickState.AlwaysUpdate;
+        public bool CanEverTick { get; protected set; } = true;
+        public float TickInterval { get; protected set; }
+        public float LastTickTime { get; protected set; }
     }
 
-    public abstract class BotSubClass<T> : BotBase where T : IBotClass
+    /// <summary>
+    /// This class serves as an abstract class for SAIN classes that exist as a property on a BotComponent to inherit from, mostly serves as a way to store a reference to the bot that owns the class, and shortcuts to properties related to the bot.
+    /// </summary>
+    public abstract class BotComponentClassBase : BotBase
     {
-        protected T BaseClass { get; }
-
-        public BotSubClass(T sainClass) : base(sainClass.Bot)
+        protected BotComponentClassBase(BotComponent bot) : base(bot)
         {
-            BaseClass = sainClass;
+            bot.AddBotClass(this);
         }
+
+        public override void Init()
+        {
+            Bot.AddBotTickClass(this);
+            foreach (IBotClass Class in SubClasses)
+                Class.Init();
+            base.Init();
+        }
+
+        public override void ManualUpdate()
+        {
+            float time = Time.time;
+            foreach (IBotClass Class in SubClasses)
+                if (Class?.CanEverTick == true && Class.ShallTick(time))
+                    Class.ManualUpdate();
+            base.ManualUpdate();
+        }
+
+        public override void Dispose()
+        {
+            foreach (IBotClass Class in SubClasses)
+                Class?.Dispose();
+            base.Dispose();
+        }
+
+        protected void AddSubClass(IBotClass Class)
+        {
+            SubClasses.Add(Class);
+        }
+
+        protected readonly List<IBotClass> SubClasses = [];
+    }
+
+    public abstract class BotSubClass<T>(T sainClass) : BotBase(sainClass.Bot) where T : IBotClass
+    {
+        protected T BaseClass { get; } = sainClass;
     }
 }

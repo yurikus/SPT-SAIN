@@ -1,15 +1,9 @@
 ﻿namespace SAIN.Components.PlayerComponentSpace
 {
-    public class OtherPlayerData
+    public class OtherPlayerData(string id, PlayerComponent Component)
     {
-        public readonly string ProfileId;
-        public readonly PlayerComponent PlayerComponent;
+        public readonly string ProfileId = id;
+        public readonly PlayerComponent PlayerComponent = Component;
         public PlayerDistanceData DistanceData { get; } = new PlayerDistanceData();
-
-        public OtherPlayerData(string id, PlayerComponent Component)
-        {
-            ProfileId = id;
-            PlayerComponent = Component;
-        }
     }
 }

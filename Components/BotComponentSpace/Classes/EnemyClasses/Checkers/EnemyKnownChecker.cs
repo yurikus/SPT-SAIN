@@ -2,32 +2,25 @@
 
 namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 {
-    public class EnemyKnownChecker : EnemyBase, IBotClass
+    public class EnemyKnownChecker(Enemy enemy) : EnemyBase(enemy), IBotClass
     {
-        public EnemyKnownChecker(Enemy enemy) : base(enemy)
-        {
-
-        }
-
-        public void Init()
+        public override void Init()
         {
             Bot.BotActivation.BotActiveToggle.OnToggle += botStateChanged;
+            base.Init();
         }
 
-        public void Update()
-        {
-            checkShallKnowEnemy();
-        }
-
-        public void Dispose()
-        {
-            Bot.BotActivation.BotActiveToggle.OnToggle -= botStateChanged;
-        }
-
-        private void checkShallKnowEnemy()
+        public override void ManualUpdate()
         {
             bool enemyKnown = shallKnowEnemy();
             setEnemyKnown(enemyKnown);
+            base.ManualUpdate();
+        }
+
+        public override void Dispose()
+        {
+            Bot.BotActivation.BotActiveToggle.OnToggle -= botStateChanged;
+            base.Dispose();
         }
 
         private void botStateChanged(bool botActive)

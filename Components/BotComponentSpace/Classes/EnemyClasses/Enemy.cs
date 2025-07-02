@@ -7,12 +7,24 @@ using SAIN.Models.Enums;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class Enemy : BotBase, IBotClass
+    public enum EEnemyTag
     {
+        EnemyKnown,
+        CurrentEnemy,
+        ShallDogFight,
+    }
+    public class Enemy : BotBase
+    {
+        public HashSet<EEnemyTag> Tags { get; } = [];
+        public bool AddTag(EEnemyTag tag) => Tags.Add(tag);
+        public bool RemoveTag(EEnemyTag tag) => Tags.Remove(tag);
+        public bool HasTag(EEnemyTag tag) => Tags.Contains(tag);
+
         public string EnemyName { get; }
         public string EnemyProfileId { get; }
         public PlayerComponent EnemyPlayerComponent { get; }
@@ -63,13 +75,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Aim = new EnemyAim(this);
             Hearing = new EnemyHearing(this);
 
-            updateDistAndDirection(true);
+            updateDistAndDirection();
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(updatePresetSettings);
-
             Events.Init();
             _validChecker.Init();
             _knownChecker.Init();
@@ -79,28 +89,29 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Path.Init();
             Hearing.Init();
             Status.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            IsCurrentEnemy = Bot.EnemyController.ActiveEnemy?.EnemyProfileId == EnemyProfileId;
+            IsCurrentEnemy = Bot.EnemyController.ActiveEnemy == this;
 
             calcFrequencyCoef();
             updateDistAndDirection();
             updateSniperStatus();
 
-            Events.Update();
-            _validChecker.Update();
-            _knownChecker.Update();
-            _activeThreatChecker.Update();
+            _knownChecker.ManualUpdate();
+            Vision.VisionChecker.CheckVision(out _);
+            _activeThreatChecker.ManualUpdate();
             updateActiveState();
-            Vision.Update();
-            KnownPlaces.Update();
-            Path.Update();
-            Status.Update();
+            Vision.ManualUpdate();
+            KnownPlaces.ManualUpdate();
+            Path.ManualUpdate();
+            Status.ManualUpdate();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             OnEnemyDisposed?.Invoke();
             Events.Dispose();
@@ -112,6 +123,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Path.Dispose();
             Hearing.Dispose();
             Status.Dispose();
+            base.Dispose();
         }
 
         public void ClearVisiblePathPoint()
@@ -317,7 +329,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float TimeSinceSeen => Vision.TimeSinceSeen;
         public float TimeSinceHeard => Hearing.TimeSinceHeard;
 
-        private void updateDistAndDirection(bool force = false)
+        private void updateDistAndDirection()
         {
             try
             {

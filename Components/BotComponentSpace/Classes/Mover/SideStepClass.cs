@@ -4,18 +4,15 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class SideStepClass : BotBase, IBotClass
+    public class SideStepClass : BotBase
     {
         public SideStepClass(BotComponent sain) : base(sain)
         {
         }
 
-        public void Init()
+        public override void ManualUpdate()
         {
-        }
-
-        public void Update()
-        {
+            base.ManualUpdate();
             float currentSideStep = CurrentSideStep;
             if (SideStepSetting != SideStepSetting.None && currentSideStep == 0f)
             {
@@ -94,10 +91,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             SetSideStep(value, currentSideStep);
-        }
-
-        public void Dispose()
-        {
         }
 
         public SideStepSetting SideStepSetting { get; private set; }

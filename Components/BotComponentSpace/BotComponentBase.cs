@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace SAIN.Components
 {
-    public abstract class BotComponentBase : MonoBehaviour
+    public abstract class BotComponentBase : MonoBehaviour, IDisposable
     {
         public event Action OnDispose;
 

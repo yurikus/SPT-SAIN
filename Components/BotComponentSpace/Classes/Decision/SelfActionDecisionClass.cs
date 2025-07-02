@@ -5,23 +5,11 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-    public class SelfActionDecisionClass : BotBase, IBotClass
+    public class SelfActionDecisionClass : BotBase
     {
         public SelfActionDecisionClass(BotComponent sain) : base(sain)
         {
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
+            CanEverTick = false;
         }
 
         public ESelfDecision CurrentSelfAction => Bot.Decision.CurrentSelfDecision;
@@ -44,10 +32,22 @@ namespace SAIN.SAINComponent.Classes.Decision
                 Decision = ESelfDecision.Reload;
                 return true;
             }
+            return StartBotHeal(ref Decision);
+        }
 
+        private bool StartBotHeal(ref ESelfDecision Decision)
+        {
             if (_nextCheckHealTime < Time.time)
             {
-                _nextCheckHealTime = Time.time + 1f;
+                // Solarint - Should fixed bots insta-healing when shot. TODO: Make these config variables.
+                const float TimeSinceShotToBlockHeal = 0.5f;
+                float TimeSinceShot = Bot.Medical.TimeSinceShot;
+                if (TimeSinceShot < TimeSinceShotToBlockHeal)
+                {
+                    return false;
+                }
+                _nextCheckHealTime = Time.time + 0.5f;
+
                 if (startUseStims())
                 {
                     Decision = ESelfDecision.Stims;
@@ -66,6 +66,12 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
 
             return false;
+        }
+
+        private bool ShotRecently()
+        {
+            const float TimeSinceShotToBlockHeal = 1.0f;
+            return Bot.Medical.TimeSinceShot <= TimeSinceShotToBlockHeal;
         }
 
         private float _nextCheckHealTime;

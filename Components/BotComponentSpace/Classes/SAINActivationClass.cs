@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINActivationClass : BotBase, IBotClass
+    public class SAINActivationClass : BotComponentClassBase
     {
         private const float ACTIVATE_STANDBY_HUMAN = 150;
         private const float ACTIVATE_STANDBY_AI = 50;
@@ -40,7 +40,7 @@ namespace SAIN.SAINComponent.Classes
             ActiveLayer = layer;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkActive();
             //checkSpeedReset();
@@ -150,14 +150,18 @@ namespace SAIN.SAINComponent.Classes
         {
         }
 
-        public void Init()
+        public override void Init()
         {
             SetActive(true);
             Bot.Person.ActivationClass.OnBotActiveChanged += SetActive;
+            base.Init();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            SetActive(false);
+            Bot.Person.ActivationClass.OnBotActiveChanged -= SetActive;
+            base.Dispose();
         }
 
         private bool _botInStandby => BotOwner.StandBy.StandByType != BotStandByType.active;

@@ -9,8 +9,16 @@ using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class SAINSteeringClass : BotBase, IBotClass
+    public class SAINSteeringClass : BotComponentClassBase
     {
+        public SAINSteeringClass(BotComponent sain) : base(sain)
+        {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
+            _randomLook = new RandomLookClass(this);
+            _steerPriorityClass = new SteerPriorityClass(this);
+            HeardSoundSteering = new HeardSoundSteeringClass(this);
+        }
+
         private static SteeringSettings _steerSettings => GlobalSettingsClass.Instance.Steering;
         public ESteerPriority CurrentSteerPriority => _steerPriorityClass.CurrentSteerPriority;
         public ESteerPriority LastSteerPriority => _steerPriorityClass.LastSteerPriority;
@@ -192,12 +200,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public SAINSteeringClass(BotComponent sain) : base(sain)
-        {
-            _randomLook = new RandomLookClass(this);
-            _steerPriorityClass = new SteerPriorityClass(this);
-            HeardSoundSteering = new HeardSoundSteeringClass(this);
-        }
 
         public float AngleToPointFromLookDir(Vector3 point)
         {
@@ -210,15 +212,16 @@ namespace SAIN.SAINComponent.Classes.Mover
             return Vector3.Angle(_lookDirection, direction);
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(UpdatePresetSettings);
             HeardSoundSteering.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            HeardSoundSteering.Update();
+            base.ManualUpdate();
+            HeardSoundSteering.ManualUpdate();
             if (!Bot.SAINLayersActive)
             {
                 BotOwner.Settings.FileSettings.Move.BASE_ROTATE_SPEED = _steerSettings.STEER_BASE_ROTATE_SPEED_PEACE;
@@ -229,9 +232,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             HeardSoundSteering.Dispose();
+            base.Dispose();
         }
 
         public Vector3? EnemyLastKnown(Enemy enemy, out bool visible)
@@ -295,9 +299,5 @@ namespace SAIN.SAINComponent.Classes.Mover
         private readonly SteerPriorityClass _steerPriorityClass;
 
         private Vector3 _lookDirection => Bot.LookDirection;
-
-        protected void UpdatePresetSettings(SAINPresetClass preset)
-        {
-        }
     }
 }

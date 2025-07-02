@@ -23,18 +23,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         public EnemyValidChecker(Enemy enemy) : base(enemy)
         {
-        }
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
+            CanEverTick = false;
         }
 
         private bool isValid()

@@ -22,14 +22,10 @@ namespace SAIN.SAINComponent.Classes
             LookData = new LookAllData();
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             _enemies = Bot.EnemyController.Enemies;
-        }
-
-        public void Dispose()
-        {
+            base.Init();
         }
 
         private Dictionary<string, Enemy> _enemies;

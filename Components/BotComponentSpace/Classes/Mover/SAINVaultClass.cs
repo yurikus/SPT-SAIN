@@ -6,22 +6,14 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class SAINVaultClass : BotBase, IBotClass
+    public class SAINVaultClass : BotComponentClassBase
     {
         public SAINVaultClass(BotComponent sain) : base(sain)
         {
+            CanEverTick = false;
         }
 
         public static readonly List<SAINVaultPoint> GlobalVaultPoints = new();
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-            //TryVaulting();
-        }
 
         public static void DebugCheckObstacles(Player player)
         {
@@ -195,10 +187,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             return false;
-        }
-
-        public void Dispose()
-        {
         }
     }
 

@@ -34,6 +34,7 @@ namespace SAIN.SAINComponent.Classes.Search
 
         public SearchPathFinder(SAINSearchClass searchClass) : base(searchClass)
         {
+            CanEverTick = false;
             _searchPath = new NavMeshPath();
         }
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Memory
 {
-    public class SAINMemoryClass : BotBase, IBotClass
+    public class SAINMemoryClass : BotComponentClassBase
     {
         public IPlayer LastUnderFireSource { get; private set; }
         public Enemy LastUnderFireEnemy { get; private set; }
@@ -18,25 +18,29 @@ namespace SAIN.SAINComponent.Classes.Memory
 
         public SAINMemoryClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             Health = new HealthTracker(sain);
             Location = new LocationTracker(sain);
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.EnemyController.Events.OnEnemyRemoved += clearEnemy;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            Health.Update();
-            Location.Update();
+            Health.ManualUpdate();
+            Location.ManualUpdate();
             checkResetUnderFire();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnEnemyRemoved -= clearEnemy;
+            base.Dispose();
         }
 
         public void SetUnderFire(Enemy enemy, Vector3 position)

@@ -15,7 +15,7 @@ namespace SAIN.SAINComponent.Classes
         on = 1,
     }
 
-    public class SAINCoverClass : BotBase, IBotClass
+    public class SAINCoverClass : BotComponentClassBase
     {
         public event Action<CoverPoint> OnNewCoverInUse;
 
@@ -71,17 +71,19 @@ namespace SAIN.SAINComponent.Classes
 
         public SAINCoverClass(BotComponent bot) : base(bot)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             CoverFinder = bot.GetOrAddComponent<CoverFinderComponent>();
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             CoverFinder.Init(Bot);
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
+            base.ManualUpdate();
             bool active = Bot.SAINLayersActive && Bot.Decision.HasDecision;
             ActivateCoverFinder(active);
             if (active)
@@ -91,13 +93,14 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             try
             {
                 CoverFinder?.Dispose();
             }
             catch { }
+            base.Dispose();
         }
 
         public CoverPoint FindPointInDirection(Vector3 direction, float dotThreshold = 0.33f, float minDistance = 8f)

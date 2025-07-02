@@ -46,14 +46,16 @@ namespace SAIN.SAINComponent.Classes.Mover
             _hearingPath = new NavMeshPath();
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.EnemyController.Events.OnEnemyHeard += enemyHeard;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkClearPlaces();
+            base.ManualUpdate();
         }
 
         private void checkClearPlaces()
@@ -93,9 +95,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnEnemyHeard -= enemyHeard;
+            base.Dispose();
         }
 
         public void LookToHeardPosition()

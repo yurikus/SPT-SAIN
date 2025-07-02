@@ -41,12 +41,12 @@ namespace SAIN.SAINComponent.Classes
         {
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             PlayerComponent.OnBulletFlyBy += OnBulletFlyBy;
             //SAINBotController.Instance.BotHearing.AISoundPlayed += soundHeard;
             SAINBotController.Instance.BotHearing.BulletImpact += bulletImpacted;
+            base.Init();
         }
 
         protected void OnBulletFlyBy(PlayerComponent Source, EftBulletClass Bullet)
@@ -63,9 +63,10 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkResetHearing();
+            base.ManualUpdate();
         }
 
         public event Action<AISoundData> OnFriendlySoundHeard;
@@ -232,11 +233,12 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             //SAINBotController.Instance.BotHearing.AISoundPlayed -= soundHeard;
             SAINBotController.Instance.BotHearing.BulletImpact -= bulletImpacted;
             PlayerComponent.OnBulletFlyBy -= OnBulletFlyBy;
+            base.Dispose();
         }
 
         private void soundHeard(

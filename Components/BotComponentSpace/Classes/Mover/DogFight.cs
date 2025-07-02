@@ -30,19 +30,21 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool swingRight;
 
-        public void DogFightMove(bool aggressive)
+        public void DogFightMove(bool aggressive, Enemy Enemy)
         {
-            if (Player.IsInPronePose &&
-                Bot.Enemy?.IsVisible == true &&
-                Bot.Enemy.CanShoot)
+            bool HasEnemy = Enemy != null;
+            if (HasEnemy && 
+                Enemy.IsVisible &&
+                Enemy.CanShoot &&
+                Player.IsInPronePose)
             {
                 Bot.Mover.Lean.HoldLean(1f);
                 return;
             }
-            
+
             Bot.Mover.SetTargetMoveSpeed(Bot.Info.FileSettings.Move.STRAFE_SPEED);
 
-            if (stopMoveToShoot())
+            if (HasEnemy && stopMoveToShoot(Enemy))
             {
                 Status = EDogFightStatus.Shooting;
                 Bot.Mover.StopMove(0f);
@@ -57,10 +59,10 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (backUpFromEnemy())
+            if (HasEnemy && backUpFromEnemy(Enemy))
             {
                 Status = EDogFightStatus.BackingUp;
-                float baseTime = Bot.Enemy?.IsVisible == true ? 0.5f : 0.75f;
+                float baseTime = Bot.Enemy?.IsVisible == true ? 0.75f : 1f;
                 _updateDogFightTimer = Time.time + baseTime * UnityEngine.Random.Range(0.66f, 1.33f);
                 return;
             }
@@ -71,8 +73,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (canMoveToEnemy() &&
-                Bot.Mover.GoToEnemy(Bot.Enemy, -1, false, false))
+            if (HasEnemy && 
+                canMoveToEnemy(Enemy) &&
+                Bot.Mover.GoToEnemy(Enemy, -1, false, false))
             {
                 Bot.Mover.SetTargetMoveSpeed(0.9f);
                 Status = EDogFightStatus.MovingToEnemy;
@@ -89,23 +92,18 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        private bool stopMoveToShoot()
+        private bool stopMoveToShoot(Enemy Enemy)
         {
-            Enemy enemy = Bot.Enemy;
-            if (enemy == null)
-            {
-                return false;
-            }
             return Status == EDogFightStatus.MovingToEnemy &&
-                (enemy.InLineOfSight || enemy.IsVisible) &&
-                enemy.CanShoot;
+                (Enemy.InLineOfSight || Enemy.IsVisible) &&
+                Enemy.CanShoot;
         }
 
-        private bool backUpFromEnemy()
+        private bool backUpFromEnemy(Enemy Enemy)
         {
             return
-                findStrafePoint(out Vector3 backupPoint) &&
-                Bot.Mover.GoToPoint(backupPoint, out _, -1, false, false);
+                findStrafePoint2(out Vector3 backupPoint, Enemy) &&
+                Bot.Mover.GoToPoint(backupPoint, out _, -1, false, true, false);
         }
 
         private float _updateDogFightTimer;
@@ -122,17 +120,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             return null;
         }
 
-        private bool canMoveToEnemy()
+        private bool canMoveToEnemy(Enemy Enemy)
         {
-            Enemy enemy = Bot.Enemy;
-            if (enemy != null &&
-                //enemy.Seen &&
-                //enemy.TimeSinceSeen >= _enemyTimeSinceSeenThreshold &&
-                enemy.Path.PathToEnemy.status != NavMeshPathStatus.PathInvalid)
-            {
-                return true;
-            }
-            return false;
+            return Enemy.LastKnownPosition != null && Enemy.Path.PathToEnemy.status != NavMeshPathStatus.PathInvalid;
         }
 
         private float _enemyTimeSinceSeenThreshold = 1f;
@@ -177,6 +167,40 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return CheckLength(dogFightPath, num);
                 }
             }
+            return false;
+        }
+
+        private bool findStrafePoint2(out Vector3 MovePoint, Enemy Enemy)
+        {
+            if (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold * Random.Range(0.66f, 1.33f))
+            {
+                Vector3? LastKnown = Enemy.LastKnownPosition;
+                if (LastKnown != null && NavMesh.SamplePosition(Bot.Position, out NavMeshHit Hit, 0.5f, -1))
+                {
+                    Vector3 Origin = Hit.position;
+                    Vector3 direction = (Origin - LastKnown.Value).normalized;
+                    Vector3 random = Random.onUnitSphere * Random.Range(1.25f, 2f);
+                    random.y = 0f;
+                    Vector3 Point = Origin + (direction * Random.Range(1f, 2f)) + random;
+                    if (NavMesh.Raycast(Origin, Point, out NavMeshHit RaycastHit, -1))
+                    {
+                        if (RaycastHit.distance <= 0.5f)
+                        {
+                            dogFightPath.ClearCorners();
+                            if (NavMesh.CalculatePath(Bot.Position, Point, -1, dogFightPath))
+                            {
+                                MovePoint = dogFightPath.corners[dogFightPath.corners.Length - 1];
+                                return true;
+                            }
+                        }
+                        MovePoint = RaycastHit.position;
+                        return true;
+                    }
+                    MovePoint = Point;
+                    return true;
+                }
+            }
+            MovePoint = Bot.Position;
             return false;
         }
 

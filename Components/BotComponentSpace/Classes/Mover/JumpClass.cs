@@ -1,20 +1,8 @@
 ﻿namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class JumpClass : BotBase, IBotClass
+    public class JumpClass : BotBase
     {
         public JumpClass(BotComponent sain) : base(sain)
-        {
-        }
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
         {
         }
     }

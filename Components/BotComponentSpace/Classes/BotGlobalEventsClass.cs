@@ -2,7 +2,7 @@
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotGlobalEventsClass : BotBase, IBotClass
+    public class BotGlobalEventsClass : BotComponentClassBase
     {
         public event Action<BotComponent> OnEnterPeace;
 
@@ -12,22 +12,21 @@ namespace SAIN.SAINComponent.Classes
 
         public BotGlobalEventsClass(BotComponent sain) : base(sain)
         {
+            CanEverTick = false;
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.EnemyController.Events.OnPeaceChanged.OnToggle += PeaceChanged;
             Bot.DoorOpener.DoorFinder.OnNewVoxel += onVoxelChange;
+            base.Init();
         }
 
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnPeaceChanged.OnToggle -= PeaceChanged;
             Bot.DoorOpener.DoorFinder.OnNewVoxel -= onVoxelChange;
+            base.Dispose();
         }
 
         private void onVoxelChange(NavGraphVoxelSimple newVoxel, NavGraphVoxelSimple oldVoxel)

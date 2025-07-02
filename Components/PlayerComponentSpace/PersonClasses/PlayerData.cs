@@ -4,7 +4,7 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
 {
     public class PlayerData
     {
-        public ProfileData Profile { get; }
+        public Profile Profile { get; }
         public PlayerComponent PlayerComponent { get; }
         public IPlayer IPlayer { get; }
         public Player Player { get; }
@@ -14,7 +14,7 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
             PlayerComponent = component;
             Player = player;
             IPlayer = iPlayer;
-            Profile = new ProfileData(player);
+            Profile = player.Profile;
         }
     }
 }

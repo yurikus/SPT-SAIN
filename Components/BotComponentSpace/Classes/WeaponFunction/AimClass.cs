@@ -11,8 +11,13 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class AimClass(BotComponent sain) : BotBase(sain), IBotClass
+    public class AimClass : BotComponentClassBase, IBotClass
     {
+        public AimClass(BotComponent sain) : base(sain)
+        {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
+        }
+
         public event Action<bool> OnAimAllowedOrBlocked;
 
         public bool CanAim { get; private set; }
@@ -43,18 +48,12 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
         }
 
-        public void Init()
-        {
-        }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkCanAim();
             checkLoseTarget();
-        }
-
-        public void LateUpdate()
-        {
+            base.ManualUpdate();
         }
 
         private void checkCanAim()
@@ -96,10 +95,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 BotOwner.AimingManager.CurrentAiming?.LoseTarget();
                 return;
             }
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

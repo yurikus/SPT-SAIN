@@ -7,19 +7,6 @@ namespace SAIN.SAINComponent.Classes
 {
     public class HearingDispersionClass(SAINHearingSensorClass hearing) : BotSubClass<SAINHearingSensorClass>(hearing), IBotClass
     {
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-
         public Vector3 CalcRandomizedPosition(AISoundData Sound, float addDispersion)
         {
             float baseDispersion = getBaseDispersion(Sound.PlayerDistance, Sound.SoundType);

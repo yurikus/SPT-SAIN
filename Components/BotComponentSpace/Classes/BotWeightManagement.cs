@@ -6,20 +6,22 @@ using FloatFunc = GClass828<float>;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotWeightManagement : BotBase, IBotClass
+    public class BotWeightManagement : BotComponentClassBase
     {
         public BotWeightManagement(BotComponent sain) : base(sain)
         {
+            CanEverTick = false;
         }
 
-        public void Init()
+        public override void Init()
         {
             if (GlobalSettingsClass.Instance.General.BotWeightEffects)
             {
                 getSlots();
                 Traverse.Create(Person.Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);
-                Person.Player.Physical.EncumberDisabled = false;
+                Bot.Person.Player.Physical.EncumberDisabled = false;
             }
+            base.Init();
         }
 
         private void getSlots()
@@ -29,14 +31,6 @@ namespace SAIN.SAINComponent.Classes
             {
                 _slots.Add(Player.Equipment.GetSlot(slot));
             }
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
         }
 
         private float getBotTotalWeight()

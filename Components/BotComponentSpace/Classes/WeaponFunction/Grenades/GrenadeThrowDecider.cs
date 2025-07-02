@@ -11,22 +11,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
     {
         public GrenadeThrowDecider(BotGrenadeManager ThrowWeapItemClass) : base(ThrowWeapItemClass)
         {
+            CanEverTick = false;
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(UpdatePresetSettings);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public void UpdatePresetSettings(SAINPresetClass preset)
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
         {
             _grenadesEnabled = preset.GlobalSettings.General.BotsUseGrenades;
 

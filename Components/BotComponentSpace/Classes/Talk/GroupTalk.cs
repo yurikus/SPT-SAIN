@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Talk
 {
-    public class GroupTalk : BotBase, IBotClass
+    public class GroupTalk : BotBase
     {
         public GroupTalk(BotComponent bot) : base(bot)
         {
@@ -35,13 +35,9 @@ namespace SAIN.SAINComponent.Classes.Talk
             }
         }
 
-        public void Init()
+        public override void ManualUpdate()
         {
-            base.SubscribeToPreset(updateConfigSettings);
-        }
-
-        public void Update()
-        {
+            base.ManualUpdate();
             if (!Bot.Talk.CanTalk)
             {
                 return;
@@ -388,9 +384,10 @@ namespace SAIN.SAINComponent.Classes.Talk
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             unsub();
+            base.Dispose();
         }
 
         private void unsub()

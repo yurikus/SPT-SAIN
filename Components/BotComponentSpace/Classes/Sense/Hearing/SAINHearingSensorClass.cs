@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINHearingSensorClass : BotBase, IBotClass
+    public class SAINHearingSensorClass : BotComponentClassBase
     {
         public event Action<AISoundData, Enemy> OnEnemySoundHeard;
 
@@ -19,35 +19,38 @@ namespace SAIN.SAINComponent.Classes
 
         public SAINHearingSensorClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             SoundInput = new HearingInputClass(this);
             Analysis = new HearingAnalysisClass(this);
             BulletAnalysis = new HearingBulletAnalysisClass(this);
             Dispersion = new HearingDispersionClass(this);
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             SoundInput.Init();
             Analysis.Init();
             BulletAnalysis.Init();
             Dispersion.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            SoundInput.Update();
-            Analysis.Update();
-            BulletAnalysis.Update();
-            Dispersion.Update();
+            SoundInput.ManualUpdate();
+            Analysis.ManualUpdate();
+            BulletAnalysis.ManualUpdate();
+            Dispersion.ManualUpdate();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             SoundInput.Dispose();
             Analysis.Dispose();
             BulletAnalysis.Dispose();
             Dispersion.Dispose();
+            base.Dispose();
         }
 
         public void ReactToBulletFlyBy(AISoundData sound, float FlyByDistance)

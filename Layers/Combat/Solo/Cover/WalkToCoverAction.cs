@@ -1,6 +1,7 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Models.Enums;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
 using UnityEngine;
@@ -27,7 +28,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.Mover.SetTargetPose(1f);
 
-            if (Bot.Enemy == null)
+            Enemy Enemy = Bot.Enemy;
+            if (Enemy == null)
             {
                 this.EndProfilingSample();
                 return;
@@ -35,7 +37,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
             if (Bot.Cover.CoverPoints.Count == 0)
             {
-                Bot.Mover.DogFight.DogFightMove(true);
+                Bot.Mover.DogFight.DogFightMove(true, Enemy);
                 EngageEnemy();
                 this.EndProfilingSample();
                 return;
@@ -51,7 +53,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
             if (Bot.Cover.CoverInUse == null)
             {
-                Bot.Mover.DogFight.DogFightMove(false);
+                Bot.Mover.DogFight.DogFightMove(false, Enemy);
             }
 
             EngageEnemy();

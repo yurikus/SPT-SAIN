@@ -14,7 +14,7 @@ namespace SAIN.Layers.Combat.Solo
             this.StartProfilingSample("Update");
             Bot.Mover.SetTargetPose(1f);
             Bot.Steering.SteerByPriority();
-            Bot.Mover.DogFight.DogFightMove(true);
+            Bot.Mover.DogFight.DogFightMove(true, Bot.Enemy);
             Shoot.CheckAimAndFire();
             this.EndProfilingSample();
         }

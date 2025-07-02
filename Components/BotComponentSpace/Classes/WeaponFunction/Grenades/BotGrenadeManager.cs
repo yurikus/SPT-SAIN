@@ -2,7 +2,7 @@
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class BotGrenadeManager : BotBase, IBotClass
+    public class BotGrenadeManager : BotComponentClassBase
     {
         public ThrowWeapItemClass MyGrenade { get; set; }
         public Vector3? GrenadeDangerPoint => GrenadeReactionClass.GrenadeDangerPoint;
@@ -12,26 +12,30 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public BotGrenadeManager(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             GrenadeThrowDecider = new GrenadeThrowDecider(this);
             GrenadeReactionClass = new GrenadeReactionClass(this);
         }
 
-        public void Init()
+        public override void Init()
         {
             GrenadeThrowDecider.Init();
             GrenadeReactionClass.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            GrenadeThrowDecider.Update();
-            GrenadeReactionClass.Update();
+            GrenadeThrowDecider.ManualUpdate();
+            GrenadeReactionClass.ManualUpdate();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             GrenadeThrowDecider.Dispose();
             GrenadeReactionClass.Dispose();
+            base.Dispose();
         }
     }
 }

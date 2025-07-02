@@ -11,10 +11,11 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class SAINMoverClass : BotBase, IBotClass
+    public class SAINMoverClass : BotComponentClassBase
     {
         public SAINMoverClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             PathController = sain.BotOwner.Mover._pathController;
             BlindFire = new BlindFireController(sain);
             SideStep = new SideStepClass(sain);
@@ -32,10 +33,10 @@ namespace SAIN.SAINComponent.Classes.Mover
         public DogFight DogFight { get; private set; }
         public SAINSprint SprintController { get; private set; }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             UpdateBodyNavObstacle(false);
+            base.Init();
         }
 
         public void UpdateBodyNavObstacle(bool value)
@@ -56,7 +57,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             //BotBodyObstacle.carving = value;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             if (SprintController.Running || Player.IsSprintEnabled)
             {
@@ -70,12 +71,14 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             HandlePatrolStance();
             //updateStamina();
-            Pose.Update();
-            Lean.Update();
-            Prone.Update();
-            BlindFire.Update();
-            SprintController.Update();
+            Pose.ManualUpdate();
+            Lean.ManualUpdate();
+            Prone.ManualUpdate();
+            BlindFire.ManualUpdate();
+            SprintController.ManualUpdate();
             CheckSetBotToNavMesh();
+
+            base.ManualUpdate();
         }
 
         private void HandlePatrolStance()
@@ -167,9 +170,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private readonly float _timeAfterJumpVaultReset = 1.25f;
 
-        public void Dispose()
+        public override void Dispose()
         {
             SprintController?.Dispose();
+            base.Dispose();
         }
 
         public BlindFireController BlindFire { get; private set; }

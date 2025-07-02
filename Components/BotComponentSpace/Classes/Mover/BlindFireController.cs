@@ -9,11 +9,6 @@ namespace SAIN.SAINComponent.Classes.Mover
 {
     public class BlindFireController(BotComponent sain) : BotBase(sain), IBotClass
     {
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
         private bool CheckAllowBlindFire()
         {
             if (!Bot.SAINLayersActive ||
@@ -53,8 +48,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             return true;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
+            base.ManualUpdate();
             if (_nextBlindFireCheck > Time.time)
             {
                 if (_blindFire != 0)
@@ -125,10 +121,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         private int _blindFire;
 
         private bool _manualShooting;
-
-        public void Dispose()
-        {
-        }
 
         public void ResetBlindFire()
         {

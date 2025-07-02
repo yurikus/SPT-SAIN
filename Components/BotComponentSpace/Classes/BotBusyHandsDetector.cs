@@ -9,7 +9,7 @@ using HandEvent = GEventArgs1;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotBusyHandsDetector : BotBase, IBotClass
+    public class BotBusyHandsDetector : BotComponentClassBase
     {
         private const float CHECK_FREQ = 0.1f;
         private const float TIME_TO_RESET_GENERIC = 5f;
@@ -22,19 +22,13 @@ namespace SAIN.SAINComponent.Classes
 
         public BotBusyHandsDetector(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             checkShallFix();
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private void checkShallFix()

@@ -8,17 +8,13 @@ using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class Firemode : BotBase, IBotClass
+    public class Firemode : BotBase
     {
         public Firemode(BotComponent sain) : base(sain)
         {
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             if (_nextSwapTime < Time.time)
             {
@@ -29,10 +25,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                     checkSwapFiremode();
                 }
             }
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private bool checkSwapMachineGun()

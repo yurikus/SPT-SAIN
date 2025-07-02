@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class ShootDeciderClass : BotBase, IBotClass
+    public class ShootDeciderClass : BotComponentClassBase
     {
         public event Action<Enemy> OnShootEnemy;
 
@@ -18,21 +18,25 @@ namespace SAIN.SAINComponent.Classes
 
         public ShootDeciderClass(BotComponent bot) : base(bot)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.EnemyController.Events.OnEnemyRemoved += checkClearEnemy;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkEndShoot();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnEnemyRemoved -= checkClearEnemy;
+            base.Dispose();
         }
 
         private void checkEndShoot()

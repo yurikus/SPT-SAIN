@@ -39,27 +39,30 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             VisionChecker = new EnemyVisionChecker(enemy);
         }
 
-        public void Init()
+        public override void Init()
         {
             _bodyPart = Enemy.EnemyInfo._bodyPart;
             _headPart = Enemy.EnemyInfo._headPart;
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
             Angles.Init();
             VisionChecker.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            VisionChecker.Update();
-            Angles.Update();
+            VisionChecker.ManualUpdate();
+            Angles.ManualUpdate();
             UpdateVision();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
             Angles.Dispose();
             VisionChecker.Dispose();
+            base.Dispose();
         }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)

@@ -5,23 +5,17 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class ManualShootClass : BotBase, IBotClass
+    public class ManualShootClass : BotComponentClassBase
     {
-        public ManualShootClass(BotComponent bot) : base(bot) { }
-
-        public void Init()
+        public ManualShootClass(BotComponent bot) : base(bot)
         {
-
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkReset();
-        }
-
-        public void Dispose()
-        {
-
+            base.ManualUpdate();
         }
 
         private void checkReset()

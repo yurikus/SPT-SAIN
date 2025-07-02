@@ -31,19 +31,21 @@ namespace SAIN.SAINComponent.Classes.Decision
         {
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.BotActivation.BotActiveToggle.OnToggle += resetDecisions;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             updateDecision();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.BotActivation.BotActiveToggle.OnToggle -= resetDecisions;
+            base.Dispose();
         }
 
         private void updateDecision()

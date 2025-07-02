@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class DoorOpener : BotBase, IBotClass
+    public class DoorOpener : BotComponentClassBase
     {
         public bool Interacting
         {
@@ -41,17 +41,19 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public DoorOpener(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             DoorFinder = new DoorFinder(this);
         }
 
-        public void Init()
+        public override void Init()
         {
             DoorFinder.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            DoorFinder.Update();
+            DoorFinder.ManualUpdate();
             if (BotOwner.Mover.IsMoving || Bot.Mover.SprintController.Running)
             {
                 CheckUseSAINOpener();
@@ -66,11 +68,13 @@ namespace SAIN.SAINComponent.Classes.Mover
                 }
                 _debugObjects.Clear();
             }
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             DoorFinder.Dispose();
+            base.Dispose();
         }
 
         public bool CheckUseSAINOpener()

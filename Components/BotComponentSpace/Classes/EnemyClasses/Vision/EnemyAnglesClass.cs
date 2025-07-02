@@ -21,14 +21,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public EnemyAnglesClass(Enemy enemy) : base(enemy) { }
 
-        public void Init() { }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             CalcAngles();
+            base.ManualUpdate();
         }
-
-        public void Dispose() { }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy) { }
 

@@ -9,23 +9,26 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public ETagStatus EnemyHealthStatus { get; private set; }
         public EEnemyAction VulnerableAction { get; private set; }
 
-        public void Init()
+        public override void Init()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             if (Enemy.EnemyKnown)
             {
                 UpdateVulnerableState();
                 updateHealthStatus();
             }
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
+            base.Dispose();
         }
 
         private void updateHealthStatus()

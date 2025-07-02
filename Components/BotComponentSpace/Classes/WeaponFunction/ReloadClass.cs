@@ -8,7 +8,7 @@ using static EFT.InventoryLogic.Weapon;
 
 namespace SAIN.Components.BotComponentSpace.Classes
 {
-    public class ReloadClass : BotBase, IBotClass
+    public class ReloadClass : BotBase
     {
         public bool TryReload()
         {
@@ -161,9 +161,10 @@ namespace SAIN.Components.BotComponentSpace.Classes
             }
         }
 
-        public void Init()
+        public override void Init()
         {
             _weaponManager.Selector.OnActiveEquipmentSlotChanged += weaponChanged;
+            base.Init();
         }
 
         private void weaponChanged(EquipmentSlot slot)
@@ -171,7 +172,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
             _weaponChanged = true;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkWeapChanged();
             foreach (var weapon in BotMagazineWeapons.Values)
@@ -265,7 +266,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
             return magazineWeapon;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (_weaponManager.Selector != null)
             {
@@ -279,6 +280,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
                 }
             }
             BotMagazineWeapons.Clear();
+            base.Dispose();
         }
 
         private static EquipmentSlot[] _weapSlots =

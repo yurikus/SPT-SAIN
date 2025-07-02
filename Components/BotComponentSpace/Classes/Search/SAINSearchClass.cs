@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Search
 {
-    public class SAINSearchClass : BotBase, IBotClass
+    public class SAINSearchClass : BotComponentClassBase
     {
         public bool SearchActive { get; private set; }
 
@@ -24,20 +24,9 @@ namespace SAIN.SAINComponent.Classes.Search
 
         public SAINSearchClass(BotComponent sain) : base(sain)
         {
+            CanEverTick = false;
             SearchDecider = new SearchDeciderClass(this);
             PathFinder = new SearchPathFinder(this);
-        }
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
         }
 
         public void ToggleSearch(bool value, Enemy target)

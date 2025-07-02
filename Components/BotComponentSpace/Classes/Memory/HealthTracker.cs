@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Memory
 {
-    public class HealthTracker : BotBase, IBotClass
+    public class HealthTracker : BotBase
     {
         public event Action<ETagStatus> HealthStatusChanged;
         public bool Healthy => HealthStatus == ETagStatus.Healthy;
@@ -18,11 +18,7 @@ namespace SAIN.SAINComponent.Classes.Memory
         {
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             if (_nextHealthUpdateTime < Time.time)
             {
@@ -37,10 +33,7 @@ namespace SAIN.SAINComponent.Classes.Memory
 
                 OnPainKillers = Player.MovementContext?.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) == true;
             }
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private float _nextHealthUpdateTime = 0f;

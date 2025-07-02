@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINVisionClass : BotBase, IBotClass
+    public class SAINVisionClass : BotComponentClassBase
     {
         public float VISIONDISTANCE_UPDATE_FREQ = 5f;
         public float VISIONDISTANCE_UPDATE_FREQ_FLASHED = 0.5f;
@@ -17,24 +17,28 @@ namespace SAIN.SAINComponent.Classes
 
         public SAINVisionClass(BotComponent component) : base(component)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             FlashLightDazzle = new FlashLightDazzleClass(component);
             BotLook = new SAINBotLookClass(component);
         }
 
-        public void Init()
+        public override void Init()
         {
             BotLook.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             UpdateVisionDistance();
             FlashLightDazzle.CheckIfDazzleApplied(Bot.Enemy);
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             BotLook.Dispose();
+            base.Dispose();
         }
 
         private void UpdateVisionDistance()

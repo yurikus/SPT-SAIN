@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class AimHitEffectClass : BotMedicalBase, IBotClass
+    public class AimHitEffectClass : BotBase
     {
         private Vector3 _affectVector = Vector3.zero;
         private float _affectAmount;
@@ -24,19 +24,7 @@ namespace SAIN.SAINComponent.Classes
 
         private HitEffectSettings _settings => GlobalSettingsClass.Instance.Aiming.HitEffects;
 
-        public AimHitEffectClass(SAINBotMedicalClass medical) : base(medical)
-        {
-        }
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public AimHitEffectClass(BotComponent bot) : base(bot)
         {
         }
 

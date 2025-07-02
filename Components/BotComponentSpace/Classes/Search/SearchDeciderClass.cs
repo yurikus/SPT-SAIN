@@ -9,6 +9,7 @@ namespace SAIN.SAINComponent.Classes.Search
     {
         public SearchDeciderClass(SAINSearchClass searchClass) : base(searchClass)
         {
+            CanEverTick = false;
         }
 
         public bool ShallStartSearch(Enemy enemy, out SearchReasonsStruct reasons)

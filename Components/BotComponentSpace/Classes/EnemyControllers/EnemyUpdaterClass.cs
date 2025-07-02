@@ -1,21 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using EFT;
+using System.Collections.Generic;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class EnemyUpdaterClass : BotBase, IBotClass
+    public class EnemyUpdaterClass : BotBase
     {
         public EnemyUpdaterClass(BotComponent bot) : base(bot)
         {
+            //TickInterval = 1f / 15f;
         }
 
-        public void Init()
+        public override void Init()
         {
             Enemies = Bot.EnemyController.Enemies;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            if (Bot == null || Bot.EnemyController == null || !Bot.BotActive)
+            base.ManualUpdate();
+            if (Bot == null || Bot.EnemyController == null)
             {
                 return;
             }
@@ -25,21 +29,49 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 UnityEngine.Profiling.Profiler.BeginSample("Enemy Updater");
             }
 
-            foreach (var kvp in Enemies)
+            List<IPlayer> Allies = Bot.BotOwner.BotsGroup.Allies;
+            foreach (var item in Enemies)
             {
-                string profileId = kvp.Key;
-                Enemy enemy = kvp.Value;
-                if (!checkValid(profileId, enemy))
+                string profileId = item.Key;
+                Enemy enemy = item.Value;
+                if (enemy == null || !enemy.CheckValid())
+                {
+                    _invalidIdsToRemove.Add(profileId);
                     continue;
+                }
+                if (Allies.Contains(enemy.EnemyPlayer))
+                {
+                    if (SAINPlugin.DebugMode)
+                        Logger.LogWarning($"{enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection");
 
-                if (checkIfAlly(profileId, enemy))
+                    _allyIdsToRemove.Add(profileId);
                     continue;
-
-                enemy.Update();
-                enemy.Vision.VisionChecker.CheckVision(out _);
+                }
+                enemy.ManualUpdate();
             }
-            removeInvalid();
-            removeAllies();
+
+            if (_invalidIdsToRemove.Count > 0)
+            {
+                foreach (var id in _invalidIdsToRemove)
+                {
+                    Bot.EnemyController.RemoveEnemy(id);
+                }
+                Logger.LogWarning($"Removed {_invalidIdsToRemove.Count} Invalid Enemies");
+                _invalidIdsToRemove.Clear();
+            }
+            
+            if (_allyIdsToRemove.Count > 0)
+            {
+                foreach (var id in _allyIdsToRemove)
+                {
+                    Bot.EnemyController.RemoveEnemy(id);
+                }
+
+                if (SAINPlugin.DebugMode)
+                    Logger.LogWarning($"Removed {_allyIdsToRemove.Count} allies");
+
+                _allyIdsToRemove.Clear();
+            }
 
             if (SAINPlugin.ProfilingMode)
             {
@@ -54,43 +86,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return;
             }
 
-            foreach (var kvp in Enemies)
+            foreach (var item in Enemies)
             {
-                checkValid(kvp.Key, kvp.Value);
-            }
-            removeInvalid();
-        }
-
-        public void Dispose()
-        {
-        }
-
-        private bool checkValid(string id, Enemy enemy)
-        {
-            if (enemy == null || !enemy.CheckValid())
-            {
-                _invalidIdsToRemove.Add(id);
-                return false;
-            }
-            return true;
-        }
-
-        private bool checkIfAlly(string id, Enemy enemy)
-        {
-            if (Bot.BotOwner.BotsGroup.Allies.Contains(enemy.EnemyPlayer))
-            {
-                if (SAINPlugin.DebugMode)
-                    Logger.LogWarning($"{enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection");
-
-                _allyIdsToRemove.Add(id);
-                return true;
+                Enemy enemy = item.Value;
+                if (enemy == null || !enemy.CheckValid())
+                {
+                    _invalidIdsToRemove.Add(item.Key);
+                }
             }
 
-            return false;
-        }
-
-        private void removeInvalid()
-        {
             if (_invalidIdsToRemove.Count > 0)
             {
                 foreach (var id in _invalidIdsToRemove)
@@ -102,24 +106,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private void removeAllies()
-        {
-            if (_allyIdsToRemove.Count > 0)
-            {
-                foreach (var id in _allyIdsToRemove)
-                {
-                    Bot.EnemyController.RemoveEnemy(id);
-                }
-
-                if (SAINPlugin.DebugMode)
-                    Logger.LogWarning($"Removed {_allyIdsToRemove.Count} allies");
-
-                _allyIdsToRemove.Clear();
-            }
-        }
-
         private Dictionary<string, Enemy> Enemies;
-        private readonly List<string> _allyIdsToRemove = new();
-        private readonly List<string> _invalidIdsToRemove = new();
+        private readonly List<string> _allyIdsToRemove = [];
+        private readonly List<string> _invalidIdsToRemove = [];
     }
 }

@@ -3,13 +3,14 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINBotMedicalClass : BotBase, IBotClass
+    public class SAINBotMedicalClass : BotComponentClassBase
     {
         public SAINBotMedicalClass(BotComponent sain) : base(sain)
         {
-            Surgery = new BotSurgery(this);
-            HitReaction = new SAINBotHitReaction(this);
-            HitByEnemy = new BotHitByEnemyClass(this);
+            TickRequirement = ESAINTickState.OnlyNoSleep;
+            Surgery = new BotSurgery(sain);
+            HitReaction = new SAINBotHitReaction(sain);
+            HitByEnemy = new BotHitByEnemyClass(sain);
         }
 
         public BotSurgery Surgery { get; private set; }
@@ -28,28 +29,31 @@ namespace SAIN.SAINComponent.Classes
         private float _nextCancelTime;
         private float _cancelFreq = 1f;
 
-        public void Init()
+        public override void Init()
         {
             Player.BeingHitAction += GetHit;
             Surgery.Init();
             HitReaction.Init();
             HitByEnemy.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            Surgery.Update();
-            HitReaction.Update();
-            HitByEnemy.Update();
+            Surgery.ManualUpdate();
+            HitReaction.ManualUpdate();
+            HitByEnemy.ManualUpdate();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (Player != null)
                 Player.BeingHitAction -= GetHit;
             Surgery?.Dispose();
             HitReaction?.Dispose();
             HitByEnemy?.Dispose();
+            base.Dispose();
         }
 
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)

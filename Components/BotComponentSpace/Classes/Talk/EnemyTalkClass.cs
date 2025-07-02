@@ -13,22 +13,22 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Talk
 {
-    public class EnemyTalk : BotBase, IBotClass
+    public class EnemyTalk : BotBase
     {
         public EnemyTalk(BotComponent bot) : base(bot)
         {
             _randomizationFactor = Random.Range(0.75f, 1.25f);
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(UpdatePresetSettings);
             if (Singleton<BotEventHandler>.Instance != null)
             {
                 Singleton<BotEventHandler>.Instance.OnGrenadeExplosive += tryFakeDeathGrenade;
             }
             SAINBotController.Instance.BotHearing.PlayerTalk += playerTalked;
             Bot.EnemyController.Events.OnEnemyKilled += enemyKilled;
+            base.Init();
         }
 
         private void enemyKilled(Player player)
@@ -55,8 +55,9 @@ namespace SAIN.SAINComponent.Classes.Talk
             }
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
+            base.ManualUpdate();
             float time = Time.time;
             if (_nextCheckTime < time)
             {
@@ -95,7 +96,7 @@ namespace SAIN.SAINComponent.Classes.Talk
         private float _nextCheckTime;
         private float _randomizationFactor = 1f;
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (Singleton<BotEventHandler>.Instance != null)
             {
@@ -106,6 +107,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 Bot.EnemyController.Events.OnEnemyKilled -= enemyKilled;
             }
+            base.Dispose();
         }
 
         private PersonalityTalkSettings PersonalitySettings => Bot?.Info?.PersonalitySettings.Talk;
@@ -113,7 +115,7 @@ namespace SAIN.SAINComponent.Classes.Talk
 
         private float FakeDeathChance = 2f;
 
-        protected void UpdatePresetSettings(SAINPresetClass preset)
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
         {
             if (PersonalitySettings != null && FileSettings != null)
             {

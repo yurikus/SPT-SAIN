@@ -5,22 +5,11 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class AimDownSightsController : BotBase, IBotClass
+    public class AimDownSightsController : BotComponentClassBase
     {
         public AimDownSightsController(BotComponent sain) : base(sain)
         {
-        }
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
+            CanEverTick = false;
         }
 
         public void UpdateADSstatus()

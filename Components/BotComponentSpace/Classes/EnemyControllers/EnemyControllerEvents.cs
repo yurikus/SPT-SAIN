@@ -22,9 +22,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public EnemyControllerEvents(SAINEnemyController controller) : base(controller)
         {
+
         }
 
-        public void Init()
+        public override void Init()
         {
             var knownEnemies = BaseClass.EnemyLists.GetEnemyList(EEnemyListType.Known);
             knownEnemies.OnListEmptyOrGetFirst += OnPeaceChanged.CheckToggle;
@@ -32,13 +33,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             var enemiesInLOS = BaseClass.EnemyLists.GetEnemyList(EEnemyListType.InLineOfSight);
             enemiesInLOS.OnListEmptyOrGetFirstHuman += HumanInLineOfSightEvent.CheckToggle;
+            base.Init();
         }
 
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             var lists = BaseClass.EnemyLists;
             if (lists != null)
@@ -55,6 +53,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     enemiesInLOS.OnListEmptyOrGetFirstHuman -= HumanInLineOfSightEvent.CheckToggle;
                 }
             }
+            base.Dispose();
         }
 
         private void enemyHealthChanged(Enemy enemy, ETagStatus health)

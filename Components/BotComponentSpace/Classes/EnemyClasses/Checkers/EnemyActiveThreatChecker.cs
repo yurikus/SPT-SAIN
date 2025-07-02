@@ -11,18 +11,10 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
         {
         }
 
-        public void Init()
-        {
-            SubscribeToDispose(Dispose);
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             checkActiveThreat();
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private void checkActiveThreat()

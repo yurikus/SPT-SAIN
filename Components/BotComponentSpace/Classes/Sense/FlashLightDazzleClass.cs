@@ -40,6 +40,7 @@ namespace SAIN.SAINComponent.Classes.Sense
                     }
                 }
             }
+            base.ManualUpdate();
         }
 
         private bool EnemyWithFlashlight(Enemy enemy)

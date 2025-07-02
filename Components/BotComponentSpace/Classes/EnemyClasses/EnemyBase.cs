@@ -9,47 +9,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public abstract class EnemyBase : BotBase
     {
-        public EnemyBase(Enemy enemy) : base(enemy.Bot)
+        protected EnemyBase(Enemy enemy) : base(enemy.Bot)
         {
             Enemy = enemy;
-            enemy.OnEnemyDisposed += dispose;
+            enemy.OnEnemyDisposed += Dispose;
         }
 
-        private void dispose()
+        public override void Dispose()
         {
-            Enemy.OnEnemyDisposed -= dispose;
-            UnSubscribeToPreset();
-            _disposeFunc?.Invoke();
+            Enemy.OnEnemyDisposed -= Dispose;
+            base.Dispose();
         }
-
-        public void SubscribeToDispose(Action disposeFunc)
-        {
-            if (disposeFunc == null)
-            {
-                Logger.LogError("Dispose Func is null!");
-                return;
-            }
-            _disposeFunc = disposeFunc;
-        }
-
-        protected override void SubscribeToPreset(Action<SAINPresetClass> func)
-        {
-            if (func != null)
-            {
-                func.Invoke(SAINPresetClass.Instance);
-                _autoUpdater.Subscribe(func);
-            }
-        }
-
-        protected override void UnSubscribeToPreset()
-        {
-            if (_autoUpdater.Subscribed)
-            {
-                _autoUpdater.UnSubscribe();
-            }
-        }
-
-        private Action _disposeFunc;
 
         protected Enemy Enemy { get; }
         protected EnemyInfo EnemyInfo => Enemy.EnemyInfo;

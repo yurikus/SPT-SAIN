@@ -35,17 +35,19 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
         }
 
-        public void Init()
+        public override void Init()
         {
             //Bot.Mover.OnNewGoToPoint += newMove;
             //Bot.Mover.SprintController.OnNewSprint += newMove;
             //Bot.Mover.SprintController.OnNewCornerMoveTo += newMove;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             updateVoxel();
             updateCurrentDoors();
+            base.ManualUpdate();
         }
 
         private void newMove(Vector3 currentCorner, Vector3 destination)
@@ -63,11 +65,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             //Bot.Mover.OnNewGoToPoint -= newMove;
             //Bot.Mover.SprintController.OnNewSprint -= newMove;
             //Bot.Mover.SprintController.OnNewCornerMoveTo -= newMove;
+            base.Dispose();
         }
 
         private void updateCurrentDoors()

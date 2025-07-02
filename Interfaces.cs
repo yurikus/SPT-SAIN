@@ -1,28 +1,41 @@
 ﻿using SAIN.Preset;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using System;
 
 namespace SAIN
 {
-    public interface IBot
+    public enum ESAINTickState
     {
-        BotComponent Bot { get; }
+        NeverUpdate,
+        AlwaysUpdate,
+        OnlyBotActive,
+        OnlyNoSleep,
+        OnlyBotInCombat,
+    }
+
+    /// <summary>
+    /// A generic interface for any class owned by a bot.
+    /// </summary>
+    public interface IBotClass : IDisposable
+    {
         void Init();
-        void Dispose();
+
+        void ManualUpdate();
+
+        bool ShallTick(float CurrentTime);
+
+        BotComponent Bot { get; }
+        ESAINTickState TickRequirement { get; }
+        bool CanEverTick { get; }
+        float TickInterval { get; }
+        float LastTickTime { get; }
     }
 
-    public interface IBotClass : IBot
-    {
-        void Update();
-    }
-
-    public interface IBotDecisionClass : IBot
+    public interface IBotDecisionClass
     {
         bool GetDecision(Enemy enemy, out string reason);
-
-        void UpdatePresetSettings(SAINPresetClass preset);
     }
-
 
     public interface IBotEnemyClass : IBotClass
     {

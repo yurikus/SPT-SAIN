@@ -40,7 +40,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 Bot.Mover.EnableSprintPlayer(false);
                 Bot.Cover.CoverInUse = null;
                 Bot.Mover.SprintController.CancelRun();
-                Bot.Mover.DogFight.DogFightMove(true);
+                Bot.Mover.DogFight.DogFightMove(true, Bot.Enemy);
 
                 if (!Bot.Steering.SteerByPriority(null, false))
                 {

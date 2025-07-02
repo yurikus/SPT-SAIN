@@ -42,7 +42,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
                 Bot.Medical.Surgery.SurgeryStarted = false;
                 Bot.Medical.TryCancelHeal();
-                Bot.Mover.DogFight.DogFightMove(false);
+                Bot.Mover.DogFight.DogFightMove(false, Bot.Enemy);
             }
         }
 

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class CurrentTargetClass : BotBase, IBotClass
+    public class CurrentTargetClass : BotComponentClassBase
     {
         public event Action<Enemy, Vector3> OnNewTargetEnemy;
 
@@ -20,20 +20,14 @@ namespace SAIN.SAINComponent.Classes
 
         public CurrentTargetClass(BotComponent bot) : base(bot)
         {
+            TickRequirement = ESAINTickState.OnlyBotActive;
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             updateCurrentTarget();
             updateGoalTarget();
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private void updateCurrentTarget()

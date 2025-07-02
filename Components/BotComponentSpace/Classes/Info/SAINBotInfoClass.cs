@@ -9,8 +9,37 @@ using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Info
 {
-    public class SAINBotInfoClass : BotBase, IBotClass
+    public class SAINBotInfoClass : BotComponentClassBase
     {
+        public SAINBotInfoClass(BotComponent sain) : base(sain)
+        {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
+            Profile = new BotProfile(sain);
+            WeaponInfo = new WeaponInfoClass(sain);
+            Personality = GetPersonality(out var settings);
+            PersonalitySettingsClass = settings;
+            Difficulty = new BotDifficultyClass(sain);
+        }
+
+        public override void Init()
+        {
+            WeaponInfo.Init();
+            Difficulty.Init();
+            base.Init();
+        }
+
+        public override void ManualUpdate()
+        {
+            WeaponInfo.ManualUpdate();
+            base.ManualUpdate();
+        }
+
+        public override void Dispose()
+        {
+            WeaponInfo.Dispose();
+            Difficulty.Dispose();
+        }
+
         public SAINSettingsClass FileSettings
         {
             get
@@ -36,33 +65,6 @@ namespace SAIN.SAINComponent.Classes.Info
         public float ForgetEnemyTime { get; private set; }
         public float AggressionMultiplier => Difficulty.AggressionModifier;
 
-        public SAINBotInfoClass(BotComponent sain) : base(sain)
-        {
-            Profile = new BotProfile(sain);
-            WeaponInfo = new WeaponInfoClass(sain);
-            Personality = GetPersonality(out var settings);
-            PersonalitySettingsClass = settings;
-            Difficulty = new BotDifficultyClass(sain);
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(UpdatePresetSettings);
-            WeaponInfo.Init();
-            Difficulty.Init();
-        }
-
-        public void Update()
-        {
-            WeaponInfo.Update();
-            Difficulty.Update();
-        }
-
-        public void Dispose()
-        {
-            WeaponInfo.Dispose();
-            Difficulty.Dispose();
-        }
 
         public void SetPersonality(EPersonality personality)
         {
@@ -73,13 +75,14 @@ namespace SAIN.SAINComponent.Classes.Info
             }
         }
 
-        protected void UpdatePresetSettings(SAINPresetClass preset)
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
         {
             Difficulty.UpdateSettings(preset);
             CalcTimeBeforeSearch();
             CalcHoldGroundDelay();
             UpdateExtractTime();
             SetConfigValues(FileSettings);
+            base.UpdatePresetSettings(preset);
         }
 
         public void CalcHoldGroundDelay()
@@ -163,8 +166,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public EPersonality GetPersonality(out PersonalitySettingsClass settings)
         {
-            var dictionary = SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary;
-            return dictionary.GetPersonality(this, out settings);
+            return SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.GetPersonality(this, out settings);
         }
 
         private void SetConfigValues(SAINSettingsClass sainFileSettings)

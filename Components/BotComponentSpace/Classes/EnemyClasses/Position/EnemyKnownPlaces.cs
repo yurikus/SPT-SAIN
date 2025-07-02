@@ -106,12 +106,13 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             };
         }
 
-        public void Init()
+        public override void Init()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             updatePlaces();
             if (Enemy.EnemyKnown)
@@ -125,9 +126,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     createDebug();
                 }
             }
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             clearAllPlaces();
 
@@ -138,6 +140,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 DebugGizmos.DestroyLabel(obj.Value);
             }
             _guiObjects?.Clear();
+            base.Dispose();
         }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
@@ -324,10 +327,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             addPlace(place);
         }
 
-        private void updatePlaces(bool force = false)
+        private void updatePlaces()
         {
-            LastSeenPlace?.Update();
-            LastHeardPlace?.Update();
             if (_nextSortPlacesTime < Time.time)
             {
                 _nextSortPlacesTime = Time.time + 0.5f;

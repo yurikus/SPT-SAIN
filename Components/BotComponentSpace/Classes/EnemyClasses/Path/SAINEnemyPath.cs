@@ -55,31 +55,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public EnemyCornerDictionary EnemyCorners { get; private set; } = new EnemyCornerDictionary(enemy.Bot.Transform, enemy.BotOwner.WeaponRoot);
 
-        public bool CanSeeLastCornerToEnemy {
-            get
-            {
-                return false;
-                //var last = EnemyCorners.EyeLevelPosition(ECornerType.Last);
-                //if (last == null)
-                //{
-                //    return false;
-                //}
-                //
-                //if (_nextCheckLast > Time.time)
-                //{
-                //    return _canSeeLast;
-                //}
-                //_nextCheckLast = Time.time + 0.2f;
-                //
-                //Vector3 cornerTarget = last.Value + Vector3.up;
-                //Vector3 headPos = Bot.Transform.EyePosition;
-                //Vector3 direction = cornerTarget - headPos;
-                //_canSeeLast = !Physics.Raycast(headPos, direction, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask);
-                //
-                //return _canSeeLast;
-            }
-        }
-
         public NavMeshPath PathToEnemy { get; } = new NavMeshPath();
         public NavMeshPathStatus PathToEnemyStatus { get; private set; }
 
@@ -87,9 +62,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public Vector3[] PathCorners { get; private set; }
         public List<Vector3> VisionCheckPoints { get; private set; } = [];
 
-        public void Init()
+        public override void Init()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
+            base.Init();
         }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
@@ -100,14 +76,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             CheckCalcPath();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
+            base.Dispose();
         }
 
         public void CheckCalcPath()
@@ -393,11 +371,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return new EnemyCorner(enemyPosition, 0f, index);
         }
 
-        private bool _canSeeLast;
-        private float _nextCheckLast;
         private Vector3? _enemyLastPosChecked;
         private Vector3 _botLastPosChecked;
-        private readonly BlindCornerFinder _blindCornerFinder = new BlindCornerFinder(enemy);
         private float _calcPathTime = 0f;
     }
 }

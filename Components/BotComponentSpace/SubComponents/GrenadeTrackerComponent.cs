@@ -1,5 +1,7 @@
 ﻿using EFT;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
+using static RootMotion.FinalIK.AimPoser;
 
 namespace SAIN.SAINComponent.SubComponents
 {
@@ -90,7 +92,7 @@ namespace SAIN.SAINComponent.SubComponents
 
         private bool checkVisibility()
         {
-            Vector3 grenadePos = Grenade.transform.position + (Vector3.up * 0.1f);
+            Vector3 grenadePos = Grenade.transform.position + (Vector3.up * 0.05f);
 
             if (!BotOwner.LookSensor.IsPointInVisibleSector(grenadePos))
             {
@@ -100,13 +102,25 @@ namespace SAIN.SAINComponent.SubComponents
             Vector3 headPos = BotOwner.LookSensor._headPoint;
             Vector3 grenadeDir = grenadePos - headPos;
 
-            return !Physics.Raycast(headPos, grenadeDir, grenadeDir.magnitude, LayerMaskClass.HighPolyWithTerrainMaskAI);
+            return !Physics.Raycast(headPos, grenadeDir.normalized, grenadeDir.magnitude, LayerMaskClass.HighPolyWithTerrainMaskAI);
         }
+
+        public void UpdateGrenadeDanger(Vector3 Danger)
+        {
+            DangerPoint = Danger;
+            if (_sentToBot && !_updated)
+            {
+                _updated = true;
+                BotOwner.BewareGrenade.AddGrenadeDanger(Danger, Grenade);
+            }
+        }
+
+        private bool _updated;
 
         private float _timeSpotted { get; set; }
         public float TimeSinceSpotted => _spotted ? Time.time - _timeSpotted : 0f;
         public Grenade Grenade { get; private set; }
-        public Vector3 DangerPoint { get; private set; }
+        public Vector3 DangerPoint { get; set; }
         private bool _spotted { get; set; }
         public bool CanReact => _spotted && TimeSinceSpotted > ReactionTime;
 

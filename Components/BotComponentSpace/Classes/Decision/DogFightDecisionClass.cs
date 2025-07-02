@@ -4,38 +4,84 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-    public class DogFightDecisionClass : BotBase, IBotClass
+    public class DogFightDecisionClass : BotBase
     {
-        public DogFightDecisionClass(BotComponent bot) : base(bot) { }
-
-        public void Init()
+        public DogFightDecisionClass(BotComponent bot) : base(bot)
         {
-            base.SubscribeToPreset(null);
+            CanEverTick = false;
+        }
+
+        public override void Init()
+        {
             Bot.EnemyController.Events.OnEnemyRemoved += checkClear;
+            base.Init();
         }
 
-        public void Update()
-        {
-
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnEnemyRemoved -= checkClear;
+            base.Dispose();
         }
 
         public bool ShallDogFight()
         {
-            if (checkDecisions() &&
-                findDogFightTarget())
+            if (!BotOwner.WeaponManager.HaveBullets ||
+                BotOwner.WeaponManager.Reload.Reloading)
             {
-                return true;
-            }
-            else
-            {
-                clearDogFightTarget();
                 return false;
             }
+            switch (Bot.Decision.CurrentCombatDecision)
+            {
+                case ECombatDecision.RushEnemy:
+                    return false;
+
+                case ECombatDecision.Retreat:
+                case ECombatDecision.RunToCover:
+                    if (Bot.Decision.SelfActionDecisions.LowOnAmmo(0.2f))
+                    {
+                        return false;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            if (DogFightTarget != null)
+            {
+                if (shallDogFightEnemy(DogFightTarget))
+                {
+                    return true;
+                }
+                if (shallClearDogfightTarget(DogFightTarget))
+                {
+                    DogFightTarget = null;
+                }
+            }
+
+            if (_changeDFTargetTime < Time.time)
+            {
+                _changeDFTargetTime = Time.time + 0.5f;
+
+                int count = _dogFightTargets.Count;
+                for (int i = count - 1; i >= 0; i--)
+                {
+                    if (shallClearDogfightTarget(_dogFightTargets[i]))
+                    {
+                        _dogFightTargets.RemoveAt(i);
+                    }
+                }
+                Enemy newTarget = selectDFTarget();
+                if (newTarget != null)
+                {
+                    DogFightTarget = newTarget;
+                    return true;
+                }
+
+                getNewDFTargets();
+                DogFightTarget = selectDFTarget();
+            }
+            clearDogFightTarget();
+            return false;
         }
 
         private void clearDogFightTarget()
@@ -44,28 +90,6 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 DogFightTarget = null;
             }
-        }
-
-        private bool checkDecisions()
-        {
-            if (!BotOwner.WeaponManager.HaveBullets ||
-                BotOwner.WeaponManager.Reload.Reloading)
-            {
-                return false;
-            }
-            ECombatDecision currentDecision = Bot.Decision.CurrentCombatDecision;
-            if (currentDecision == ECombatDecision.RushEnemy)
-            {
-                return false;
-            }
-            if (currentDecision == ECombatDecision.Retreat || currentDecision == ECombatDecision.RunToCover)
-            {
-                if (Bot.Decision.SelfActionDecisions.LowOnAmmo(0.2f))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         private bool shallClearDogfightTarget(Enemy enemy)
@@ -112,8 +136,6 @@ namespace SAIN.SAINComponent.Classes.Decision
 
                 getNewDFTargets();
                 DogFightTarget = selectDFTarget();
-
-                return DogFightTarget != null;
             }
 
             return DogFightTarget != null;

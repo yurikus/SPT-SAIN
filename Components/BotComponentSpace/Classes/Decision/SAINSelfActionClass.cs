@@ -3,22 +3,19 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-    public class SAINSelfActionClass : BotBase, IBotClass
+    public class SAINSelfActionClass : BotComponentClassBase
     {
         public SAINSelfActionClass(BotComponent sain) : base(sain)
         {
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
         private float _handsBusyTimer;
         private float _nextCheckTime;
 
-        public void Update()
+        public override void ManualUpdate()
         {
+            base.ManualUpdate();
             if (!Bot.SAINLayersActive)
             {
                 return;
@@ -81,10 +78,6 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 _nextHealTime = Time.time + 5f;
             }
-        }
-
-        public void Dispose()
-        {
         }
 
         private bool UsingMeds => BotOwner.Medecine?.Using == true;

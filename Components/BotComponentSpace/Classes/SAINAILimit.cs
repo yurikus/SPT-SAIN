@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINAILimit : BotBase, IBotClass
+    public class SAINAILimit : BotComponentClassBase
     {
         public event Action<AILimitSetting> OnAILimitChanged;
         public AILimitSetting CurrentAILimit { get; private set; }
@@ -15,20 +15,13 @@ namespace SAIN.SAINComponent.Classes
 
         public SAINAILimit(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyBotActive;
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(UpdatePresetSettings);
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             checkAILimit();
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private void checkAILimit()
@@ -75,7 +68,7 @@ namespace SAIN.SAINComponent.Classes
 
         private float _checkDistanceTime;
 
-        protected void UpdatePresetSettings(SAINPresetClass preset)
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
         {
             var aiLimit = GlobalSettingsClass.Instance.General.AILimit;
             _frequency = aiLimit.AILimitUpdateFrequency;

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class LeanClass : BotBase, IBotClass
+    public class LeanClass : BotBase
     {
         private const float LEAN_UPDATE_FOUND_FREQ = 0.75f;
         private const float LEAN_UPDATE_NOT_FOUND_FREQ = 0.25f;
@@ -24,11 +24,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
         private static readonly ECombatDecision[] DontLean =
         [
             ECombatDecision.Retreat,
@@ -37,9 +32,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             ECombatDecision.MeleeAttack,
         ];
 
-        public void Update()
+        public override void ManualUpdate()
         {
             UpdateLean();
+            base.ManualUpdate();
         }
 
         private void UpdateLean()
@@ -171,10 +167,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 _stopHoldLeanTime = Time.time + duration;
             }
-        }
-
-        public void Dispose()
-        {
         }
 
         private float _leanTimer = 0f;

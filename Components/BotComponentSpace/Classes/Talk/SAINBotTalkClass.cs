@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Talk
 {
-    public class SAINBotTalkClass : BotBase, IBotClass
+    public class SAINBotTalkClass : BotComponentClassBase
     {
         public bool CanTalk => Bot.Info.FileSettings.Mind.CanTalk && _timeCanTalk < Time.time;
         public bool IsSpeaking => Player.Speaker?.Speaking == true;
@@ -15,17 +15,19 @@ namespace SAIN.SAINComponent.Classes.Talk
 
         public SAINBotTalkClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             PhraseObjectsAdd(_phraseDictionary);
             GroupTalk = new GroupTalk(sain);
             EnemyTalk = new EnemyTalk(sain);
             _timeCanTalk = Time.time + UnityEngine.Random.Range(1f, 2f);
         }
 
-        public void Init()
+        public override void Init()
         {
             //Player.BeingHitAction += GetHit;
             GroupTalk.Init();
             EnemyTalk.Init();
+            base.Init();
         }
 
         private void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)
@@ -46,9 +48,10 @@ namespace SAIN.SAINComponent.Classes.Talk
             }
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            GroupTalk.Update();
+            base.ManualUpdate();
+            GroupTalk.ManualUpdate();
 
             if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching)
             {
@@ -63,7 +66,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             if (CanTalk
                 && _timeCanTalk < Time.time)
             {
-                EnemyTalk.Update();
+                EnemyTalk.ManualUpdate();
                 if (_allTalkDelay < Time.time)
                 {
                     checkTalk();
@@ -110,7 +113,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (Player != null)
             {
@@ -119,6 +122,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             _phraseDictionary.Clear();
             GroupTalk.Dispose();
             EnemyTalk.Dispose();
+            base.Dispose();
         }
 
         public bool CanSay(EPhraseTrigger trigger, bool withGroupDelay, bool skipCheck)

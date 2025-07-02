@@ -2,17 +2,19 @@
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotHitByEnemyClass : BotMedicalBase, IBotClass
+    public class BotHitByEnemyClass : BotBase
     {
         public Enemy EnemyWhoLastShotMe { get; private set; }
 
-        public BotHitByEnemyClass(SAINBotMedicalClass medical) : base(medical)
+        public BotHitByEnemyClass(BotComponent bot) : base(bot)
         {
+            CanEverTick = false;
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.EnemyController.Events.OnEnemyRemoved += clearEnemy;
+            base.Init();
         }
 
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)
@@ -37,13 +39,10 @@ namespace SAIN.SAINComponent.Classes
                 EnemyWhoLastShotMe = null;
         }
 
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnEnemyRemoved -= clearEnemy;
+            base.Dispose();
         }
     }
 }

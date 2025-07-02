@@ -22,19 +22,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _startVisionTime = Time.time + UnityEngine.Random.Range(0.0f, 0.33f);
         }
 
-        public void Init()
-        {
-            SubscribeToPreset(UpdatePresetSettings);
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             EnemyParts.Update();
             Enemy.Events.OnEnemyLineOfSightChanged.CheckToggle(LineOfSight);
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         public void CheckVision(out bool didCheck)
@@ -129,7 +121,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public void UpdatePresetSettings(SAINPresetClass preset)
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
         {
             var aiLimit = preset.GlobalSettings.General.AILimit;
             _farDistance = aiLimit.MaxVisionRanges[AILimitSetting.Far];

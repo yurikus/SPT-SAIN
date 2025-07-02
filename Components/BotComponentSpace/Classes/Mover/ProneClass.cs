@@ -9,26 +9,13 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class ProneClass : BotBase, IBotClass
+    public class ProneClass : BotBase
     {
         private float _nextChangeProneTime { get; set; }
         private bool _canshoot { get; set; }
         private float _nextCheckShootTime { get; set; }
 
         public ProneClass(BotComponent sain) : base(sain)
-        {
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
         {
         }
 

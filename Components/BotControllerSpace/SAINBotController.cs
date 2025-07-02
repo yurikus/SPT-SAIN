@@ -1,17 +1,21 @@
 using Comfort.Common;
 using EFT;
 using EFT.EnvironmentEffect;
+using HarmonyLib;
 using SAIN.BotController.Classes;
 using SAIN.Components.BotController;
 using SAIN.Components.BotController.PeacefulActions;
 using SAIN.Components.BotControllerSpace.Classes;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.WeaponFunction;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
@@ -23,6 +27,8 @@ namespace SAIN.Components
         public event Action<Grenade, float> OnGrenadeCollision;
 
         public event Action<Grenade, Vector3, string> OnGrenadeThrown;
+
+        public event Action<Grenade, Vector3> OnGrenadeDangerUpdated;
 
         public GrenadeController(SAINBotController controller) : base(controller)
         {
@@ -139,10 +145,66 @@ namespace SAIN.Components
             }
 
             Vector3 dangerPoint = Vector.DangerPoint(position, force, mass);
+            grenade.DestroyEvent += grenadeDestroyed;
             Singleton<BotEventHandler>.Instance?.PlaySound(player, grenade.transform.position, 20f, AISoundType.gun);
-            grenade.gameObject.AddComponent<GrenadeVelocityTracker>();
             OnGrenadeThrown?.Invoke(grenade, dangerPoint, grenade.ProfileId);
+            if (GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent playerComponent))
+            {
+                List<PlayerComponent> RelevantPlayers = [];
+                foreach (var otherPlayer in playerComponent.OtherPlayersData.Datas.Values)
+                {
+                    if (otherPlayer.DistanceData.Distance < 125f && otherPlayer.PlayerComponent.IsSAINBot)
+                    {
+                        RelevantPlayers.Add(otherPlayer.PlayerComponent);
+                    }
+                }
+                ActiveGrenades.Add(grenade, RelevantPlayers);
+                BotController.StartCoroutine(GrenadeTracker(grenade, playerComponent, RelevantPlayers, dangerPoint));
+            }
         }
+
+        public readonly Dictionary<Throwable, List<PlayerComponent>> ActiveGrenades = [];
+
+        private void grenadeDestroyed(Throwable Grenade)
+        {
+            ActiveGrenades.Remove(Grenade);
+        }
+
+        private IEnumerator GrenadeTracker(Grenade Grenade, PlayerComponent Thrower, List<PlayerComponent> RelevantPlayers, Vector3 DangerPoint)
+        {
+            Rigidbody Rigidbody = (Rigidbody)_rigidBodyField.GetValue(Grenade);
+
+            if (Rigidbody == null)
+            {
+                Logger.LogError("RigidBody Null");
+                yield break;
+            }
+            while (Grenade != null && BotController != null)
+            {
+                Vector3 Velocity = Rigidbody.velocity;
+                if (Velocity.magnitude < 0.1f)
+                {
+                    OnGrenadeDangerUpdated?.Invoke(Grenade, Grenade.transform.position);
+                }
+                else if (Velocity.y < 0)
+                {
+                    Vector3 VelocityNormal = Velocity.normalized;
+                    if (Vector3.Dot(VelocityNormal, Vector3.down) > 0.5f && 
+                        Physics.Raycast(Grenade.transform.position, VelocityNormal, out RaycastHit Hit, 5, LayerMaskClass.HighPolyWithTerrainMask))
+                    {
+                        OnGrenadeDangerUpdated?.Invoke(Grenade, Hit.point);
+                    }
+                }
+                yield return null;
+            }
+        }
+
+        static GrenadeController()
+        {
+            _rigidBodyField = AccessTools.Field(typeof(Throwable), "Rigidbody");
+        }
+
+        private static FieldInfo _rigidBodyField;
     }
 
     public class SAINBotController : MonoBehaviour
@@ -254,14 +316,13 @@ namespace SAIN.Components
             if (BotTickTimer <= Time.time)
             {
                 BotTickTimer = Time.time + BotTickRate;
+                
+                UnityEngine.Profiling.Profiler.BeginSample("SAIN Bot Update");
 
                 foreach (var Bot in Bots.Values)
-                {
-                    if (Bot != null)
-                    {
-                        Bot.ManualUpdate();
-                    }
-                }
+                    Bot?.ManualUpdate();
+
+                UnityEngine.Profiling.Profiler.EndSample();
             }
         }
 

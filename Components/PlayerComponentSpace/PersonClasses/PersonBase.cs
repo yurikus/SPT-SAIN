@@ -2,19 +2,13 @@
 
 namespace SAIN.Components.PlayerComponentSpace.PersonClasses
 {
-    public abstract class PersonBase
+    public abstract class PersonBase(PlayerData inPlayerData)
     {
-        public PlayerComponent PlayerComponent => _personInfo.PlayerComponent;
-        public IPlayer IPlayer => _personInfo.IPlayer;
-        public Player Player => _personInfo.Player;
-        public string ProfileId => _personInfo.Profile.ProfileId;
-        public string Nickname => _personInfo.Profile.Nickname;
-
-        public PersonBase(PlayerData player)
-        {
-            _personInfo = player;
-        }
-
-        private readonly PlayerData _personInfo;
+        public PlayerData PlayerData { get; } = inPlayerData;
+        public PlayerComponent PlayerComponent => PlayerData.PlayerComponent;
+        public IPlayer IPlayer => PlayerData.IPlayer;
+        public Player Player => PlayerData.Player;
+        public string ProfileId => PlayerData.Profile.ProfileId;
+        public string Nickname => PlayerData.Profile.Nickname;
     }
 }

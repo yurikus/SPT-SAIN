@@ -10,7 +10,7 @@ using static EFT.InventoryLogic.Weapon;
 
 namespace SAIN.SAINComponent.Classes.Info
 {
-    public class WeaponInfoClass : BotBase, IBotClass
+    public class WeaponInfoClass : BotBase
     {
         private const float MACHINEGUN_SWAPDIST_MULTI = 1.5f;
         public float FinalModifier { get; private set; }
@@ -32,32 +32,28 @@ namespace SAIN.SAINComponent.Classes.Info
             Reload = new ReloadClass(bot);
         }
 
-        private void forceRecheckWeapon(SAINPresetClass preset)
+        public override void Init()
         {
-            _forceNewCheck = true;
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(UpdatePresetSettings);
             Recoil.Init();
             Firerate.Init();
             Firemode.Init();
             Reload.Init();
+            base.Init();
         }
 
-        protected void UpdatePresetSettings(SAINPresetClass preset)
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
         {
             _forceNewCheck = true;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkCalcWeaponInfo();
-            Recoil.Update();
-            Firerate.Update();
-            Firemode.Update();
-            Reload.Update();
+            Recoil.ManualUpdate();
+            Firerate.ManualUpdate();
+            Firemode.ManualUpdate();
+            Reload.ManualUpdate();
+            base.ManualUpdate();
         }
 
         public void checkCalcWeaponInfo()
@@ -164,12 +160,13 @@ namespace SAIN.SAINComponent.Classes.Info
                 .Round100();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Recoil.Dispose();
             Firerate.Dispose();
             Firemode.Dispose();
             Reload.Dispose();
+            base.Dispose();
         }
 
         public float EffectiveWeaponDistance

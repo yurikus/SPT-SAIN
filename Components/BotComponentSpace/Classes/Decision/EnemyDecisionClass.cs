@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-    public class EnemyDecisionClass : BotBase, IBotClass
+    public class EnemyDecisionClass : BotBase
     {
         private static readonly float RushEnemyMaxPathDistance = 10f;
         private static readonly float RushEnemyMaxPathDistanceSprint = 20f;
@@ -29,19 +29,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         public EnemyDecisionClass(BotComponent sain) : base(sain)
         {
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
+            CanEverTick = false;
         }
 
         public bool GetDecision(out ECombatDecision result)

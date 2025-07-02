@@ -3,22 +3,11 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotSurgery : BotMedicalBase, IBotClass
+    public class BotSurgery : BotBase
     {
-        public BotSurgery(SAINBotMedicalClass medical) : base(medical)
+        public BotSurgery(BotComponent bot) : base(bot)
         {
-        }
-
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
+            CanEverTick = false;
         }
 
         public bool SurgeryStarted

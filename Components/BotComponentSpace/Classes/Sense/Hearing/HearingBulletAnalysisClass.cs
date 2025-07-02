@@ -13,19 +13,6 @@ namespace SAIN.SAINComponent.Classes
         {
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-
         public bool DoIFeelBullet(AISoundData sound)
         {
             if (sound.PlayerDistance > BULLET_FEEL_MAX_DIST)

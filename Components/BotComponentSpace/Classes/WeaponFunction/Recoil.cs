@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class Recoil : BotBase, IBotClass
+    public class Recoil : BotBase
     {
         public Vector3 CurrentRecoilOffset { get; private set; } = Vector3.zero;
 
@@ -24,19 +24,22 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
         }
 
-        public void Init()
+        public override void Init()
         {
             PlayerComponent.OnShoot += WeaponShot;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             calcDecay();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             PlayerComponent.OnShoot -= WeaponShot;
+            base.Dispose();
         }
 
         private void calcDecay()

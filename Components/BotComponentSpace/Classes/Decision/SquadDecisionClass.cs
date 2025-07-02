@@ -6,23 +6,11 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-    public class SquadDecisionClass : BotBase, IBotClass
+    public class SquadDecisionClass : BotBase
     {
         public SquadDecisionClass(BotComponent sain) : base(sain)
         {
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
+            CanEverTick = false;
         }
 
         private SAINSquadClass Squad => Bot.Squad;

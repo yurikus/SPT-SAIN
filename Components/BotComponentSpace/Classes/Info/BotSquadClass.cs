@@ -6,16 +6,12 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Info
 {
-    public class SAINSquadClass : BotBase, IBotClass
+    public class SAINSquadClass : BotComponentClassBase
     {
         public SAINSquadClass(BotComponent bot) : base(bot)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
             getSquad();
-        }
-
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
         }
 
         public void RemoveFromSquad()
@@ -77,7 +73,7 @@ namespace SAIN.SAINComponent.Classes.Info
             return false;
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             if (BotOwner.BotsGroup.MembersCount > 1 &&
                 SquadInfo != null &&
@@ -92,10 +88,7 @@ namespace SAIN.SAINComponent.Classes.Info
                     DistanceToSquadLeader = (Bot.Position - LeaderComponent.Position).magnitude;
                 }
             }
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         private void checkVisibleMembers()

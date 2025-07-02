@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINBotHitReaction : BotMedicalBase, IBotClass
+    public class SAINBotHitReaction : BotBase
     {
         public EHitReaction HitReaction { get; private set; }
         public IHealthController HealthController => Player.HealthController;
@@ -14,10 +14,10 @@ namespace SAIN.SAINComponent.Classes
 
         public AimHitEffectClass AimHitEffect { get; private set; }
 
-        public SAINBotHitReaction(SAINBotMedicalClass medical) : base(medical)
+        public SAINBotHitReaction(BotComponent bot) : base(bot)
         {
-            BodyHitEffect = new BodyPartHitEffectClass(medical);
-            AimHitEffect = new AimHitEffectClass(medical);
+            BodyHitEffect = new BodyPartHitEffectClass(bot);
+            AimHitEffect = new AimHitEffectClass(bot);
 
             addPart(EBodyPart.Head);
             addPart(EBodyPart.Chest);
@@ -33,16 +33,11 @@ namespace SAIN.SAINComponent.Classes
             BodyParts.Add(part, new BodyPartStatus(part, this));
         }
 
-        public void Init()
-        {
-            BodyHitEffect.Init();
-            AimHitEffect.Init();
-        }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            BodyHitEffect.Update();
-            AimHitEffect.Update();
+            BodyHitEffect.ManualUpdate();
+            base.ManualUpdate();
         }
 
         public EInjurySeverity LeftArmInjury { get; private set; }
@@ -50,11 +45,12 @@ namespace SAIN.SAINComponent.Classes
 
         public bool ArmsInjured => BodyHitEffect.LeftArmInjury != EInjurySeverity.None || BodyHitEffect.RightArmInjury != EInjurySeverity.None;
 
-        public void Dispose()
+        public override void Dispose()
         {
             BodyHitEffect.Dispose();
             BodyParts.Clear();
             AimHitEffect.Dispose();
+            base.Dispose();
         }
 
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)

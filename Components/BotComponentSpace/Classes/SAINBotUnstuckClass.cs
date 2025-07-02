@@ -8,17 +8,18 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Debug
 {
-    public class SAINBotUnstuckClass : BotBase, IBotClass
+    public class SAINBotUnstuckClass : BotComponentClassBase
     {
         public SAINBotUnstuckClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyBotActive;
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             PathController = BotOwner.Mover._pathController;
             DontUnstuckMe = DontUnstuckTheseTypes.Contains(Bot.Info.Profile.WildSpawnType);
+            base.Init();
         }
 
         public bool BotIsMoving { get; private set; }
@@ -297,7 +298,7 @@ namespace SAIN.SAINComponent.Classes.Debug
             }
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             if (!DontUnstuckMe && !Bot.BotActivation.BotInStandBy)
             {
@@ -307,6 +308,7 @@ namespace SAIN.SAINComponent.Classes.Debug
             {
                 Bot.StopCoroutine(botUnstuckCoroutine);
             }
+            base.ManualUpdate();
         }
 
         private void startCoroutine()
@@ -604,10 +606,6 @@ namespace SAIN.SAINComponent.Classes.Debug
 
         private static NavMeshPath PathToPlayer;
         private List<Player> HumanPlayers = new();
-
-        public void Dispose()
-        {
-        }
 
         private RaycastHit StuckHit = new();
         private float DebugStuckTimer = 0f;

@@ -6,17 +6,15 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotBackpackDropClass : BotBase, IBotClass
+    public class BotBackpackDropClass : BotComponentClassBase
     {
         public BotBackpackDropClass(BotComponent sain) : base(sain)
         {
+            
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             if (BackpackDropPosition != null &&
                 DroppedBackpack == null)
@@ -35,10 +33,6 @@ namespace SAIN.SAINComponent.Classes
         }
 
         //private float _nextTryDropTime;
-
-        public void Dispose()
-        {
-        }
 
         public bool DropBackpack()
         {

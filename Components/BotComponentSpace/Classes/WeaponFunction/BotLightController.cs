@@ -4,19 +4,16 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class BotLightController : BotBase, IBotClass
+    public class BotLightController : BotComponentClassBase
     {
         public BotLightController(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Init()
+        public override void ManualUpdate()
         {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
-        {
+            base.ManualUpdate();
             if (BotOwner?.BotLight == null)
             {
                 return;
@@ -39,10 +36,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private float _nextLightChangeTime;
         private float _changelightFreq = 1f;
-
-        public void Dispose()
-        {
-        }
 
         private void setLight(bool value)
         {

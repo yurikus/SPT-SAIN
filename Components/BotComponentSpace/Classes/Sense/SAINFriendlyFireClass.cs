@@ -4,30 +4,23 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SAINFriendlyFireClass : BotBase, IBotClass
+    public class SAINFriendlyFireClass : BotComponentClassBase
     {
         public bool ClearShot => FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock;
         public FriendlyFireStatus FriendlyFireStatus { get; private set; }
 
         public SAINFriendlyFireClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             if (FriendlyFireStatus == FriendlyFireStatus.FriendlyBlock)
             {
                 StopShooting();
             }
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         public bool CheckFriendlyFire(Vector3? target = null)

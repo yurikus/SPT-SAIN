@@ -1,7 +1,7 @@
 ﻿
 namespace SAIN.SAINComponent.Classes.Decision
 {
-    public class SAINDecisionClass : BotBase, IBotClass
+    public class SAINDecisionClass : BotComponentClassBase
     {
         public bool HasDecision => DecisionManager.HasDecision;
 
@@ -47,6 +47,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         public SAINDecisionClass(BotComponent bot) : base(bot)
         {
+            TickRequirement = ESAINTickState.OnlyBotActive;
             DecisionManager = new BotDecisionManager(this);
             SelfActionDecisions = new SelfActionDecisionClass(bot);
             EnemyDecisions = new EnemyDecisionClass(bot);
@@ -54,31 +55,34 @@ namespace SAIN.SAINComponent.Classes.Decision
             DogFightDecision = new DogFightDecisionClass(bot);
         }
 
-        public void Init()
+        public override void Init()
         {
             DecisionManager.Init();
             SelfActionDecisions.Init();
             EnemyDecisions.Init();
             SquadDecisions.Init();
             DogFightDecision.Init();
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
-            DecisionManager.Update();
-            SelfActionDecisions.Update();
-            EnemyDecisions.Update();
-            SquadDecisions.Update();
-            DogFightDecision.Update();
+            DecisionManager.ManualUpdate();
+            SelfActionDecisions.ManualUpdate();
+            EnemyDecisions.ManualUpdate();
+            SquadDecisions.ManualUpdate();
+            DogFightDecision.ManualUpdate();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             DecisionManager.Dispose();
             SelfActionDecisions.Dispose();
             EnemyDecisions.Dispose();
             SquadDecisions.Dispose();
             DogFightDecision?.Dispose();
+            base.Dispose();
         }
 
         public void ResetDecisions(bool active) => DecisionManager.ResetDecisions(active);

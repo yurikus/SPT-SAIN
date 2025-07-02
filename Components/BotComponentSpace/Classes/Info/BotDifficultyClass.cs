@@ -4,7 +4,7 @@ using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class BotDifficultyClass : BotBase, IBotClass
+    public class BotDifficultyClass : BotBase
     {
         public TemporaryStatModifiers GlobalDifficultyModifiers { get; }
         public TemporaryStatModifiers BotDifficultyModifiers { get; }
@@ -22,17 +22,10 @@ namespace SAIN.SAINComponent.Classes
             LocationDifficultyModifiers = new TemporaryStatModifiers();
         }
 
-        public void Init()
-        {
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             dismiss();
+            base.Dispose();
         }
 
         public void UpdateSettings(SAINPresetClass preset)

@@ -21,17 +21,19 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
         {
         }
 
-        public void Init()
+        public override void Init()
         {
             Enemy.Events.OnFirstSeen += resetHeardFromPeace;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             if (Enemy.Seen && EnemyHeardFromPeace)
             {
                 EnemyHeardFromPeace = false;
             }
+            base.ManualUpdate();
         }
 
         private void resetHeardFromPeace(Enemy enemy)
@@ -39,9 +41,10 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             EnemyHeardFromPeace = false;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Enemy.Events.OnFirstSeen -= resetHeardFromPeace;
+            base.Dispose();
         }
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)

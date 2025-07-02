@@ -22,6 +22,14 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent
 {
+    public enum EBotActiveState
+    {
+        Active,
+        Combat,
+        Sleep,
+        Disposed,
+    }
+
     public class BotComponent : BotComponentBase
     {
         public bool IsCheater { get; private set; }
@@ -74,27 +82,6 @@ namespace SAIN.SAINComponent
         public SAINSteeringClass Steering { get; private set; }
         public AimClass Aim { get; private set; }
 
-        public bool ShallExecuteRequests {
-            get
-            {
-                BotRequest currRequest = BotOwner.BotRequestController.CurRequest;
-                if (currRequest == null)
-                {
-                    return false;
-                }
-                IPlayer requester = currRequest.Requester;
-                if (requester == null)
-                {
-                    return false;
-                }
-                if (HasEnemy && currRequest.Requester.IsAI)
-                {
-                    return false;
-                }
-                return true;
-            }
-        }
-
         public bool IsDead => !Person.ActivationClass.IsAlive;
         public bool GameEnding => BotActivation.GameEnding;
         public bool SAINLayersActive => BotActivation.SAINLayersActive;
@@ -125,51 +112,37 @@ namespace SAIN.SAINComponent
 
         public void ManualUpdate()
         {
-            UnityEngine.Profiling.Profiler.BeginSample("SAIN Bot Update");
-
-            BotActivation.Update();
+            float CurrentTime = Time.time;
+            //Logger.LogDebug($"Ticking {AlwaysTickClasses.Count} AlwaysTickClasses");
+            TickClassGroup(AlwaysTickClasses, CurrentTime);
             if (BotActive)
             {
-                AILimit.Update();
-                CurrentTarget.Update();
-                EnemyController.Update();
-                BotStuck.Update();
-                Decision.Update();
-                GlobalEvents.Update();
-
+                //Logger.LogDebug($"Ticking {TickWhenActiveClasses.Count} TickWhenActiveClasses");
+                TickClassGroup(TickWhenActiveClasses, CurrentTime);
                 if (!BotInStandBy)
                 {
-                    Info.Update();
-                    BusyHandsDetector.Update();
-                    WeightManagement.Update();
-                    DoorOpener.Update();
-                    Aim.Update();
-                    Search.Update();
-                    Memory.Update();
-                    FriendlyFire.Update();
-                    Vision.Update();
-                    Mover.Update();
-                    Hearing.Update();
-                    Talk.Update();
-                    Cover.Update();
-                    Squad.Update();
-                    SelfActions.Update();
-                    Grenade.Update();
-                    Steering.Update();
-                    Vault.Update();
-                    Suppression.Update();
-                    AimDownSightsController.Update();
-                    SpaceAwareness.Update();
-                    Medical.Update();
-                    BotLight.Update();
-                    ManualShoot.Update();
-                    Shoot.Update();
-
+                    //Logger.LogDebug($"Ticking {TickWhenNoSleepClasses.Count} TickWhenNoSleepClasses");
+                    TickClassGroup(TickWhenNoSleepClasses, CurrentTime);
                     handleDumbShit();
+                    if (HasEnemy)
+                    {
+                        //Logger.LogDebug($"Ticking {TickWhenCombatClasses.Count} TickWhenCombatClasses");
+                        TickClassGroup(TickWhenCombatClasses, CurrentTime);
+                    }
                 }
             }
+        }
 
-            UnityEngine.Profiling.Profiler.EndSample();
+        private static void TickClassGroup(List<IBotClass> List, float CurrentTime)
+        {
+            for (int i = 0; i < List.Count; i++)
+            {
+                IBotClass Class = List[i];
+                if (Class != null && Class.ShallTick(CurrentTime))
+                {
+                    Class.ManualUpdate();
+                }
+            }
         }
 
         public bool InitializeBot(PersonClass person)
@@ -202,74 +175,42 @@ namespace SAIN.SAINComponent
             try
             {
                 // Must be first, other classes use it
-                Info = initBotClass<SAINBotInfoClass>();
+                Info = new SAINBotInfoClass(this);
 
                 NoBushESP = this.gameObject.AddComponent<SAINNoBushESP>();
 
-                Squad =
-                    initBotClass<SAINSquadClass>();
-                BusyHandsDetector =
-                    initBotClass<BotBusyHandsDetector>();
-                GlobalEvents =
-                    initBotClass<BotGlobalEventsClass>();
-                Shoot =
-                    initBotClass<ShootDeciderClass>();
-                WeightManagement =
-                    initBotClass<BotWeightManagement>();
-                Memory =
-                    initBotClass<SAINMemoryClass>();
-                BotStuck =
-                    initBotClass<SAINBotUnstuckClass>();
-                Hearing =
-                    initBotClass<SAINHearingSensorClass>();
-                Talk =
-                    initBotClass<SAINBotTalkClass>();
-                Decision =
-                    initBotClass<SAINDecisionClass>();
-                Cover =
-                    initBotClass<SAINCoverClass>();
-                SelfActions =
-                    initBotClass<SAINSelfActionClass>();
-                Steering =
-                    initBotClass<SAINSteeringClass>();
-                Grenade =
-                    initBotClass<BotGrenadeManager>();
-                Mover =
-                    initBotClass<SAINMoverClass>();
-                EnemyController =
-                    initBotClass<SAINEnemyController>();
-                FriendlyFire =
-                    initBotClass<SAINFriendlyFireClass>();
-                Vision =
-                    initBotClass<SAINVisionClass>();
-                Search =
-                    initBotClass<SAINSearchClass>();
-                Vault =
-                    initBotClass<SAINVaultClass>();
-                Suppression =
-                    initBotClass<SAINBotSuppressClass>();
-                AILimit =
-                    initBotClass<SAINAILimit>();
-                AimDownSightsController =
-                    initBotClass<AimDownSightsController>();
-                SpaceAwareness =
-                    initBotClass<SAINBotSpaceAwareness>();
-                DoorOpener =
-                    initBotClass<DoorOpener>();
-                Medical =
-                    initBotClass<SAINBotMedicalClass>();
-                BotLight =
-                    initBotClass<BotLightController>();
-                BackpackDropper =
-                    initBotClass<BotBackpackDropClass>();
-                CurrentTarget =
-                    initBotClass<CurrentTargetClass>();
-                ManualShoot =
-                    initBotClass<ManualShootClass>();
-                BotActivation =
-                    initBotClass<SAINActivationClass>();
-                Aim =
-                    initBotClass<AimClass>();
+                Squad = new SAINSquadClass(this);
+                BusyHandsDetector = new BotBusyHandsDetector(this);
+                GlobalEvents = new BotGlobalEventsClass(this);
+                Shoot = new ShootDeciderClass(this);
+                WeightManagement = new BotWeightManagement(this);
+                Memory = new SAINMemoryClass(this);
+                BotStuck = new SAINBotUnstuckClass(this);
+                Hearing = new SAINHearingSensorClass(this);
+                Talk = new SAINBotTalkClass(this);
+                Decision = new SAINDecisionClass(this);
+                Cover = new SAINCoverClass(this);
+                SelfActions = new SAINSelfActionClass(this);
+                Steering = new SAINSteeringClass(this);
+                Grenade = new BotGrenadeManager(this);
+                Mover = new SAINMoverClass(this);
+                EnemyController = new SAINEnemyController(this);
+                FriendlyFire = new SAINFriendlyFireClass(this);
+                Vision = new SAINVisionClass(this);
+                Search = new SAINSearchClass(this);
+                Vault = new SAINVaultClass(this);
+                Suppression = new SAINBotSuppressClass(this);
+                AILimit = new SAINAILimit(this);
+                AimDownSightsController = new AimDownSightsController(this);
+                SpaceAwareness = new SAINBotSpaceAwareness(this);
+                DoorOpener = new DoorOpener(this);
+                Medical = new SAINBotMedicalClass(this);
+                BotLight = new BotLightController(this);
+                BackpackDropper = new BotBackpackDropClass(this);
+                CurrentTarget = new CurrentTargetClass(this);
+                ManualShoot = new ManualShootClass(this);
+                BotActivation = new SAINActivationClass(this);
+                Aim = new AimClass(this);
             }
             catch (Exception ex)
             {
@@ -279,11 +220,42 @@ namespace SAIN.SAINComponent
             return true;
         }
 
-        private T initBotClass<T>() where T : BotBase
+        public void AddBotClass(IBotClass Class)
         {
-            T botClass = (T)Activator.CreateInstance(typeof(T), [this]);
-            _botClasses.Add(typeof(T), botClass as IBotClass);
-            return botClass;
+            if (Class == null)
+            {
+                Logger.LogError($"Bot Class of is null, cannot add it to list!");
+                return;
+            }
+            BotClasses.Add(Class);
+        }
+
+        public void AddBotTickClass(IBotClass Class)
+        {
+            if (Class.CanEverTick)
+            {
+                switch (Class.TickRequirement)
+                {
+                    case ESAINTickState.AlwaysUpdate:
+                        AlwaysTickClasses.Add(Class);
+                        break;
+
+                    case ESAINTickState.OnlyBotActive:
+                        TickWhenActiveClasses.Add(Class);
+                        break;
+
+                    case ESAINTickState.OnlyNoSleep:
+                        TickWhenNoSleepClasses.Add(Class);
+                        break;
+
+                    case ESAINTickState.OnlyBotInCombat:
+                        TickWhenCombatClasses.Add(Class);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
 
         private bool addToSquad()
@@ -311,15 +283,15 @@ namespace SAIN.SAINComponent
                 Logger.LogError($"Error When Initializing Components, Disposing... : {ex}");
                 return false;
             }
-            foreach (var botClass in _botClasses)
+            foreach (var botClass in BotClasses)
             {
                 try
                 {
-                    botClass.Value.Init();
+                    botClass.Init();
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Error When Initializing Class [{botClass.Key.ToString()}], Disposing... : {ex}");
+                    Logger.LogError($"Error When Initializing Class [{botClass}], Disposing... : {ex}");
                     return false;
                 }
             }
@@ -453,15 +425,15 @@ namespace SAIN.SAINComponent
             BotActivation?.SetActive(false);
             StopAllCoroutines();
 
-            foreach (var botClass in _botClasses)
+            foreach (var botClass in BotClasses)
             {
                 try
                 {
-                    botClass.Value.Dispose();
+                    botClass.Dispose();
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Dispose Class [{botClass.Key.ToString()}] Error: {ex}");
+                    Logger.LogError($"Dispose Class [{botClass}] Error: {ex}");
                 }
             }
 
@@ -478,7 +450,31 @@ namespace SAIN.SAINComponent
             Decision.ResetDecisions(false);
         }
 
-        private Dictionary<Type, IBotClass> _botClasses { get; } = new Dictionary<Type, IBotClass>();
+        /// <summary>
+        /// All Bot Component classes.
+        /// </summary>
+        private readonly List<IBotClass> BotClasses = [];
+
+        /// <summary>
+        /// Bot classes that should tick no matter what.
+        /// </summary>
+        private readonly List<IBotClass> AlwaysTickClasses = [];
+
+        /// <summary>
+        /// Bot classes that should tick when a bot is active.
+        /// </summary>
+        private readonly List<IBotClass> TickWhenActiveClasses = [];
+
+        /// <summary>
+        /// Bot classes that should tick when a bot not sleeping.
+        /// </summary>
+        private readonly List<IBotClass> TickWhenNoSleepClasses = [];
+
+        /// <summary>
+        /// Bot classes that should tick when a bot is in combat.
+        /// </summary>
+        private readonly List<IBotClass> TickWhenCombatClasses = [];
+
         private float defaultMoveSpeed;
         private float defaultSprintSpeed;
     }

@@ -14,19 +14,6 @@ namespace SAIN.SAINComponent.Classes
         {
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(updateSettings);
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-
         public bool CheckIfSoundHeard(AISoundData sound)
         {
             if (ShallLimitAI(sound))

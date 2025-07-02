@@ -34,7 +34,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             CoverPoint coverInUse = CoverInUse;
             if (coverInUse == null)
             {
-                Bot.Mover.DogFight.DogFightMove(true);
+                Bot.Mover.DogFight.DogFightMove(true, Bot.Enemy);
             }
             else
             {

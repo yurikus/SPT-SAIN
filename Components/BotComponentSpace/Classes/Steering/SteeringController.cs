@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class SteeringController : BotBase, IBotClass
+    public class SteeringController : BotBase
     {
         public Vector3 LookDirection => Bot.Transform.LookDirection;
         public Vector3 TargetSteerDirection { get; private set; }
@@ -12,21 +12,20 @@ namespace SAIN.SAINComponent.Classes
 
         public SteeringController(BotComponent sain) : base(sain)
         {
+            CanEverTick = false;
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.BotActivation.BotActiveToggle.OnToggle += onBotActive;
             onBotActive(true);
+            base.Init();
         }
 
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.BotActivation.BotActiveToggle.OnToggle -= onBotActive;
+            base.Dispose();
         }
 
         private void onBotActive(bool value)

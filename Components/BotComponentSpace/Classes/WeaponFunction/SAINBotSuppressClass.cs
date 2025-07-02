@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class SAINBotSuppressClass : BotBase, IBotClass
+    public class SAINBotSuppressClass : BotComponentClassBase
     {
         public event Action<ESuppressionState> OnSuppressionStateChanged;
 
@@ -24,23 +24,26 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public SAINBotSuppressClass(BotComponent sain) : base(sain)
         {
+            TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
-        public void Init()
+        public override void Init()
         {
-            base.SubscribeToPreset(null);
             Bot.EnemyController.Events.OnEnemyRemoved += clearLastSuppEnemy;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             checkState();
             decaySuppression();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Bot.EnemyController.Events.OnEnemyRemoved -= clearLastSuppEnemy;
+            base.Dispose();
         }
 
         public void CheckAddSuppression(Enemy enemy, float distance, float amount = -1)

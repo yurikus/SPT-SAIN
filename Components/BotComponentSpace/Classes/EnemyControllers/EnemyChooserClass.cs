@@ -31,22 +31,25 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
         }
 
-        public void Init()
+        public override void Init()
         {
             BaseClass.Events.OnEnemyRemoved += enemyRemoved;
             BaseClass.Events.OnEnemyKnownChanged += enemyKnownChanged;
+            base.Init();
         }
 
-        public void Update()
+        public override void ManualUpdate()
         {
             assignActiveEnemy();
             checkDiscrepency();
+            base.ManualUpdate();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             BaseClass.Events.OnEnemyRemoved -= enemyRemoved;
             BaseClass.Events.OnEnemyKnownChanged -= enemyKnownChanged;
+            base.Dispose();
         }
 
         private void enemyKnownChanged(bool known, Enemy enemy)

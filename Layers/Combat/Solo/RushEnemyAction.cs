@@ -71,7 +71,7 @@ namespace SAIN.Layers.Combat.Solo
 
             Shoot.CheckAimAndFire();
             Bot.Mover.Sprint(false);
-            Bot.Mover.DogFight.DogFightMove(true);
+            Bot.Mover.DogFight.DogFightMove(true, _enemy);
 
             if (_enemy.IsVisible && _enemy.CanShoot)
             {

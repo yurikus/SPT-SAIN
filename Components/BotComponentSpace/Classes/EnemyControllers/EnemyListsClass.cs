@@ -13,6 +13,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyListsClass(SAINEnemyController controller) : base(controller)
         {
             createLists();
+            CanEverTick = false;
         }
 
         private void createLists()
@@ -49,10 +50,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return GetEnemyList(type).Bots;
         }
 
-        public void Init()
+        public override void Init()
         {
             Bot.EnemyController.Events.OnEnemyAdded += enemyAdded;
             Bot.EnemyController.Events.OnEnemyRemoved += enemyRemoved;
+            base.Init();
         }
 
         private void enemyAdded(Enemy enemy)
@@ -67,11 +69,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 list.RemoveEnemy(enemy);
         }
 
-        public void Update()
-        {
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             var controller = Bot.EnemyController;
             if (controller != null)
@@ -80,6 +78,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 controller.Events.OnEnemyRemoved -= enemyRemoved;
             }
             clearLists();
+            base.Dispose();
         }
 
         private void clearLists()

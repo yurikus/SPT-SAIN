@@ -6,28 +6,20 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class PoseClass : BotBase, IBotClass
+    public class PoseClass : BotBase
     {
         public PoseClass(BotComponent sain) : base(sain)
         {
         }
 
-        public void Init()
-        {
-            base.SubscribeToPreset(null);
-        }
-
-        public void Update()
+        public override void ManualUpdate()
         {
             if (Player.IsSprintEnabled)
             {
                 _stopSprintPoseTime = Time.time + 1f;
                 BotOwner.SetPose(1f);
             }
-        }
-
-        public void Dispose()
-        {
+            base.ManualUpdate();
         }
 
         public bool SetPoseToCover()

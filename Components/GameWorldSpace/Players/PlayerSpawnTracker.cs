@@ -59,7 +59,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 return null;
             }
             //Logger.LogDebug($"Manually trying to recreate Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]");
-            addPlayer(player);
+            AddPlayer(player);
             if (AlivePlayers.TryGetValue(player.ProfileId, out var component))
             {
                 Logger.LogDebug($"Successfully created new Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]");
@@ -68,7 +68,7 @@ namespace SAIN.Components.PlayerComponentSpace
             return null;
         }
 
-        private void addPlayer(IPlayer iPlayer)
+        private void AddPlayer(IPlayer iPlayer)
         {
             if (iPlayer == null)
             {
@@ -77,10 +77,15 @@ namespace SAIN.Components.PlayerComponentSpace
             }
 
             string profileId = iPlayer.ProfileId;
-            Player player = GetPlayer(profileId);
+            Player player = iPlayer as Player;
             if (player == null)
             {
                 Logger.LogError($"Could not add PlayerComponent for Null Player. IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
+                return;
+            }
+            if (player.gameObject == null)
+            {
+                Logger.LogError($"Player Has null gameobject? IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
                 return;
             }
 
@@ -121,30 +126,10 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        public Player GetPlayer(string profileId)
-        {
-            if (!profileId.IsNullOrEmpty())
-            {
-                return GameWorldInfo.GetAlivePlayer(profileId);
-            }
-            return null;
-        }
-
-        private IEnumerator addDeadPlayer(Player player)
-        {
-            yield return null;
-
-            if (player != null &&
-                !player.HealthController.IsAlive)
-            {
-                DeadPlayers.Add(player);
-            }
-        }
-
         public PlayerSpawnTracker(GameWorldComponent sainGameWorld)
         {
             _sainGameWorld = sainGameWorld;
-            sainGameWorld.GameWorld.OnPersonAdd += addPlayer;
+            sainGameWorld.GameWorld.OnPersonAdd += AddPlayer;
         }
 
         public void Dispose()
@@ -152,7 +137,7 @@ namespace SAIN.Components.PlayerComponentSpace
             var gameWorld = _sainGameWorld?.GameWorld;
             if (gameWorld != null)
             {
-                gameWorld.OnPersonAdd -= addPlayer;
+                gameWorld.OnPersonAdd -= AddPlayer;
             }
             foreach (var player in AlivePlayers)
             {
@@ -162,6 +147,5 @@ namespace SAIN.Components.PlayerComponentSpace
         }
 
         private readonly GameWorldComponent _sainGameWorld;
-        private const int _maxDeadTracked = 30;
     }
 }

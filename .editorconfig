@@ -11,3 +11,6 @@ indent_style = space
 
 # S1104: Fields should not have public accessibility
 dotnet_diagnostic.S1104.severity = none
+
+# CS0114: Member hides inherited member; missing override keyword
+dotnet_diagnostic.CS0114.severity = warning
