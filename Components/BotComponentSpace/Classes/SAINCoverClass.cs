@@ -48,7 +48,7 @@ namespace SAIN.SAINComponent.Classes
                 {
                     return null;
                 }
-                if (checkMoving(cover) == true)
+                if (checkMoving(cover))
                 {
                     return null;
                 }
@@ -312,11 +312,6 @@ namespace SAIN.SAINComponent.Classes
             var position = BotOwner.MainParts[bodyPartType].Position;
             Vector3 direction = target - position;
             return Physics.Raycast(position, direction, dist, LayerMaskClass.HighPolyWithTerrainMask);
-        }
-
-        public bool BotIsAtCoverPoint(CoverPoint coverPoint)
-        {
-            return coverPoint?.BotInThisCover == true;
         }
 
         public bool BotIsAtCoverInUse()

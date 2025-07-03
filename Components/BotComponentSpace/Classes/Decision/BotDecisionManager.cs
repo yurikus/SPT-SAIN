@@ -165,6 +165,12 @@ namespace SAIN.SAINComponent.Classes.Decision
 
                 HasDecisionToggle.CheckToggle(hasDecision);
 
+                // this is dumb sorry
+                Bot.ManualShoot.Reset();
+                Bot.Suppression.ResetSuppressing();
+                BotOwner.AimingManager?.CurrentAiming?.LoseTarget();
+                BotOwner.ShootData?.EndShoot();
+
                 ChangeDecisionTime = Time.time;
                 OnDecisionMade?.Invoke(solo, squad, self, Bot);
             }

@@ -76,7 +76,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Prone.ManualUpdate();
             BlindFire.ManualUpdate();
             SprintController.ManualUpdate();
-            CheckSetBotToNavMesh();
+            //CheckSetBotToNavMesh();
 
             base.ManualUpdate();
         }
@@ -258,7 +258,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             if (reachDist < 0f)
-                reachDist = SAINPlugin.LoadedPreset.GlobalSettings.General.BaseReachDistance;
+            {
+                reachDist = BotOwner.Settings.FileSettings.Move.REACH_DIST;
+            }
 
             if (crawl && Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
                 Prone.SetProne(true);

@@ -24,8 +24,8 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         private const int TARGET_COVER_COUNT_HUMAN_PERF_MODE = 5;
 
         private const float UPDATE_TARGET_FREQUENCY = 0.25f;
-        private const float SAMPLE_POINT_ORIGIN_RANGE = 0.5f;
-        private const float SAMPLE_POINT_TARGET_RANGE = 0.5f;
+        private const float SAMPLE_POINT_ORIGIN_RANGE = 1f;
+        private const float SAMPLE_POINT_TARGET_RANGE = 1f;
 
         private const float RECHECK_POSITION_CHANGE = 0.5f;
         private const float RECHECK_POSITION_CHANGE_SQR = RECHECK_POSITION_CHANGE * RECHECK_POSITION_CHANGE;

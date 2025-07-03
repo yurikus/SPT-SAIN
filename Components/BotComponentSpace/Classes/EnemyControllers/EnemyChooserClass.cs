@@ -6,7 +6,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyChooserClass : BotSubClass<SAINEnemyController>, IBotClass
     {
-        public Enemy ActiveEnemy
+        public Enemy GoalEnemy
         {
             get
             {
@@ -19,13 +19,13 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     return;
                 }
 
-                LastEnemy = _activeEnemy;
+                LastGoalEnemy = _activeEnemy;
                 _activeEnemy = value;
-                BaseClass.Events.EnemyChanged(value, LastEnemy);
+                BaseClass.Events.EnemyChanged(value, LastGoalEnemy);
             }
         }
 
-        public Enemy LastEnemy { get; private set; }
+        public Enemy LastGoalEnemy { get; private set; }
 
         public EnemyChooserClass(SAINEnemyController controller) : base(controller)
         {
@@ -64,17 +64,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void enemyRemoved(string profileId, Enemy enemy)
         {
-            if (ActiveEnemy != null &&
-                ActiveEnemy.EnemyProfileId == profileId)
+            if (GoalEnemy != null &&
+                GoalEnemy.EnemyProfileId == profileId)
             {
-                ActiveEnemy = null;
-                LastEnemy = null;
+                GoalEnemy = null;
+                LastGoalEnemy = null;
                 return;
             }
-            if (LastEnemy != null &&
-                LastEnemy.EnemyProfileId == profileId)
+            if (LastGoalEnemy != null &&
+                LastGoalEnemy.EnemyProfileId == profileId)
             {
-                LastEnemy = null;
+                LastGoalEnemy = null;
             }
         }
 
@@ -106,7 +106,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             var targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy;
             if (targetEnemy != null &&
-                (ActiveEnemy == null || targetEnemy.IsDifferent(ActiveEnemy)))
+                (GoalEnemy == null || targetEnemy.IsDifferent(GoalEnemy)))
             {
                 return targetEnemy;
             }
@@ -117,11 +117,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 if (!goalEnemy.IsVisible)
                 {
-                    Enemy visibileEnemy = BaseClass.EnemyLists.First(EEnemyListType.Visible);
-                    if (visibileEnemy?.CheckValid() == true &&
-                        visibileEnemy.EnemyPerson.Active)
+                    Enemy visibleEnemy = BaseClass.EnemyLists.First(EEnemyListType.Visible);
+                    if (visibleEnemy?.CheckValid() == true &&
+                        visibleEnemy.EnemyPerson.Active)
                     {
-                        return visibileEnemy;
+                        return visibleEnemy;
                     }
                 }
                 return goalEnemy;
@@ -136,7 +136,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             enemy = null;
 
             EnemyInfo goalEnemy = BotOwner.Memory.GoalEnemy;
-            Enemy activeEnemy = ActiveEnemy;
+            Enemy activeEnemy = GoalEnemy;
 
             // make sure the bot's goal enemy isn't dead
             if (goalEnemy?.Person != null &&
@@ -196,7 +196,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             if (enemy == null || (enemy.CheckValid() && enemy.EnemyPerson.Active))
             {
-                ActiveEnemy = enemy;
+                GoalEnemy = enemy;
                 setGoalEnemy(enemy?.EnemyInfo);
             }
         }
@@ -204,7 +204,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private void setLastEnemy(Enemy activeEnemy)
         {
             bool nullActiveEnemy = activeEnemy?.EnemyPerson?.Active == true;
-            bool nullLastEnemy = LastEnemy?.EnemyPerson?.Active == true;
+            bool nullLastEnemy = LastGoalEnemy?.EnemyPerson?.Active == true;
 
             if (!nullLastEnemy && nullActiveEnemy)
             {
@@ -212,12 +212,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             if (nullLastEnemy && !nullActiveEnemy)
             {
-                LastEnemy = activeEnemy;
+                LastGoalEnemy = activeEnemy;
                 return;
             }
-            if (!AreEnemiesSame(activeEnemy, LastEnemy))
+            if (!AreEnemiesSame(activeEnemy, LastGoalEnemy))
             {
-                LastEnemy = activeEnemy;
+                LastGoalEnemy = activeEnemy;
                 return;
             }
         }
@@ -253,7 +253,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private void checkDiscrepency()
         {
             EnemyInfo goalEnemy = BotOwner.Memory.GoalEnemy;
-            if (goalEnemy != null && ActiveEnemy == null)
+            if (goalEnemy != null && GoalEnemy == null)
             {
                 //if (_nextLogTime < Time.time)
                 //{

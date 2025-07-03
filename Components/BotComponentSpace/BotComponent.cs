@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
@@ -18,6 +19,7 @@ using SAIN.SAINComponent.Classes.WeaponFunction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace SAIN.SAINComponent
@@ -32,16 +34,52 @@ namespace SAIN.SAINComponent
 
     public class BotComponent : BotComponentBase
     {
+        public void ActivateIfBotActive(BotOwner botOwner, PersonClass Person)
+        {
+            if (botOwner.BotState == EBotState.Active)
+            {
+                Activate(botOwner);
+            }
+        }
+
+        public void Activate(BotOwner botOwner)
+        {
+            if (_Activated)
+            {
+                return;
+            }
+            PersonClass person = botOwner.GetComponent<PlayerComponent>()?.Person;
+            if (person == null)
+            {
+                Logger.LogError("Person Null");
+                return;
+            }
+            if (botOwner.BotState == EBotState.Active)
+            {
+                if (InitializeBot(person))
+                {
+                    _Activated = true;
+                    OnBotActivated?.Invoke(this);
+                    return;
+                }
+                Dispose();
+            }
+        }
+
+        private bool _Activated = false;
+
+        public event Action<BotComponent> OnBotActivated;
+
         public bool IsCheater { get; private set; }
 
         public bool BotActive => BotActivation.BotActive;
         public bool BotInStandBy => BotActivation.BotInStandBy;
         public AILimitSetting CurrentAILimit => AILimit.CurrentAILimit;
 
-        public bool HasEnemy => EnemyController.ActiveEnemy?.EnemyPerson.Active == true;
-        public bool HasLastEnemy => EnemyController.LastEnemy?.EnemyPerson.Active == true;
-        public Enemy Enemy => HasEnemy ? EnemyController.ActiveEnemy : null;
-        public Enemy LastEnemy => HasLastEnemy ? EnemyController.LastEnemy : null;
+        public bool HasEnemy => EnemyController.GoalEnemy?.EnemyPerson.Active == true;
+        public bool HasLastEnemy => EnemyController.LastGoalEnemy?.EnemyPerson.Active == true;
+        public Enemy Enemy => HasEnemy ? EnemyController.GoalEnemy : null;
+        public Enemy LastEnemy => HasLastEnemy ? EnemyController.LastGoalEnemy : null;
 
         public Vector3? CurrentTargetPosition => CurrentTarget.CurrentTargetPosition;
         public Vector3? CurrentTargetDirection => CurrentTarget.CurrentTargetDirection;
@@ -112,10 +150,15 @@ namespace SAIN.SAINComponent
 
         public void ManualUpdate()
         {
+            BotOwner botOwner = BotOwner;
+            if (botOwner == null) return;
+            Player player = Player;
+            if (player == null) return;
+
             float CurrentTime = Time.time;
             //Logger.LogDebug($"Ticking {AlwaysTickClasses.Count} AlwaysTickClasses");
             TickClassGroup(AlwaysTickClasses, CurrentTime);
-            if (BotActive)
+            if (botOwner.BotState == EBotState.Active && player.HealthController.IsAlive)
             {
                 //Logger.LogDebug($"Ticking {TickWhenActiveClasses.Count} TickWhenActiveClasses");
                 TickClassGroup(TickWhenActiveClasses, CurrentTime);
@@ -138,8 +181,9 @@ namespace SAIN.SAINComponent
             for (int i = 0; i < List.Count; i++)
             {
                 IBotClass Class = List[i];
-                if (Class != null && Class.ShallTick(CurrentTime))
+                if (Class != null)
                 {
+                    //&& Class.ShallTick(CurrentTime)
                     Class.ManualUpdate();
                 }
             }
@@ -147,23 +191,23 @@ namespace SAIN.SAINComponent
 
         public bool InitializeBot(PersonClass person)
         {
-            if (base.Init(person) == false)
+            if (!base.Init(person))
             {
                 return false;
             }
-            if (CreateClasses() == false)
+            if (!CreateClasses())
             {
                 return false;
             }
-            if (addToSquad() == false)
+            if (!addToSquad())
             {
                 return false;
             }
-            if (initClasses() == false)
+            if (!initClasses())
             {
                 return false;
             }
-            if (finishInit() == false)
+            if (!finishInit())
             {
                 return false;
             }
@@ -388,8 +432,8 @@ namespace SAIN.SAINComponent
 
         public void LateUpdate()
         {
-            BotActivation.LateUpdate();
-            EnemyController.LateUpdate();
+            //BotActivation?.LateUpdate();
+            //EnemyController?.LateUpdate();
         }
 
         private void handleDumbShit()

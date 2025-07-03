@@ -29,19 +29,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             base.ManualUpdate();
         }
 
-        public void CheckVision(out bool didCheck)
-        {
-            // staggers ai vision over a few quarters of a second
-            if (!ShallStart())
-            {
-                didCheck = false;
-                return;
-            }
-
-            didCheck = true;
-            Enemy.Events.OnEnemyLineOfSightChanged.CheckToggle(LineOfSight);
-        }
-
         private bool ShallStart()
         {
             if (_visionStarted)

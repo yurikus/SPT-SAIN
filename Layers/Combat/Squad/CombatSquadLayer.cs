@@ -47,6 +47,7 @@ namespace SAIN.Layers.Combat.Squad
 
         public override bool IsActive()
         {
+            base.IsActive();
             bool active =
                 Bot?.BotActive == true &&
                 SquadDecision != ESquadDecision.None &&
@@ -64,6 +65,11 @@ namespace SAIN.Layers.Combat.Squad
 
         public override bool IsCurrentActionEnding()
         {
+            if (ResetAction)
+            {
+                ResetAction = false;
+                return true;
+            }
             return Bot?.BotActive == true &&
                 SquadDecision != LastActionDecision;
         }

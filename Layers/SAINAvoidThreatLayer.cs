@@ -46,6 +46,7 @@ namespace SAIN.Layers
 
         public override bool IsActive()
         {
+            base.IsActive();
             bool active =
                 Bot?.BotActive == true &&
                 (CurrentDecision == ECombatDecision.DogFight ||
@@ -57,6 +58,11 @@ namespace SAIN.Layers
 
         public override bool IsCurrentActionEnding()
         {
+            if (ResetAction)
+            {
+                ResetAction = false;
+                return true;
+            }
             return Bot?.BotActive == true && _lastActionDecision != CurrentDecision;
         }
 

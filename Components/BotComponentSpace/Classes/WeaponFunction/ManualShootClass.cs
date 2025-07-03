@@ -12,76 +12,70 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             TickRequirement = ESAINTickState.OnlyNoSleep;
         }
 
+        public override void Init()
+        {
+            Bot.EnemyController.Events.OnEnemyRemoved += CheckClearEnemy;
+            base.Init();
+        }
+
         public override void ManualUpdate()
         {
             checkReset();
             base.ManualUpdate();
         }
 
-        private void checkReset()
+        public override void Dispose()
+        {
+            Bot.EnemyController.Events.OnEnemyRemoved -= CheckClearEnemy;
+            base.Dispose();
+        }
+
+        private Enemy ManualShootEnemy;
+
+        private void CheckClearEnemy(string ID, Enemy Enemy)
+        {
+            if (Enemy == ManualShootEnemy)
+            {
+                Reset();
+            }
+        }
+
+        public void Reset()
         {
             if (Reason != EShootReason.None)
             {
-                if (!BotOwner.WeaponManager.HaveBullets || _timeStartManualShoot + 2f < Time.time || !BotOwner.ShootData.Shooting)
-                {
-                    TryShoot(false, Vector3.zero);
-                    return;
-                }
-                if (Shooting && !Bot.FriendlyFire.CheckFriendlyFire(ShootPosition))
-                {
-                    TryShoot(false, Vector3.zero);
-                }
-                return;
+                BotOwner.ShootData.EndShoot();
             }
-            if (Shooting && !isEnemyVisibleForShoot(Bot.Enemy) && !isEnemyVisibleForShoot(Bot.LastEnemy))
+            Reason = EShootReason.None;
+            ShootPosition = Vector3.zero;
+            ManualShootEnemy = null;
+        }
+
+        private void checkReset()
+        {
+            if (Reason != EShootReason.None && (!BotOwner.WeaponManager.HaveBullets || _timeStartManualShoot + 2f < Time.time))
             {
-                //BotOwner.ShootData.EndShoot();
+                Reset();
             }
         }
 
-        private bool isEnemyVisibleForShoot(Enemy enemy)
+        public bool TryShoot(Enemy Enemy, Vector3 targetPos, bool checkFF = true, EShootReason reason = EShootReason.None)
         {
-            if (enemy != null && !enemy.IsVisible && enemy.TimeSinceSeen > 0.25f)
+            if (Enemy != null &&
+                CanShoot(checkFF) &&
+                Bot.Steering.AngleToPointFromLookDir(targetPos) <= 10 &&
+                Bot.FriendlyFire.CheckFriendlyFire(targetPos))
             {
-                return false;
-            }
-            return true;
-        }
-
-        public bool TryShoot(bool value, Vector3 targetPos, bool checkFF = true, EShootReason reason = EShootReason.None)
-        {
-            ShootPosition = targetPos;
-            Reason = value ? reason : EShootReason.None;
-
-            if (value)
-            {
-                if (!CanShoot(checkFF))
-                {
-                    Reason = EShootReason.None;
-                    return false;
-                }
-                //Bot.Steering.LookToPoint(targetPos);
-                if (Shooting)
-                {
-                    return false;
-                }
-                if (Bot.Steering.AngleToPointFromLookDir(targetPos) > 10)
-                {
-                    return false;
-                }
-                if (!Bot.FriendlyFire.CheckFriendlyFire(targetPos))
-                {
-                    return false;
-                }
-                if (BotOwner.ShootData.Shoot())
+                ManualShootEnemy = Enemy;
+                ShootPosition = targetPos;
+                Reason = reason;
+                if (!Shooting && BotOwner.ShootData.Shoot())
                 {
                     _timeStartManualShoot = Time.time;
-                    return true;
                 }
-                return false;
+                return true;
             }
-            BotOwner.ShootData.EndShoot();
-            Reason = EShootReason.None;
+            Reset();
             return false;
         }
 
@@ -123,6 +117,5 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         public Vector3 ShootPosition { get; private set; }
 
         public EShootReason Reason { get; private set; }
-
     }
 }

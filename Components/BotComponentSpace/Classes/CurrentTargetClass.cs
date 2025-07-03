@@ -86,18 +86,10 @@ namespace SAIN.SAINComponent.Classes
         private Vector3? getVisibleEnemyPos(out Enemy targetEnemy)
         {
             Enemy enemy = Bot.Enemy;
-            if (enemy != null)
+            if (enemy != null && enemy.IsVisible)
             {
-                Vector3 pos = enemy.EnemyPosition;
-                if (enemy.IsVisible)
-                {
-                    targetEnemy = enemy;
-                    return pos;
-                }
-                if (enemy.Seen && enemy.TimeSinceSeen < 1f)
-                {
-                    //return pos;
-                }
+                targetEnemy = enemy;
+                return enemy.EnemyPosition;
             }
             targetEnemy = null;
             return null;
@@ -141,7 +133,7 @@ namespace SAIN.SAINComponent.Classes
 
         private Vector3? getEnemylastKnownPos(out Enemy targetEnemy)
         {
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.EnemyController.GoalEnemy;
             if (enemy != null)
             {
                 var lastKnown = getLastKnown(enemy);

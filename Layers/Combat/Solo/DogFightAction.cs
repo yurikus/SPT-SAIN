@@ -1,5 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 
 namespace SAIN.Layers.Combat.Solo
 {
@@ -12,10 +13,11 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
+            Enemy Enemy = Bot.Decision.DogFightDecision.DogFightTarget ?? Bot.Enemy;
             Bot.Mover.SetTargetPose(1f);
-            Bot.Steering.SteerByPriority();
-            Bot.Mover.DogFight.DogFightMove(true, Bot.Enemy);
-            Shoot.CheckAimAndFire();
+            Bot.Steering.SteerByPriority(Enemy);
+            Bot.Mover.DogFight.DogFightMove(true, Enemy);
+            Shoot.CheckAimAndFire(Enemy);
             this.EndProfilingSample();
         }
 

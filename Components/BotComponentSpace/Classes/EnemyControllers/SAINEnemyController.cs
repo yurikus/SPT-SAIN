@@ -8,11 +8,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
     public class SAINEnemyController : BotComponentClassBase
     {
         public Dictionary<string, Enemy> Enemies => _listController.Enemies;
+        public HashSet<Enemy> EnemiesArray => _listController.EnemiesArray;
         public EnemyControllerEvents Events { get; }
         public EnemyListsClass EnemyLists { get; }
 
-        public Enemy ActiveEnemy => _enemyChooser.ActiveEnemy;
-        public Enemy LastEnemy => _enemyChooser.LastEnemy;
+        public Enemy GoalEnemy => _enemyChooser.GoalEnemy;
+        public Enemy LastGoalEnemy => _enemyChooser.LastGoalEnemy;
         public bool AtPeace => Events.OnPeaceChanged.Value && Events.OnPeaceChanged.TimeSinceTrue > 1f;
         public bool ActiveHumanEnemy => Events.ActiveHumanEnemyEvent.Value;
         public bool HumanEnemyInLineofSight => Events.HumanInLineOfSightEvent.Value;
@@ -60,7 +61,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void updateDebug()
         {
-            var enemy = ActiveEnemy;
+            var enemy = GoalEnemy;
             if (enemy != null)
             {
                 if (SAINPlugin.DebugMode && SAINPlugin.DrawDebugGizmos)

@@ -80,8 +80,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 getNewDFTargets();
                 DogFightTarget = selectDFTarget();
             }
-            clearDogFightTarget();
-            return false;
+            return DogFightTarget != null;
         }
 
         private void clearDogFightTarget()
@@ -95,8 +94,13 @@ namespace SAIN.SAINComponent.Classes.Decision
         private bool shallClearDogfightTarget(Enemy enemy)
         {
             if (enemy == null ||
+                !enemy.Seen ||
                 !enemy.EnemyKnown ||
                 enemy.Player?.HealthController.IsAlive == false)
+            {
+                return true;
+            }
+            if (!Bot.EnemyController.Enemies.ContainsValue(enemy) || !enemy.CheckValid())
             {
                 return true;
             }
@@ -108,52 +112,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             return !enemy.IsVisible && enemy.TimeSinceSeen > 6f;
         }
 
-        private bool findDogFightTarget()
-        {
-            if (DogFightTarget != null)
-            {
-                if (shallDogFightEnemy(DogFightTarget))
-                {
-                    return true;
-                }
-                if (shallClearDogfightTarget(DogFightTarget))
-                {
-                    DogFightTarget = null;
-                }
-            }
-
-            if (_changeDFTargetTime < Time.time)
-            {
-                _changeDFTargetTime = Time.time + 0.5f;
-
-                clearDFTargets();
-                Enemy newTarget = selectDFTarget();
-                if (newTarget != null)
-                {
-                    DogFightTarget = newTarget;
-                    return true;
-                }
-
-                getNewDFTargets();
-                DogFightTarget = selectDFTarget();
-            }
-
-            return DogFightTarget != null;
-        }
-
         private float _changeDFTargetTime;
-
-        private void clearDFTargets()
-        {
-            int count = _dogFightTargets.Count;
-            for (int i = count - 1; i >= 0; i--)
-            {
-                if (shallClearDogfightTarget(_dogFightTargets[i]))
-                {
-                    _dogFightTargets.RemoveAt(i);
-                }
-            }
-        }
 
         private void getNewDFTargets()
         {
@@ -198,7 +157,9 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallDogFightEnemy(Enemy enemy)
         {
-            return enemy?.CheckValid() == true &&
+            return enemy != null && 
+                Bot.EnemyController.Enemies.ContainsValue(enemy) &&
+                enemy?.CheckValid() == true &&
                 enemy.IsVisible &&
                 enemy.EnemyKnown &&
                 enemy.Path.PathDistance <= _dogFightStartDist;

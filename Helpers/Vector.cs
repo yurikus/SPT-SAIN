@@ -11,6 +11,31 @@ namespace SAIN.Helpers
 {
     public static class Vector
     {
+        public static List<Vector3> GeneratePointsAlongDirection(Vector3 start, Vector3 direction, float distance, float spacing)
+        {
+            List<Vector3> points = new();
+            Vector3 step = direction.normalized * spacing;
+
+            int pointCount = Mathf.FloorToInt(distance / spacing);
+            for (int i = 0; i <= pointCount; i++)
+            {
+                Vector3 point = start + step * i;
+                points.Add(point);
+            }
+
+            return points;
+        }
+        public static void GeneratePointsAlongDirection(List<Vector3> points, Vector3 start, Vector3 direction, float distance, float spacing)
+        {
+            Vector3 step = direction.normalized * spacing;
+            int pointCount = Mathf.FloorToInt(distance / spacing);
+            for (int i = 0; i <= pointCount; i++)
+            {
+                Vector3 point = start + step * i;
+                points.Add(point);
+            }
+        }
+
         public static float FindFlatSignedAngle(Vector3 a, Vector3 b, Vector3 origin)
         {
             a.y = 0;
@@ -541,7 +566,7 @@ namespace SAIN.Helpers
             CreateVectorArray8Dir(Vector3.back, array);
         }
 
-        // I have no idea what the fuck this does, but im copying it here to avoid using gclass references. names are guesses based on the functions that call it, also WHAT THE FUCK 
+        // I have no idea what the fuck this does, but im copying it here to avoid using gclass references. names are guesses based on the functions that call it, also WHAT THE FUCK
 
         public static Vector3? GetCrossPoint(VectorPair p1, VectorPair p2)
         {
@@ -585,11 +610,13 @@ namespace SAIN.Helpers
                 this.x = dx;
                 this.y = dy;
             }
+
             public CrossPoint(Vector3 v)
             {
                 this.x = v.x;
                 this.y = v.z;
             }
+
             public float x;
             public float y;
         }

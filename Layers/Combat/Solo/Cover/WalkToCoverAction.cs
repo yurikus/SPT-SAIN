@@ -29,19 +29,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Bot.Mover.SetTargetPose(1f);
 
             Enemy Enemy = Bot.Enemy;
-            if (Enemy == null)
-            {
-                this.EndProfilingSample();
-                return;
-            }
-
-            if (Bot.Cover.CoverPoints.Count == 0)
-            {
-                Bot.Mover.DogFight.DogFightMove(true, Enemy);
-                EngageEnemy();
-                this.EndProfilingSample();
-                return;
-            }
 
             if (_nextUpdateCoverTime < Time.time)
             {
@@ -51,12 +38,16 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 reCheckCover();
             }
 
-            if (Bot.Cover.CoverInUse == null)
+            EngageEnemy(Enemy);
+
+            if (_coverDestination == null)
+            {
+                Bot.Mover.DogFight.DogFightMove(true, Enemy);
+            }
+            else if (Bot.Cover.CoverInUse == null)
             {
                 Bot.Mover.DogFight.DogFightMove(false, Enemy);
             }
-
-            EngageEnemy();
             this.EndProfilingSample();
         }
 
@@ -123,64 +114,32 @@ namespace SAIN.Layers.Combat.Solo.Cover
         private float RecalcPathTimer = 0f;
 
         private CoverPoint _coverDestination;
-        private float _suppressTime;
 
-        private void EngageEnemy()
+        private void EngageEnemy(Enemy Enemy)
         {
-            if (!Bot.Enemy.IsVisible &&
+            if (Enemy == null)
+            {
+                Bot.Steering.SteerByPriority(null, true);
+                return;
+            }
+
+            if (Shoot.CheckAimAndFire(Enemy))
+                return;
+
+            if (!Enemy.IsVisible &&
                 Time.time - _timeStart > 1f &&
                 BotOwner.WeaponManager.HaveBullets &&
-                Bot.Enemy.TimeSinceLastKnownUpdated < 30f)
+                Enemy.TimeSinceLastKnownUpdated < 30f)
             {
-                Vector3? suppressTarget = Bot.Enemy?.SuppressionTarget;
-                if (suppressTarget != null)
+                Vector3? suppressTarget = Enemy.SuppressionTarget;
+                if (suppressTarget != null && Bot.Suppression.SuppressPosition(suppressTarget.Value, Enemy))
                 {
-                    SuppressPosition(suppressTarget.Value);
                     return;
                 }
             }
 
-            if (_suppressTime < Time.time)
-                resetSuppressing();
-
-            if (!Bot.Steering.SteerByPriority(null, false))
-                Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy);
-
-            Shoot.CheckAimAndFire();
-        }
-
-        private bool suppressing;
-
-        private Vector3? findSuppressTarget()
-        {
-            return Bot.Enemy?.SuppressionTarget;
-        }
-
-        private void SuppressPosition(Vector3 position)
-        {
-            if (_suppressTime > Time.time)
-            {
-                return;
-            }
-            if (!Bot.ManualShoot.TryShoot(true, position, true, EShootReason.WalkToCoverSuppress))
-            {
-                return;
-            }
-
-            suppressing = true;
-            Bot.Enemy.Status.EnemyIsSuppressed = true;
-
-            float timeAdd;
-            if (Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
-            {
-                timeAdd = 0.05f * Random.Range(0.75f, 1.25f);
-            }
-            else
-            {
-                timeAdd = 0.25f * Random.Range(0.66f, 1.33f);
-            }
-
-            _suppressTime = Time.time + timeAdd;
+            if (!Bot.Steering.SteerByPriority(Enemy, false))
+                Bot.Steering.LookToLastKnownEnemyPosition(Enemy);
         }
 
         public override void Start()
@@ -195,21 +154,9 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
             Bot.Mover.DogFight.ResetDogFightStatus();
             Bot.Cover.CheckResetCoverInUse();
-            resetSuppressing();
+            Bot.Suppression.ResetSuppressing();
         }
 
-        private void resetSuppressing()
-        {
-            if (suppressing)
-            {
-                suppressing = false;
-                Bot.ManualShoot.TryShoot(false, Vector3.zero);
-                if (Bot.Enemy != null)
-                {
-                    Bot.Enemy.Status.EnemyIsSuppressed = false;
-                }
-            }
-        }
 
         private float _timeStart;
 

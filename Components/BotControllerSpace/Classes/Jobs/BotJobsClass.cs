@@ -15,11 +15,6 @@ namespace SAIN.Components
 
         public void Update()
         {
-            var bots = Bots;
-            if (bots != null && bots.Count > 0)
-            {
-                UpdateVisionForBots();
-            }
         }
 
         public void Dispose()
@@ -29,14 +24,12 @@ namespace SAIN.Components
             PlayerDistancesJob.Dispose();
         }
 
-        private void UpdateVisionForBots()
+        public void UpdateVisionForBots(HashSet<BotComponent> Bots)
         {
-            _localBotList.Clear();
-            _localBotList.AddRange(Bots.Values);
-            _localBotList.Sort((x, y) => x.LastCheckVisibleTime.CompareTo(y.LastCheckVisibleTime));
+            //_localBotList.Sort((x, y) => x.LastCheckVisibleTime.CompareTo(y.LastCheckVisibleTime));
 
             int count = 0;
-            foreach (var bot in _localBotList)
+            foreach (BotComponent bot in Bots)
             {
                 if (bot == null) continue;
 
@@ -51,15 +44,15 @@ namespace SAIN.Components
                     count++;
                     if (count >= maxBotsPerFrame)
                     {
-                        break;
+                        //break;
                     }
                 }
             }
-            _localBotList.Clear();
+            //_localBotList.Clear();
         }
 
         private static int maxBotsPerFrame = 5;
-        private readonly List<BotComponent> _localBotList = new();
+        private readonly HashSet<BotComponent> _localBotList = [];
 
         static BotJobsClass()
         {

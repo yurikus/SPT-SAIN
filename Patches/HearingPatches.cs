@@ -489,7 +489,7 @@ namespace SAIN.Patches.Hearing
                 return;
             }
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Looting;
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Looting, __instance.Position, ____searchSource.MaxDistance, 1f);
+            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Looting, __instance.Position, baseRange, 1f);
         }
     }
 

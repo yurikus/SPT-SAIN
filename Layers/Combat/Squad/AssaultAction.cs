@@ -14,10 +14,6 @@ namespace SAIN.Layers.Combat.Squad
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
-            this.EndProfilingSample();
-            Shoot.CheckAimAndFire();
-
             Enemy enemy = Bot.Enemy;
             if (!Bot.Steering.SteerByPriority(enemy, false) && enemy != null)
             {
@@ -26,6 +22,7 @@ namespace SAIN.Layers.Combat.Squad
 
             if (enemy != null)
             {
+                Shoot.CheckAimAndFire(enemy);
                 if (PointDestination == null)
                 {
                     PointDestination = Bot.Cover.FindPointInDirection(enemy.EnemyDirection);

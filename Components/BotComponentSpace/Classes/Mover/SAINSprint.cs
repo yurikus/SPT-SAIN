@@ -254,14 +254,15 @@ namespace SAIN.SAINComponent.Classes.Mover
                 float distToCurrent = float.MaxValue;
                 while (distToCurrent > _moveSettings.BotSprintCornerReachDist)
                 {
+                    Vector3 BotPos = BotPosition;
                     if (BotOwner.Mover.IsMoving)
                     {
                         BotOwner.Mover.Stop(); // Backwards sprint / moonwalking fix
                     }
-                    distToCurrent = DistanceToCurrentCornerSqr();
+                    Vector3 destination = CurrentCornerDestination();
+                    distToCurrent = (destination - BotPos).sqrMagnitude;
                     DistanceToCurrentCorner = distToCurrent;
 
-                    Vector3 current = CurrentCornerDestination();
                     if (SAINPlugin.DebugMode)
                     {
                         //DebugGizmos.Sphere(current, 0.1f);
@@ -269,13 +270,12 @@ namespace SAIN.SAINComponent.Classes.Mover
                     }
 
                     // Start or stop sprinting with a buffer
-                    HandleSprinting(distToCurrent, urgency);
+                    HandleSprinting(BotPos, urgency);
 
-                    Vector3 destination = CurrentCornerDestination();
                     if (!Bot.DoorOpener.Interacting &&
                         !Bot.DoorOpener.BreachingDoor)
                     {
-                        TrackMovement();
+                        TrackMovement(BotPos);
                         float timeSinceNoMove = timeSinceNotMoving;
                         if (timeSinceNoMove > _moveSettings.BotSprintRecalcTime && Time.time - _timeStartRun > 2f)
                         {
@@ -298,13 +298,6 @@ namespace SAIN.SAINComponent.Classes.Mover
 
                     float speed = IsSprintEnabled ? _moveSettings.BotSprintTurnSpeedWhileSprint : _moveSettings.BotSprintTurningSpeed;
                     float dotProduct = Steer(destination, speed);
-
-                    //if (onLastCorner() &&
-                    //    distToCurrent <= _moveSettings.BotSprintFinalDestReachDist)
-                    //{
-                    //    yield break;
-                    //}
-
                     yield return null;
                 }
                 MoveToNextCorner();
@@ -357,7 +350,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             return ShallStopSprintWhenSeeEnemy && Bot.Enemy?.IsVisible == true;
         }
 
-        private void HandleSprinting(float distToCurrent, ESprintUrgency urgency)
+        private void HandleSprinting(Vector3 BotPos, ESprintUrgency urgency)
         {
             // I cant sprint :(
             if (!Player.MovementContext.CanSprint)
@@ -387,7 +380,8 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (Player.IsSprintEnabled)
+            bool sprintingNow = Player.IsSprintEnabled;
+            if (sprintingNow)
             {
                 if (Bot.IsCheater)
                 {
@@ -408,9 +402,16 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             // We are arriving to our destination, stop sprinting when you get close.
-            if ((LastCorner() - BotPosition).magnitude <= _moveSettings.BotSprintDistanceToStopSprintDestination)
+            float StopSprintDistSqr = _moveSettings.BotSprintDistanceToStopSprintDestination.Sqr();
+            float LastCornerDistSqr = (LastCorner() - BotPos).sqrMagnitude;
+            if (sprintingNow && LastCornerDistSqr <= StopSprintDistSqr)
             {
                 Bot.Mover.EnableSprintPlayer(false);
+                CurrentRunStatus = RunStatus.ArrivingAtDestination;
+                return;
+            }
+            else if (!sprintingNow && LastCornerDistSqr <= StopSprintDistSqr * 1.1f)
+            {
                 CurrentRunStatus = RunStatus.ArrivingAtDestination;
                 return;
             }
@@ -468,12 +469,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             return Vector3.Angle(aDir, bDir);
         }
 
-        private void TrackMovement()
+        private void TrackMovement(Vector3 botPos)
         {
             if (nextCheckPosTime < Time.time)
             {
                 nextCheckPosTime = Time.time + _moveSettings.BotSprintNotMovingCheckFreq;
-                Vector3 botPos = BotPosition;
                 positionMoving = (botPos - lastCheckPos).sqrMagnitude > _moveSettings.BotSprintNotMovingThreshold;
                 if (positionMoving)
                 {
@@ -498,23 +498,23 @@ namespace SAIN.SAINComponent.Classes.Mover
             get
             {
                 Vector3 botPos = Bot.Position;
-                if (NavMesh.SamplePosition(botPos, out var hit, 0.5f, -1))
+                if (NavMesh.SamplePosition(botPos, out var hit, 1f, -1))
                 {
-                    botPos = hit.position;
+                    botPos.y = hit.position.y;
                 }
                 return botPos;
             }
         }
 
-        private float DistanceToCurrentCornerSqr()
+        private float DistanceToCurrentCornerSqr(Vector3 BotPos)
         {
             Vector3 destination = CurrentCornerDestination();
-            Vector3 testPoint = destination + Vector3.up;
-            if (Physics.Raycast(testPoint, Vector3.down, out var hit, 1.5f, LayerMaskClass.HighPolyWithTerrainMask))
-            {
-                destination = hit.point;
-            }
-            return (destination - BotPosition).sqrMagnitude;
+            //Vector3 testPoint = destination + Vector3.up;
+            //if (Physics.Raycast(testPoint, Vector3.down, out var hit, 1.5f, LayerMaskClass.HighPolyWithTerrainMask))
+            //{
+            //    destination = hit.point;
+            //}
+            return (destination - BotPos).sqrMagnitude;
         }
 
         private float Steer(Vector3 target, float turnSpeed)
@@ -531,7 +531,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     Bot.Steering.LookToEnemy(Bot.Enemy);
                 }
-                else if (!ShallSteerbyPriority() || !Bot.Steering.SteerByPriority(null, false, true))
+                else if (!ShallSteerbyPriority() || !Bot.Steering.SteerByPriority(Bot.Enemy, false, true))
                 {
                     Bot.Steering.LookToDirection(targetLookDirNormal, true, turnSpeed);
                 }

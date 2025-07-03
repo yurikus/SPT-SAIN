@@ -1,5 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 
 namespace SAIN.Layers.Combat.Solo
 {
@@ -18,11 +19,15 @@ namespace SAIN.Layers.Combat.Solo
         {
             this.StartProfilingSample("Update");
             Bot.Mover.SetTargetPose(0f);
-            if (!Bot.Steering.SteerByPriority(null, false))
+            Enemy Enemy = Bot.Enemy;
+            if (Enemy != null)
             {
-                Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy);
+                Shoot.CheckAimAndFire(Enemy);
+                if (!Bot.Steering.SteerByPriority(Enemy, false))
+                {
+                    Bot.Steering.LookToLastKnownEnemyPosition(Enemy);
+                }
             }
-            Shoot.CheckAimAndFire();
             this.EndProfilingSample();
         }
 

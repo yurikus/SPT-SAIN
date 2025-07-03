@@ -153,7 +153,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             int CornerCount = PathCorners.Length;
             const float DistToCheckVision = 50.0f;
-            const float DistanceBetweenPoints = 0.5f;
+            const float DistanceBetweenPoints = 0.25f;
             PathVisionSegments.Clear();
             VisionCheckPoints.Clear();
             PathDistance = 0f;
@@ -165,30 +165,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 float Magnitude = Direction.magnitude;
                 PathDistance += Magnitude;
                 // Dont include the first corner, as it is what the bot's position is, we dont need to see if thats visible or not. Only add a segment if we are under our maximum length, or if we have no segments at all.
-                if (i > 0 && (PathDistance <= DistToCheckVision || i == 1))
+                if (i == 1 || ( i > 0 && PathDistance <= DistToCheckVision))
                 {
-                    PathSegment Segment = new() {
-                        Corner = Corner,
-                        EndPoint = End,
-                        Direction = Direction,
-                        DirectionNormal = Direction.normalized,
-                        SegmentLength = Magnitude,
-                        Index = i,
-                        //SegmentPoints = [],
-                    };
-                    //Segment.SegmentPoints.Add(Segment.Corner);
-                    VisionCheckPoints.Add(Segment.Corner);
+                    VisionCheckPoints.Add(Corner);
                     // Create Equal dist points along the line between two corners.
-                    int PointsToAdd = Mathf.RoundToInt(Segment.SegmentLength / DistanceBetweenPoints);
-                    for (int j = 0; j < PointsToAdd; j++)
+                    Vector.GeneratePointsAlongDirection(VisionCheckPoints, Corner, Direction, Magnitude, DistanceBetweenPoints);
+
+                    // Add the last corner if thats where the for loop is at
+                    if (i == CornerCount - 2)
                     {
-                        Vector3 GeneratedPoint = Segment.Corner + (Segment.DirectionNormal * DistanceBetweenPoints);
-                        //Segment.SegmentPoints.Add(GeneratedPoint);
-                        VisionCheckPoints.Add(GeneratedPoint);
-                    }
-                    //PathVisionSegments.Add(Segment);
+                        VisionCheckPoints.Add(End);
+                    } 
                 }
             }
+
+            //if (EnemyPlayer.IsYourPlayer)
+            //{
+            //    foreach (var point in VisionCheckPoints)
+            //    {
+            //        DebugGizmos.Line(point, point + Vector3.up, Color.white, 0.1f, true, 1f);
+            //    }
+            //}
 
             if (CornerCount > 0)
                 DistanceToEnemyPositionFromLastCorner = (Enemy.LastKnownPosition.Value - PathCorners[CornerCount - 1]).magnitude;
@@ -279,8 +276,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float MAX_FREQ_CALCPATH_AI = 4f;
         private const float MAX_FREQ_CALCPATH_DISTANCE = 250f;
 
-        private const float MIN_FREQ_CALCPATH = 0.5f;
-        private const float MIN_FREQ_CALCPATH_AI = 1f;
+        private const float MIN_FREQ_CALCPATH = 0.33f;
+        private const float MIN_FREQ_CALCPATH_AI = 0.66f;
         private const float MIN_FREQ_CALCPATH_DISTANCE = 50f;
 
         private const float DISTANCE_DIFFERENCE = MAX_FREQ_CALCPATH_DISTANCE - MIN_FREQ_CALCPATH_DISTANCE;
@@ -304,8 +301,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             // Did we already check the current enemy position and has the bot not moved? dont recalc path then
             if (_enemyLastPosChecked != null
-                && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.1f
-                && (_botLastPosChecked - botPosition).sqrMagnitude < 0.05f)
+                && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.025f
+                && (_botLastPosChecked - botPosition).sqrMagnitude < 0.025f)
             {
                 return false;
             }

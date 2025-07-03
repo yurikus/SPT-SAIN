@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using EFT;
 using SAIN.Editor;
 using SAIN.Helpers;
+using SAIN.Patches.Components;
 using SAIN.Patches.Hearing;
 using SAIN.Plugin;
 using SAIN.Preset;
@@ -71,6 +72,12 @@ namespace SAIN
         public static ConfigEntry<KeyboardShortcut> OpenEditorConfigEntry { get; private set; }
 
         private List<ModulePatch> SainPatches => [
+            new Patches.Components.BotUpdateByUnityPatch(),
+            new Patches.Components.AddBotComponentPatch(),
+            new Patches.Components.ActivateBotComponentPatch(),
+            new Patches.Components.AddGameWorldPatch(),
+            new Patches.Components.GetBotController(),
+
             new Patches.Generic.StopRefillMagsPatch(),
             new Patches.Generic.SetEnvironmentPatch(),
             new Patches.Generic.SetPanicPointPatch(),
@@ -182,10 +189,6 @@ namespace SAIN
             new Patches.Shoot.RateOfFire.SemiAutoPatch2(),
             new Patches.Shoot.RateOfFire.SemiAutoPatch3(),
 
-            new Patches.Components.AddBotComponentPatch(),
-            new Patches.Components.AddGameWorldPatch(),
-            new Patches.Components.GetBotController(),
-            new Patches.Components.GetBotSpawner(),
         ];
 
 

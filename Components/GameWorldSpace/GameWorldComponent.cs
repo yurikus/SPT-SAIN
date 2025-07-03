@@ -103,10 +103,20 @@ namespace SAIN.Components
 
         public void Update()
         {
+            TickPlayerComponents();
             UpdateAIHearingEvents();
             Doors?.Update();
             Location?.Update();
             findSpawnPointMarkers();
+        }
+
+        private void TickPlayerComponents()
+        {
+            HashSet<PlayerComponent> PlayerComponents = PlayerTracker.PlayerComponents;
+            foreach (var playerComponent in PlayerComponents)
+            {
+                playerComponent?.ManualUpdate();
+            }
         }
 
         private void UpdateAIHearingEvents()
@@ -199,30 +209,19 @@ namespace SAIN.Components
             return spawnPointPositions;
         }
 
-        public void Awake()
+        public void Init(GameWorld gameWorld, SAINBotController sainBotController)
         {
             Instance = this;
-            GameWorld = this.GetComponent<GameWorld>();
-            if (GameWorld == null)
-            {
-                Logger.LogWarning($"GameWorld is null from GetComponent");
-            }
-            StartCoroutine(Init());
-        }
-
-        private IEnumerator Init()
-        {
-            yield return getGameWorld();
-
+            GameWorld = gameWorld;
             if (GameWorld == null)
             {
                 Logger.LogWarning("GameWorld Null, cannot Init SAIN Gameworld! Check 2. Disposing Component...");
                 Dispose();
-                yield break;
+                return;
             }
 
+            SAINBotController = sainBotController;
             PlayerTracker = new PlayerSpawnTracker(this);
-            SAINBotController = this.GetOrAddComponent<SAINBotController>();
             Doors = new DoorHandler(this);
             Location = new LocationClass(this);
             ExtractFinder = this.GetOrAddComponent<Extract.ExtractFinderComponent>();
@@ -242,46 +241,6 @@ namespace SAIN.Components
 
             Doors.Init();
             Location.Init();
-        }
-
-        private IEnumerator getGameWorld()
-        {
-            if (GameWorld != null)
-            {
-                yield break;
-            }
-            if (GameWorld == null)
-            {
-                yield return new WaitForEndOfFrame();
-                GameWorld = findGameWorld();
-                if (GameWorld != null)
-                {
-                    Logger.LogWarning("Found GameWorld at EndOfFrame");
-                    yield break;
-                }
-            }
-            for (int i = 0; i < 30; i++)
-            {
-                if (GameWorld == null)
-                {
-                    yield return null;
-                    GameWorld = findGameWorld();
-                }
-                if (GameWorld != null)
-                {
-                    break;
-                }
-            }
-        }
-
-        private GameWorld findGameWorld()
-        {
-            GameWorld gameWorld = this.GetComponent<GameWorld>();
-            if (gameWorld == null)
-            {
-                gameWorld = Singleton<GameWorld>.Instance;
-            }
-            return gameWorld;
         }
 
         public void Dispose()

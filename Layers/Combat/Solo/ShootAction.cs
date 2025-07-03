@@ -27,8 +27,8 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Bot.Steering.SteerByPriority();
-            Shoot.CheckAimAndFire();
+            Bot.Steering.SteerByPriority(Bot.Enemy);
+            Shoot.CheckAimAndFire(Bot.Enemy);
             this.EndProfilingSample();
         }
     }

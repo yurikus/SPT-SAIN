@@ -10,7 +10,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyListController : BotSubClass<SAINEnemyController>, IBotClass
     {
-        public Dictionary<string, Enemy> Enemies { get; } = new Dictionary<string, Enemy>();
+        public Dictionary<string, Enemy> Enemies { get; } = [];
+        public HashSet<Enemy> EnemiesArray { get; } = [];
 
         public EnemyListController(SAINEnemyController controller) : base(controller)
         {
@@ -21,6 +22,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             GameWorldComponent.Instance.PlayerTracker.AlivePlayers.OnPlayerComponentRemoved += RemoveEnemy;
             BotOwner.Memory.OnAddEnemy += enemyAdded;
+            compareEnemyLists();
             base.Init();
         }
 
@@ -39,10 +41,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 memory.OnAddEnemy -= enemyAdded;
             }
 
-            foreach (var enemy in Enemies)
+            foreach (var enemy in EnemiesArray)
             {
-                destroyEnemy(enemy.Value);
+                destroyEnemy(enemy);
             }
+            EnemiesArray.Clear();
             Enemies.Clear();
             base.Dispose();
         }
@@ -57,6 +60,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 destroyEnemy(enemy);
                 Enemies.Remove(profileID);
+                EnemiesArray.Remove(enemy);
                 return null;
             }
             if (mustBeActive && !enemy.EnemyPerson.Active)
@@ -77,6 +81,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 destroyEnemy(enemy);
                 Enemies.Remove(profileId);
+                EnemiesArray.Remove(enemy);
             }
         }
 
@@ -218,6 +223,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             enemyPlayerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removeEnemy;
             enemyPlayerComponent.OnComponentDestroyed += RemoveEnemy;
             Enemies.Add(enemy.EnemyProfileId, enemy);
+            EnemiesArray.Add(enemy);
             BaseClass.Events.EnemyAdded(enemy);
             return enemy;
         }

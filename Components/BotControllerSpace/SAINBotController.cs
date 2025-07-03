@@ -11,7 +11,6 @@ using SAIN.Helpers;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.Classes.WeaponFunction;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -189,7 +188,7 @@ namespace SAIN.Components
                 else if (Velocity.y < 0)
                 {
                     Vector3 VelocityNormal = Velocity.normalized;
-                    if (Vector3.Dot(VelocityNormal, Vector3.down) > 0.5f && 
+                    if (Vector3.Dot(VelocityNormal, Vector3.down) > 0.5f &&
                         Physics.Raycast(Grenade.transform.position, VelocityNormal, out RaycastHit Hit, 5, LayerMaskClass.HighPolyWithTerrainMask))
                     {
                         OnGrenadeDangerUpdated?.Invoke(Grenade, Hit.point);
@@ -292,38 +291,42 @@ namespace SAIN.Components
             PeacefulActions.Init();
         }
 
-        public void Update()
+        public void ManualUpdate()
         {
-            if (BotGame == null ||
-                BotGame.Status == GameStatus.Stopping)
+            HashSet<BotComponent> Bots = BotSpawnController?.SAINBots;
+            if (Bots != null && Bots.Count > 0)
             {
-                return;
+                BotSpawnController.Update();
+                BotExtractManager.Update();
+                TimeVision.Update();
+                WeatherVision.Update();
+                BotJobs.UpdateVisionForBots(Bots);
+                TickBots(Bots);
+                BotSquads.Update();
+                //PeacefulActions.Update();
             }
 
-            BotSquads.Update();
-            BotSpawnController.Update();
-            BotExtractManager.Update();
-            TimeVision.Update();
-            WeatherVision.Update();
-            BotJobs.Update();
-            PeacefulActions.Update();
+            //if (BotGame == null ||
+            //    BotGame.Status == GameStatus.Stopping)
+            //{
+            //    return;
+            //}
 
-            TickBots();
+            //BotSpawnController.Update();
+            //BotExtractManager.Update();
+            //TimeVision.Update();
+            //WeatherVision.Update();
+            //PeacefulActions.Update();
         }
 
-        private void TickBots()
+        private void TickBots(HashSet<BotComponent> Bots)
         {
-            if (BotTickTimer <= Time.time)
+            UnityEngine.Profiling.Profiler.BeginSample("SAIN Bot Update");
+            foreach (BotComponent bot in Bots)
             {
-                BotTickTimer = Time.time + BotTickRate;
-                
-                UnityEngine.Profiling.Profiler.BeginSample("SAIN Bot Update");
-
-                foreach (var Bot in Bots.Values)
-                    Bot?.ManualUpdate();
-
-                UnityEngine.Profiling.Profiler.EndSample();
+                bot?.ManualUpdate();
             }
+            UnityEngine.Profiling.Profiler.EndSample();
         }
 
         private float BotTickRate = 1.0f / 30.0f;

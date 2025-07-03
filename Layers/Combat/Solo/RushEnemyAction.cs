@@ -48,20 +48,36 @@ namespace SAIN.Layers.Combat.Solo
 
         private bool checkHasEnemy()
         {
+            Enemy botEnemy = Bot.Enemy;
             if (_enemy != null)
             {
-                return true;
+                if (_enemy == botEnemy)
+                {
+                    return true;
+                }
+                _enemy.Events.OnPathUpdated -= onPathUpdated;
+                _enemy.OnEnemyDisposed -= clearEnemy;
+                _enemy = null;
             }
-
-            _enemy = Bot.Enemy;
+            _enemy = botEnemy;
             if (_enemy != null)
             {
                 _enemy.Events.OnPathUpdated += onPathUpdated;
+                _enemy.OnEnemyDisposed += clearEnemy;
                 _pathUpdated = true;
                 return true;
             }
-
             return false;
+        }
+
+        private void clearEnemy()
+        {
+            if (_enemy != null)
+            {
+                _enemy.Events.OnPathUpdated -= onPathUpdated;
+                _enemy.OnEnemyDisposed -= clearEnemy;
+                _enemy = null;
+            }
         }
 
         private void enemyInSight()
@@ -69,13 +85,13 @@ namespace SAIN.Layers.Combat.Solo
             _pathUpdated = true;
             checkJumpEnemyInSight();
 
-            Shoot.CheckAimAndFire();
+            Shoot.CheckAimAndFire(_enemy);
             Bot.Mover.Sprint(false);
             Bot.Mover.DogFight.DogFightMove(true, _enemy);
 
             if (_enemy.IsVisible && _enemy.CanShoot)
             {
-                Bot.Steering.SteerByPriority();
+                Bot.Steering.SteerByPriority(_enemy);
                 return;
             }
             Bot.Steering.LookToEnemy(_enemy);

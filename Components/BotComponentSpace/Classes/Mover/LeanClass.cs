@@ -132,22 +132,21 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public LeanSetting FindLeanFromBlindCornerAngle(Enemy enemy, float minAngle = -1f)
         {
-            var blindCorner = enemy.Path.EnemyCorners.GetCorner(ECornerType.Blind);
+            var blindCorner = enemy.VisiblePathPoint;
             if (blindCorner == null)
             {
                 return LeanSetting.None;
             }
-            float signedAngle = blindCorner.SignedAngleToTarget;
-            if (signedAngle == 0f)
+            float? signedAngle = enemy.VisiblePathPointSignedAngle;
+            if (signedAngle == null)
             {
                 return LeanSetting.None;
             }
-            if (minAngle > 0f && Mathf.Abs(signedAngle) < minAngle)
+            if (minAngle > 0f && Mathf.Abs(signedAngle.Value) < minAngle)
             {
                 return LeanSetting.None;
             }
-
-            Vector3 direction = blindCorner.GroundPosition - Bot.Position;
+            Vector3 direction = blindCorner.Value - Bot.Position;
             if (direction.sqrMagnitude > MAX_CORNER_DISTANCE_LEAN_SQR)
             {
                 return LeanSetting.None;

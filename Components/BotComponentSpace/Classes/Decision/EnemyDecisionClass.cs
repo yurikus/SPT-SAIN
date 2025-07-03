@@ -5,6 +5,7 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
@@ -58,52 +59,69 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return true;
             }
 
-            bool shallShoot = shallStandAndShoot(enemy, out reason);
-            DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
-            if (shallShoot)
+            bool canTakeAggressiveAction = true;
+            var suppState = Bot.Suppression.CurrentState;
+            switch (suppState)
             {
-                if (Bot.Decision.CurrentCombatDecision != ECombatDecision.StandAndShoot)
+                case ESuppressionState.Extreme:
+                case ESuppressionState.Heavy:
+                    canTakeAggressiveAction = false;
+                    reason = $"Suppressed [{suppState}]";
+                    break;
+                default:
+                    break;
+            }
+            
+            DecisionReasons.AppendLine($"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]");
+            if (canTakeAggressiveAction)
+            {
+                bool shallShoot = shallStandAndShoot(enemy, out reason);
+                DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
+                if (shallShoot)
                 {
-                    Bot.Info.CalcHoldGroundDelay();
+                    if (Bot.Decision.CurrentCombatDecision != ECombatDecision.StandAndShoot)
+                    {
+                        Bot.Info.CalcHoldGroundDelay();
+                    }
+                    result = ECombatDecision.StandAndShoot;
+                    return true;
                 }
-                result = ECombatDecision.StandAndShoot;
-                return true;
-            }
 
-            bool shallShootDistant = shallShootDistantEnemy(enemy, out reason);
-            DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
-            if (shallShootDistant)
-            {
-                result = ECombatDecision.ShootDistantEnemy;
-                return true;
-            }
-
-            bool shallRush = shallRushEnemy(enemy, out reason);
-            DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
-            if (shallRush)
-            {
-                result = ECombatDecision.RushEnemy;
-                return true;
-            }
-
-            bool shallThrowNade = shallThrowGrenade(enemy, out reason);
-            DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
-            if (shallThrowNade)
-            {
-                result = ECombatDecision.ThrowGrenade;
-                return true;
-            }
-
-            bool search = shallSearch(enemy, out reason);
-            DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
-            if (search)
-            {
-                if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Search)
+                bool shallShootDistant = shallShootDistantEnemy(enemy, out reason);
+                DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
+                if (shallShootDistant)
                 {
-                    enemy.Status.NumberOfSearchesStarted++;
+                    result = ECombatDecision.ShootDistantEnemy;
+                    return true;
                 }
-                result = ECombatDecision.Search;
-                return true;
+
+                bool shallRush = shallRushEnemy(enemy, out reason);
+                DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
+                if (shallRush)
+                {
+                    result = ECombatDecision.RushEnemy;
+                    return true;
+                }
+
+                bool shallThrowNade = shallThrowGrenade(enemy, out reason);
+                DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
+                if (shallThrowNade)
+                {
+                    result = ECombatDecision.ThrowGrenade;
+                    return true;
+                }
+
+                bool search = shallSearch(enemy, out reason);
+                DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
+                if (search)
+                {
+                    if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Search)
+                    {
+                        enemy.Status.NumberOfSearchesStarted++;
+                    }
+                    result = ECombatDecision.Search;
+                    return true;
+                }
             }
 
             bool freeze = shallFreezeAndWait(enemy, out reason);
@@ -565,9 +583,13 @@ namespace SAIN.SAINComponent.Classes.Decision
                 reason = "outOfRange";
                 return false;
             }
-
-            float holdGround = Bot.Info.HoldGroundDelay;
-            if (holdGround <= 0f)
+            bool searchingForEnemy = enemy.Events.OnSearch.Value;
+            float holdGroundInterval = Bot.Info.HoldGroundDelay;
+            if (searchingForEnemy)
+            {
+                holdGroundInterval = Mathf.Max(holdGroundInterval, 0.5f) * UnityEngine.Random.Range(0.66f, 1.33f);
+            }
+            if (holdGroundInterval <= 0.0f)
             {
                 reason = "wontHoldGround";
                 return false;
@@ -580,13 +602,13 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
 
             float visibleFor = Time.time - enemy.Vision.VisibleStartTime;
-            if (visibleFor > holdGround)
+            if (visibleFor > holdGroundInterval)
             {
                 reason = "visibleTooLong";
                 return false;
             }
 
-            if (visibleFor < holdGround / 1.5f)
+            if (visibleFor < holdGroundInterval / 1.5f)
             {
                 reason = "holdingFromTime";
                 return true;

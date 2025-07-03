@@ -11,6 +11,7 @@ namespace SAIN.SAINComponent.Classes.Search
     public class SAINSearchClass : BotComponentClassBase
     {
         public bool SearchActive { get; private set; }
+        public Enemy SearchTarget { get; private set; }
 
         public ESearchMove NextState { get; private set; }
         public ESearchMove CurrentState { get; private set; }
@@ -31,15 +32,33 @@ namespace SAIN.SAINComponent.Classes.Search
 
         public void ToggleSearch(bool value, Enemy target)
         {
-            SearchActive = value;
-            if (target != null)
+            if (value)
             {
-                target.Events.OnSearch.CheckToggle(value);
+                if (SearchTarget != null)
+                {
+                    if (SearchTarget == target)
+                    {
+                        SearchActive = true;
+                        return;
+                    }
+                    SearchTarget.Events.OnSearch.CheckToggle(false);
+                    SearchTarget = null;
+                }
+                if (target != null)
+                {
+                    target.Events.OnSearch.CheckToggle(true);
+                    SearchTarget = target;
+                }
+                SearchActive = true;
+                return;
             }
-            if (!value)
+            if (SearchTarget != null)
             {
-                Reset();
+                SearchTarget.Events.OnSearch.CheckToggle(false);
+                SearchTarget = null;
             }
+            SearchActive = false;
+            Reset();
         }
 
         public void Search(bool shallSprint, Enemy enemy)

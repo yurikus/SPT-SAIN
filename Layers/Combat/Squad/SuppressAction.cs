@@ -25,14 +25,13 @@ namespace SAIN.Layers.Combat.Squad
                 if (enemy.IsVisible && enemy.CanShoot)
                 {
                     Bot.Mover.StopMove();
-                    Shoot.CheckAimAndFire();
+                    Shoot.CheckAimAndFire(enemy);
                     this.EndProfilingSample();
                     return;
                 }
 
                 if (Bot.ManualShoot.CanShoot(true) &&
-                    FindSuppressionTarget(out var target) &&
-                    CanSeeSuppressionTarget(target))
+                    FindSuppressionTarget(out var target))
                 {
                     _manualShooting = true;
                     Bot.Mover.StopMove();
@@ -44,7 +43,7 @@ namespace SAIN.Layers.Combat.Squad
                         Bot.Mover.Prone.SetProne(true);
                     }
 
-                    bool shot = Bot.ManualShoot.TryShoot(true, target.Value, true, EShootReason.SquadSuppressing);
+                    bool shot = Bot.ManualShoot.TryShoot(enemy, target.Value, true, EShootReason.SquadSuppressing);
 
                     if (shot)
                     {
@@ -76,7 +75,7 @@ namespace SAIN.Layers.Combat.Squad
             if (_manualShooting)
             {
                 _manualShooting = false;
-                Bot.ManualShoot.TryShoot(false, Vector3.zero);
+                Bot.ManualShoot.Reset();
             }
         }
 

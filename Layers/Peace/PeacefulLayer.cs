@@ -21,6 +21,7 @@ namespace SAIN.Layers.Peace
 
         public override bool IsActive()
         {
+            base.IsActive();
             bool active = Bot != null && allowedToExtract() && hasExtractReason() && hasExtractLocation();
             setLayer(active);
             return active;

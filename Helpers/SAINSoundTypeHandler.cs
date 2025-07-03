@@ -7,6 +7,11 @@ namespace SAIN.Components.Helpers
     {
         public static void AISoundFileChecker(string sound, Player player)
         {
+            if (player == null || player.HealthController?.IsAlive == false)
+            {
+                return;
+            }
+
             SAINSoundType soundType = SAINSoundType.None;
             var Item = player.HandsController.Item;
             float soundDist = 20f;

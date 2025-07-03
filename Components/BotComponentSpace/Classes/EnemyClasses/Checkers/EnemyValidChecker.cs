@@ -45,6 +45,11 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
                 //Logger.LogDebug("Enemy Player Is Dead");
                 return false;
             }
+            if (person.Player?.HealthController?.IsAlive != true)
+            {
+                //Logger.LogDebug("Enemy Player Is Dead");
+                return false;
+            }
             // Checks specific to bots
             BotOwner botOwner = EnemyPlayer?.AIData?.BotOwner;
             if (EnemyPerson?.AIInfo.IsAI == true && botOwner == null)

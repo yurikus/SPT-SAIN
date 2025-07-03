@@ -28,12 +28,10 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Status = EDogFightStatus.None;
         }
 
-        private bool swingRight;
-
         public void DogFightMove(bool aggressive, Enemy Enemy)
         {
             bool HasEnemy = Enemy != null;
-            if (HasEnemy && 
+            if (HasEnemy &&
                 Enemy.IsVisible &&
                 Enemy.CanShoot &&
                 Player.IsInPronePose)
@@ -62,7 +60,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (HasEnemy && backUpFromEnemy(Enemy))
             {
                 Status = EDogFightStatus.BackingUp;
-                float baseTime = Bot.Enemy?.IsVisible == true ? 0.75f : 1f;
+                float baseTime = Enemy.IsVisible ? 0.75f : 1f;
                 _updateDogFightTimer = Time.time + baseTime * UnityEngine.Random.Range(0.66f, 1.33f);
                 return;
             }
@@ -73,7 +71,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (HasEnemy && 
+            if (HasEnemy &&
                 canMoveToEnemy(Enemy) &&
                 Bot.Mover.GoToEnemy(Enemy, -1, false, false))
             {
@@ -86,36 +84,33 @@ namespace SAIN.SAINComponent.Classes.Mover
             _updateDogFightTimer = Time.time + 0.2f;
         }
 
-        private bool swing()
-        {
-            swingRight = EFTMath.RandomBool();
-            return false;
-        }
-
         private bool stopMoveToShoot(Enemy Enemy)
         {
             return Status == EDogFightStatus.MovingToEnemy &&
-                (Enemy.InLineOfSight || Enemy.IsVisible) &&
-                Enemy.CanShoot;
+                Enemy.IsVisible && Enemy.CanShoot;
+            //&&
+            //(Enemy.InLineOfSight || Enemy.IsVisible) &&
+            //Enemy.CanShoot;
         }
 
         private bool backUpFromEnemy(Enemy Enemy)
         {
-            return
-                findStrafePoint2(out Vector3 backupPoint, Enemy) &&
-                Bot.Mover.GoToPoint(backupPoint, out _, -1, false, true, false);
+            if (!findStrafePoint(out Vector3 backupPoint, Enemy) && !findStrafePoint2(out backupPoint, Enemy))
+            {
+                return false;
+            }
+            return Bot.Mover.GoToPoint(backupPoint, out _, -1, false, true, false);
         }
 
         private float _updateDogFightTimer;
 
-        private Vector3? findBackupTarget()
+        private Vector3? findBackupTarget(Enemy Enemy)
         {
-            Enemy enemy = Bot.Enemy;
-            if (enemy != null &&
-                enemy.Seen &&
-                enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold)
+            if (Enemy != null &&
+                Enemy.Seen &&
+                Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold)
             {
-                return Bot.Enemy.EnemyPosition;
+                return Enemy.EnemyPosition;
             }
             return null;
         }
@@ -127,44 +122,43 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private float _enemyTimeSinceSeenThreshold = 1f;
 
-        private bool findStrafePoint(out Vector3 trgPos)
+        private bool findStrafePoint(out Vector3 movePosition, Enemy Enemy)
         {
-            Vector3? target = findBackupTarget();
+            Vector3? target = findBackupTarget(Enemy);
             if (target == null)
             {
-                trgPos = Vector3.zero;
+                movePosition = Vector3.zero;
                 return false;
             }
-            Vector3 direction = target.Value - Bot.Position;
+            Vector3 BotPosition = Bot.Position;
+            Vector3 targetDirection = target.Value - BotPosition;
+            targetDirection.y = 0;
+            Vector3 directionAwayFromTargetNormal = -Vector.NormalizeFastSelf(targetDirection);
+            Vector3 positionAwayFromTarget = BotPosition + directionAwayFromTargetNormal * 2f;
 
-            Vector3 a = -Vector.NormalizeFastSelf(direction);
-            trgPos = Vector3.zero;
-            float num = 0f;
-            Vector3 random = Random.onUnitSphere * 1.25f;
-            random.y = 0f;
-            if (NavMesh.SamplePosition(Bot.Position + a * 2f / 2f + random, out NavMeshHit navMeshHit, 1f, -1))
+            const int MaxIterations = 5;
+            bool FoundMovePosition = false;
+            movePosition = Vector3.zero;
+            for (int i = 0; i < MaxIterations; i++)
             {
-                trgPos = navMeshHit.position;
-                Vector3 a2 = trgPos - Bot.Position;
-                float magnitude = a2.magnitude;
-                if (magnitude != 0f)
+                Vector3 random = Random.onUnitSphere * 1.5f;
+                random.y = Mathf.Clamp(random.y, -0.5f, 0.5f);
+                Vector3 RandomBackupPoint = positionAwayFromTarget + random;
+                if (NavMesh.SamplePosition(RandomBackupPoint, out NavMeshHit navMeshHit, 2f, -1) && (navMeshHit.position - BotPosition).sqrMagnitude > 1)
                 {
-                    Vector3 a3 = a2 / magnitude;
-                    num = magnitude;
-                    if (NavMesh.SamplePosition(Bot.Position + a3 * 2f, out navMeshHit, 1f, -1))
-                    {
-                        trgPos = navMeshHit.position;
-                        num = (trgPos - Bot.Position).magnitude;
-                    }
+                    movePosition = navMeshHit.position;
+                    FoundMovePosition = true;
+                    break;
                 }
             }
-            if (num != 0f && num > BotOwner.Settings.FileSettings.Move.REACH_DIST)
+            if (FoundMovePosition)
             {
                 dogFightPath.ClearCorners();
-                if (NavMesh.CalculatePath(Bot.Position, trgPos, -1, dogFightPath) && dogFightPath.status == NavMeshPathStatus.PathComplete)
+                if (NavMesh.CalculatePath(BotPosition, movePosition, -1, dogFightPath))
                 {
-                    trgPos = dogFightPath.corners[dogFightPath.corners.Length - 1];
-                    return CheckLength(dogFightPath, num);
+                    movePosition = dogFightPath.corners[dogFightPath.corners.Length - 1];
+                    //return CheckLength(dogFightPath, num);
+                    return true;
                 }
             }
             return false;

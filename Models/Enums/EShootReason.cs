@@ -6,5 +6,6 @@
         SquadSuppressing = 1,
         Blindfire = 2,
         WalkToCoverSuppress = 3,
+        Suppress = 4,
     }
 }

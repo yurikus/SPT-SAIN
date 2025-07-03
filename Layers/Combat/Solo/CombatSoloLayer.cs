@@ -78,6 +78,7 @@ namespace SAIN.Layers.Combat.Solo
 
         public override bool IsActive()
         {
+            base.IsActive();
             if (Bot == null)
             {
                 return false;
@@ -89,6 +90,11 @@ namespace SAIN.Layers.Combat.Solo
 
         public override bool IsCurrentActionEnding()
         {
+            if (ResetAction)
+            {
+                ResetAction = false;
+                return true;
+            }
             // this is dumb im sorry
             if (!_doSurgeryAction
                 && _currentSelfDecision == ESelfDecision.Surgery

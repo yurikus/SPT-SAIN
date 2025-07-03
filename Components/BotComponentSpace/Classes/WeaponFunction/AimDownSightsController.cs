@@ -12,20 +12,18 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             CanEverTick = false;
         }
 
-        public void UpdateADSstatus()
+        public void UpdateADSstatus(Enemy Enemy)
         {
-            Enemy targetEnemy = Bot.CurrentTarget?.CurrentTargetEnemy;
-
             // If a bot is sneaky, don't change ADS if their enemy is close to avoid alerting them.
             if (Bot?.Info?.PersonalitySettings?.Search?.Sneaky == true &&
-                targetEnemy != null &&
-                !targetEnemy.IsVisible &&
-                targetEnemy.KnownPlaces.EnemyDistanceFromLastKnown < 40f)
+                Enemy != null &&
+                !Enemy.IsVisible &&
+                Enemy.KnownPlaces.EnemyDistanceFromLastKnown < 40f)
             {
                 return;
             }
 
-            bool shallADS = ShallAimDownSights(targetEnemy?.KnownPlaces.LastKnownPosition);
+            bool shallADS = ShallAimDownSights(Enemy?.KnownPlaces.LastKnownPosition);
             SetADS(shallADS);
         }
 

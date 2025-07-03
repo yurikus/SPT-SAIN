@@ -10,103 +10,89 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             //TickInterval = 1f / 15f;
         }
 
-        public override void Init()
-        {
-            Enemies = Bot.EnemyController.Enemies;
-            base.Init();
-        }
-
         public override void ManualUpdate()
         {
             base.ManualUpdate();
-            if (Bot == null || Bot.EnemyController == null)
-            {
+            UpdateEnemies(Bot);
+        }
+
+        public void UpdateEnemies(BotComponent bot)
+        {
+            UnityEngine.Profiling.Profiler.BeginSample("Enemy Updater");
+            if (bot == null)
                 return;
-            }
-
-            if (SAINPlugin.ProfilingMode)
+            var EnemyController = bot.EnemyController;
+            if (EnemyController == null) 
+                return;
+            HashSet<Enemy> enemies = EnemyController.EnemiesArray;
+            if (enemies == null)
+                return;
+            List<IPlayer> Allies = bot.BotOwner.BotsGroup.Allies;
+            foreach (Enemy Enemy in enemies)
             {
-                UnityEngine.Profiling.Profiler.BeginSample("Enemy Updater");
-            }
-
-            List<IPlayer> Allies = Bot.BotOwner.BotsGroup.Allies;
-            foreach (var item in Enemies)
-            {
-                string profileId = item.Key;
-                Enemy enemy = item.Value;
-                if (enemy == null || !enemy.CheckValid())
+                if (!Enemy.CheckValid())
                 {
-                    _invalidIdsToRemove.Add(profileId);
+                    _invalidIdsToRemove.Add(Enemy.EnemyProfileId);
                     continue;
                 }
-                if (Allies.Contains(enemy.EnemyPlayer))
+                if (Allies.Contains(Enemy.EnemyPlayer))
                 {
                     if (SAINPlugin.DebugMode)
-                        Logger.LogWarning($"{enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection");
+                        Logger.LogWarning($"{Enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection");
 
-                    _allyIdsToRemove.Add(profileId);
+                    _allyIdsToRemove.Add(Enemy.EnemyProfileId);
                     continue;
                 }
-                enemy.ManualUpdate();
+                Enemy.ManualUpdate();
             }
 
             if (_invalidIdsToRemove.Count > 0)
             {
                 foreach (var id in _invalidIdsToRemove)
-                {
-                    Bot.EnemyController.RemoveEnemy(id);
-                }
+                    EnemyController.RemoveEnemy(id);
                 Logger.LogWarning($"Removed {_invalidIdsToRemove.Count} Invalid Enemies");
                 _invalidIdsToRemove.Clear();
             }
-            
+
             if (_allyIdsToRemove.Count > 0)
             {
                 foreach (var id in _allyIdsToRemove)
-                {
-                    Bot.EnemyController.RemoveEnemy(id);
-                }
-
+                    EnemyController.RemoveEnemy(id);
                 if (SAINPlugin.DebugMode)
                     Logger.LogWarning($"Removed {_allyIdsToRemove.Count} allies");
-
                 _allyIdsToRemove.Clear();
             }
 
-            if (SAINPlugin.ProfilingMode)
-            {
-                UnityEngine.Profiling.Profiler.EndSample();
-            }
+            UnityEngine.Profiling.Profiler.EndSample();
         }
 
         public void LateUpdate()
         {
-            if (Bot == null || Bot.EnemyController == null || !Bot.BotActive)
-            {
-                return;
-            }
-
-            foreach (var item in Enemies)
-            {
-                Enemy enemy = item.Value;
-                if (enemy == null || !enemy.CheckValid())
-                {
-                    _invalidIdsToRemove.Add(item.Key);
-                }
-            }
-
-            if (_invalidIdsToRemove.Count > 0)
-            {
-                foreach (var id in _invalidIdsToRemove)
-                {
-                    Bot.EnemyController.RemoveEnemy(id);
-                }
-                Logger.LogWarning($"Removed {_invalidIdsToRemove.Count} Invalid Enemies");
-                _invalidIdsToRemove.Clear();
-            }
+            //if (Bot == null || Bot.EnemyController == null || !Bot.BotActive)
+            //{
+            //    return;
+            //}
+            //
+            //foreach (var item in EnemiesDictionary)
+            //{
+            //    Enemy enemy = item.Value;
+            //    if (enemy == null || !enemy.CheckValid())
+            //    {
+            //        _invalidIdsToRemove.Add(item.Key);
+            //    }
+            //}
+            //
+            //if (_invalidIdsToRemove.Count > 0)
+            //{
+            //    foreach (var id in _invalidIdsToRemove)
+            //    {
+            //        Bot.EnemyController.RemoveEnemy(id);
+            //    }
+            //    Logger.LogWarning($"Removed {_invalidIdsToRemove.Count} Invalid Enemies");
+            //    _invalidIdsToRemove.Clear();
+            //}
         }
 
-        private Dictionary<string, Enemy> Enemies;
         private readonly List<string> _allyIdsToRemove = [];
         private readonly List<string> _invalidIdsToRemove = [];
     }

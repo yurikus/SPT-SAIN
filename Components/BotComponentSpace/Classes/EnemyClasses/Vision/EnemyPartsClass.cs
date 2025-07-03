@@ -18,11 +18,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool LineOfSight => TimeSinceInLineOfSight < LINEOFSIGHT_TIME;
         public float TimeSinceInLineOfSight => Time.time - _timeLastInSight;
-        public Vector3 LastSuccessLookPosition { get; private set; }
 
         public bool CanShoot => TimeSinceCanShoot < CANSHOOT_TIME;
         public float TimeSinceCanShoot => Time.time - _timeLastCanShoot;
-        public Vector3 LastSuccessShootPosition { get; private set; }
 
         public Dictionary<EBodyPart, EnemyPartDataClass> Parts { get; } = [];
 
@@ -49,7 +47,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     _timeLastCanShoot = time;
                 }
 
-                if (!inSight && part.IsVisible)
+                if (!inSight && part.LineOfSight)
                 {
                     inSight = true;
                     _timeLastInSight = time;

@@ -21,9 +21,15 @@ namespace SAIN.Layers
 
         public override bool IsActive()
         {
+            base.IsActive();
             bool active = Bot != null && allowedToExtract() && hasExtractReason() && hasExtractLocation();
             setLayer(active);
             return active;
+        }
+
+        public override bool IsCurrentActionEnding()
+        {
+            return false;
         }
 
         private bool allowedToExtract()
@@ -184,9 +190,5 @@ namespace SAIN.Layers
         private bool _loggedExtractExternal;
         private bool Logged = false;
 
-        public override bool IsCurrentActionEnding()
-        {
-            return false;
-        }
     }
 }

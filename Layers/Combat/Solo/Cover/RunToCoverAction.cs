@@ -46,7 +46,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 {
                     Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy);
                 }
-                Shoot.CheckAimAndFire();
+                Shoot.CheckAimAndFire(Bot.Enemy);
                 return;
             }
 
@@ -57,7 +57,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 {
                     Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy);
                 }
-                Shoot.CheckAimAndFire();
+                Shoot.CheckAimAndFire(Bot.Enemy);
                 return;
             }
         }

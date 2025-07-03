@@ -13,10 +13,6 @@ namespace SAIN.Layers
 {
     internal class ExtractAction : CombatAction, ISAINAction
     {
-        static ExtractAction()
-        {
-        }
-
         public void Toggle(bool value)
         {
             ToggleAction(value);
@@ -111,8 +107,8 @@ namespace SAIN.Layers
                 Bot.Mover.SetTargetMoveSpeed(1f);
             }
 
-            Bot.Steering.SteerByPriority();
-            Shoot.CheckAimAndFire();
+            Bot.Steering.SteerByPriority(Bot.Enemy);
+            Shoot.CheckAimAndFire(Bot.Enemy);
             this.EndProfilingSample();
         }
 

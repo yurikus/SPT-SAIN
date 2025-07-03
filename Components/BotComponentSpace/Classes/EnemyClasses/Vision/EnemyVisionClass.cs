@@ -67,12 +67,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
-            if (known)
+            if (!known)
             {
-                return;
+                UpdateVisibleState(true);
+                UpdateCanShootState(true);
             }
-            UpdateVisibleState(true);
-            UpdateCanShootState(true);
         }
 
         private void UpdateVision()

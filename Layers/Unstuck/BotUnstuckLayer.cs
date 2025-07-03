@@ -18,6 +18,7 @@ namespace SAIN.Layers.Combat.Run
 
         public override bool IsActive()
         {
+            base.IsActive();
             setLayer(false);
             return false;
         }

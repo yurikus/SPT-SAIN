@@ -409,7 +409,7 @@ namespace SAIN.Components.PlayerComponentSpace
         public OtherPlayersData OtherPlayersData { get; private set; }
         public BodyPartsClass BodyParts { get; private set; }
 
-        public void Update()
+        public void ManualUpdate()
         {
             Person.Update();
 

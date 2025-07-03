@@ -37,6 +37,17 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             checkState();
             decaySuppression();
+            if (SuppressingTarget)
+            {
+                if (!Bot.HasEnemy || Bot.Enemy != EnemyBeingSuppressed)
+                {
+                    ResetSuppressing();
+                }
+                if (_suppressTime < Time.time)
+                {
+                    ResetSuppressing();
+                }
+            }
             base.ManualUpdate();
         }
 
@@ -45,6 +56,68 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             Bot.EnemyController.Events.OnEnemyRemoved -= clearLastSuppEnemy;
             base.Dispose();
         }
+
+        private Enemy EnemyBeingSuppressed;
+
+        public bool TrySuppressEnemy(Enemy Enemy)
+        {
+            if (!Enemy.IsVisible && BotOwner.WeaponManager.HaveBullets && ((Enemy.Seen && Enemy.TimeSinceSeen < 4) || Enemy.Status.ShotAtMeRecently || Enemy.Status.ShotByEnemyRecently))
+            {
+                Vector3? suppressTarget = Enemy.SuppressionTarget;
+                if (suppressTarget != null)
+                {
+                    return Bot.Suppression.SuppressPosition(suppressTarget.Value, Enemy);
+                }
+            }
+            ResetSuppressing();
+            return false;
+        }
+
+        public bool SuppressPosition(Vector3 position, Enemy Enemy)
+        {
+            if (Enemy == null ||
+                !Bot.ManualShoot.TryShoot(Enemy, position, true, EShootReason.Suppress))
+            {
+                ResetSuppressing();
+                return false;
+            }
+
+            SuppressingTarget = true;
+            Enemy.Status.EnemyIsSuppressed = true;
+            EnemyBeingSuppressed = Enemy;
+            if (_suppressTime < Time.time)
+            {
+                float timeAdd;
+                if (Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
+                {
+                    timeAdd = 0.05f * UnityEngine.Random.Range(0.75f, 1.25f);
+                }
+                else
+                {
+                    timeAdd = 0.25f * UnityEngine.Random.Range(0.66f, 1.33f);
+                }
+                _suppressTime = Time.time + timeAdd;
+            }
+            return true;
+        }
+
+        public void ResetSuppressing()
+        {
+            if (EnemyBeingSuppressed != null || SuppressingTarget)
+            {
+                if (EnemyBeingSuppressed != null)
+                {
+                    EnemyBeingSuppressed.Status.EnemyIsSuppressed = false;
+                    EnemyBeingSuppressed = null;
+                }
+                SuppressingTarget = false;
+                Bot.ManualShoot.Reset();
+                _suppressTime = 0;
+            }
+        }
+
+        public bool SuppressingTarget;
+        private float _suppressTime;
 
         public void CheckAddSuppression(Enemy enemy, float distance, float amount = -1)
         {
@@ -236,6 +309,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (LastSuppressByEnemy != null && LastSuppressByEnemy.IsSame(enemy))
             {
                 LastSuppressByEnemy = null;
+            }
+            if (EnemyBeingSuppressed != null && EnemyBeingSuppressed == enemy)
+            {
+                ResetSuppressing();
             }
         }
 

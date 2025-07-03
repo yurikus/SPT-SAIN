@@ -1,11 +1,12 @@
-﻿using SAIN.Components;
+﻿using EFT;
+using SAIN.Components;
 using UnityEngine;
 
 namespace SAIN
 {
     public class GameWorldHandler
     {
-        public static void Create(GameObject gameWorldObject)
+        public static void Create(GameWorld gameWorld)
         {
             if (SAINGameWorld != null)
             {
@@ -13,10 +14,11 @@ namespace SAIN
                 SAINGameWorld.Dispose();
                 GameObject.Destroy(SAINGameWorld);
             }
-            SAINGameWorld = gameWorldObject.AddComponent<GameWorldComponent>();
+            SAINGameWorld = gameWorld.gameObject.AddComponent<GameWorldComponent>();
+            SAINBotController botController = gameWorld.gameObject.AddComponent<SAINBotController>();
+            SAINGameWorld.Init(gameWorld, botController);
         }
 
         public static GameWorldComponent SAINGameWorld { get; private set; }
-        public static SAINBotController SAINBotController => SAINGameWorld?.SAINBotController;
     }
 }

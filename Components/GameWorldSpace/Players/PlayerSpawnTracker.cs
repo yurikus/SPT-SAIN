@@ -11,6 +11,8 @@ namespace SAIN.Components.PlayerComponentSpace
 {
     public class PlayerSpawnTracker
     {
+        public readonly HashSet<PlayerComponent> PlayerComponents = [];
+
         public event Action<PlayerComponent> OnPlayerAdded;
 
         public event Action<string, PlayerComponent> OnPlayerRemoved;
@@ -104,6 +106,7 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 component.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
                 AlivePlayers.Add(profileId, component);
+                PlayerComponents.Add(component);
                 OnPlayerAdded?.Invoke(component);
             }
             else
@@ -116,6 +119,7 @@ namespace SAIN.Components.PlayerComponentSpace
         private void removePerson(PersonClass person)
         {
             OnPlayerRemoved?.Invoke(person.ProfileId, person.PlayerComponent);
+            PlayerComponents.Remove(person.PlayerComponent);
             person.ActivationClass.OnPersonDeadOrDespawned -= removePerson;
             AlivePlayers.TryRemove(person.ProfileId, out _);
 

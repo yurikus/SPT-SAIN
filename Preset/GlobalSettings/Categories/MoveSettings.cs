@@ -98,7 +98,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Sprinting")]
         [Advanced]
         [MinMax(0.01f, 1f, 100f)]
-        public float BotSprintCornerReachDist = 0.15f;
+        public float BotSprintCornerReachDist = 0.2f;
 
         [Name("Final Destination Reach Distance")]
         [Description("How far, in meters, to a bot's final destination before they will pause sprinting.")]

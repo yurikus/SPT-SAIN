@@ -5,6 +5,7 @@ using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
+using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -12,7 +13,7 @@ namespace SAIN.Layers.Combat.Solo
 {
     internal class SearchAction : CombatAction, ISAINAction
     {
-        private Enemy _searchTarget;
+        private Enemy _searchTarget => Search?.SearchTarget;
         private bool _subscribed;
         private float _nextCheckWeaponTime;
         private float _nextUpdateSearchTime;
@@ -54,6 +55,11 @@ namespace SAIN.Layers.Combat.Solo
             var enemy = _searchTarget;
             if (enemy != null)
             {
+                if (Shoot.CheckAimAndFire(enemy))
+                {
+                    Bot.Steering.SteerByPriority(enemy);
+                    return;
+                }
                 bool isBeingStealthy = enemy.Hearing.EnemyHeardFromPeace;
                 if (isBeingStealthy)
                 {
@@ -75,9 +81,15 @@ namespace SAIN.Layers.Combat.Solo
 
                 if (!_sprintEnabled)
                 {
-                    Shoot.CheckAimAndFire();
                     if (!isBeingStealthy)
+                    {
+                        if (Bot.Decision.SelfActionDecisions.AmmoRatio > 0.5f)
+                            Bot.Suppression.TrySuppressEnemy(enemy);
+                        else
+                            Bot.Suppression.ResetSuppressing();
+
                         checkWeapon();
+                    }
                 }
             }
         }
@@ -107,21 +119,21 @@ namespace SAIN.Layers.Combat.Solo
         private void clearSearchTarget()
         {
             Search.ToggleSearch(false, _searchTarget);
-            _searchTarget = null;
         }
 
         private void setTargetEnemy()
         {
-            if (_searchTarget != null &&
-                (!_searchTarget.EnemyKnown ||
-                !_searchTarget.Person.Active ||
-                !_searchTarget.CheckValid()))
+            Enemy searchTarget = _searchTarget;
+            if (searchTarget != null &&
+                (!searchTarget.EnemyKnown ||
+                !searchTarget.Person.Active ||
+                !searchTarget.CheckValid()))
             {
                 clearSearchTarget();
             }
-            var activeEnemy = Bot.Enemy;
             if (_searchTarget == null)
             {
+                var activeEnemy = Bot.Enemy;
                 if (activeEnemy == null) return;
                 setSearchTarget(activeEnemy);
             }
@@ -130,7 +142,6 @@ namespace SAIN.Layers.Combat.Solo
         private void setSearchTarget(Enemy enemy)
         {
             Search.ToggleSearch(true, enemy);
-            _searchTarget = enemy;
             _nextUpdateSearchTime = 0f;
         }
 
@@ -225,7 +236,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             if (!Bot.Steering.SteerByPriority(_searchTarget, false))
             {
-                Bot.Steering.LookToMovingDirection();
+                Bot.Steering.LookToLastKnownEnemyPosition(_searchTarget);
             }
         }
 
@@ -241,6 +252,12 @@ namespace SAIN.Layers.Combat.Solo
 
         public SearchAction(BotOwner bot) : base(bot, "Search")
         {
+        }
+        
+        public override void BuildDebugText(StringBuilder stringBuilder)
+        {
+            stringBuilder.AppendLine($"Search Target {_searchTarget?.EnemyName}");
+            base.BuildDebugText(stringBuilder);
         }
     }
 }

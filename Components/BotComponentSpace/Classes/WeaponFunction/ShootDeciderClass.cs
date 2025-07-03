@@ -57,46 +57,64 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        public void CheckAimAndFire()
+        public bool CheckAimAndFire(Enemy Enemy)
         {
+            if (TryShoot(Enemy))
+                return true;
+            BotOwner.AimingManager?.CurrentAiming?.LoseTarget();
+            return false;
+        }
+
+        private bool TryShoot(Enemy Enemy)
+        {
+            if (Enemy == null)
+                return false;
+
+            if (Enemy.Player?.HealthController?.IsAlive == false)
+                return false;
+
             var weaponManager = BotOwner.WeaponManager;
             if (weaponManager == null)
-                return;
+                return false;
 
             if (weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster
                 && !weaponManager.HaveBullets
                 && !weaponManager.Selector.TryChangeToMain())
             {
-                selectWeapon();
+                selectWeapon(Enemy);
             }
 
             if (!Bot.Aim.CanAim)
-                return;
+                return false;
 
             if (_changeAimTimer < Time.time)
             {
-                _changeAimTimer = Time.time + 0.5f;
-                Bot.AimDownSightsController.UpdateADSstatus();
+                _changeAimTimer = Time.time + 1.0f;
+                Bot.AimDownSightsController.UpdateADSstatus(Enemy);
             }
 
-            Vector3? target = getTarget(out Enemy enemy);
+            Vector3? target = GetShootTargetPosition(Enemy);
             //Bot.BotLight.HandleLightForEnemy(enemy);
             if (target != null &&
-                enemy != null)
+                Enemy != null)
             {
-                Bot.BotLight.HandleLightForEnemy(enemy);
+                Bot.BotLight.HandleLightForEnemy(Enemy);
 
-                if (aimAtTarget(target.Value) &&
-                    weaponManager.HaveBullets)
+                if (aimAtTarget(target.Value, out bool AimComplete))
                 {
-                    tryShoot(enemy);
+                    if (weaponManager.HaveBullets && AimComplete)
+                    {
+                        tryShoot(Enemy);
+                    }
+                    return true;
                 }
             }
+            return false;
         }
 
-        private void selectWeapon()
+        private void selectWeapon(Enemy Enemy)
         {
-            EquipmentSlot optimalSlot = findOptimalWeaponForDistance(getDistance());
+            EquipmentSlot optimalSlot = findOptimalWeaponForDistance(Enemy.RealDistance);
             if (currentSlot != optimalSlot)
             {
                 tryChangeWeapon(optimalSlot);
@@ -207,51 +225,28 @@ namespace SAIN.SAINComponent.Classes
                 info.Weapon.ChamberAmmoCount > 0;
         }
 
-        private bool aimAtTarget(Vector3 target)
+        private bool aimAtTarget(Vector3 target, out bool AimComplete)
         {
             var aimData = BotOwner.AimingManager.CurrentAiming;
-            //AimStatus aimStatus = Bot.Aim.AimStatus;
-            //bool steerComplete = false;
-
-            //if (aimStatus == AimStatus.NoTarget) {
-            //    if (!Bot.FriendlyFire.CheckFriendlyFire(target)) {
-            //        BotOwner.ShootData.EndShoot();
-            //        return false;
-            //    }
-            //    steerComplete = checkSteerDirection(MIN_ANGLE_TO_START_AIM, target);
-            //    if (!steerComplete) {
-            //        Bot.Steering.LookToPoint(target, TURN_SPEED_START_AIM);
-            //        return false;
-            //    }
-            //}
-
             aimData.SetTarget(target);
-            //Vector3 aimTarget = aimData.EndTargetPoint;
-
-            //if (!steerComplete &&
-            //    !checkSteerDirection(MIN_ANGLE_TO_KEEP_AIMING, aimTarget)) {
-            //    Bot.Steering.LookToPoint(aimTarget, TURN_SPEED_AIMING);
-            //    return false;
-            //}
-
             aimData.NodeUpdate();
-
             if (!Bot.FriendlyFire.CheckFriendlyFire(aimData.EndTargetPoint))
             {
                 BotOwner.ShootData.EndShoot();
+                AimComplete = false;
                 return false;
             }
             if (Bot.NoBushESP.NoBushESPActive)
             {
+                AimComplete = false;
                 return false;
             }
-
-            return aimData.IsReady;
+            AimComplete = aimData.IsReady;
+            return true;
         }
 
-        private Vector3? getTarget(out Enemy enemy)
+        private Vector3? GetShootTargetPosition(Enemy enemy)
         {
-            enemy = Bot.Enemy;
             Vector3? target = getAimTarget(enemy);
             if (target != null)
             {

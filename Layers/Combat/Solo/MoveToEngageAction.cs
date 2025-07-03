@@ -34,8 +34,8 @@ namespace SAIN.Layers.Combat.Solo
 
             if (CheckShoot(enemy))
             {
-                Bot.Steering.SteerByPriority();
-                Shoot.CheckAimAndFire();
+                Bot.Steering.SteerByPriority(enemy);
+                Shoot.CheckAimAndFire(enemy);
                 this.EndProfilingSample();
                 return;
             }
@@ -57,8 +57,8 @@ namespace SAIN.Layers.Combat.Solo
             }
             else
             {
-                Bot.Steering.SteerByPriority();
-                Shoot.CheckAimAndFire();
+                Bot.Steering.SteerByPriority(enemy);
+                Shoot.CheckAimAndFire(enemy);
                 this.EndProfilingSample();
                 return;
             }

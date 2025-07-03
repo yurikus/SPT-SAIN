@@ -53,6 +53,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public OtherPlayerData EnemyPlayerData { get; }
 
+        public Vector3? VisiblePathPoint { get; private set; }
+        public int? VisiblePathCornerIndex { get; private set; }
+        public float? VisiblePathPointSignedAngle { get; private set; }
+
         public Enemy(BotComponent bot, PlayerComponent enemyComponent, EnemyInfo enemyInfo) : base(bot)
         {
             EnemyPlayerComponent = enemyComponent;
@@ -94,20 +98,26 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void ManualUpdate()
         {
-            IsCurrentEnemy = Bot.EnemyController.ActiveEnemy == this;
+            IsCurrentEnemy = Bot.EnemyController.GoalEnemy == this;
 
             calcFrequencyCoef();
             updateDistAndDirection();
             updateSniperStatus();
 
             _knownChecker.ManualUpdate();
-            Vision.VisionChecker.CheckVision(out _);
             _activeThreatChecker.ManualUpdate();
             updateActiveState();
             Vision.ManualUpdate();
             KnownPlaces.ManualUpdate();
             Path.ManualUpdate();
             Status.ManualUpdate();
+
+            if (VisiblePathPoint != null)
+            {
+                DebugGizmos.Sphere(VisiblePathPoint.Value, IsCurrentEnemy ? 0.05f : 0.025f, IsCurrentEnemy ? Color.red : Color.white, true, 0.05f);
+                DebugGizmos.Line(VisiblePathPoint.Value, Bot.Transform.HeadPosition, IsCurrentEnemy ? Color.red : Color.white, IsCurrentEnemy ? 0.025f : 0.01f, true, 0.05f);
+            }
+
             base.ManualUpdate();
         }
 
@@ -129,14 +139,30 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void ClearVisiblePathPoint()
         {
             VisiblePathPoint = null;
+            VisiblePathPointSignedAngle = null;
+            VisiblePathCornerIndex = null;
         }
 
-        public void SetLastVisiblePathPoint(Vector3 Point)
+        public void SetLastVisiblePathPoint(Vector3 Point, int CornerIndex)
         {
             VisiblePathPoint = Point;
+            VisiblePathCornerIndex = CornerIndex;
+            Vector3? LastKnown = LastKnownPosition;
+            if (LastKnown != null)
+            {
+                Vector3 botPosition = Bot.Position;
+                Vector3 botEyePosition = Bot.Transform.EyePosition;
+                botPosition.y = botEyePosition.y;
+                VisiblePathPointSignedAngle = Vector.FindFlatSignedAngle(Point, LastKnown.Value, botPosition);
+            }
         }
 
-        protected Vector3? VisiblePathPoint = null;
+        public void SetLastCornerAsVisiblePathPoint(Vector3 LastCorner, int CornerIndex)
+        {
+            VisiblePathPoint = LastCorner;
+            VisiblePathCornerIndex = CornerIndex;
+            VisiblePathPointSignedAngle = null;
+        }
 
         public bool FindLookPoint(Vector3 WeaponRootOffset, out Vector3 Position, out EEnemySteerDir EnemySteerDir, SteeringSettings Settings)
         {
@@ -149,7 +175,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             if (VisiblePathPoint != null)
             {
-                Position = VisiblePathPoint.Value + WeaponRootOffset;
+                //Position = VisiblePathPoint.Value + WeaponRootOffset;
+                Position = VisiblePathPoint.Value;
                 EnemySteerDir = EEnemySteerDir.PathNode;
                 return true;
             }
@@ -213,39 +240,24 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     return null;
                 }
-
-                EnemyCornerDictionary corners = Path.EnemyCorners;
-
                 if (VisiblePathPoint != null && isTargetInSuppRange(enemyLastKnown.Value, VisiblePathPoint.Value))
                 {
                     return VisiblePathPoint.Value;
                 }
-
-                //Vector3? lastCorner = corners.EyeLevelPosition(ECornerType.Last);
-                //if (lastCorner != null &&
-                //    Path.CanSeeLastCornerToEnemy &&
-                //    isTargetInSuppRange(enemyLastKnown.Value, lastCorner.Value))
-                //{
-                //    return lastCorner;
-                //}
-
-                //if (HidingBehindObject != null)
-                //{
-                //    Vector3 pos = HidingBehindObject.transform.position + HidingBehindObject.bounds.size.z * Vector3.up;
-                //    if (isTargetInSuppRange(enemyLastKnown.Value, pos))
-                //    {
-                //        return pos;
-                //    }
-                //}
                 return null;
             }
         }
 
         private bool isTargetInSuppRange(Vector3 target, Vector3 suppressPoint)
         {
-            if ((target - suppressPoint).sqrMagnitude <= MAX_TARGET_SUPPRESS_DIST)
+            float distSqr = (target - suppressPoint).sqrMagnitude;
+            if (distSqr <= TARGET_SUPPRESS_DIST)
             {
                 return true;
+            }
+            if (distSqr > TARGET_SUPPRESS_DIST_MAX)
+            {
+                return false;
             }
             Vector3 directionToSuppPoint = suppressPoint - Bot.Position;
             Vector3 directionToTarget = target - Bot.Position;
@@ -257,8 +269,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return false;
         }
 
-        private const float MAX_TARGET_SUPPRESS_DIST = 5f * 5f;
-        private const float MAX_TARGET_SUPPRESS_ANGLE = 45f;
+        private const float TARGET_SUPPRESS_DIST = 3f * 3f;
+        private const float TARGET_SUPPRESS_DIST_MAX = 8f * 8f;
+        private const float MAX_TARGET_SUPPRESS_ANGLE = 30f;
 
         public Vector3? CenterMass {
             get

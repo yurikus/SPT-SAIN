@@ -1,17 +1,38 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.BotController;
-using SAIN.Helpers;
+using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
 using UnityEngine;
-using EFTSettingsLoadClass = GClass598;
 
 namespace SAIN.Patches.Components
 {
     internal class AddBotComponentPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotOwner), nameof(BotOwner.PreActivate));
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(ref BotOwner __instance)
+        {
+            try
+            {
+                BotSpawnController.Instance.AddBot(__instance);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($" SAIN Add Bot Error: {ex}");
+            }
+        }
+    }
+
+    internal class ActivateBotComponentPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -21,21 +42,7 @@ namespace SAIN.Patches.Components
         [PatchPostfix]
         public static void PatchPostfix(ref BotOwner __instance)
         {
-            try
-            {
-                if (__instance.BotState != EBotState.ActiveFail)
-                {
-                    BotSpawnController.Instance.AddBot(__instance);
-                }
-                else
-                {
-                    Logger.LogDebug($"{__instance.name} failed EFT Init, skipping adding SAIN components");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($" SAIN Add Bot Error: {ex}");
-            }
+            __instance.GetComponent<BotComponent>()?.Activate(__instance);
         }
     }
 
@@ -54,7 +61,7 @@ namespace SAIN.Patches.Components
 
             try
             {
-                GameWorldHandler.Create(gameObject);
+                GameWorldHandler.Create(gameWorld);
             }
             catch (Exception ex)
             {
@@ -67,35 +74,34 @@ namespace SAIN.Patches.Components
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotsController), nameof(BotsController.method_0));
-        }
-
-        [PatchPrefix]
-        public static void PatchPrefix(BotsController __instance)
-        {
-            var controller = SAINBotController.Instance;
-            if (controller != null && controller.DefaultController == null)
-            {
-                controller.DefaultController = __instance;
-            }
-        }
-    }
-
-    internal class GetBotSpawner : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotSpawner), nameof(BotSpawner.AddPlayer));
+            return AccessTools.Method(typeof(BotsController), nameof(BotsController.Init));
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(BotSpawner __instance)
+        public static void Patch(BotsController __instance)
         {
-            var controller = SAINBotController.Instance;
-            if (controller != null && controller.BotSpawner == null)
+            SAINBotController sainBotController = Singleton<GameWorld>.Instance?.GetComponent<SAINBotController>();
+            if (sainBotController == null)
             {
-                controller.BotSpawner = __instance;
+                Logger.LogError("sainBotControllerNull");
+                return;
             }
+            sainBotController.DefaultController = __instance;
+            sainBotController.BotSpawner = __instance.BotSpawner;
+        }
+    }
+
+    internal class BotUpdateByUnityPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotsClass), nameof(BotsClass.UpdateByUnity));
+        }
+
+        [PatchPostfix]
+        public static void Patch(BotsClass __instance)
+        {
+            SAINBotController.Instance?.ManualUpdate();
         }
     }
 }

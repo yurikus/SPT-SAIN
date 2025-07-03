@@ -41,7 +41,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return true;
 
                 case ESteerPriority.EnemyVisible:
-                    LookToEnemy(Bot.Enemy);
+                    LookToEnemy(enemy);
                     return true;
 
                 case ESteerPriority.UnderFire:

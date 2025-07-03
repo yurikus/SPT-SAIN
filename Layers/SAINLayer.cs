@@ -18,7 +18,61 @@ namespace SAIN.Layers
         {
             LayerName = layerName;
             ELayer = eSAINLayer;
+            tryGetBot(botOwner);
         }
+
+        /// <summary>
+        /// Contains a check to get SAIN Bot Component, its annoying but there isn't really a better way to do this with big brain. always returns false.
+        /// </summary>
+        /// <returns>false</returns>
+        public override bool IsActive()
+        {
+            if (!foundBot)
+            {
+                tryGetBot(BotOwner);
+            }
+            return false;
+        }
+
+        private void tryGetBot(BotOwner botOwner)
+        {
+            if (!foundBot)
+            {
+                if (_bot == null)
+                {
+                    _bot = botOwner.GetComponent<BotComponent>();
+                }
+                if (_bot != null)
+                {
+                    foundBot = true;
+                    if (_bot.Decision == null || _bot.Decision.DecisionManager == null)
+                    {
+                        _bot.OnBotActivated += OnBotActivated;
+                    }
+                    else
+                    {
+                        OnBotActivated(_bot);
+                    }
+                }
+            }
+        }
+
+        protected virtual void OnBotActivated(BotComponent bot)
+        {
+            bot.Decision.DecisionManager.OnDecisionMade += BotDecisionMade;
+        }
+
+        private bool foundBot = false;
+
+        protected void BotDecisionMade(ECombatDecision combatDecision, ESquadDecision squadDecision, ESelfDecision selfDecision, BotComponent bot)
+        {
+            if (Bot.ActiveLayer == ELayer)
+            {
+                ResetAction = true;
+            }
+        }
+
+        protected bool ResetAction = false;
 
         private readonly string LayerName;
         private readonly ESAINLayer ELayer;
@@ -41,27 +95,11 @@ namespace SAIN.Layers
 
         public override string GetName() => LayerName;
 
-        public SAINBotController BotController => SAINBotController.Instance;
+        public static SAINBotController BotController => SAINBotController.Instance;
 
-        public BotComponent Bot
-        {
-            get
-            {
-                if (_bot == null &&
-                    BotController.GetSAIN(BotOwner, out var bot))
-                {
-                    _bot = bot;
-                }
-                if (_bot == null)
-                {
-                    _bot = BotOwner.GetComponent<BotComponent>();
-                }
-                return _bot;
-            }
-        }
+        public BotComponent Bot => _bot;
 
         private BotComponent _bot;
-
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {

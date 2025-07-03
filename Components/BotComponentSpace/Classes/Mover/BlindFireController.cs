@@ -55,7 +55,14 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 if (_blindFire != 0)
                 {
-                    TryShoot();
+                    if (!CheckAllowBlindFire())
+                    {
+                        _blindFire = 0;
+                    }
+                    else
+                    {
+                        TryShoot(Bot.Enemy);
+                    }
                 }
                 return;
             }
@@ -105,12 +112,12 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Vector3 blindFireDirection = Vector.Rotate(targetPos - start, Vector.RandomRange(3), Vector.RandomRange(3), Vector.RandomRange(3));
                 BlindFireTargetPos = blindFireDirection + start;
             }
-            TryShoot();
+            TryShoot(Bot.Enemy);
         }
 
-        private void TryShoot()
+        private void TryShoot(Enemy enemy)
         {
-            if (Bot.ManualShoot.TryShoot(true, BlindFireTargetPos, false, EShootReason.Blindfire))
+            if (Bot.ManualShoot.TryShoot(enemy, BlindFireTargetPos, false, EShootReason.Blindfire))
             {
                 _manualShooting = true;
             }
@@ -126,22 +133,15 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (ActiveBlindFireSetting != 0)
             {
-                _blindFire = 0;
                 Player.MovementContext.SetBlindFire(0);
-            }
-            if (_blindFire != 0)
-            {
-                _blindFire = 0;
             }
             if (_manualShooting)
             {
                 _manualShooting = false;
-                Bot.ManualShoot.TryShoot(false, Vector3.zero);
+                Bot.ManualShoot.Reset();
             }
-            if (BlindFireTargetPos != Vector3.zero)
-            {
-                BlindFireTargetPos = Vector3.zero;
-            }
+            _blindFire = 0;
+            BlindFireTargetPos = Vector3.zero;
         }
 
         private Vector3 BlindFireTargetPos;
