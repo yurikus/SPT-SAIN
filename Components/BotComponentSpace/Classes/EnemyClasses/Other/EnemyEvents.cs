@@ -58,6 +58,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void LastKnownUpdated(EnemyPlace place)
         {
             OnPositionUpdated?.Invoke(Enemy, place);
+            OnEnemyKnownChanged.CheckToggle(true);
         }
 
         public void SetEnemyAsInvalid()

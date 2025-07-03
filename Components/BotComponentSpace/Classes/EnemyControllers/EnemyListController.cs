@@ -20,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void Init()
         {
-            GameWorldComponent.Instance.PlayerTracker.AlivePlayers.OnPlayerComponentRemoved += RemoveEnemy;
+            GameWorldComponent.Instance.PlayerTracker.AlivePlayersDictionary.OnPlayerComponentRemoved += RemoveEnemy;
             BotOwner.Memory.OnAddEnemy += enemyAdded;
             compareEnemyLists();
             base.Init();
@@ -34,7 +34,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void Dispose()
         {
-            GameWorldComponent.Instance.PlayerTracker.AlivePlayers.OnPlayerComponentRemoved -= RemoveEnemy;
+            GameWorldComponent.Instance.PlayerTracker.AlivePlayersDictionary.OnPlayerComponentRemoved -= RemoveEnemy;
             BotMemoryClass memory = BotOwner?.Memory;
             if (memory != null)
             {
@@ -117,7 +117,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 var member = BotOwner.BotsGroup.Member(i);
                 if (member == null) continue;
-                if (member.name == botOwner.name) return true;
+                if (member == botOwner) return true;
             }
             return false;
         }

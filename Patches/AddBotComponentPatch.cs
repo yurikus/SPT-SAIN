@@ -3,6 +3,7 @@ using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.BotController;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System;
@@ -101,7 +102,24 @@ namespace SAIN.Patches.Components
         [PatchPostfix]
         public static void Patch(BotsClass __instance)
         {
-            SAINBotController.Instance?.ManualUpdate();
+            //GameWorldComponent.Instance?.ManualUpdate();
+        }
+    }
+
+    internal class PlayerLateUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player), nameof(Player.LateUpdate));
+        }
+
+        [PatchPostfix]
+        public static void Patch(Player __instance)
+        {
+            if (GameWorldComponent.TryGetPlayerComponent(__instance, out PlayerComponent playerComponent))
+            {
+                playerComponent.ManualLateUpdate();
+            }
         }
     }
 }

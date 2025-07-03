@@ -66,7 +66,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             EnemyInfo = enemyInfo;
             EnemyProfileId = enemyComponent.ProfileId;
 
-            EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.Datas[enemyComponent.ProfileId];
+            EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[enemyComponent.ProfileId];
 
             Events = new EnemyEvents(this);
             _activeThreatChecker = new EnemyActiveThreatChecker(this);

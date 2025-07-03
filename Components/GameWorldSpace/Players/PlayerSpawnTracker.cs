@@ -11,18 +11,18 @@ namespace SAIN.Components.PlayerComponentSpace
 {
     public class PlayerSpawnTracker
     {
-        public readonly HashSet<PlayerComponent> PlayerComponents = [];
+        public readonly HashSet<PlayerComponent> AlivePlayerArray = [];
 
         public event Action<PlayerComponent> OnPlayerAdded;
 
         public event Action<string, PlayerComponent> OnPlayerRemoved;
 
-        public readonly PlayerDictionary AlivePlayers = [];
+        public readonly PlayerDictionary AlivePlayersDictionary = [];
 
         public readonly List<IPlayer> DeadPlayers = [];
 
-        public PlayerComponent GetPlayerComponent(string profileId) => AlivePlayers.GetPlayerComponent(profileId);
-        public PlayerComponent GetPlayerComponent(IPlayer Player) => AlivePlayers.GetPlayerComponent(Player);
+        public PlayerComponent GetPlayerComponent(string profileId) => AlivePlayersDictionary.GetPlayerComponent(profileId);
+        public PlayerComponent GetPlayerComponent(IPlayer Player) => AlivePlayersDictionary.GetPlayerComponent(Player);
 
         public PlayerComponent FindClosestHumanPlayer(out float closestPlayerSqrMag, Vector3 targetPosition, out Player player)
         {
@@ -30,7 +30,7 @@ namespace SAIN.Components.PlayerComponentSpace
             closestPlayerSqrMag = float.MaxValue;
             player = null;
 
-            foreach (var component in AlivePlayers.Values)
+            foreach (var component in AlivePlayersDictionary.Values)
             {
                 if (component != null &&
                     component.Player != null &&
@@ -62,7 +62,7 @@ namespace SAIN.Components.PlayerComponentSpace
             }
             //Logger.LogDebug($"Manually trying to recreate Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]");
             AddPlayer(player);
-            if (AlivePlayers.TryGetValue(player.ProfileId, out var component))
+            if (AlivePlayersDictionary.TryGetValue(player.ProfileId, out var component))
             {
                 Logger.LogDebug($"Successfully created new Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]");
                 return component;
@@ -91,7 +91,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 return;
             }
 
-            if (AlivePlayers.TryRemove(profileId, out bool compDestroyed))
+            if (AlivePlayersDictionary.TryRemove(profileId, out bool compDestroyed))
             {
                 string playerInfo = $"{player.name} : {player.Profile?.Nickname} : {profileId}";
                 Logger.LogWarning($"PlayerComponent already exists for Player: {playerInfo}");
@@ -102,11 +102,11 @@ namespace SAIN.Components.PlayerComponentSpace
             }
 
             PlayerComponent component = player.gameObject.AddComponent<PlayerComponent>();
-            if (component?.Init(iPlayer, player) == true)
+            if (component?.Init(iPlayer) == true)
             {
                 component.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
-                AlivePlayers.Add(profileId, component);
-                PlayerComponents.Add(component);
+                AlivePlayersDictionary.Add(profileId, component);
+                AlivePlayerArray.Add(component);
                 OnPlayerAdded?.Invoke(component);
             }
             else
@@ -119,9 +119,9 @@ namespace SAIN.Components.PlayerComponentSpace
         private void removePerson(PersonClass person)
         {
             OnPlayerRemoved?.Invoke(person.ProfileId, person.PlayerComponent);
-            PlayerComponents.Remove(person.PlayerComponent);
+            AlivePlayerArray.Remove(person.PlayerComponent);
             person.ActivationClass.OnPersonDeadOrDespawned -= removePerson;
-            AlivePlayers.TryRemove(person.ProfileId, out _);
+            AlivePlayersDictionary.TryRemove(person.ProfileId, out _);
 
             if (!person.ActivationClass.IsAlive &&
                 person.Player != null)
@@ -143,11 +143,11 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 gameWorld.OnPersonAdd -= AddPlayer;
             }
-            foreach (var player in AlivePlayers)
+            foreach (var player in AlivePlayersDictionary)
             {
                 player.Value?.Dispose();
             }
-            AlivePlayers.Clear();
+            AlivePlayersDictionary.Clear();
         }
 
         private readonly GameWorldComponent _sainGameWorld;

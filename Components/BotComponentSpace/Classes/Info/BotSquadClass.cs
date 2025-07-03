@@ -60,7 +60,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         private bool humanFriendClose(float distToCheck)
         {
-            foreach (var playerComponent in GameWorldComponent.Instance.PlayerTracker.AlivePlayers.Values)
+            foreach (var playerComponent in GameWorldComponent.Instance.PlayerTracker.AlivePlayersDictionary.Values)
             {
                 if (playerComponent != null &&
                     !playerComponent.IsAI &&

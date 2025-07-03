@@ -24,11 +24,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public float LastAimTime { get; set; }
 
-        public AimStatus AimStatus
-        {
+        public AimStatus AimStatus {
             get
             {
-
                 if (BotOwner.AimingManager.CurrentAiming != null && BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
                 {
                     var status = aimClass.aimStatus_0;
@@ -48,11 +46,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
         }
 
-
         public override void ManualUpdate()
         {
             checkCanAim();
-            checkLoseTarget();
+            CheckLoseTarget();
             base.ManualUpdate();
         }
 
@@ -88,11 +85,20 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return true;
         }
 
-        private void checkLoseTarget()
+        public void LoseAimTarget()
         {
-            if (!CanAim)
+            if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
             {
-                BotOwner.AimingManager?.CurrentAiming?.LoseTarget();
+                aimClass.aimStatus_0 = AimStatus.NoTarget;
+            }
+        }
+
+        private void CheckLoseTarget()
+        {
+            var weaponManager = BotOwner.WeaponManager;
+            if (!CanAim || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
+            {
+                LoseAimTarget();
                 BotOwner.ShootData?.EndShoot();
             }
         }

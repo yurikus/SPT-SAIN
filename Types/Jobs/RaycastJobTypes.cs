@@ -122,9 +122,9 @@ namespace SAIN.Types.Jobs
             for (int i = 0; i < Count; i++)
             {
                 Vector3 Direction = Points[i] - ViewPosition;
-                Result[i] = new RaycastCommand(ViewPosition, Direction.normalized, new QueryParameters {
+                Result[i] = new RaycastCommand(ViewPosition, Direction, new QueryParameters {
                     layerMask = Mask
-                }, Direction.magnitude);
+                }, 1f);
             }
             return Result;
         }
@@ -157,7 +157,7 @@ namespace SAIN.Types.Jobs
             return Result;
         }
     }
-
+    
     public struct NavMeshPathRaycastJob(
         Vector3[] PathCorners,
         Vector3[] inOffsets,
@@ -195,11 +195,6 @@ namespace SAIN.Types.Jobs
                 return -1;
             }
             return ExpectedCornerIndex;
-        }
-
-        public static NavMeshPathRaycastJob Create(Vector3[] PathCorners, Vector3[] inOffsets, Vector3 InViewPosition, LayerMask Mask, IPlayer inOwner, IPlayer inTarget)
-        {
-            return new NavMeshPathRaycastJob(PathCorners, inOffsets, CreateVectorArray(PathCorners, inOffsets), InViewPosition, Mask, inOwner, inTarget);
         }
 
         public static NavMeshPathRaycastJob Create(Vector3[] PathCorners, int InOffsetCount, LayerMask Mask, IPlayer inOwner, IPlayer inTarget)

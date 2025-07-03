@@ -9,14 +9,14 @@ namespace SAIN.Components
 {
     public class BodyPartsClass : PlayerComponentBase
     {
-        public PartDictionary Parts { get; } = new PartDictionary();
+        public PartDictionary Parts { get; } = [];
 
         public SAINBodyPart[] PartsArray { get; private set; }
 
         public BodyPartsClass(PlayerComponent component) : base(component)
         {
             createParts();
-            PartsArray = Parts.Values.ToArray();
+            PartsArray = [.. Parts.Values];
         }
 
         private void createParts()

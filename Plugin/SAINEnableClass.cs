@@ -99,7 +99,7 @@ namespace SAIN
         {
             return
                 WildSpawn.IsPMC(wildSpawnType) ||
-                SAINBotController.Instance?.Bots?.ContainsKey(botOwner.name) == true;
+                SAINBotController.Instance?.Bots?.ContainsKey(botOwner.ProfileId) == true;
         }
 
         private static bool ExcludeBoss(WildSpawnType wildSpawnType)

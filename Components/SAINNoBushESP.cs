@@ -177,7 +177,10 @@ namespace SAIN.Components
                     enemy.SetCanShoot(false);
                     enemy.SetVisible(false);
 
-                    BotOwner.AimingManager.CurrentAiming?.LoseTarget();
+                    if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimData && aimData.aimStatus_0 != AimStatus.NoTarget)
+                    {
+                        aimData.aimStatus_0 = AimStatus.NoTarget;
+                    }
 
                     var vision = SAIN?.EnemyController.GetEnemy(enemy.ProfileId, false)?.Vision;
                     if (vision != null)

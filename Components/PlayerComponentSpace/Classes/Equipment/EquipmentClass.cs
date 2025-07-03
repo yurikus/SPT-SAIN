@@ -24,7 +24,7 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
             PlayerComponent.OnWeaponEquipped += OnWeaponEquiped;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             foreach (var WeaponInfo in WeaponInfos)
             {

@@ -9,7 +9,7 @@ namespace SAIN.Components
 {
     public class BotJobsClass(SAINBotController botController) : SAINControllerBase(botController)
     {
-        public PlayerDistancesJob PlayerDistancesJob { get; } = new PlayerDistancesJob(botController);
+        public DirectionDataJob PlayerDistancesJob { get; } = new DirectionDataJob(botController);
         public VisionRaycastJob VisionJob { get; } = new VisionRaycastJob(botController);
         public EnemyPlaceRaycastJob EnemyPlaceJob { get; } = new EnemyPlaceRaycastJob(botController);
 
@@ -28,25 +28,25 @@ namespace SAIN.Components
         {
             //_localBotList.Sort((x, y) => x.LastCheckVisibleTime.CompareTo(y.LastCheckVisibleTime));
 
-            int count = 0;
+            //int count = 0;
             foreach (BotComponent bot in Bots)
             {
                 if (bot == null) continue;
 
-                float frequency = bot.BotActive ? 0.05f : 0.25f;
-                if (bot.LastCheckVisibleTime + frequency > Time.time)
-                    continue;
+                //float frequency = bot.BotActive ? 0.05f : 0.25f;
+                //if (bot.LastCheckVisibleTime + frequency > Time.time)
+                //    continue;
 
                 bot.LastCheckVisibleTime = Time.time;
                 int numUpdated = bot.Vision.BotLook.UpdateLook();
-                if (numUpdated > 0)
-                {
-                    count++;
-                    if (count >= maxBotsPerFrame)
-                    {
-                        //break;
-                    }
-                }
+                //if (numUpdated > 0)
+                //{
+                //    count++;
+                //    if (count >= maxBotsPerFrame)
+                //    {
+                //        //break;
+                //    }
+                //}
             }
             //_localBotList.Clear();
         }

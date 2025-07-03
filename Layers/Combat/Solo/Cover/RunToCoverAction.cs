@@ -131,9 +131,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
             //    coverDestination = null;
             //    return false;
             //}
-            if (tryRun(Bot.Cover.CoverInUse, out sprinting, tryWalk))
+            CoverPoint coverInUse = Bot.Cover.CoverInUse;
+            if (tryRun(coverInUse, out sprinting, tryWalk))
             {
-                coverDestination = Bot.Cover.CoverInUse;
+                coverDestination = coverInUse;
                 return true;
             }
 
@@ -175,6 +176,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
             if (!coverPoint.CoverData.IsBad)
             {
                 return true;
+            }
+            if (coverPoint.BotInThisCover)
+            {
+                return false;
             }
             Vector3 target = findTarget();
             if (target == Vector3.zero)

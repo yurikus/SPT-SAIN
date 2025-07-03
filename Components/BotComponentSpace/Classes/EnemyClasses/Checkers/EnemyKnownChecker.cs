@@ -6,37 +6,37 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
     {
         public override void Init()
         {
-            Bot.BotActivation.BotActiveToggle.OnToggle += botStateChanged;
+            Bot.BotActivation.BotActiveToggle.OnToggle += BotStateChanged;
             base.Init();
         }
 
         public override void ManualUpdate()
         {
-            bool enemyKnown = shallKnowEnemy();
-            setEnemyKnown(enemyKnown);
+            bool enemyKnown = ShallKnowEnemy();
+            SetEnemyKnown(enemyKnown);
             base.ManualUpdate();
         }
 
         public override void Dispose()
         {
-            Bot.BotActivation.BotActiveToggle.OnToggle -= botStateChanged;
+            Bot.BotActivation.BotActiveToggle.OnToggle -= BotStateChanged;
             base.Dispose();
         }
 
-        private void botStateChanged(bool botActive)
+        private void BotStateChanged(bool botActive)
         {
             if (!botActive)
             {
-                setEnemyKnown(false);
+                SetEnemyKnown(false);
             }
         }
 
-        private void setEnemyKnown(bool enemyKnown)
+        public void SetEnemyKnown(bool enemyKnown)
         {
             Enemy.Events.OnEnemyKnownChanged.CheckToggle(enemyKnown);
         }
 
-        private bool shallKnowEnemy()
+        private bool ShallKnowEnemy()
         {
             if (!Enemy.CheckValid())
                 return false;
@@ -65,7 +65,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         public bool BotIsSearchingForMe()
         {
-            if (!isBotSearching())
+            if (!IsBotSearching())
             {
                 return false;
             }
@@ -76,7 +76,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             return false;
         }
 
-        private bool isBotSearching()
+        private bool IsBotSearching()
         {
             if (Bot.Decision.CurrentCombatDecision == ECombatDecision.Search)
             {

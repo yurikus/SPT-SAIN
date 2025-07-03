@@ -47,6 +47,7 @@ namespace SAIN.SAINComponent.Classes
             if (CurrentTargetEnemy == null ||
                 CurrentTargetEnemy.IsDifferent(newTargetEnemy))
             {
+                Bot.Aim.LoseAimTarget();
                 CurrentTargetEnemy = newTargetEnemy;
                 OnNewTargetEnemy?.Invoke(newTargetEnemy, target.Value);
             }

@@ -294,7 +294,7 @@ namespace SAIN.Patches.Generic
             }
             if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain)
                 //&& sain.Info.Profile.IsPMC
-                && sain.EnemyController.CheckAddEnemy(__instance.Person)?.Heard == true)
+                && sain.EnemyController.CheckAddEnemy(__instance.Person)?.EnemyKnown == true)
             {
                 __result = true;
             }

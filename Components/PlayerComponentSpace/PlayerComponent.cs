@@ -228,9 +228,10 @@ namespace SAIN.Components.PlayerComponentSpace
         public readonly Player GetPlayer() => PlayerComponent?.Player;
     }
 
-    public class PlayerComponent : MonoBehaviour
+    public class PlayerComponent : MonoBehaviour , IDisposable
     {
         public event Action<WeaponInfo, Vector3> OnShoot;
+
         public event Action<PlayerComponent, EftBulletClass> OnBulletFlyBy;
 
         public void RegisterFlyBy(PlayerComponent Source, EftBulletClass Bullet)
@@ -281,7 +282,9 @@ namespace SAIN.Components.PlayerComponentSpace
                 if (_currentWeapon != value)
                 {
                     Weapon LastWeapon = _currentWeapon;
+#if DEBUG
                     Logger.LogDebug($"[{Player?.Profile.Nickname}] Equipped Weapon [{value?.ShortName}] Last Weapon [{LastWeapon?.ShortName}]");
+#endif
                     _currentWeapon = value;
                     OnWeaponEquipped?.Invoke(value, LastWeapon);
                 }
@@ -302,7 +305,9 @@ namespace SAIN.Components.PlayerComponentSpace
                 if (_currentItem != value)
                 {
                     Item LastItem = _currentItem;
+#if DEBUG
                     Logger.LogDebug($"[{Player?.Profile.Nickname}] Equipped Item [{value?.ShortName}] Last Item [{LastItem?.ShortName}]");
+#endif
                     _currentItem = value;
                     OnItemEquipped?.Invoke(value, LastItem);
                 }
@@ -325,10 +330,12 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (IsActive && AIData.AISoundPlayer.ShallPlayAISound())
             {
+#if DEBUG
                 if (Player.IsYourPlayer)
                 {
                     Logger.LogDebug($"Sound Cached: [{InSoundType}, {InRange}, {InVolume}]");
                 }
+#endif
                 AddCachedAISoundEvent(InSoundType, InPosition, InRange, InVolume, Phrase, TagStatus);
             }
         }
@@ -397,7 +404,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public float GetDistanceToPlayer(string ProfileId)
         {
-            if (OtherPlayersData.Datas.TryGetValue(ProfileId, out var Data))
+            if (OtherPlayersData.DataDictionary.TryGetValue(ProfileId, out var Data))
             {
                 return Data.DistanceData.Distance;
             }
@@ -647,7 +654,7 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        public void LateUpdate()
+        public void ManualLateUpdate()
         {
             Person.LateUpdate();
         }
@@ -672,15 +679,12 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        private void startCoroutines()
+        private void StartCoroutines()
         {
-            if (_gearCoroutine == null)
-            {
-                _gearCoroutine = StartCoroutine(Equipment.GearInfo.GearUpdateLoop());
-            }
+            _gearCoroutine ??= StartCoroutine(Equipment.GearInfo.GearUpdateLoop());
         }
 
-        private void stopCoroutines()
+        private void StopCoroutines()
         {
             if (_gearCoroutine != null)
             {
@@ -743,13 +747,13 @@ namespace SAIN.Components.PlayerComponentSpace
         public bool IsAI => Person.AIInfo.IsAI;
         public bool IsSAINBot => Person.AIInfo.IsSAINBot;
 
-        public bool Init(IPlayer iPlayer, Player player)
+        public bool Init(IPlayer iPlayer)
         {
             ProfileId = iPlayer.ProfileId;
 
             try
             {
-                var playerData = new PlayerData(this, player, iPlayer);
+                PlayerData playerData = new(this, iPlayer as Player, iPlayer);
                 Person = new PersonClass(playerData);
 
                 OtherPlayersData = new OtherPlayersData(this);
@@ -757,8 +761,6 @@ namespace SAIN.Components.PlayerComponentSpace
                 Flashlight = new FlashLightClass(this);
                 Equipment = new SAINEquipmentClass(this);
                 AIData = new SAINAIData(Equipment.GearInfo, this);
-                OtherPlayersData.Init();
-
                 Person.ActivationClass.OnPlayerActiveChanged += handleCoroutines;
                 handleCoroutines(true);
             }
@@ -768,7 +770,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 return false;
             }
             //Logger.LogDebug($"{Person.Nickname} Player Component Created");
-            StartCoroutine(delayInit());
+            StartCoroutine(DelayInit());
             //StartCoroutine(voiceTest());
             return true;
         }
@@ -776,12 +778,12 @@ namespace SAIN.Components.PlayerComponentSpace
         private void handleCoroutines(bool active)
         {
             if (active)
-                startCoroutines();
+                StartCoroutines();
             else
-                stopCoroutines();
+                StopCoroutines();
         }
 
-        private IEnumerator delayInit()
+        private IEnumerator DelayInit()
         {
             yield return null;
             Equipment.Init();
@@ -806,14 +808,14 @@ namespace SAIN.Components.PlayerComponentSpace
         private void OnDisable()
         {
             Person.ActivationClass.Disable();
-            stopCoroutines();
+            StopCoroutines();
         }
 
         public void Dispose()
         {
             Logger.LogDebug($"Destroying Playing Component for [Name: {Person?.Name} : Nickname: {Person?.Nickname}, ProfileID: {Person?.ProfileId}, at time: {Time.time}]");
             OnComponentDestroyed?.Invoke(ProfileId);
-            stopCoroutines();
+            StopCoroutines();
             Person.ActivationClass.OnBotActiveChanged -= handleCoroutines;
             Person.ActivationClass.OnPlayerActiveChanged -= handleCoroutines;
             Equipment?.Dispose();

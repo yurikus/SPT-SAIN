@@ -364,8 +364,8 @@ namespace SAIN.SAINComponent.Classes.Debug
 
                     bool stuck = _botStuckAfterVault
                         || BotStuckGeneric()
-                        || BotStuckOnObject()
-                        || BotStuckOnPlayer();
+                        || BotStuckOnObject();
+                        //|| BotStuckOnPlayer();
 
                     if (!BotIsStuck && stuck)
                     {

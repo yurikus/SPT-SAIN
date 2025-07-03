@@ -61,7 +61,7 @@ namespace SAIN.SAINComponent.Classes
         {
             if (TryShoot(Enemy))
                 return true;
-            BotOwner.AimingManager?.CurrentAiming?.LoseTarget();
+            Bot.Aim.LoseAimTarget();
             return false;
         }
 
@@ -77,21 +77,22 @@ namespace SAIN.SAINComponent.Classes
             if (weaponManager == null)
                 return false;
 
-            if (weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster
-                && !weaponManager.HaveBullets
-                && !weaponManager.Selector.TryChangeToMain())
+            if (_changeAimTimer < Time.time)
             {
-                selectWeapon(Enemy);
+                _changeAimTimer = Time.time + 0.25f;
+                Bot.AimDownSightsController.UpdateADSstatus(Enemy);
+            }
+
+            if (!weaponManager.HaveBullets)
+            {
+                if (weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster && !weaponManager.Selector.TryChangeToMain())
+                    selectWeapon(Enemy);
+
+                return false;
             }
 
             if (!Bot.Aim.CanAim)
                 return false;
-
-            if (_changeAimTimer < Time.time)
-            {
-                _changeAimTimer = Time.time + 1.0f;
-                Bot.AimDownSightsController.UpdateADSstatus(Enemy);
-            }
 
             Vector3? target = GetShootTargetPosition(Enemy);
             //Bot.BotLight.HandleLightForEnemy(enemy);

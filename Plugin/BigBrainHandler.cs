@@ -27,6 +27,7 @@ namespace SAIN
             "AssaultHaveEnemy",
             "Assault Building",
             "Enemy Building",
+            "PushAndSup"
         };
 
         private static List<Type> _SAINLayers = new List<Type>();

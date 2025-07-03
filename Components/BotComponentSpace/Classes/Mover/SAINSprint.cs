@@ -143,7 +143,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private void StartRun(NavMeshPath path, Vector3 point, ESprintUrgency urgency, System.Action callback)
         {
             StopRunCoroutine();
-            BotOwner.AimingManager.CurrentAiming.LoseTarget();
+            Bot.Aim.LoseAimTarget();
             LastRunDestination = point;
             CurrentPath = path;
             _lastUrgency = urgency;

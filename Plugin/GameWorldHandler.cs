@@ -11,7 +11,7 @@ namespace SAIN
             if (SAINGameWorld != null)
             {
                 Logger.LogWarning($"Old SAIN Gameworld is not null! Destroying...");
-                SAINGameWorld.Dispose();
+                SAINGameWorld.DestroyComponent();
                 GameObject.Destroy(SAINGameWorld);
             }
             SAINGameWorld = gameWorld.gameObject.AddComponent<GameWorldComponent>();

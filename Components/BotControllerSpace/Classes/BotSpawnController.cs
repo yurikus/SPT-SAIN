@@ -116,7 +116,7 @@ namespace SAIN.Components.BotController
         {
             bot.OnBotActivated -= OnBotActivated;
             SAINBots.Add(bot);
-            BotDictionary.Add(bot.BotOwner.name, bot);
+            BotDictionary.Add(bot.ProfileId, bot);
             bot.PlayerComponent.InitBotComponent(bot);
             bot.BotOwner.LeaveData.OnLeave += removeBot;
             bot.PlayerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
@@ -168,7 +168,7 @@ namespace SAIN.Components.BotController
 
             if (botComponent.InitializeBot(playerComponent.Person))
             {
-                BotDictionary.Add(botOwner.name, botComponent);
+                BotDictionary.Add(botOwner.ProfileId, botComponent);
                 playerComponent.InitBotComponent(botComponent);
                 botOwner.LeaveData.OnLeave += removeBot;
                 playerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
@@ -202,15 +202,15 @@ namespace SAIN.Components.BotController
 
         private bool Subscribed = false;
 
-        public BotComponent GetSAIN(BotOwner botOwner, StringBuilder debugString)
+        public BotComponent GetSAIN(BotOwner botOwner)
         {
-            return GetSAIN(botOwner?.name);
+            return GetSAIN(botOwner?.ProfileId);
         }
 
-        public BotComponent GetSAIN(string botName)
+        public BotComponent GetSAIN(string profileId)
         {
-            if (!botName.IsNullOrEmpty() &&
-                BotDictionary.TryGetValue(botName, out BotComponent component))
+            if (!profileId.IsNullOrEmpty() &&
+                BotDictionary.TryGetValue(profileId, out BotComponent component))
             {
                 return component;
             }
@@ -232,23 +232,23 @@ namespace SAIN.Components.BotController
 
         private void checkExisting(BotOwner botOwner)
         {
-            string name = botOwner.name;
-            if (BotDictionary.ContainsKey(name))
+            string ProfileId = botOwner.ProfileId;
+            if (BotDictionary.ContainsKey(ProfileId))
             {
-                Logger.LogDebug($"{name} was already present in Bot Dictionary. Removing...");
-                BotDictionary.Remove(name);
+                Logger.LogDebug($"{ProfileId} was already present in Bot Dictionary. Removing...");
+                BotDictionary.Remove(ProfileId);
             }
 
             GameObject gameObject = botOwner.gameObject;
             // If somehow this bot already has components attached, destroy it.
             if (gameObject.TryGetComponent(out BotComponent botComponent))
             {
-                Logger.LogDebug($"{name} already had a BotComponent attached. Destroying...");
+                Logger.LogDebug($"{ProfileId} already had a BotComponent attached. Destroying...");
                 botComponent.Dispose();
             }
             if (gameObject.TryGetComponent(out SAINNoBushESP noBushComponent))
             {
-                Logger.LogDebug($"{name} already had No Bush ESP attached. Destroying...");
+                Logger.LogDebug($"{ProfileId} already had No Bush ESP attached. Destroying...");
                 GameObject.Destroy(noBushComponent);
             }
         }
@@ -258,7 +258,7 @@ namespace SAIN.Components.BotController
             BotComponent botComponent = botOwner.gameObject.AddComponent<BotComponent>();
             if (botComponent.Init(playerComponent.Person))
             {
-                BotDictionary.Add(botOwner.name, botComponent);
+                BotDictionary.Add(botOwner.ProfileId, botComponent);
                 playerComponent.InitBotComponent(botComponent);
                 botOwner.LeaveData.OnLeave += removeBot;
                 playerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
@@ -275,12 +275,12 @@ namespace SAIN.Components.BotController
             {
                 if (botOwner != null)
                 {
-                    if (BotDictionary.TryGetValue(botOwner.name, out BotComponent botComponent))
+                    if (BotDictionary.TryGetValue(botOwner.ProfileId, out BotComponent botComponent))
                     {
                         OnBotRemoved?.Invoke(botComponent);
                         botComponent.Dispose();
                     }
-                    BotDictionary.Remove(botOwner.name);
+                    BotDictionary.Remove(botOwner.ProfileId);
                     if (botOwner.TryGetComponent(out BotComponent component))
                     {
                         OnBotRemoved?.Invoke(botComponent);

@@ -5,42 +5,53 @@ namespace SAIN.Components.PlayerComponentSpace
 {
     public class OtherPlayersData : PlayerComponentBase
     {
-        public readonly Dictionary<string, OtherPlayerData> Datas = new();
+        public Dictionary<string, OtherPlayerData> DataDictionary { get; } = [];
+        public HashSet<OtherPlayerData> DataHashSet { get; } = [];
+        public List<OtherPlayerData> DataList { get; } = [];
 
         public OtherPlayersData(PlayerComponent playerComponent) : base(playerComponent)
         {
-        }
-
-        public void Init()
-        {
-            _spawns.OnPlayerAdded += playerAdded;
-            _spawns.OnPlayerRemoved += playerRemoved;
-            createExistingPlayers();
-        }
-
-        public void Update()
-        {
-        }
-
-        public void Dispose()
-        {
-            _spawns.OnPlayerAdded -= playerAdded;
-            _spawns.OnPlayerRemoved -= playerRemoved;
-            Datas.Clear();
-        }
-
-        private void createExistingPlayers()
-        {
-            foreach (var player in _spawns.AlivePlayers.Values)
+            var playerTracker = GameWorldComponent.Instance?.PlayerTracker;
+            if (playerTracker == null)
             {
-                playerAdded(player);
+                Logger.LogError("player tracker null");
+                return;
             }
+            // Subscribe to player added or removed events
+            playerTracker.OnPlayerAdded += PlayerAdded;
+            playerTracker.OnPlayerRemoved += PlayerRemoved;
+            // Add any already existing player.
+            foreach (PlayerComponent player in playerTracker.AlivePlayerArray)
+                PlayerAdded(player);
         }
 
-        private void playerAdded(PlayerComponent playerComp)
+        public override void Dispose()
         {
+            var playerTracker = GameWorldComponent.Instance?.PlayerTracker;
+            if (playerTracker != null)
+            {
+                playerTracker.OnPlayerAdded -= PlayerAdded;
+                playerTracker.OnPlayerRemoved -= PlayerRemoved;
+            }
+            DataDictionary.Clear();
+            DataHashSet.Clear();
+            DataList.Clear();
+        }
+
+        private void PlayerAdded(PlayerComponent playerComp)
+        {
+            if (playerComp == PlayerComponent)
+            {
+                return;
+            }
             if (playerComp == null)
             {
+                Logger.LogWarning("Player Component is null. Cannot add other player data!");
+                return;
+            }
+            if (playerComp.Player?.HealthController?.IsAlive != true)
+            {
+                Logger.LogWarning("Player is dead. Cannot add other player data!");
                 return;
             }
             string profileId = playerComp.ProfileId;
@@ -48,18 +59,29 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 return;
             }
-            if (Datas.ContainsKey(profileId))
+
+            // Just in-case make sure we remove any data under this profile id
+            if (DataDictionary.TryGetValue(profileId, out OtherPlayerData Data))
             {
-                return;
+                DataHashSet.Remove(Data);
+                DataDictionary.Remove(profileId);
+                Logger.LogWarning($"Removed Existing Playerdata for profile ID [{profileId}] : Old Data Nickname: [{Data.PlayerComponent?.Player?.Profile.Nickname}] : New Data Nickname: [{playerComp.Player?.Profile.Nickname}]");
             }
-            Datas.Add(profileId, new OtherPlayerData(profileId, playerComp));
+
+            Data = new(profileId, playerComp);
+            DataHashSet.Add(Data);
+            DataDictionary.Add(profileId, Data);
+            DataList.Add(Data);
         }
 
-        private void playerRemoved(string profileId, PlayerComponent playerComp)
+        private void PlayerRemoved(string profileId, PlayerComponent playerComp)
         {
-            Datas.Remove(profileId);
+            if (DataDictionary.TryGetValue(profileId, out OtherPlayerData Data))
+            {
+                DataHashSet.Remove(Data);
+                DataDictionary.Remove(profileId);
+                DataList.Remove(Data);
+            }
         }
-
-        private static PlayerSpawnTracker _spawns => GameWorldComponent.Instance.PlayerTracker;
     }
 }

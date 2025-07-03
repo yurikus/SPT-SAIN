@@ -20,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public override void ManualUpdate()
         {
-            checkReset();
+            CheckReset();
             base.ManualUpdate();
         }
 
@@ -42,18 +42,15 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void Reset()
         {
-            if (Reason != EShootReason.None)
-            {
-                BotOwner.ShootData.EndShoot();
-            }
+            BotOwner.ShootData.EndShoot();
             Reason = EShootReason.None;
             ShootPosition = Vector3.zero;
             ManualShootEnemy = null;
         }
 
-        private void checkReset()
+        private void CheckReset()
         {
-            if (Reason != EShootReason.None && (!BotOwner.WeaponManager.HaveBullets || _timeStartManualShoot + 2f < Time.time))
+            if (Reason != EShootReason.None && (ManualShootEnemy?.EnemyPlayer?.HealthController?.IsAlive != true || !BotOwner.WeaponManager.HaveBullets || _timeStartManualShoot + 2f < Time.time))
             {
                 Reset();
             }

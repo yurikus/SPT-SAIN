@@ -15,7 +15,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -150,7 +149,7 @@ namespace SAIN.Components
             if (GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent playerComponent))
             {
                 List<PlayerComponent> RelevantPlayers = [];
-                foreach (var otherPlayer in playerComponent.OtherPlayersData.Datas.Values)
+                foreach (var otherPlayer in playerComponent.OtherPlayersData.DataDictionary.Values)
                 {
                     if (otherPlayer.DistanceData.Distance < 125f && otherPlayer.PlayerComponent.IsSAINBot)
                     {
@@ -257,14 +256,6 @@ namespace SAIN.Components
         public BotHearingClass BotHearing { get; private set; }
         public BotPeacefulActionController PeacefulActions { get; private set; }
 
-        public Action<string, IFirearmHandsController> OnBotWeaponChange { get; set; }
-
-        public void BotChangedWeapon(BotOwner botOwner, IFirearmHandsController firearmController)
-        {
-            // if (botOwner != null)
-            //     OnBotWeaponChange?.Invoke(botOwner.name, firearmController);
-        }
-
         public void PlayerEnviromentChanged(string profileID, IndoorTrigger trigger)
         {
             SAINGameWorld.PlayerTracker.GetPlayerComponent(profileID)?.AIData.PlayerLocation.UpdateEnvironment(trigger);
@@ -288,50 +279,27 @@ namespace SAIN.Components
 
         public void Start()
         {
-            PeacefulActions.Init();
+            //PeacefulActions.Init();
         }
 
-        public void ManualUpdate()
+        public void Update()
         {
-            HashSet<BotComponent> Bots = BotSpawnController?.SAINBots;
-            if (Bots != null && Bots.Count > 0)
+            BotSpawnController.Update();
+            BotExtractManager.Update();
+            TimeVision.Update();
+            WeatherVision.Update();
+            BotSquads.Update();
+
+            HashSet<BotComponent> BotsArray = BotSpawnController?.SAINBots;
+            if (BotsArray != null && BotsArray.Count > 0)
             {
-                BotSpawnController.Update();
-                BotExtractManager.Update();
-                TimeVision.Update();
-                WeatherVision.Update();
-                BotJobs.UpdateVisionForBots(Bots);
-                TickBots(Bots);
-                BotSquads.Update();
-                //PeacefulActions.Update();
+                BotJobs.UpdateVisionForBots(BotsArray);
+                foreach (BotComponent BotComponent in BotsArray)
+                {
+                    BotComponent?.ManualUpdate();
+                }
             }
-
-            //if (BotGame == null ||
-            //    BotGame.Status == GameStatus.Stopping)
-            //{
-            //    return;
-            //}
-
-            //BotSpawnController.Update();
-            //BotExtractManager.Update();
-            //TimeVision.Update();
-            //WeatherVision.Update();
-            //PeacefulActions.Update();
         }
-
-        private void TickBots(HashSet<BotComponent> Bots)
-        {
-            UnityEngine.Profiling.Profiler.BeginSample("SAIN Bot Update");
-            foreach (BotComponent bot in Bots)
-            {
-                bot?.ManualUpdate();
-            }
-            UnityEngine.Profiling.Profiler.EndSample();
-        }
-
-        private float BotTickRate = 1.0f / 30.0f;
-        private float BotTickTimer = 0;
-        private readonly Dictionary<BotComponent, GUIObject> _debugObjects = new();
 
         public void BotDeath(BotOwner bot)
         {
@@ -460,8 +428,7 @@ namespace SAIN.Components
 
         public bool GetSAIN(BotOwner botOwner, out BotComponent bot)
         {
-            StringBuilder debugString = null;
-            bot = BotSpawnController.GetSAIN(botOwner, debugString);
+            bot = BotSpawnController.GetSAIN(botOwner);
             return bot != null;
         }
     }

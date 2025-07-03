@@ -361,7 +361,7 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static void PatchPrefix(Player ____player, Item weapon, EftBulletClass shot)
         {
-            GameWorldComponent.RegisterShot(____player, shot, weapon);
+            GameWorldComponent.Instance?.RegisterShot(____player, shot, weapon);
         }
     }
 

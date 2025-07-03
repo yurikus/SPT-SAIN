@@ -130,7 +130,7 @@ namespace SAIN.Types.Jobs
         protected static IBotGame BotGame => Singleton<IBotGame>.Instance;
         protected static GameWorldComponent SAINGameWorld => GameWorldComponent.Instance;
         protected static SAINBotController SAINBotController => SAINBotController.Instance;
-        protected static PlayerDictionary AlivePlayers => GameWorldComponent.Instance?.PlayerTracker?.AlivePlayers;
+        protected static PlayerDictionary AlivePlayers => GameWorldComponent.Instance?.PlayerTracker?.AlivePlayersDictionary;
         protected static List<IPlayer> DeadPlayers => GameWorldComponent.Instance?.PlayerTracker?.DeadPlayers;
         protected static BotDictionary AliveBots => BotSpawnController.Instance?.BotDictionary;
 

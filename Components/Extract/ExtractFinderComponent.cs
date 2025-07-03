@@ -25,7 +25,7 @@ namespace SAIN.Components.Extract
         private float NextCheckExtractTime = 0f;
         private bool hasExfilControl = false;
 
-        public void Update()
+        public void ManualUpdate()
         {
             if (!hasExfilControl && !GetExfilControl())
             {

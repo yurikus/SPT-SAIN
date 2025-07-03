@@ -19,28 +19,104 @@ namespace SAIN.Components
         }
 
         protected readonly List<NavMeshPathRaycastJob> RaycastJobs = [];
+        protected readonly List<RaycastJob> Jobs = [];
 
         protected override IEnumerator PrimaryFunction()
         {
             CreateJobs();
-            int Total = RaycastJobs.Count;
+            int Total = Jobs.Count;
             if (Total > 0)
             {
-                ScheduleJobs(Total);
-                yield return AwaitCompletion(Total);
+                //ScheduleJobs(Total);
+                yield return null;
                 ReadResults(Total);
                 Dispose();
                 // Logger.LogDebug($"Completed {Total}");
             }
+            //int Total = RaycastJobs.Count;
+            //if (Total > 0)
+            //{
+            //    ScheduleJobs(Total);
+            //    yield return AwaitCompletion(Total);
+            //    ReadResults(Total);
+            //    Dispose();
+            //    // Logger.LogDebug($"Completed {Total}");
+            //}
         }
 
         private void ScheduleJobs(int Total)
         {
+            //for (int i = 0; i < Total; i++)
+            //    RaycastJobs[i].RaycastJob.Schedule();
             for (int i = 0; i < Total; i++)
-                RaycastJobs[i].RaycastJob.Schedule();
+                Jobs[i].Schedule();
         }
 
         private void ReadResults(int Total)
+        {
+            for (int i = 0; i < Total; i++)
+            {
+                RaycastJob Job = Jobs[i];
+                Job.Complete();
+                NativeArray<RaycastHit> Hits = Job.Hits;
+                NativeArray<RaycastCommand> Commands = Job.Commands;
+
+                //Vector3 HeadPosition = Job.Owner.MainParts[BodyPartType.head].Position;
+                //for (int j = 0; j < Hits.Length; j++)
+                //{
+                //    RaycastHit Hit = Hits[j];
+                //    RaycastCommand Command = Commands[j];
+                //    AddOrUpdateDebugObject(Hit, Command);
+                //}
+
+                if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
+                {
+                    Enemy Enemy = Bot.EnemyController.GetEnemy(Job.Target?.ProfileId, false);
+                    if (Enemy != null)
+                    {
+                        bool PointFound = false;
+                        //if (Enemy.EnemyPlayer.IsYourPlayer)
+                        //    for (int j = Hits.Length - 1; j >= 0; j--)
+                        //    {
+                        //        RaycastCommand Command = Commands[j];
+                        //        Vector3 Point = Command.from + Command.direction * Command.distance;
+                        //        DebugGizmos.Sphere(Point, 0.05f, 0.1f);
+                        //        RaycastHit Hit = Hits[j];
+                        //        if (Hit.collider == null)
+                        //        {
+                        //            DebugGizmos.Line(Command.from, Point, 0.05f, 0.1f);
+                        //        }
+                        //    }
+                        for (int j = Hits.Length - 1; j >= 0; j--)
+                        {
+                            RaycastHit Hit = Hits[j];
+                            if (Hit.collider == null || j == 0)
+                            {
+                                RaycastCommand Command = Commands[j];
+                                Vector3 LastVisiblePoint = Command.from + Command.direction * Command.distance;
+                                Enemy.SetLastVisiblePathPoint(LastVisiblePoint, j);
+                                PointFound = true;
+                                break;
+                                //if (Physics.SphereCast(LastVisiblePoint, 0.05f, Vector3.down, out RaycastHit raycastHit, 2.0f, LayerMaskClass.HighPolyWithTerrainMask) &&
+                                //    NavMesh.SamplePosition(raycastHit.point, out NavMeshHit navMeshHit, 0.5f, -1))
+                                //{
+                                //    Enemy.SetLastVisiblePathPoint(navMeshHit.position, Job.GetCornerFromHitIndex(j));
+                                //    PointFound = true;
+                                //    break;
+                                //}
+                            }
+                        }
+                        if (!PointFound)
+                        {
+                            Enemy.ClearVisiblePathPoint();
+                        }
+                    }
+                }
+            }
+            //ClearExcessDebugObjects();
+        }
+
+        private void ReadResultsOld(int Total)
         {
             for (int i = 0; i < Total; i++)
             {
@@ -170,11 +246,11 @@ namespace SAIN.Components
             LayerMask HighPolyWithTerrain = LayerMaskClass.HighPolyWithTerrainMask;
             LayerMask DoorLayer = LayerMaskClass.DoorLayer;
             LayerMask Mask = HighPolyWithTerrain & ~(1 << DoorLayer);
-            foreach (var bot in AliveBots.Values)
+            foreach (BotComponent bot in SAINBotController.BotSpawnController.SAINBots)
             {
                 if (bot != null && bot.BotActive)
                 {
-                    foreach (Enemy enemy in bot.EnemyController.Enemies.Values)
+                    foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                     {
                         if (enemy == null) continue;
                         if (enemy.EnemyKnown)
@@ -183,9 +259,12 @@ namespace SAIN.Components
                             if (corners != null)
                             {
                                 int cornerCount = corners.Length;
-                                if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionCheckPoints.Count > 0)
+                                if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionPathPoints.Count > 0)
                                 {
-                                    RaycastJobs.Add(NavMeshPathRaycastJob.Create([.. enemy.Path.VisionCheckPoints], 5, Mask, bot.Player, enemy.EnemyPlayer));
+                                    RaycastJob job = new(enemy.Path.VisionPathPoints, bot.Transform.EyePosition, Mask, bot.Player, enemy.EnemyPlayer);
+                                    job.Schedule();
+                                    Jobs.Add(job);
+                                    //RaycastJobs.Add(NavMeshPathRaycastJob.Create([.. enemy.Path.VisionPathCheckPoints], 5, Mask, bot.Player, enemy.EnemyPlayer));
                                     continue;
                                 }
                                 else if (cornerCount == 2)
@@ -194,8 +273,8 @@ namespace SAIN.Components
                                     continue;
                                 }
                             }
+                            enemy.ClearVisiblePathPoint();
                         }
-                        enemy.ClearVisiblePathPoint();
                     }
                 }
             }
@@ -241,6 +320,11 @@ namespace SAIN.Components
                 Job.RaycastJob.Dispose();
             }
             RaycastJobs.Clear();
+            foreach (RaycastJob Job in Jobs)
+            {
+                Job.Dispose();
+            }
+            Jobs.Clear();
         }
     }
 }

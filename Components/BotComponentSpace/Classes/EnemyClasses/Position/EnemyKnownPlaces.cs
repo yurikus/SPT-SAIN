@@ -114,7 +114,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void ManualUpdate()
         {
-            updatePlaces();
+            UpdatePlaces();
             if (Enemy.EnemyKnown)
             {
                 //checkIfArrived();
@@ -145,11 +145,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
-            if (known)
+            if (!known)
             {
-                return;
+                clearAllPlaces();
             }
-            clearAllPlaces();
         }
 
         private void clearAllPlaces()
@@ -265,8 +264,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (place != null)
             {
                 SearchedAllKnownLocations = false;
-                place.OnPositionUpdated += lastKnownPosUpdated;
-                lastKnownPosUpdated(place);
+                place.OnPositionUpdated += LastKnownPosUpdated;
+                LastKnownPosUpdated(place);
                 AllEnemyPlaces.Add(place);
             }
         }
@@ -281,7 +280,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 return;
             }
-            removePlace(LastSquadSeenPlace);
+            RemovePlace(LastSquadSeenPlace);
             LastSquadSeenPlace = place;
             addPlace(place);
         }
@@ -322,25 +321,25 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return;
             }
 
-            removePlace(LastSquadHeardPlace);
+            RemovePlace(LastSquadHeardPlace);
             LastSquadHeardPlace = place;
             addPlace(place);
         }
 
-        private void updatePlaces()
+        private void UpdatePlaces()
         {
             if (_nextSortPlacesTime < Time.time)
             {
                 _nextSortPlacesTime = Time.time + 0.5f;
-                sortAndClearPlaces();
+                SortAndClearPlaces();
             }
         }
 
-        private void removePlace(EnemyPlace place)
+        private void RemovePlace(EnemyPlace place)
         {
             if (place != null)
             {
-                place.OnPositionUpdated -= lastKnownPosUpdated;
+                place.OnPositionUpdated -= LastKnownPosUpdated;
                 AllEnemyPlaces.Remove(place);
                 if (LastKnownPlace != null && LastKnownPlace == place)
                 {
@@ -355,26 +354,26 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private void sortAndClearPlaces()
+        private void SortAndClearPlaces()
         {
             if (LastSeenPlace?.ShallClear == true)
             {
-                removePlace(LastSeenPlace);
+                RemovePlace(LastSeenPlace);
                 LastSeenPlace = null;
             }
             if (LastHeardPlace?.ShallClear == true)
             {
-                removePlace(LastHeardPlace);
+                RemovePlace(LastHeardPlace);
                 LastHeardPlace = null;
             }
             if (LastSquadHeardPlace?.ShallClear == true)
             {
-                removePlace(LastSquadHeardPlace);
+                RemovePlace(LastSquadHeardPlace);
                 LastSquadHeardPlace = null;
             }
             if (LastSquadSeenPlace?.ShallClear == true)
             {
-                removePlace(LastSquadSeenPlace);
+                RemovePlace(LastSquadSeenPlace);
                 LastSquadSeenPlace = null;
             }
 
@@ -385,7 +384,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private void lastKnownPosUpdated(EnemyPlace place)
+        private void LastKnownPosUpdated(EnemyPlace place)
         {
             if (place == null) return;
 

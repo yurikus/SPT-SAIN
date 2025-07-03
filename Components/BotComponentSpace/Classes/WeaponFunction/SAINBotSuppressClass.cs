@@ -19,8 +19,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         public ESuppressionState CurrentState { get; private set; }
         public ESuppressionState LastState { get; private set; }
         public float SuppressionNumber { get; private set; }
-        public bool IsSuppressed => CurrentState == ESuppressionState.Medium;
-        public bool IsHeavySuppressed => CurrentState == ESuppressionState.Heavy || CurrentState == ESuppressionState.Extreme;
+        public bool IsSuppressed => CurrentState >= ESuppressionState.Medium;
+        public bool IsHeavySuppressed => CurrentState >= ESuppressionState.Heavy;
 
         public SAINBotSuppressClass(BotComponent sain) : base(sain)
         {
@@ -39,11 +39,15 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             decaySuppression();
             if (SuppressingTarget)
             {
-                if (!Bot.HasEnemy || Bot.Enemy != EnemyBeingSuppressed)
+                if (EnemyBeingSuppressed?.EnemyPlayer?.HealthController?.IsAlive != true)
                 {
                     ResetSuppressing();
                 }
-                if (_suppressTime < Time.time)
+                else if (!Bot.HasEnemy || Bot.Enemy != EnemyBeingSuppressed)
+                {
+                    ResetSuppressing();
+                }
+                else if (_suppressTime < Time.time)
                 {
                     ResetSuppressing();
                 }
