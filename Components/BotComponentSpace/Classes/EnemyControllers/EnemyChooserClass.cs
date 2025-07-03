@@ -6,8 +6,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyChooserClass : BotSubClass<SAINEnemyController>, IBotClass
     {
-        public Enemy GoalEnemy
-        {
+        public Enemy GoalEnemy {
             get
             {
                 return _activeEnemy;
@@ -86,14 +85,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private void assignActiveEnemy()
         {
             Enemy activeEnemy = findActiveEnemy();
-
             if (activeEnemy != null &&
                 (!activeEnemy.CheckValid() || !activeEnemy.EnemyPerson.Active))
             {
-                //Logger.LogWarning($"Tried to assign inactive or invalid player.");
+                Logger.LogWarning($"Tried to assign inactive or invalid player.");
                 activeEnemy = null;
             }
+            if (activeEnemy == null)
+            {
+                foreach (var enemy in Bot.EnemyController.Enemies.Values)
+                {
+                    if (enemy?.EnemyKnown == true)
+                    {
+                        Logger.LogWarning("enemy known but no enemy");
+                    }
+                }
+            }
             setActiveEnemy(activeEnemy);
+            if (activeEnemy != null && BotOwner.Memory.IsPeace)
+            {
+                Logger.LogWarning("has enemy but peace!?");
+            }
         }
 
         private Enemy findActiveEnemy()

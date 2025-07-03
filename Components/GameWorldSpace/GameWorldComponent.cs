@@ -45,23 +45,24 @@ namespace SAIN.Components
         {
             if (TryGetPlayerComponent(Player, out PlayerComponent PlayerComponent))
             {
-                var OtherPlayerData = PlayerComponent.OtherPlayersData.DataHashSet;
-                Vector3 PlayerLookDir = PlayerComponent.LookDirection;
-
-                // Add any other AI Controlled players that are in the direction this shot is going
-                _tempOtherPlayerCache.AddRange(from Data in OtherPlayerData
-                                               let OtherPlayerDirNormal = Data.DistanceData.DirectionNormal
-                                               let BotPlayerComponent = Data.PlayerComponent
-                                               where BotPlayerComponent != null && BotPlayerComponent.IsAI && BotPlayerComponent.IsActive && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
-                                               select Data);
-
-                if (_tempOtherPlayerCache.Count > 0)
-                {
-                    List<OtherPlayerData> RelevantPlayers = [];
-                    RelevantPlayers.AddRange(_tempOtherPlayerCache);
-                    _tempOtherPlayerCache.Clear();
-                    ActiveBullets.Add(new(Bullet, PlayerComponent, RelevantPlayers));
-                }
+                StartCoroutine(TrackBullet(PlayerComponent, Bullet));
+                //var OtherPlayerData = PlayerComponent.OtherPlayersData.DataHashSet;
+                //Vector3 PlayerLookDir = PlayerComponent.LookDirection;
+                //
+                //// Add any other AI Controlled players that are in the direction this shot is going
+                //_tempOtherPlayerCache.AddRange(from Data in OtherPlayerData
+                //                               let OtherPlayerDirNormal = Data.DistanceData.DirectionNormal
+                //                               let BotPlayerComponent = Data.PlayerComponent
+                //                               where BotPlayerComponent != null && BotPlayerComponent.IsAI && BotPlayerComponent.IsActive && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
+                //                               select Data);
+                //
+                //if (_tempOtherPlayerCache.Count > 0)
+                //{
+                //    List<OtherPlayerData> RelevantPlayers = [];
+                //    RelevantPlayers.AddRange(_tempOtherPlayerCache);
+                //    _tempOtherPlayerCache.Clear();
+                //    ActiveBullets.Add(new(Bullet, PlayerComponent, RelevantPlayers));
+                //}
             }
         }
 
@@ -85,7 +86,7 @@ namespace SAIN.Components
 
         private IEnumerator TrackBullet(PlayerComponent Player, EftBulletClass Bullet)
         {
-            Vector3 LastPosition = Bullet.StartPosition;
+            //Vector3 LastPosition = Bullet.StartPosition;
             var OtherPlayerData = Player.OtherPlayersData.DataDictionary;
             Vector3 PlayerLookDir = Player.LookDirection;
 
@@ -103,8 +104,8 @@ namespace SAIN.Components
                 while (!Bullet.IsShotFinished && Player?.IsActive == true && PlayersToCheck.Count > 0)
                 {
                     Vector3 BulletPosition = Bullet.CurrentPosition;
-                    DebugGizmos.Sphere(BulletPosition, 0.3f, Color.red, true, 3.0f);
-                    DebugGizmos.Line(BulletPosition, LastPosition, Color.red, 0.05f, true, 3, true);
+                    //DebugGizmos.Sphere(BulletPosition, 0.3f, Color.red, true, 3.0f);
+                    //DebugGizmos.Line(BulletPosition, LastPosition, Color.red, 0.05f, true, 3, true);
 
                     for (int i = PlayersToCheck.Count - 1; i >= 0; i--)
                     {
@@ -123,7 +124,7 @@ namespace SAIN.Components
                             continue;
                         }
                     }
-                    LastPosition = BulletPosition;
+                    //LastPosition = BulletPosition;
                     yield return null;
                 }
             }
@@ -147,7 +148,6 @@ namespace SAIN.Components
             Doors.Update();
             Location.Update();
             findSpawnPointMarkers();
-            //SAINBotController.ManualUpdate();
             TickPlayerComponents();
         }
 

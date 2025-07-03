@@ -97,8 +97,8 @@ namespace SAIN.SAINComponent.Classes
                 Bot.Squad.SquadInfo?.AddPointToSearch(sound.Enemy, EstimatedPosition, sound, Bot);
                 CheckCalcGoal();
                 OnEnemySoundHeard?.Invoke(sound, sound.Enemy);
-                if (sound.HeardPlayer.IsYourPlayer)
-                    Logger.LogDebug($"Enemy Heard. SoundType: [{sound.Sound.SoundType}] Delay: [{Time.time - sound.Sound.TimeCreated}] Distance: [{sound.PlayerDistance}] Player: [{sound.Sound.PlayerComponent?.Player?.Profile?.Nickname}]");
+                //if (sound.HeardPlayer.IsYourPlayer)
+                //    Logger.LogDebug($"Enemy Heard. SoundType: [{sound.Sound.SoundType}] Delay: [{Time.time - sound.Sound.TimeCreated}] Distance: [{sound.PlayerDistance}] Player: [{sound.Sound.PlayerComponent?.Player?.Profile?.Nickname}]");
             }
         }
 

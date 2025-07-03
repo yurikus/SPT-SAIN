@@ -5,6 +5,7 @@ using SAIN.Preset.BotSettings.SAINSettings;
 using SAIN.Preset.Personalities;
 using System.Collections.Generic;
 using System.Reflection;
+using static HBAO_Core;
 using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Info
@@ -23,6 +24,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public override void Init()
         {
+            ConfigureBot(SAINPlugin.LoadedPreset);
             WeaponInfo.Init();
             Difficulty.Init();
             base.Init();
@@ -75,13 +77,18 @@ namespace SAIN.SAINComponent.Classes.Info
             }
         }
 
-        protected override void UpdatePresetSettings(SAINPresetClass preset)
+        private void ConfigureBot(SAINPresetClass preset)
         {
             Difficulty.UpdateSettings(preset);
             CalcTimeBeforeSearch();
             CalcHoldGroundDelay();
             UpdateExtractTime();
             SetConfigValues(FileSettings);
+        }
+
+        protected override void UpdatePresetSettings(SAINPresetClass preset)
+        {
+            ConfigureBot(preset);
             base.UpdatePresetSettings(preset);
         }
 

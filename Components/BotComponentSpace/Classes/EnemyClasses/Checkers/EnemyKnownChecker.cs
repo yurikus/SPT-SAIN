@@ -39,24 +39,47 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
         private bool ShallKnowEnemy()
         {
             if (!Enemy.CheckValid())
+            {
+                //if (Enemy.EnemyKnown)
+                //    Logger.LogDebug("enemy not valid");
                 return false;
+            }
 
             if (!EnemyPlayerComponent.IsActive)
+            {
+                //if (Enemy.EnemyKnown)
+                //    Logger.LogDebug("enemy not active");
                 return false;
+            }
 
             if (Enemy.LastKnownPosition == null)
+            {
+                //if (Enemy.EnemyKnown)
+                //    Logger.LogDebug("enemy null lastknown");
                 return false;
+            }
 
             float timeSinceUpdate = Enemy.KnownPlaces.TimeSinceLastKnownUpdated;
 
+            //if (Enemy.EnemyKnown && Enemy.EnemyPlayer.IsYourPlayer)
+            //    Logger.LogDebug($"timesince update [{timeSinceUpdate}]");
+
             if (timeSinceUpdate > LAST_KNOWN_TIME_UPDATE_UPPER_LIMIT)
+            {
+                //if (Enemy.EnemyKnown)
+                //    Logger.LogDebug("enemy forgotten becuz update too long");
+
                 return false;
+            }
 
             if (timeSinceUpdate <= Bot.Info.ForgetEnemyTime)
                 return true;
 
             if (BotIsSearchingForMe())
                 return true;
+
+            //if (Enemy.EnemyKnown)
+            //    Logger.LogDebug($"enemy forgotten. timesinceupdate: {timeSinceUpdate} forgetenemytime: {Bot.Info.ForgetEnemyTime}");
 
             return false;
         }
