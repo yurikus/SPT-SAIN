@@ -157,7 +157,25 @@ namespace SAIN.Patches.Generic.Fixes
             {
                 return false;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && BotComponent.SAINLayersActive)
+            if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && (!___botOwner_0.Memory.IsPeace || BotComponent.HasEnemy))
+            {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public class StopSetToNavMeshPatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(GClass478), nameof(GClass478.method_18));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(GClass478 __instance)
+        {
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent BotComponent) && (!__instance.botOwner_0.Memory.IsPeace || BotComponent.HasEnemy))
             {
                 return false;
             }

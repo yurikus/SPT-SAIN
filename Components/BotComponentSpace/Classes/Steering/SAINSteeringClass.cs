@@ -122,16 +122,16 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 direction = direction.normalized;
             }
-            float turnSpeed;
-            if (_steerSettings.SMOOTH_TURN_TOGGLE)
+            LookToDirection(direction, false, minTurnSpeed, maxTurnSpeed);
+        }
+
+        public void LookToDirection(Vector3 direction, bool flat = false, float minTurnSpeed = -1, float maxTurnSpeed = -1f)
+        {
+            if (flat)
             {
-                turnSpeed = calcTurnSpeed(direction, minTurnSpeed, maxTurnSpeed);
+                direction.y = 0;
             }
-            else
-            {
-                turnSpeed = maxTurnSpeed;
-            }
-            BotOwner.Steering.LookToDirection(direction, turnSpeed);
+            BotOwner.Steering.LookToDirection(direction, float.MaxValue);
         }
 
         private float calcTurnSpeed(Vector3 targetDirection, float minTurnSpeed, float maxTurnSpeed)
@@ -163,23 +163,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             float result = Mathf.Lerp(minSpeed, maxSpeed, ratio);
             //Logger.LogDebug($"Steer Speed Calc: Result: [{result}] Angle: [{angle}]");
             return result;
-        }
-
-        public void LookToDirection(Vector3 direction, bool flat, float rotateSpeed = -1f)
-        {
-            if (flat)
-            {
-                direction.y = 0f;
-            }
-            Vector3 pos = BotOwner.WeaponRoot.position + direction.normalized;
-            LookToPoint(pos, rotateSpeed);
-        }
-
-        public void LookToDirection(Vector2 direction, float rotateSpeed = -1f)
-        {
-            Vector3 vector = new(direction.x, 0, direction.y);
-            Vector3 pos = BotOwner.WeaponRoot.position + vector.normalized;
-            LookToPoint(pos, rotateSpeed);
         }
 
         public void LookToEnemy(Enemy enemy)
@@ -222,14 +205,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             base.ManualUpdate();
             HeardSoundSteering.ManualUpdate();
-            if (!Bot.SAINLayersActive)
-            {
-                BotOwner.Settings.FileSettings.Move.BASE_ROTATE_SPEED = _steerSettings.STEER_BASE_ROTATE_SPEED_PEACE;
-            }
-            else
-            {
-                BotOwner.Settings.FileSettings.Move.BASE_ROTATE_SPEED = _steerSettings.STEER_BASE_ROTATE_SPEED_COMBAT;
-            }
         }
 
         public override void Dispose()

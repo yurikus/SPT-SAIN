@@ -60,13 +60,16 @@ namespace SAIN.Components
                 Job.Complete();
                 NativeArray<RaycastHit> Hits = Job.Hits;
                 NativeArray<RaycastCommand> Commands = Job.Commands;
+                List<Vector3> Points = Job.Points;
 
-                //Vector3 HeadPosition = Job.Owner.MainParts[BodyPartType.head].Position;
-                //for (int j = 0; j < Hits.Length; j++)
+                //if (Points == null)
                 //{
-                //    RaycastHit Hit = Hits[j];
-                //    RaycastCommand Command = Commands[j];
-                //    AddOrUpdateDebugObject(Hit, Command);
+                //    Logger.LogWarning($"null points");
+                //    continue;
+                //}
+                //if (Points.Count != Hits.Length || Points.Count != Commands.Length || Commands.Length != Hits.Length)
+                //{
+                //    Logger.LogWarning($"P:[{Points.Count}] H:[{Hits.Length}] C:[{Commands.Length}]");
                 //}
 
                 if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
@@ -75,35 +78,13 @@ namespace SAIN.Components
                     if (Enemy != null)
                     {
                         bool PointFound = false;
-                        //if (Enemy.EnemyPlayer.IsYourPlayer)
-                        //    for (int j = Hits.Length - 1; j >= 0; j--)
-                        //    {
-                        //        RaycastCommand Command = Commands[j];
-                        //        Vector3 Point = Command.from + Command.direction * Command.distance;
-                        //        DebugGizmos.Sphere(Point, 0.05f, 0.1f);
-                        //        RaycastHit Hit = Hits[j];
-                        //        if (Hit.collider == null)
-                        //        {
-                        //            DebugGizmos.Line(Command.from, Point, 0.05f, 0.1f);
-                        //        }
-                        //    }
                         for (int j = Hits.Length - 1; j >= 0; j--)
                         {
-                            RaycastHit Hit = Hits[j];
-                            if (Hit.collider == null || j == 0)
+                            if (Hits[j].collider == null)
                             {
-                                RaycastCommand Command = Commands[j];
-                                Vector3 LastVisiblePoint = Command.from + Command.direction * Command.distance;
-                                Enemy.SetLastVisiblePathPoint(LastVisiblePoint, j);
+                                Enemy.SetLastVisiblePathPoint(Points[j], j);
                                 PointFound = true;
                                 break;
-                                //if (Physics.SphereCast(LastVisiblePoint, 0.05f, Vector3.down, out RaycastHit raycastHit, 2.0f, LayerMaskClass.HighPolyWithTerrainMask) &&
-                                //    NavMesh.SamplePosition(raycastHit.point, out NavMeshHit navMeshHit, 0.5f, -1))
-                                //{
-                                //    Enemy.SetLastVisiblePathPoint(navMeshHit.position, Job.GetCornerFromHitIndex(j));
-                                //    PointFound = true;
-                                //    break;
-                                //}
                             }
                         }
                         if (!PointFound)
@@ -112,134 +93,9 @@ namespace SAIN.Components
                         }
                     }
                 }
-            }
-            //ClearExcessDebugObjects();
-        }
-
-        private void ReadResultsOld(int Total)
-        {
-            for (int i = 0; i < Total; i++)
-            {
-                NavMeshPathRaycastJob Job = RaycastJobs[i];
-                Job.RaycastJob.Complete();
-                NativeArray<RaycastHit> Hits = Job.RaycastJob.Hits;
-                NativeArray<RaycastCommand> Commands = Job.RaycastJob.Commands;
-
-                //Vector3 HeadPosition = Job.Owner.MainParts[BodyPartType.head].Position;
-                //for (int j = 0; j < Hits.Length; j++)
-                //{
-                //    RaycastHit Hit = Hits[j];
-                //    RaycastCommand Command = Commands[j];
-                //    AddOrUpdateDebugObject(Hit, Command);
-                //}
-
-                if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
-                {
-                    Enemy Enemy = Bot.EnemyController.GetEnemy(Job.Target?.ProfileId, false);
-                    if (Enemy != null)
-                    {
-                        bool PointFound = false;
-                        //if (Enemy.EnemyPlayer.IsYourPlayer)
-                        //    for (int j = Hits.Length - 1; j >= 0; j--)
-                        //    {
-                        //        RaycastCommand Command = Commands[j];
-                        //        Vector3 Point = Command.from + Command.direction * Command.distance;
-                        //        DebugGizmos.Sphere(Point, 0.05f, 0.1f);
-                        //        RaycastHit Hit = Hits[j];
-                        //        if (Hit.collider == null)
-                        //        {
-                        //            DebugGizmos.Line(Command.from, Point, 0.05f, 0.1f);
-                        //        }
-                        //    }
-                        for (int j = Hits.Length - 1; j >= 0; j--)
-                        {
-                            RaycastHit Hit = Hits[j];
-                            if (Hit.collider == null || j == 0)
-                            {
-                                RaycastCommand Command = Commands[j];
-                                Vector3 LastVisiblePoint = Command.from + Command.direction * Command.distance;
-                                Enemy.SetLastVisiblePathPoint(LastVisiblePoint, Job.GetCornerFromHitIndex(j));
-                                PointFound = true;
-                                break;
-                                //if (Physics.SphereCast(LastVisiblePoint, 0.05f, Vector3.down, out RaycastHit raycastHit, 2.0f, LayerMaskClass.HighPolyWithTerrainMask) &&
-                                //    NavMesh.SamplePosition(raycastHit.point, out NavMeshHit navMeshHit, 0.5f, -1))
-                                //{
-                                //    Enemy.SetLastVisiblePathPoint(navMeshHit.position, Job.GetCornerFromHitIndex(j));
-                                //    PointFound = true;
-                                //    break;
-                                //}
-                            }
-                        }
-                        if (!PointFound)
-                        {
-                            Enemy.ClearVisiblePathPoint();
-                        }
-                    }
-                }
-            }
-            //ClearExcessDebugObjects();
-        }
-
-        private void AddOrUpdateDebugObject(RaycastHit Hit, RaycastCommand Command)
-        {
-            //DebugSphere(Command.from + Command.direction, 1, Color.green);
-            if (Hit.collider == null)
-            {
-                DebugLine(Command.from, Command.from + Command.direction * Command.distance, 0.025f, Color.white);
-            }
-            else
-            {
-                DebugLine(Command.from, Hit.point, 0.025f, Color.red);
-                //DebugLine(Command.from + Command.direction, Hit.point, 0.025f, Color.red);
+                Points.Clear();
             }
         }
-
-        private void DebugLine(Vector3 Start, Vector3 End, float Size, Color color)
-        {
-            if (DebugLines.Count > TotalLines)
-            {
-                DebugGizmos.UpdateLine(DebugLines[TotalLines], Start, End, Size, color);
-            }
-            else
-            {
-                DebugLines.Add(DebugGizmos.Line(Start, End, color, Size));
-            }
-            TotalLines++;
-        }
-
-        private void DebugSphere(Vector3 Position, float Size, Color color)
-        {
-            if (DebugSpheres.Count > TotalSpheres)
-            {
-                DebugGizmos.UpdateSphere(DebugSpheres[TotalSpheres], Position, Size, color);
-            }
-            else
-            {
-                DebugSpheres.Add(DebugGizmos.Sphere(Position, Size, color));
-            }
-            TotalSpheres++;
-        }
-
-        private void ClearExcessDebugObjects()
-        {
-            for (int i = DebugSpheres.Count - 1; i > TotalSpheres; i--)
-            {
-                DebugSpheres[i].SetActive(false);
-                //GameObject.Destroy(DebugSpheres[i]);
-                //DebugSpheres.RemoveAt(i);
-            }
-            for (int i = DebugLines.Count - 1; i > TotalLines; i--)
-            {
-                DebugLines[i].SetActive(false);
-                //GameObject.Destroy(DebugLines[i]);
-                //DebugLines.RemoveAt(i);
-            }
-        }
-
-        private readonly List<GameObject> DebugLines = [];
-        private readonly List<GameObject> DebugSpheres = [];
-        private int TotalSpheres = 0;
-        private int TotalLines = 0;
 
         private void CreateJobs()
         {
@@ -261,7 +117,8 @@ namespace SAIN.Components
                                 int cornerCount = corners.Length;
                                 if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionPathPoints.Count > 0)
                                 {
-                                    RaycastJob job = new(enemy.Path.VisionPathPoints, bot.Transform.EyePosition, Mask, bot.Player, enemy.EnemyPlayer);
+                                    enemy.Path.VisionPathPoints_Cache.AddRange(enemy.Path.VisionPathPoints);
+                                    RaycastJob job = new(enemy.Path.VisionPathPoints_Cache, bot.Transform.EyePosition, Mask, bot.Player, enemy.EnemyPlayer);
                                     job.Schedule();
                                     Jobs.Add(job);
                                     //RaycastJobs.Add(NavMeshPathRaycastJob.Create([.. enemy.Path.VisionPathCheckPoints], 5, Mask, bot.Player, enemy.EnemyPlayer));
@@ -280,28 +137,6 @@ namespace SAIN.Components
             }
         }
 
-        private IEnumerator AwaitCompletion(int Total)
-        {
-            int FramesWaited = 0;
-            float DeltaTimeWaited = 0;
-            const int MaxFramesToWait = 10;
-            bool JobsComplete = false;
-            while (!JobsComplete && FramesWaited < MaxFramesToWait)
-            {
-                for (int i = 0; i < Total; i++)
-                {
-                    if (!RaycastJobs[i].RaycastJob.IsCompleted)
-                        continue;
-                    JobsComplete = true;
-                }
-                yield return null;
-                FramesWaited++;
-                DeltaTimeWaited += Time.deltaTime;
-            }
-
-            // Logger.LogDebug($"Took {FramesWaited} frames or {DeltaTimeWaited} seconds To Complete Navmesh Raycasts Jobs");
-        }
-
         protected override bool CanProceed()
         {
             var bots = SAINBotController?.BotSpawnController?.BotDictionary;
@@ -315,11 +150,6 @@ namespace SAIN.Components
 
         public void Dispose()
         {
-            foreach (NavMeshPathRaycastJob Job in RaycastJobs)
-            {
-                Job.RaycastJob.Dispose();
-            }
-            RaycastJobs.Clear();
             foreach (RaycastJob Job in Jobs)
             {
                 Job.Dispose();

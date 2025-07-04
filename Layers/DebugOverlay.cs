@@ -24,11 +24,17 @@ namespace SAIN.Layers
                     stringBuilder.AppendLine($"Name: [{bot.Person.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
                     stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("Steering", $"{bot.Steering.CurrentSteerPriority} : {bot.Steering.EnemySteerDir}", Color.white, Color.yellow);
-                    stringBuilder.AppendLine($"AILimit [{bot.CurrentAILimit}] : HumanDist: [{bot.AILimit.ClosestPlayerDistanceSqr.Sqrt().Round10()}]");
-                    stringBuilder.AppendLine($"Suppression Num: [{bot.Suppression?.SuppressionNumber}] State: [{bot.Suppression?.CurrentState}] Last State: [{bot.Suppression?.LastState}]");
+                    stringBuilder.AppendLabeledValue("DogFight Status", $"{bot.Mover.DogFight.Status}", Color.white, Color.yellow);
+                    stringBuilder.AppendLabeledValue("Moving", $"{bot.Mover.Moving}", Color.white, Color.yellow);
+                    if (bot.Mover.SprintController.Running)
+                    {
+                        stringBuilder.AppendLabeledValue("Running", $"{bot.Mover.SprintController.CurrentRunStatus}", Color.white, Color.yellow);
+                    }
 
                     if (debug.Overlay_Info_Expanded)
                     {
+                        //stringBuilder.AppendLine($"AILimit [{bot.CurrentAILimit}] : HumanDist: [{bot.AILimit.ClosestPlayerDistanceSqr.Sqrt().Round10()}]");
+                        stringBuilder.AppendLine($"Suppression Num: [{bot.Suppression?.SuppressionNumber}] State: [{bot.Suppression?.CurrentState}] Last State: [{bot.Suppression?.LastState}]");
                         stringBuilder.AppendLine($"CoverPoints: [{bot.Cover.CoverPoints.Count}] : StartSearchDelay [{info.TimeBeforeSearch}] : Hold Ground Time [{info.HoldGroundDelay}]");
                         stringBuilder.AppendLine($"Indoors? {bot.Memory.Location.IsIndoors} EnvironmentID: {bot.Player?.AIData.EnvironmentId} In Bunker? {bot.PlayerComponent.AIData.PlayerLocation.InBunker}");
                         var members = bot.Squad.SquadInfo?.Members;
@@ -65,7 +71,7 @@ namespace SAIN.Layers
 
                 if (debug.OverLay_AimInfo)
                 {
-                    if (bot.BotOwner.AimingManager.CurrentAiming != null && bot.BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
+                    if (bot.BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
                     {
                         stringBuilder.AppendLine($"AimData: Status [{bot.Aim.AimStatus}] " +
                             $"Last Aim Time: [{bot.Aim.LastAimTime}] " +

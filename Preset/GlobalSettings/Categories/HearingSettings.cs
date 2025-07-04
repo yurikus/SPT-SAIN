@@ -85,10 +85,7 @@ namespace SAIN.Preset.GlobalSettings
         [MinMax(0, 100, 1)]
         public float JUMP_SOUND_RANGE = 65;
 
-        [Name("Door Kick Sound Range")]
-        [Description("The Maximum range a bot can hear a door being kicked")]
-        [Category("Hearing Distance")]
-        [MinMax(0, 100, 1)]
+        [MinMax(0.1f, 1f, 100f)]
         [Advanced]
         public float JUMP_SOUND_INTERVAL = 0.5f;
 

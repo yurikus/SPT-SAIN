@@ -87,8 +87,12 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void LoseAimTarget()
         {
-            if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
+            if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && 
+                aimClass.aimStatus_0 != AimStatus.NoTarget)
             {
+                // Should prevent bots jerking their look point when losing aiming status
+                Bot.Steering.LookToDirection(Bot.LookDirection);
+
                 aimClass.aimStatus_0 = AimStatus.NoTarget;
             }
         }

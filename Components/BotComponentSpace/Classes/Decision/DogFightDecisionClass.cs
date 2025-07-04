@@ -60,25 +60,25 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             if (_changeDFTargetTime < Time.time)
             {
-                _changeDFTargetTime = Time.time + 0.5f;
+                _changeDFTargetTime = Time.time + 0.33f;
 
-                int count = _dogFightTargets.Count;
-                for (int i = count - 1; i >= 0; i--)
-                {
+                for (int i = _dogFightTargets.Count - 1; i >= 0; i--)
                     if (shallClearDogfightTarget(_dogFightTargets[i]))
-                    {
                         _dogFightTargets.RemoveAt(i);
-                    }
-                }
-                Enemy newTarget = selectDFTarget();
+
+                Enemy newTarget = SelectDFTarget();
                 if (newTarget != null)
                 {
                     DogFightTarget = newTarget;
-                    return true;
                 }
+                else
+                {
+                    foreach (var enemy in Bot.EnemyController.EnemiesArray)
+                        if (!_dogFightTargets.Contains(enemy) && shallDogFightEnemy(enemy))
+                            _dogFightTargets.Add(enemy);
 
-                getNewDFTargets();
-                DogFightTarget = selectDFTarget();
+                    DogFightTarget = SelectDFTarget();
+                }
             }
             return DogFightTarget != null;
         }
@@ -128,7 +128,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
         }
 
-        private Enemy selectDFTarget()
+        private Enemy SelectDFTarget()
         {
             int count = _dogFightTargets.Count;
             if (count > 0)
@@ -136,6 +136,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 if (count > 1)
                 {
                     _dogFightTargets.Sort((x, y) => x.RealDistance.CompareTo(y.RealDistance));
+                    foreach (var enemy in _dogFightTargets)
+                        if (enemy.IsVisible)
+                            return enemy;
                 }
                 return _dogFightTargets[0];
             }
@@ -157,7 +160,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallDogFightEnemy(Enemy enemy)
         {
-            return enemy != null && 
+            return enemy != null &&
                 Bot.EnemyController.Enemies.ContainsValue(enemy) &&
                 enemy?.CheckValid() == true &&
                 enemy.IsVisible &&

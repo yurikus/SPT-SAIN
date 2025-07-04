@@ -79,10 +79,10 @@ namespace SAIN.Components.BotControllerSpace.Classes
             }
             playerComponent.PlayAISound(soundType, position, range, volume);
             AISoundPlayed?.Invoke(soundType, position, playerComponent, range, volume);
-            if (playerComponent.Player.IsYourPlayer)
-            {
-                Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
-            }
+            //if (playerComponent.Player.IsYourPlayer)
+            //{
+            //    Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
+            //}
             BotController.StartCoroutine(WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume));
         }
 

@@ -34,7 +34,7 @@ namespace SAIN.Patches.Hearing
         }
 
         private static float _defaultRolloff = 40;
-        private const float ROLLOFF_MULTI = 1.75f;
+        private const float ROLLOFF_MULTI = 1.5f;
     }
 
     public class GrenadeCollisionPatch2 : ModulePatch
@@ -112,17 +112,17 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static bool PatchPrefix(Player ____player, ref float ____nextJumpNoise)
         {
-            if (____player.AIData == null) {
-                return false;
-            }
-            if (____player.AIData.IsAI && ____player.AIData.BotOwner.BotState != EBotState.Active) {
-                return false;
-            }
-            if (Time.time > ____nextJumpNoise) {
-                ____nextJumpNoise = Time.time + SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_INTERVAL;
-                float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_RANGE;
-                SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Jump, ____player.Position, baseRange, 1f);
-            }
+            //if (____player.AIData == null) {
+            //    return false;
+            //}
+            //if (____player.AIData.IsAI && ____player.AIData.BotOwner.BotState != EBotState.Active) {
+            //    return false;
+            //}
+            //if (Time.time > ____nextJumpNoise) {
+            //    ____nextJumpNoise = Time.time + SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_INTERVAL;
+            //    float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_RANGE;
+            //    SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Jump, ____player.Position, baseRange, 1f);
+            //}
             return false;
         }
     }
@@ -137,19 +137,19 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void Patch(Player __instance, BetterSource ___NestedStepSoundSource, SurfaceSet ____currentSet)
         {
-            /// Most Copypasted from original function to replicate audio ranges that players experience. This could change in the future, so this function should be checked to make sure the code hasn't changed
-            SoundBank soundBank = (__instance.Pose == EPlayerPose.Duck) ? ____currentSet.DuckSoundBank : ____currentSet.RunSoundBank;
-            EAudioMovementState movementState = (__instance.Pose == EPlayerPose.Duck) ? EAudioMovementState.Duck : EAudioMovementState.Run;
-            float covertMovementVolumeBySpeed = __instance.MovementContext.CovertMovementVolumeBySpeed;
-            float num2 = __instance.method_55();
-            float num3 = __instance.method_62(movementState);
-            float num4 = (__instance.FirstPersonPointOfView || __instance.method_78()) ? soundBank.RandomVolume : 1f;
-            float num5 = covertMovementVolumeBySpeed * num2 * num3 * num4;
-            // End of copypaste
-
-            float range = ___NestedStepSoundSource.MaxDistance;
-            float volume = num5;
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.FootStep, __instance.Position, range, volume);
+            ///// Most Copypasted from original function to replicate audio ranges that players experience. This could change in the future, so this function should be checked to make sure the code hasn't changed
+            //SoundBank soundBank = (__instance.Pose == EPlayerPose.Duck) ? ____currentSet.DuckSoundBank : ____currentSet.RunSoundBank;
+            //EAudioMovementState movementState = (__instance.Pose == EPlayerPose.Duck) ? EAudioMovementState.Duck : EAudioMovementState.Run;
+            //float covertMovementVolumeBySpeed = __instance.MovementContext.CovertMovementVolumeBySpeed;
+            //float num2 = __instance.method_55();
+            //float num3 = __instance.method_62(movementState);
+            //float num4 = (__instance.FirstPersonPointOfView || __instance.method_78()) ? soundBank.RandomVolume : 1f;
+            //float num5 = covertMovementVolumeBySpeed * num2 * num3 * num4;
+            //// End of copypaste
+            //
+            //float range = ___NestedStepSoundSource.MaxDistance;
+            //float volume = num5;
+            //SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.FootStep, __instance.Position, range, volume);
         }
     }
 
@@ -163,21 +163,21 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static bool PatchPrefix(Player ____player, Vector3 motion, MovementContext __instance, ref float ____nextStepNoise)
         {
-            if (____nextStepNoise < Time.time && ____player.IsSprintEnabled) {
-                ____nextStepNoise = Time.time + 0.25f;
-
-                if (motion.y < 0.2f && motion.y > -0.2f) {
-                    motion.y = 0f;
-                }
-                if (motion.sqrMagnitude < 1E-06f) {
-                    return false;
-                }
-
-                //float volume = ____player.MovementContext.CovertMovementVolumeBySpeed * FootstepSoundPatch.CalcVolume(____player);
-                float volume = 1;
-                float baseRange = 60f;
-                SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Sprint, ____player.Position, baseRange, volume);
-            }
+            //if (____nextStepNoise < Time.time && ____player.IsSprintEnabled) {
+            //    ____nextStepNoise = Time.time + 0.25f;
+            //
+            //    if (motion.y < 0.2f && motion.y > -0.2f) {
+            //        motion.y = 0f;
+            //    }
+            //    if (motion.sqrMagnitude < 1E-06f) {
+            //        return false;
+            //    }
+            //
+            //    //float volume = ____player.MovementContext.CovertMovementVolumeBySpeed * FootstepSoundPatch.CalcVolume(____player);
+            //    float volume = 1;
+            //    float baseRange = 60f;
+            //    SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Sprint, ____player.Position, baseRange, volume);
+            //}
             return false;
         }
     }
@@ -192,30 +192,30 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void Patch(Player __instance, SoundBank bank, float volume, EAudioMovementState movementState)
         {
-            SAINSoundType soundType;
-            switch (movementState) {
-                case EAudioMovementState.Run:
-                    soundType = SAINSoundType.FootStep;
-                    break;
-
-                case EAudioMovementState.Sprint:
-                    soundType = SAINSoundType.Sprint;
-                    break;
-
-                case EAudioMovementState.Land:
-                    soundType = SAINSoundType.Land;
-                    break;
-
-                case EAudioMovementState.Turn:
-                    soundType = SAINSoundType.TurnSound;
-                    break;
-
-                default:
-                    soundType = SAINSoundType.Generic;
-                    return;
-            }
-
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, bank.Rolloff, volume);
+            //SAINSoundType soundType;
+            //switch (movementState) {
+            //    case EAudioMovementState.Run:
+            //        soundType = SAINSoundType.FootStep;
+            //        break;
+            //
+            //    case EAudioMovementState.Sprint:
+            //        soundType = SAINSoundType.Sprint;
+            //        break;
+            //
+            //    case EAudioMovementState.Land:
+            //        soundType = SAINSoundType.Land;
+            //        break;
+            //
+            //    case EAudioMovementState.Turn:
+            //        soundType = SAINSoundType.TurnSound;
+            //        break;
+            //
+            //    default:
+            //        soundType = SAINSoundType.Generic;
+            //        return;
+            //}
+            //
+            //SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, bank.Rolloff, volume);
         }
     }
 
@@ -261,9 +261,9 @@ namespace SAIN.Patches.Hearing
                     object StepSourceObj = NestedStepSoundSourceField.GetValue(player);
                     if (StepSourceObj != null) {
                         if (StepSourceObj is BetterSource NestedStepSoundSource) {
-                            //SAINBotController.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
-                            if (player.IsYourPlayer)
-                                Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
+                            SAINBotController.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
+                            //if (player.IsYourPlayer)
+                            //    Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                         }
                         else {
                             Logger.LogError("StepSourceObj is not BetterSource NestedStepSoundSource");
@@ -438,7 +438,7 @@ namespace SAIN.Patches.Hearing
         public static void PatchPostfix(Player __instance, bool previousState, bool isOn, Vector3 ___SpeechLocalPosition)
         {
             if (previousState != isOn) {
-                float baseRange = 5f;
+                float baseRange = 10f;
                 SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, baseRange, 1f);
             }
         }
@@ -454,10 +454,10 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(Player __instance, Item item)
         {
-            AudioClip itemClip = Singleton<GUISounds>.Instance.GetItemClip(item.ItemSound, EInventorySoundType.pickup);
-            if (itemClip != null) {
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, 30f, 1f);
-            }
+            //AudioClip itemClip = Singleton<GUISounds>.Instance.GetItemClip(item.ItemSound, EInventorySoundType.pickup);
+            //if (itemClip != null) {
+            //    SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, 30f, 1f);
+            //}
         }
     }
 
@@ -471,7 +471,7 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(Player __instance, Vector3 ___SpeechLocalPosition)
         {
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, 5f, 1f);
+            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, 10f, 1f);
         }
     }
 

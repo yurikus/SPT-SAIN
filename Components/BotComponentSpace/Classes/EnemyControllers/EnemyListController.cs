@@ -61,10 +61,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 destroyEnemy(enemy);
                 Enemies.Remove(profileID);
                 EnemiesArray.Remove(enemy);
-                if (enemy.EnemyPlayer.IsYourPlayer)
-                {
-                    Logger.LogDebug($"Removed Player Enemy for [{Bot.name}]");
-                }
+                //if (enemy.EnemyPlayer.IsYourPlayer)
+                //{
+                //    Logger.LogDebug($"Removed Player Enemy for [{Bot.name}]");
+                //}
                 return null;
             }
             if (mustBeActive && !enemy.EnemyPerson.Active)
@@ -87,10 +87,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Enemies.Remove(profileId);
                 EnemiesArray.Remove(enemy);
 
-                if (enemy.EnemyPlayer.IsYourPlayer)
-                {
-                    Logger.LogDebug($"Removed Player Enemy for [{Bot.name}]");
-                }
+                //if (enemy.EnemyPlayer.IsYourPlayer)
+                //{
+                //    Logger.LogDebug($"Removed Player Enemy for [{Bot.name}]");
+                //}
             }
         }
 
@@ -234,10 +234,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Enemies.Add(enemy.EnemyProfileId, enemy);
             EnemiesArray.Add(enemy);
             BaseClass.Events.EnemyAdded(enemy);
-            if (enemyPlayerComponent.Player.IsYourPlayer)
-            {
-                Logger.LogDebug($"Created Player Enemy for [{Bot.name}]");
-            }
+            //if (enemyPlayerComponent.Player.IsYourPlayer)
+            //{
+            //    Logger.LogDebug($"Created Player Enemy for [{Bot.name}]");
+            //}
             return enemy;
         }
 

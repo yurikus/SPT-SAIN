@@ -1,6 +1,7 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using System.Text;
 
 namespace SAIN.Layers.Combat.Solo
 {
@@ -38,6 +39,11 @@ namespace SAIN.Layers.Combat.Solo
         public void Toggle(bool value)
         {
             ToggleAction(value);
+        }
+
+        public override void BuildDebugText(StringBuilder stringBuilder)
+        {
+            DebugOverlay.AddBaseInfo(Bot, BotOwner, stringBuilder);
         }
     }
 }

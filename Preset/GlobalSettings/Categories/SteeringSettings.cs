@@ -80,13 +80,6 @@ namespace SAIN.Preset.GlobalSettings
         [MinMax(1f, 5f, 100f)]
         public float STEER_RANDOMLOOK_SPEED_MAX_COEF = 2f;
 
-        [Name("Aim Turn Speed")]
-        [Description("The maximum speed, in degrees per second, a bot can turn while they are aiming.")]
-        [Category("Character Turning")]
-        [Advanced]
-        [MinMax(150f, 500f, 1f)]
-        public float AimTurnSpeed = 300f;
-
         public override void Init(List<ISAINSettings> list)
         {
             list.Add(this);

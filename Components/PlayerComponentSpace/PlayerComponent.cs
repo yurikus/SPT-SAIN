@@ -5,6 +5,7 @@ using EFT.HealthSystem;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using SAIN.Components.BotController;
+using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Components.PlayerComponentSpace.Classes;
 using SAIN.Components.PlayerComponentSpace.Classes.Equipment;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
@@ -17,6 +18,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UIElements;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
@@ -228,11 +230,87 @@ namespace SAIN.Components.PlayerComponentSpace
         public readonly Player GetPlayer() => PlayerComponent?.Player;
     }
 
-    public class PlayerComponent : MonoBehaviour , IDisposable
+    public struct SteeringData(Vector3 lookdirection)
+    {
+        public void SetTargetDirection(Vector3 direction)
+        {
+            InputTargetDirection = direction;
+        }
+
+        public void SetLookDirection(Vector3 direction)
+        {
+            LookDirection = direction;
+        }
+
+        public void CalcSmoothDampAngleTurn()
+        {
+            Vector3 dirNormal = InputTargetDirection.normalized;
+            if (Vector3.Angle(_targetLookDir, dirNormal) > 5)
+            {
+                CalcSmoothingAmount();
+            }
+
+            CalculatedLookDirection = new(
+                Mathf.SmoothDampAngle(LookDirection.x, dirNormal.x, ref xVel, smoothTime),
+                Mathf.SmoothDampAngle(LookDirection.y, dirNormal.y, ref yVel, smoothTime),
+                Mathf.SmoothDampAngle(LookDirection.z, dirNormal.z, ref zVel, smoothTime)
+                );
+            _targetLookDir = dirNormal;
+        }
+
+        private void CalcSmoothingAmount()
+        {
+            const float minAngle = 5;
+            const float maxAngle = 120f;
+            const float minSmoothing = 0.15f;
+            const float maxSmoothing = 0.15f;
+
+            smoothTime = minSmoothing;
+
+            //float angle = Mathf.Clamp(Vector3.Angle(_targetLookDir, LookDirection), minAngle, maxAngle);
+            //smoothTime = Mathf.Lerp(minSmoothing, maxSmoothing, (angle - minAngle) / (maxAngle - minAngle));
+        }
+
+        public Vector3 CalculatedLookDirection = lookdirection;
+        private float xVel = 0;
+        private float yVel = 0;
+        private float zVel = 0;
+        public float smoothTime = 0.5f;
+        public Vector3 _targetLookDir = lookdirection;
+        public Vector3 InputTargetDirection = lookdirection;
+        public Vector3 LookDirection = lookdirection;
+    }
+
+    public class PlayerComponent : MonoBehaviour, IDisposable
     {
         public event Action<WeaponInfo, Vector3> OnShoot;
 
         public event Action<PlayerComponent, EftBulletClass> OnBulletFlyBy;
+
+        public SteeringData SteeringData => PlayerTickData.SteeringData;
+        public PlayerTickData PlayerTickData { get; private set; }
+
+        public PlayerTickData GetPreparedTickData()
+        {
+            var data = PlayerTickData;
+            data.Prepare(this);
+            PlayerTickData = data;
+            return data;
+        }
+
+        public Vector3 TargetLookDir;
+
+        public Vector3 SmoothDampAngleTurn(Vector3 targetDirection)
+        {
+            TargetLookDir = targetDirection;
+            return SteeringData.CalculatedLookDirection;
+        }
+
+        public void SetTickData(PlayerTickData data)
+        {
+            PlayerTickData = data;
+            //SteeringData = data.SteeringData;
+        }
 
         public void RegisterFlyBy(PlayerComponent Source, EftBulletClass Bullet)
         {
@@ -757,12 +835,14 @@ namespace SAIN.Components.PlayerComponentSpace
                 Person = new PersonClass(playerData);
 
                 OtherPlayersData = new OtherPlayersData(this);
+                PlayerTickData = new PlayerTickData(this);
                 BodyParts = new BodyPartsClass(this);
                 Flashlight = new FlashLightClass(this);
                 Equipment = new SAINEquipmentClass(this);
                 AIData = new SAINAIData(Equipment.GearInfo, this);
                 Person.ActivationClass.OnPlayerActiveChanged += handleCoroutines;
                 handleCoroutines(true);
+
             }
             catch (Exception ex)
             {

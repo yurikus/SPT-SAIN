@@ -227,6 +227,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
+            if (reachDist < 0f)
+            {
+                reachDist = BotOwner.Settings.FileSettings.Move.REACH_DIST;
+            }
 
             var status = enemy.Path.PathToEnemyStatus;
             switch (status)
@@ -245,8 +249,19 @@ namespace SAIN.SAINComponent.Classes.Mover
                     break;
             }
 
-            CurrentPathStatus = status;
-            return GoToPointByWay(enemy.Path.PathToEnemy.corners, reachDist, crawl);
+            Vector3[] corners = enemy.Path.PathCorners;
+            if (corners.Length >= 2)
+            {
+                if ((corners[corners.Length - 1] - Bot.Position).sqrMagnitude < reachDist)
+                {
+                    return GoToPoint(enemy.EnemyTransform.Position, out _, reachDist, false, true, false);
+                }
+                CurrentPathStatus = status;
+                return GoToPointByWay(enemy.Path.PathCorners, reachDist, crawl);
+            }
+
+            CurrentPathStatus = NavMeshPathStatus.PathInvalid;
+            return false;
         }
 
         public bool GoToPointByWay(Vector3[] way, float reachDist = -1f, bool crawl = false)

@@ -74,10 +74,117 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         }
     }
 
+    public struct PlayerTickData
+    {
+        public PlayerTickData(PlayerComponent inOwner)
+        {
+            Owner = inOwner;
+            OwnerProfileId = inOwner.ProfileId;
+            OwnerViewPosition = inOwner.Transform.EyePosition;
+            OwnerPosition = inOwner.Position;
+            OwnerLookDirection = inOwner.LookDirection;
+            SteeringData = new SteeringData(OwnerLookDirection);
+        }
+
+        public readonly PlayerComponent Owner;
+        public readonly string OwnerProfileId;
+        public Vector3 OwnerViewPosition;
+        public Vector3 OwnerPosition;
+        public Vector3 OwnerLookDirection;
+
+        public SteeringData SteeringData;
+
+        public void Prepare(PlayerComponent Owner)
+        {
+            OwnerViewPosition = Owner.Transform.EyePosition;
+            OwnerPosition = Owner.Position;
+            OwnerLookDirection = Owner.LookDirection;
+
+            var steering = SteeringData;
+            steering.SetTargetDirection(Owner.TargetLookDir);
+            steering.SetLookDirection(OwnerLookDirection);
+            steering.CalcSmoothDampAngleTurn();
+            SteeringData = steering;
+
+            OtherPlayerDirectionData.Clear();
+            OtherPlayerData.Clear();
+            List<OtherPlayerData> OtherPlayers = Owner.OtherPlayersData.DataList;
+            for (int j = 0; j < OtherPlayers.Count; j++)
+            {
+                OtherPlayerData otherPlayer = OtherPlayers[j];
+                if (otherPlayer != null)
+                {
+                    OtherPlayerDirectionData.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(Owner, otherPlayer.PlayerComponent));
+                    OtherPlayerData.Add(otherPlayer);
+                }
+            }
+        }
+
+        public void Execute()
+        {
+            //var steering = SteeringData;
+            //steering.CalcSmoothDampAngleTurn();
+            //SteeringData = steering;
+
+            for (int i = 0; i < OtherPlayerDirectionData.Count; i++)
+            {
+                var data = OtherPlayerDirectionData[i];
+                data.MainData.Update(OwnerPosition);
+                data.MainData.UpdateDotProductAndCalcNormal(OwnerViewPosition, OwnerLookDirection);
+                OtherPlayerDirectionData[i] = data;
+            }
+        }
+
+        public void ReadData()
+        {
+            for (int i = 0; i < OtherPlayerDirectionData.Count; i++)
+            {
+                OtherPlayerData[i].DistanceData.SetPlayerDirectionData(OtherPlayerDirectionData[i]);
+            }
+            OtherPlayerData.Clear();
+            OtherPlayerDirectionData.Clear();
+
+            //if (Owner.IsAI)
+            //{
+            //    Logger.LogDebug($"" +
+            //        $"LookDir: [{SteeringData.LookDirection}]  : " +
+            //        $"CalculatedDir: [{SteeringData.CalculatedLookDirection}] : " +
+            //        $"TargetDir: [{SteeringData._targetLookDir}] : " +
+            //        $"InputTargetDir: [{SteeringData.InputTargetDirection}] : " +
+            //        $"Smoothing: [{SteeringData.smoothTime}]");
+            //}
+        }
+
+        public List<OtherPlayerData> OtherPlayerData = [];
+        public List<PlayerDirectionData> OtherPlayerDirectionData = [];
+    }
+
+    public struct PlayerTickJob : IJobFor
+    {
+        [ReadOnly] public NativeArray<PlayerTickData> Input;
+        [WriteOnly] public NativeArray<PlayerTickData> Output;
+
+        public void Execute(int index)
+        {
+            PlayerTickData Data = Input[index];
+            Data.Execute();
+            Output[index] = Data;
+        }
+
+        public void Dispose()
+        {
+            if (Input.IsCreated) Input.Dispose();
+            if (Output.IsCreated) Output.Dispose();
+        }
+    }
+
     public class DirectionDataJob : SAINControllerBase
     {
         private JobHandle _PlayerDirectionDataJobHandle;
         private PlayerDirectionDataJob _PlayerDirectionDataJob;
+        private JobHandle _PlayerTickJobHandle;
+        private PlayerTickJob _PlayerTickJob;
+        private readonly List<PlayerTickData> _playerTickData = [];
         private readonly List<PlayerDirectionData> _directionDatas = [];
         private readonly List<OtherPlayerData> _otherPlayerData = [];
 
@@ -91,7 +198,7 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             yield return null;
             while (GameWorldComponent.Instance != null)
             {
-                var players = GameWorldComponent.Instance.PlayerTracker?.AlivePlayersDictionary?.Values;
+                var players = GameWorldComponent.Instance.PlayerTracker?.AlivePlayerArray;
                 if (players == null || players.Count <= 1)
                 {
                     yield return null;
@@ -102,52 +209,94 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
                 {
                     if (playerComp != null && playerComp.OtherPlayersData != null)
                     {
-                        List<OtherPlayerData> OtherPlayers = playerComp.OtherPlayersData.DataList;
-                        for (int j = 0; j < OtherPlayers.Count; j++)
-                        {
-                            OtherPlayerData otherPlayer = OtherPlayers[j];
-                            if (otherPlayer != null)
-                            {
-                                _directionDatas.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(playerComp, otherPlayer.PlayerComponent));
-                                _otherPlayerData.Add(otherPlayer);
-                            }
-                        }
+                        _playerTickData.Add(playerComp.GetPreparedTickData());
                     }
                 }
 
-                int jobCount = _directionDatas.Count;
+                int jobCount = _playerTickData.Count;
                 if (jobCount > 0)
                 {
-                    _PlayerDirectionDataJob = new() {
-                        Input = new NativeArray<PlayerDirectionData>(jobCount, Allocator.TempJob),
-                        Output = new NativeArray<PlayerDirectionData>(jobCount, Allocator.TempJob)
+                    _PlayerTickJob = new() {
+                        Input = new NativeArray<PlayerTickData>(jobCount, Allocator.TempJob),
+                        Output = new NativeArray<PlayerTickData>(jobCount, Allocator.TempJob)
                     };
                     for (int i = 0; i < jobCount; i++)
                     {
-                        _PlayerDirectionDataJob.Input[i] = _directionDatas[i];
+                        _PlayerTickJob.Input[i] = _playerTickData[i];
                     }
 
                     // schedule job and wait for next frame to read data
-                    _PlayerDirectionDataJobHandle = _PlayerDirectionDataJob.Schedule(jobCount, new JobHandle());
+                    _PlayerTickJobHandle = _PlayerTickJob.Schedule(jobCount, new JobHandle());
 
                     yield return null;
-                    _PlayerDirectionDataJobHandle.Complete();
-
+                    _PlayerTickJobHandle.Complete();
                     for (int i = 0; i < jobCount; i++)
                     {
-                        _otherPlayerData[i]?.DistanceData.SetPlayerDirectionData(_PlayerDirectionDataJob.Output[i]);
+                        PlayerTickData data = _PlayerTickJob.Output[i];
+                        data.ReadData();
+                        data.Owner.SetTickData(data);
                     }
-
-                    _PlayerDirectionDataJob.Dispose();
-                    _otherPlayerData.Clear();
-                    _directionDatas.Clear();
+                    _PlayerTickJob.Dispose();
+                    _playerTickData.Clear();
                 }
                 yield return null;
+
+                //foreach (PlayerComponent playerComp in players)
+                //{
+                //    if (playerComp != null && playerComp.OtherPlayersData != null)
+                //    {
+                //        PlayerTickData tickData = playerComp.PlayerTickData;
+                //        tickData.Prepare(playerComp);
+                //        _playerTickData.Add(tickData);
+                //        List<OtherPlayerData> OtherPlayers = playerComp.OtherPlayersData.DataList;
+                //        for (int j = 0; j < OtherPlayers.Count; j++)
+                //        {
+                //            OtherPlayerData otherPlayer = OtherPlayers[j];
+                //            if (otherPlayer != null)
+                //            {
+                //                _directionDatas.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(playerComp, otherPlayer.PlayerComponent));
+                //                _otherPlayerData.Add(otherPlayer);
+                //            }
+                //        }
+                //    }
+                //}
+
+                //int jobCount = _directionDatas.Count;
+                //if (jobCount > 0)
+                //{
+                //    _PlayerDirectionDataJob = new() {
+                //        Input = new NativeArray<PlayerDirectionData>(jobCount, Allocator.TempJob),
+                //        Output = new NativeArray<PlayerDirectionData>(jobCount, Allocator.TempJob)
+                //    };
+                //    for (int i = 0; i < jobCount; i++)
+                //    {
+                //        _PlayerDirectionDataJob.Input[i] = _directionDatas[i];
+                //    }
+                //
+                //    // schedule job and wait for next frame to read data
+                //    _PlayerDirectionDataJobHandle = _PlayerDirectionDataJob.Schedule(jobCount, new JobHandle());
+                //
+                //    yield return null;
+                //    _PlayerDirectionDataJobHandle.Complete();
+                //
+                //    for (int i = 0; i < jobCount; i++)
+                //    {
+                //        _otherPlayerData[i]?.DistanceData.SetPlayerDirectionData(_PlayerDirectionDataJob.Output[i]);
+                //    }
+                //
+                //    _PlayerDirectionDataJob.Dispose();
+                //    _otherPlayerData.Clear();
+                //    _directionDatas.Clear();
+                //}
+                //yield return null;
             }
         }
 
         public void Dispose()
         {
+            _PlayerTickJobHandle.Complete();
+            _PlayerTickJob.Dispose();
+
             _PlayerDirectionDataJobHandle.Complete();
             _PlayerDirectionDataJob.Dispose();
         }

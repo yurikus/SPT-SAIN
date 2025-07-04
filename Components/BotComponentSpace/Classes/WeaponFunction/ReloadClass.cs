@@ -53,8 +53,8 @@ namespace SAIN.Components.BotComponentSpace.Classes
         {
             var magWeapon = ActiveMagazineWeapon;
             if (magWeapon != null &&
-                magWeapon.FullMagazineCount == 0 &&
-                magWeapon.EmptyMagazineCount > 0 &&
+                //magWeapon.FullMagazineCount == 0 &&
+                //magWeapon.EmptyMagazineCount > 0 &&
                 magWeapon.TryRefillAllMags() &&
                 tryCatchReload())
             {
@@ -72,7 +72,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
                 var reload = BotOwner.WeaponManager.Reload;
                 if (reload.CanReload(false, out var MagazineItemClass, out var list))
                 {
-                    if (MagazineItemClass != null)
+                    if (MagazineItemClass != null && MagazineItemClass != ActiveMagazineWeapon?.GetActiveMagazine())
                     {
                         reload.ReloadMagazine(MagazineItemClass);
                         result = true;
@@ -123,7 +123,7 @@ namespace SAIN.Components.BotComponentSpace.Classes
                 }
                 if (magWeapon.FullMagazineCount == 0)
                 {
-                    magWeapon.TryRefillMags(1);
+                    magWeapon.TryRefillMags(1, currentMag);
                 }
             }
 
@@ -147,23 +147,21 @@ namespace SAIN.Components.BotComponentSpace.Classes
             foreach (EquipmentSlot slot in _weapSlots)
             {
                 Item item = Bot.Player.Equipment.GetSlot(slot).ContainedItem;
-                if (item != null &&
-                    item is Weapon weapon &&
+                if (item is Weapon weapon &&
                     isMagFed(weapon.ReloadMode))
                 {
                     BotMagazineWeapons.Add(slot, new BotMagazineWeapon(weapon, Bot));
                 }
-            }
-
-            foreach (var weapon in BotMagazineWeapons.Values)
-            {
-                weapon.Init(BotOwner);
             }
         }
 
         public override void Init()
         {
             _weaponManager.Selector.OnActiveEquipmentSlotChanged += weaponChanged;
+            foreach (var weapon in BotMagazineWeapons.Values)
+            {
+                weapon.Init(BotOwner);
+            }
             base.Init();
         }
 
@@ -188,21 +186,23 @@ namespace SAIN.Components.BotComponentSpace.Classes
             {
                 return;
             }
-            _nextCheckRefillTime = Time.time + 5;
+            _nextCheckRefillTime = Time.time + 2;
             if (BotOwner.WeaponManager.Reload.Reloading)
             {
                 return;
             }
             if (!Bot.EnemyController.AtPeace)
             {
+                foreach (var weapon in BotMagazineWeapons)
+                {
+                    weapon.Value?.TryRefillMags(1);
+                }
                 return;
             }
-            var weapon = ActiveMagazineWeapon;
-            if (weapon == null)
+            foreach (var weapon in BotMagazineWeapons)
             {
-                return;
+                weapon.Value?.RefillRatioOfMags(0.5f);
             }
-            weapon.RefillRatioOfMags(0.5f);
         }
 
         private float _nextCheckRefillTime;

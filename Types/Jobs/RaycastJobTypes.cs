@@ -38,6 +38,7 @@ namespace SAIN.Types.Jobs
             Owner = inOwner;
             Target = inTarget;
             TotalRaycasts = Points.Count;
+            this.Points = Points;
             Mask = InMask;
             Hits = new NativeArray<RaycastHit>(Points.Count, Allocator.TempJob);
             Commands = CreateCommands(Points.Count, Points, ViewPosition, InMask);
@@ -80,6 +81,7 @@ namespace SAIN.Types.Jobs
             return Handle;
         }
 
+        public List<Vector3> Points;
         public readonly void Complete() => Handle.Complete();
 
         public readonly bool IsCompleted => Handle.IsCompleted;

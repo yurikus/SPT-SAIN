@@ -15,21 +15,20 @@ namespace SAIN.Helpers
         {
             List<Vector3> points = new();
             Vector3 step = direction.normalized * spacing;
-
             int pointCount = Mathf.FloorToInt(distance / spacing);
-            for (int i = 0; i <= pointCount; i++)
+            for (int i = 1; i <= pointCount; i++)
             {
                 Vector3 point = start + step * i;
                 points.Add(point);
             }
-
             return points;
         }
+
         public static void GeneratePointsAlongDirection(List<Vector3> points, Vector3 start, Vector3 direction, float distance, float spacing)
         {
             Vector3 step = direction.normalized * spacing;
             int pointCount = Mathf.FloorToInt(distance / spacing);
-            for (int i = 0; i <= pointCount; i++)
+            for (int i = 1; i <= pointCount; i++)
             {
                 Vector3 point = start + step * i;
                 points.Add(point);

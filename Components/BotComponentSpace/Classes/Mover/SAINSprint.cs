@@ -533,7 +533,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 }
                 else if (!ShallSteerbyPriority() || !Bot.Steering.SteerByPriority(Bot.Enemy, false, true))
                 {
-                    Bot.Steering.LookToDirection(targetLookDirNormal, true, turnSpeed);
+                    Bot.Steering.LookToDirection(targetLookDirNormal, true, turnSpeed, turnSpeed);
                 }
             }
             float dotProduct = Vector3.Dot(targetLookDirNormal, currentLookDirNormal);

@@ -88,24 +88,30 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (activeEnemy != null &&
                 (!activeEnemy.CheckValid() || !activeEnemy.EnemyPerson.Active))
             {
-                Logger.LogWarning($"Tried to assign inactive or invalid player.");
+                //Logger.LogWarning($"Tried to assign inactive or invalid player.");
                 activeEnemy = null;
             }
+
+            // TODO: remove this
             if (activeEnemy == null)
             {
-                foreach (var enemy in Bot.EnemyController.Enemies.Values)
+                foreach (var enemy in Bot.EnemyController.EnemiesArray)
                 {
-                    if (enemy?.EnemyKnown == true)
+                    if (enemy?.EnemyKnown == true && enemy.WasValid && enemy.EnemyPerson.Active)
                     {
-                        Logger.LogWarning("enemy known but no enemy");
+                        //Logger.LogWarning("enemy known but no enemy");
+                        activeEnemy = enemy;
+                        break;
                     }
                 }
             }
+            //
+
             setActiveEnemy(activeEnemy);
-            if (activeEnemy != null && BotOwner.Memory.IsPeace)
-            {
-                Logger.LogWarning("has enemy but peace!?");
-            }
+            //if (activeEnemy != null && BotOwner.Memory.IsPeace)
+            //{
+            //    Logger.LogWarning("has enemy but peace!?");
+            //}
         }
 
         private Enemy findActiveEnemy()

@@ -2,9 +2,8 @@
 using HarmonyLib;
 using RootMotion.FinalIK;
 using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
-using SAIN.Plugin;
-using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings.Categories;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent;
@@ -371,19 +370,6 @@ namespace SAIN.Patches.Shoot.Aim
 
     public class AimRotateSpeedPatch : ModulePatch
     {
-        static AimRotateSpeedPatch()
-        {
-            PresetHandler.OnPresetUpdated += UpdateSettings;
-            UpdateSettings(SAINPresetClass.Instance);
-        }
-
-        private static void UpdateSettings(SAINPresetClass preset)
-        {
-            _aimTurnSpeed = preset.GlobalSettings.Steering.AimTurnSpeed;
-        }
-
-        private static float _aimTurnSpeed = 300f;
-
         protected override MethodBase GetTargetMethod()
         {
             return AccessTools.Method(typeof(BotAimingClass), nameof(BotAimingClass.method_11));
@@ -393,9 +379,116 @@ namespace SAIN.Patches.Shoot.Aim
         public static bool PatchPrefix(BotAimingClass __instance, Vector3 dir)
         {
             __instance.vector3_2 = dir;
-            __instance.botOwner_0.Steering.LookToDirection(dir, _aimTurnSpeed);
-            __instance.botOwner_0.Steering.SetYByDir(__instance.vector3_0);
+            __instance.botOwner_0.Steering.LookToDirection(dir);
             return false;
+            //if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent Bot))
+            //{
+            //    __instance.vector3_2 = dir;
+            //    Bot.Steering.LookToDirection(dir);
+            //    //__instance.botOwner_0.Steering.SetYByDir(__instance.vector3_0);
+            //    return false;
+            //}
+            //return true;
+        }
+    }
+
+    public class SmoothTurnPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotSteering), nameof(BotSteering.Steering));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotSteering __instance)
+        {
+            if (!GameWorldComponent.TryGetPlayerComponent(__instance.botOwner_0, out PlayerComponent playerComponent))
+            {
+                return true;
+            }
+
+            bool flatten = false;
+            Vector3 newTargetLookDirection;
+            if (__instance.botOwner_0.Mover.Sprinting && __instance.botOwner_0.Mover.HasPathAndNoComplete)
+            {
+                newTargetLookDirection = __instance.botOwner_0.Mover.DirCurPoint;
+            }
+            else
+            {
+                switch (__instance.SteeringMode)
+                {
+                    case EBotSteering.ToDestPoint:
+                        if (__instance.botOwner_0.Destination != null)
+                        {
+                            Vector3 lookDirection2 = __instance.botOwner_0.Destination.Value - __instance._ownerTransform.position;
+                            if (lookDirection2.sqrMagnitude > 0f)
+                            {
+                                newTargetLookDirection = lookDirection2;
+                                if (Mathf.Abs(newTargetLookDirection.y) < 0.001f)
+                                {
+                                    flatten = true;
+                                }
+                                break;
+                            }
+                        }
+                        newTargetLookDirection = __instance.LookDirection;
+                        break;
+
+                    case EBotSteering.ToMovingDirection:
+                        if (!__instance.CanSteerToMovingDirection())
+                        {
+                            newTargetLookDirection = __instance._customDirection;
+                            break;
+                        }
+                        flatten = true;
+                        newTargetLookDirection = __instance.botOwner_0.Mover.DirCurPoint;
+                        break;
+
+                    case EBotSteering.ToCustomPoint:
+                        newTargetLookDirection = __instance._customPoint - __instance.botOwner_0.WeaponRoot.position;
+                        break;
+
+                    case EBotSteering.Direction:
+                        newTargetLookDirection = __instance._customDirection;
+                        if (Mathf.Abs(newTargetLookDirection.y) < 0.001f)
+                        {
+                            flatten = true;
+                        }
+                        break;
+
+                    default:
+                        newTargetLookDirection = __instance._customDirection;
+                        break;
+                }
+            }
+
+            if (flatten)
+            {
+                newTargetLookDirection.y = 0;
+            }
+            __instance._lookDirection = playerComponent.SmoothDampAngleTurn(newTargetLookDirection);
+            __instance.Speed = float.MaxValue;
+            __instance.SetXAngle(float.MaxValue);
+            __instance.SetYByDir(__instance._lookDirection);
+            return false;
+        }
+    }
+
+    public class SmoothTurnPatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotSteering), nameof(BotSteering.SetXAngle));
+        }
+
+        [PatchPrefix]
+        public static void Patch(BotSteering __instance)
+        {
+            if (GameWorldComponent.TryGetPlayerComponent(__instance.botOwner_0, out PlayerComponent playerComponent))
+            {
+                __instance._lookDirection = playerComponent.SmoothDampAngleTurn(__instance.LookDirection);
+                __instance.Speed = float.MaxValue;
+            }
         }
     }
 

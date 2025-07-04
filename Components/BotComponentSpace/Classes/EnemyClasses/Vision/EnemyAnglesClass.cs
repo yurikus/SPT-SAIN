@@ -62,7 +62,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private float CalcVerticalAngle(Vector3 enemyDirNormal, Vector3 lookDirection, out float yDiff)
+        public static float CalcVerticalAngle(Vector3 enemyDirNormal, Vector3 lookDirection, out float yDiff)
         {
             Vector3 enemyElevDir = new(lookDirection.x, enemyDirNormal.y, lookDirection.z);
             yDiff = (enemyElevDir.y - lookDirection.y).Round100();
@@ -74,7 +74,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return angle;
         }
 
-        private float CalcHorizontalAngle(Vector3 enemyDirNormal, Vector3 lookDirection)
+        public static float CalcHorizontalAngle(Vector3 enemyDirNormal, Vector3 lookDirection)
         {
             enemyDirNormal.y = 0;
             lookDirection.y = 0;

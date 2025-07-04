@@ -270,8 +270,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         }
 
         private const float TARGET_SUPPRESS_DIST = 3f * 3f;
-        private const float TARGET_SUPPRESS_DIST_MAX = 8f * 8f;
-        private const float MAX_TARGET_SUPPRESS_ANGLE = 30f;
+        private const float TARGET_SUPPRESS_DIST_MAX = 12f * 12f;
+        private const float MAX_TARGET_SUPPRESS_ANGLE = 45f;
 
         public Vector3? CenterMass {
             get

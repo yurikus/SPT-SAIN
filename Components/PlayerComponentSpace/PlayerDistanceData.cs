@@ -1,6 +1,7 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Models.Structs;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,9 +9,6 @@ namespace SAIN.Components.PlayerComponentSpace
 {
     public struct PlayerDirectionData
     {
-        public string OwnerProfileId;
-        public string OtherPlayerProfileId;
-
         public Vector3 OwnerViewPosition;
         public Vector3 OwnerPosition;
         public Vector3 OwnerLookDirection;
@@ -26,6 +24,9 @@ namespace SAIN.Components.PlayerComponentSpace
         public Vector3 DirectionNormalized;
         public float Distance;
         public float Dot;
+        public float HorizontalAngle;
+        public float VerticalAngle;
+        public float YDifference;
 
         public void Update(Vector3 Origin)
         {
@@ -41,6 +42,9 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public void UpdateDotProduct(Vector3 DirectionNormal, Vector3 LookDirection)
         {
+            HorizontalAngle = EnemyAnglesClass.CalcHorizontalAngle(DirectionNormal, LookDirection);
+            VerticalAngle = EnemyAnglesClass.CalcVerticalAngle(DirectionNormal, LookDirection, out float yDiff);
+            YDifference = yDiff;
             Dot = Vector3.Dot(LookDirection, DirectionNormal);
         }
 
@@ -84,9 +88,6 @@ namespace SAIN.Components.PlayerComponentSpace
         public PlayerDirectionData GetUpdatedDirectionData(PlayerComponent Owner, PlayerComponent OtherPlayer)
         {
             PlayerDirectionData data = Data;
-
-            data.OwnerProfileId = Owner.ProfileId;
-            data.OtherPlayerProfileId = OtherPlayer.ProfileId;
 
             // Prepare the owner's positions
             PersonTransformClass Transform = Owner.Transform;

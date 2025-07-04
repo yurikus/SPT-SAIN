@@ -103,6 +103,7 @@ namespace SAIN
             new Patches.Generic.SetInHands.SetInHands_Weapon_Stationary_Patch(),
 
             new Patches.Generic.Fixes.StopSetToNavMeshPatch(),
+            new Patches.Generic.Fixes.StopSetToNavMeshPatch2(),
             new Patches.Generic.Fixes.FightShallReloadFixPatch(),
             new Patches.Generic.Fixes.EnableVaultPatch(),
             new Patches.Generic.Fixes.BotMemoryAddEnemyPatch(),
@@ -180,6 +181,7 @@ namespace SAIN
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),
             new Patches.Shoot.Aim.AimRotateSpeedPatch(),
+            new Patches.Shoot.Aim.SmoothTurnPatch(),
 
             new Patches.Shoot.Grenades.ResetGrenadePatch(),
             new Patches.Shoot.Grenades.SetGrenadePatch(),

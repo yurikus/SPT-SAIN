@@ -70,6 +70,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         /// </summary>
         public List<Vector3> VisionPathPoints { get; } = [];
 
+        /// <summary>
+        /// Raycast Positions Cached, this list is used by the job so it should not be altered here.
+        /// </summary>
+        public List<Vector3> VisionPathPoints_Cache { get; } = [];
+
         public override void Init()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
@@ -159,28 +164,34 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void CalcPathDistanceAndCreateVisionCheckSegments()
         {
-            int CornerCount = PathCorners.Length;
-            const float DistToCheckVision = 50.0f;
-            float DistanceBetweenPoints = Enemy.IsAI ? 1f : 0.25f;
+            float DistanceBetweenPoints = Enemy.IsAI ? 1f : 0.2f;
             PathVisionSegments.Clear();
             VisionPathCheckPoints.Clear();
             PathDistance = 0f;
+            int CornerCount = PathCorners.Length;
             for (int i = 0; i < CornerCount - 1; i++)
             {
                 Vector3 Corner = PathCorners[i];
                 Vector3 End = PathCorners[i + 1];
-                Vector3 Direction = Corner - End;
+                //Vector3 Direction = Corner - End; OLD
+                Vector3 Direction = End - Corner;
                 float Magnitude = Direction.magnitude;
                 PathDistance += Magnitude;
-                // Dont include the first corner, as it is what the bot's position is, we dont need to see if thats visible or not. Only add a segment if we are under our maximum length, or if we have no segments at all.
-                if (i == 1 || (i > 0 && PathDistance <= DistToCheckVision))
+
+                const float DistToCheckVision = 50.0f;
+                // Dont include the corner index 0, as it is what the bot's position is, we dont need to see if thats visible or not.
+                // Only add a segment if we are under our maximum length, or if we have no segments at all.
+                bool firstCorner = i == 1;
+                bool lastCorner = i == CornerCount - 2;
+                if (firstCorner || lastCorner || PathDistance <= DistToCheckVision)
                 {
                     VisionPathCheckPoints.Add(Corner);
                     // Create Equal dist points along the line between two corners.
-                    Vector.GeneratePointsAlongDirection(VisionPathCheckPoints, Corner, Direction, Magnitude, DistanceBetweenPoints);
-
-                    // Add the last corner if thats where the for loop is at
-                    if (i == CornerCount - 2)
+                    if (Magnitude > DistanceBetweenPoints)
+                    {
+                        Vector.GeneratePointsAlongDirection(VisionPathCheckPoints, Corner, Direction, Magnitude, DistanceBetweenPoints);
+                    }
+                    if (lastCorner)
                     {
                         VisionPathCheckPoints.Add(End);
                     }
@@ -188,17 +199,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
 
             VisionPathPoints.Clear();
-            const float CharacterHeight = 1.65f;
+            const float CharacterHeight = 1.5f;
             for (int i = 0; i < VisionPathCheckPoints.Count; i++)
             {
-                Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, (CharacterHeight / 6f));
+                Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / 6f);
             }
 
             //if (EnemyPlayer.IsYourPlayer)
             //{
-            //    foreach (var point in VisionCheckPoints)
+            //    foreach (var point in VisionPathCheckPoints)
             //    {
-            //        DebugGizmos.Line(point, point + Vector3.up, Color.white, 0.1f, true, 1f);
+            //        DebugGizmos.Sphere(point + Vector3.up * 0.5f, 0.025f, Color.white, true, 0.5f);
             //    }
             //}
 
@@ -206,6 +217,39 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 DistanceToEnemyPositionFromLastCorner = (Enemy.LastKnownPosition.Value - PathCorners[CornerCount - 1]).magnitude;
             else
                 DistanceToEnemyPositionFromLastCorner = 0;
+        }
+
+        /// <summary>
+        /// checks a path segment to see if its viable to generate raycast points for path vision system.
+        /// </summary>
+        /// <param name="CornerCount"></param>
+        /// <param name="DistToCheckVision"></param>
+        /// <param name="DistanceBetweenPoints"></param>
+        /// <param name="i"></param>
+        /// <param name="Corner"></param>
+        /// <param name="End"></param>
+        /// <param name="Direction"></param>
+        /// <param name="Magnitude"></param>
+        private void CheckAddPathVisibilityCorners(int CornerCount, float DistanceBetweenPoints, int i, Vector3 Corner, Vector3 End, Vector3 Direction, float Magnitude)
+        {
+            const float DistToCheckVision = 50.0f;
+            // Dont include the corner index 0, as it is what the bot's position is, we dont need to see if thats visible or not.
+            // Only add a segment if we are under our maximum length, or if we have no segments at all.
+            if (i == 1 || PathDistance <= DistToCheckVision)
+            {
+                VisionPathCheckPoints.Add(Corner);
+                // Create Equal dist points along the line between two corners.
+                if (Magnitude > DistanceBetweenPoints)
+                {
+                    Vector.GeneratePointsAlongDirection(VisionPathCheckPoints, Corner, Direction, Magnitude, DistanceBetweenPoints);
+                }
+
+                // Add the last corner if thats where the for loop is at
+                if (i == CornerCount - 2)
+                {
+                    VisionPathCheckPoints.Add(End);
+                }
+            }
         }
 
         private void findCorners(Vector3 enemyPosition, NavMeshPathStatus status, Vector3[] corners)

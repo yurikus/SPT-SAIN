@@ -19,7 +19,6 @@ using SAIN.SAINComponent.Classes.WeaponFunction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace SAIN.SAINComponent
@@ -154,6 +153,18 @@ namespace SAIN.SAINComponent
             if (botOwner == null) return;
             Player player = Player;
             if (player == null) return;
+
+            var enemy = CurrentTarget.CurrentTargetEnemy;
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SteeringData.CalculatedLookDirection, Color.yellow, 0.075f, true, 0.02f);
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SteeringData.InputTargetDirection.normalized, Color.white, 0.035f, true, 0.02f);
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection, Color.green, 0.022f, true, 0.02f);
+            if (enemy != null)
+            {
+                if (enemy.VisiblePathPoint != null)
+                {
+                    DebugGizmos.Line(Transform.EyePosition, enemy.VisiblePathPoint.Value, Color.red, 0.05f, true, 0.02f);
+                }
+            }
 
             float CurrentTime = Time.time;
             //Logger.LogDebug($"Ticking {AlwaysTickClasses.Count} AlwaysTickClasses");
