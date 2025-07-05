@@ -21,7 +21,7 @@ namespace SAIN.Layers.Combat.Squad
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            if (!Bot.Mover.SprintController.Running)
+            if (!Bot.Mover.PathWalker.Running)
             {
                 Shoot.CheckAimAndFire(_enemy);
                 if (!Bot.Steering.SteerByPriority(_enemy, false))
@@ -67,12 +67,12 @@ namespace SAIN.Layers.Combat.Squad
             }
 
             if (moveDistance > 20f * 20f &&
-                Bot.Mover.SprintController.RunToPoint(movePosition.Value, SAINComponent.Classes.Mover.ESprintUrgency.Middle, true))
+                Bot.Mover.RunToPoint(movePosition.Value, SAINComponent.Classes.Mover.ESprintUrgency.Middle, true))
             {
                 nextUpdateTime = 2f;
                 return;
             }
-            if (Bot.Mover.SprintController.Running)
+            if (Bot.Mover.PathWalker.Running)
             {
                 nextUpdateTime = 2f;
                 return;
@@ -118,7 +118,7 @@ namespace SAIN.Layers.Combat.Squad
         {
             Toggle(false);
             _enemy = null;
-            Bot.Mover.SprintController.CancelRun(0.25f);
+            Bot.Mover.PathWalker.Cancel(0.25f);
         }
     }
 }

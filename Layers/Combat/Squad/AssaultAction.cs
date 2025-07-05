@@ -42,7 +42,7 @@ namespace SAIN.Layers.Combat.Squad
 
                         if (sprint && BotOwner.BotRun.Run(destination, false, SAINPlugin.LoadedPreset.GlobalSettings.General.SprintReachDistance))
                         {
-                            Bot.Steering.LookToMovingDirection(500f, true);
+                            Bot.Steering.LookToMovingDirection(true);
                             _recalcPathTime = Time.time + 1f;
                         }
                         else if (Bot.Mover.GoToPoint(destination, out _))

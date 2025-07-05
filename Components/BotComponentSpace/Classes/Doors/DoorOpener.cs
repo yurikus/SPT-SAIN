@@ -54,7 +54,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public override void ManualUpdate()
         {
             DoorFinder.ManualUpdate();
-            if (BotOwner.Mover.IsMoving || Bot.Mover.SprintController.Running)
+            if (BotOwner.Mover.IsMoving || Bot.Mover.PathWalker.Running)
             {
                 CheckUseSAINOpener();
             }
@@ -276,8 +276,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             Vector3 targetMovePos;
             if (BotOwner.Mover.HasPathAndNoComplete)
                 targetMovePos = BotOwner.Mover.RealDestPoint;
-            else if (Bot.Mover.SprintController.Running)
-                targetMovePos = Bot.Mover.SprintController.CurrentCornerDestination();
+            else if (Bot.Mover.PathWalker.Running)
+                targetMovePos = Bot.Mover.PathWalker.CurrentCornerDestination();
             else return;
 
             Vector3 botPos = BotOwner.Transform.position;
@@ -371,8 +371,8 @@ namespace SAIN.SAINComponent.Classes.Mover
         private Vector3 getMovePoint()
         {
             Vector3 targetDest;
-            if (Bot.Mover.SprintController.Running)
-                targetDest = Bot.Mover.SprintController.CurrentCornerDestination();
+            if (Bot.Mover.PathWalker.Running)
+                targetDest = Bot.Mover.PathWalker.CurrentCornerDestination();
             else
                 targetDest = BotOwner.Mover.RealDestPoint;
             return targetDest;
@@ -411,7 +411,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             NearDoor = false;
             BreachingDoor = false;
             Interacting = false;
-            if (!Bot.Mover.SprintController.Running)
+            if (!Bot.Mover.PathWalker.Running)
             {
                 BotOwner.Mover.MovementResume();
                 BotOwner.Mover.SprintPause(-1f);

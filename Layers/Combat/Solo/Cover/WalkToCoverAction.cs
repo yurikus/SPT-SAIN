@@ -28,14 +28,14 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.Mover.SetTargetPose(1f);
 
-            Enemy Enemy = Bot.Enemy;
+            Enemy Enemy = Bot.CurrentTarget.CurrentTargetEnemy;
 
             if (_nextUpdateCoverTime < Time.time)
             {
                 _nextUpdateCoverTime = Time.time + 0.1f;
 
-                findCover();
-                reCheckCover();
+                findCover(Enemy);
+                reCheckCover(Enemy);
             }
 
             EngageEnemy(Enemy);
@@ -51,7 +51,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             this.EndProfilingSample();
         }
 
-        private void findCover()
+        private void findCover(Enemy enemy)
         {
             CoverPoint coverInUse = Bot.Cover.CoverInUse;
             if (coverInUse == null || coverInUse.CoverData.IsBad)
@@ -67,7 +67,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 for (int i = 0; i < points.Count; i++)
                 {
                     var coverPoint = points[i];
-                    if (checkMoveToCover(coverPoint))
+                    if (checkMoveToCover(coverPoint, enemy))
                     {
                         RecalcPathTimer = Time.time + 1f;
                         return;
@@ -76,20 +76,14 @@ namespace SAIN.Layers.Combat.Solo.Cover
             }
         }
 
-        private bool shallFallback()
-        {
-            return Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
-                checkMoveToCover(Bot.Cover.FallBackPoint);
-        }
-
-        private void reCheckCover()
+        private void reCheckCover(Enemy enemy)
         {
             CoverPoint coverInUse = Bot.Cover.CoverInUse;
             if (coverInUse != null
                 && RecalcPathTimer < Time.time)
             {
                 RecalcPathTimer = Time.time + 1f;
-                if (!checkMoveToCover(coverInUse))
+                if (!checkMoveToCover(coverInUse, enemy))
                 {
                     Bot.Cover.CoverInUse = null;
                     _nextUpdateCoverTime = -1f;
@@ -97,20 +91,29 @@ namespace SAIN.Layers.Combat.Solo.Cover
             }
         }
 
-        private bool checkMoveToCover(CoverPoint coverPoint)
+        private bool checkMoveToCover(CoverPoint coverPoint, Enemy enemy)
         {
             if (coverPoint != null &&
                 !coverPoint.Spotted &&
-                !coverPoint.CoverData.IsBad &&
-                Bot.Mover.GoToPoint(coverPoint.Position, out _, -1, false, true, true))
+                !coverPoint.CoverData.IsBad)
             {
-                Bot.Cover.CoverInUse = coverPoint;
-                _coverDestination = coverPoint;
-                return true;
+                bool shallCrawl =
+                    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
+                    Bot.Player.MovementContext.CanProne &&
+                    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
+
+                if (Bot.Mover.GoToPoint(coverPoint.Position, out _, -1, shallCrawl, true, true))
+                {
+                    _wasCrawling = Bot.Mover.Crawling;
+                    Bot.Cover.CoverInUse = coverPoint;
+                    _coverDestination = coverPoint;
+                    return true;
+                }
             }
             return false;
         }
 
+        private bool _wasCrawling;
         private float RecalcPathTimer = 0f;
 
         private CoverPoint _coverDestination;
@@ -156,7 +159,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Bot.Cover.CheckResetCoverInUse();
             Bot.Suppression.ResetSuppressing();
         }
-
 
         private float _timeStart;
 

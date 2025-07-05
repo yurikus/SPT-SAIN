@@ -49,8 +49,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        public bool ShallProneHide(float mindist = 10f)
+        public bool ShallProneHide(Enemy enemy, float mindist = 10f)
         {
+            if (enemy == null)
+            {
+                return false;
+            }
             if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
             {
                 return false;
@@ -61,12 +65,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             if (!Player.MovementContext.CanProne)
-            {
-                return false;
-            }
-
-            Enemy enemy = Bot.Enemy;
-            if (enemy == null)
             {
                 return false;
             }
@@ -108,32 +106,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 _canshoot = CanShootFromProne(lastKnownPos.Value);
             }
             return _canshoot;
-        }
-
-        public bool ShallGetUp(float mindist = 30f)
-        {
-            if (BotOwner.BotLay.IsLay)
-            {
-                var enemy = Bot.Enemy;
-                if (enemy == null)
-                {
-                    return true;
-                }
-                float distance = (enemy.EnemyPosition - Bot.Transform.Position).magnitude;
-                if (distance > mindist)
-                {
-                    return !IsChestPosVisible(enemy.EnemyHeadPosition);
-                }
-            }
-            return false;
-        }
-
-        public bool IsChestPosVisible(Vector3 enemyHeadPos)
-        {
-            Vector3 botPos = Bot.Transform.Position;
-            botPos += Vector3.up * 1f;
-            Vector3 direction = botPos - enemyHeadPos;
-            return !Physics.Raycast(enemyHeadPos, direction, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask);
         }
 
         public bool CanShootFromProne(Vector3 target)

@@ -177,7 +177,7 @@ namespace SAIN.Components
                 Logger.LogError("RigidBody Null");
                 yield break;
             }
-            while (Grenade != null && BotController != null)
+            while (Grenade != null && BotController != null && Rigidbody != null)
             {
                 Vector3 Velocity = Rigidbody.velocity;
                 if (Velocity.magnitude < 0.1f)
@@ -282,7 +282,7 @@ namespace SAIN.Components
             //PeacefulActions.Init();
         }
 
-        public void Update()
+        public void ManualUpdate()
         {
             BotSpawnController.Update();
             BotExtractManager.Update();

@@ -7,8 +7,13 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class BlindFireController(BotComponent sain) : BotBase(sain), IBotClass
+    public class BlindFireController : BotBase, IBotClass
     {
+        public BlindFireController(BotComponent sain) : base(sain)
+        {
+
+        }
+
         private bool CheckAllowBlindFire()
         {
             if (!Bot.SAINLayersActive ||
@@ -151,6 +156,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public int ActiveBlindFireSetting => Player.MovementContext.BlindFire;
 
         private float _changeBlindFireTime = 0f;
+
 
         private int checkBlindFire(Vector3 targetPos)
         {

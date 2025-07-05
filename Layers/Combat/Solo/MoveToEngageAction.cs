@@ -76,7 +76,7 @@ namespace SAIN.Layers.Combat.Solo
                 {
                     RecalcPathTimer = Time.time + 2f;
                     BotOwner.BotRun.Run(movePos, false, SAINPlugin.LoadedPreset.GlobalSettings.General.SprintReachDistance);
-                    Bot.Steering.LookToMovingDirection(500f, true);
+                    Bot.Steering.LookToMovingDirection(true);
                 }
                 this.EndProfilingSample();
                 return;

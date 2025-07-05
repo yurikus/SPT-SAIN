@@ -18,11 +18,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         CurrentEnemy,
         ShallDogFight,
     }
+
     public class Enemy : BotBase
     {
         public HashSet<EEnemyTag> Tags { get; } = [];
+
         public bool AddTag(EEnemyTag tag) => Tags.Add(tag);
+
         public bool RemoveTag(EEnemyTag tag) => Tags.Remove(tag);
+
         public bool HasTag(EEnemyTag tag) => Tags.Contains(tag);
 
         public string EnemyName { get; }
@@ -52,6 +56,23 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public event Action OnEnemyDisposed;
 
         public OtherPlayerData EnemyPlayerData { get; }
+
+        private bool _visPathPointIsCorner;
+
+        public bool GetVisibilePathPoint(out Vector3 pathPoint)
+        {
+            if (VisiblePathPoint != null)
+            {
+                pathPoint = VisiblePathPoint.Value;
+                if (_visPathPointIsCorner)
+                {
+                    pathPoint += Bot.Steering.WeaponRootOffset;
+                }
+                return true;
+            }
+            pathPoint = Vector3.zero;
+            return false;
+        }
 
         public Vector3? VisiblePathPoint { get; private set; }
         public int? VisiblePathCornerIndex { get; private set; }
@@ -98,7 +119,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void ManualUpdate()
         {
-            IsCurrentEnemy = Bot.EnemyController.GoalEnemy == this;
+            IsCurrentEnemy = Bot.CurrentTarget.CurrentTargetEnemy == this;
 
             calcFrequencyCoef();
             updateDistAndDirection();
@@ -112,10 +133,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Path.ManualUpdate();
             Status.ManualUpdate();
 
-            if (VisiblePathPoint != null)
+            if (IsCurrentEnemy && GetVisibilePathPoint(out Vector3 point))
             {
-                DebugGizmos.Sphere(VisiblePathPoint.Value, IsCurrentEnemy ? 0.05f : 0.025f, IsCurrentEnemy ? Color.red : Color.white, true, 0.05f);
-                DebugGizmos.Line(VisiblePathPoint.Value, Bot.Transform.HeadPosition, IsCurrentEnemy ? Color.red : Color.white, IsCurrentEnemy ? 0.025f : 0.01f, true, 0.05f);
+                DebugGizmos.Sphere(point, 0.06f, Color.red, true, 0.02f);
+                DebugGizmos.Line(point, Bot.Transform.HeadPosition, Color.red, 0.015f, true, 0.02f);
             }
 
             base.ManualUpdate();
@@ -138,6 +159,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void ClearVisiblePathPoint()
         {
+            _visPathPointIsCorner = false;
             VisiblePathPoint = null;
             VisiblePathPointSignedAngle = null;
             VisiblePathCornerIndex = null;
@@ -145,6 +167,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void SetLastVisiblePathPoint(Vector3 Point, int CornerIndex)
         {
+            _visPathPointIsCorner = false;
             VisiblePathPoint = Point;
             VisiblePathCornerIndex = CornerIndex;
             Vector3? LastKnown = LastKnownPosition;
@@ -159,24 +182,22 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void SetLastCornerAsVisiblePathPoint(Vector3 LastCorner, int CornerIndex)
         {
+            _visPathPointIsCorner = true;
             VisiblePathPoint = LastCorner;
             VisiblePathCornerIndex = CornerIndex;
             VisiblePathPointSignedAngle = null;
         }
 
-        public bool FindLookPoint(Vector3 WeaponRootOffset, out Vector3 Position, out EEnemySteerDir EnemySteerDir, SteeringSettings Settings)
+        public bool FindLookPoint(out Vector3 Position, out EEnemySteerDir EnemySteerDir)
         {
-            Position = Vector3.zero;
             if (IsVisible)
             {
                 EnemySteerDir = EEnemySteerDir.VisibleEnemyPos;
-                Position = EnemyPosition + WeaponRootOffset;
+                Position = EnemyPosition + Bot.Steering.WeaponRootOffset;
                 return true;
             }
-            if (VisiblePathPoint != null)
+            if (GetVisibilePathPoint(out Position))
             {
-                //Position = VisiblePathPoint.Value + WeaponRootOffset;
-                Position = VisiblePathPoint.Value;
                 EnemySteerDir = EEnemySteerDir.PathNode;
                 return true;
             }
@@ -189,15 +210,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             var lastSeen = Places.LastSeenPlace;
             if (lastSeen != null &&
-                (lastSeen == lastKnown || (lastSeen.Position - lastKnown.Position).sqrMagnitude < Settings.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr()))
+                (lastSeen == lastKnown || (lastSeen.Position - lastKnown.Position).sqrMagnitude < GlobalSettingsClass.Instance.Steering.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr()))
             {
                 EnemySteerDir = EEnemySteerDir.LastSeenPos;
-                Position = lastSeen.Position + WeaponRootOffset;
+                Position = lastSeen.Position + Bot.Steering.WeaponRootOffset;
                 return true;
             }
 
             EnemySteerDir = EEnemySteerDir.LastKnownPos;
-            Position = lastKnown.Position + WeaponRootOffset;
+            Position = lastKnown.Position + Bot.Steering.WeaponRootOffset;
             return true;
         }
 
@@ -213,25 +234,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public float TimeSinceCurrentEnemy => _hasBeenActive ? Time.time - _timeLastActive : float.MaxValue;
 
-        public Collider HidingBehindObject {
-            get
-            {
-                float time = Time.time;
-                if (_nextCheckHidingTime < time)
-                {
-                    _nextCheckHidingTime = time + _checkHidingFreq;
-                    _hidingBehindObject = null;
-                    Vector3? lastKnown = LastKnownPosition;
-                    if (lastKnown != null
-                        && Physics.Raycast(lastKnown.Value + Vector3.up, Bot.Position + Vector3.up, out RaycastHit hit, _checkHidingRayDist, LayerMaskClass.HighPolyCollider))
-                    {
-                        _hidingBehindObject = hit.collider;
-                    }
-                }
-                return _hidingBehindObject;
-            }
-        }
-
         public Vector3? SuppressionTarget {
             get
             {
@@ -240,9 +242,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     return null;
                 }
-                if (VisiblePathPoint != null && isTargetInSuppRange(enemyLastKnown.Value, VisiblePathPoint.Value))
+                if (GetVisibilePathPoint(out Vector3 point) && isTargetInSuppRange(enemyLastKnown.Value, point))
                 {
-                    return VisiblePathPoint.Value;
+                    return point;
                 }
                 return null;
             }
@@ -490,10 +492,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private Vector3? _centerMass;
         private float _nextGetCenterTime;
         private static float _debugCenterMassTime;
-        private Collider _hidingBehindObject;
-        private const float _checkHidingRayDist = 3f;
-        private const float _checkHidingFreq = 1f;
-        private float _nextCheckHidingTime;
         private float _nextReportSightTime;
         private const float _reportSightFreq = 0.5f;
         private float _timeLastActive;

@@ -159,6 +159,8 @@ namespace SAIN.Patches.Generic.Fixes
             }
             if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && (!___botOwner_0.Memory.IsPeace || BotComponent.HasEnemy))
             {
+                __instance.PositionOnWayInner = ___botOwner_0.Position;
+                ___botOwner_0.Mover.LocalAvoidance.DropOffset();
                 return false;
             }
             return true;

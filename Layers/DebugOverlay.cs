@@ -25,10 +25,21 @@ namespace SAIN.Layers
                     stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("Steering", $"{bot.Steering.CurrentSteerPriority} : {bot.Steering.EnemySteerDir}", Color.white, Color.yellow);
                     stringBuilder.AppendLabeledValue("DogFight Status", $"{bot.Mover.DogFight.Status}", Color.white, Color.yellow);
-                    stringBuilder.AppendLabeledValue("Moving", $"{bot.Mover.Moving}", Color.white, Color.yellow);
-                    if (bot.Mover.SprintController.Running)
+                    string poseInfo = $"Pose [{bot.Mover.Pose.PoseValue.LastSmoothedValue}:{bot.Player?.MovementContext?.PoseLevel}]";
+                    string speedInfo = $"Speed [{bot.Mover.Pose.SpeedValue.LastSmoothedValue}:{bot.Player?.MovementContext?.CharacterMovementSpeed}]";
+                    stringBuilder.AppendLine($"[{poseInfo}] [{speedInfo}]", Color.white);
+                    string leanInfo = $"Lean [{bot.Mover.Lean.LeanAngleValue.LastSmoothedValue}:{bot.Player?.MovementContext?.Tilt}]";
+                    stringBuilder.AppendLine($"" +
+                        $"{leanInfo} " +
+                        $"CanLeanByState:{bot.Mover.Lean.CanLeanByState} " +
+                        $"CurrentLeanSetting:{bot.Mover.Lean.LeanDirection} " +
+                        $"DirectLOS:{bot.Mover.Lean.DirectLineOfSight} " +
+                        $"RaycastLeaning:{bot.Mover.Lean.IsRaycastLeaning}", 
+                        Color.white);
+                    //stringBuilder.AppendLabeledValue("Moving", $"{bot.Mover.Moving}", Color.white, Color.yellow);
+                    if (bot.Mover.PathWalker.Moving)
                     {
-                        stringBuilder.AppendLabeledValue("Running", $"{bot.Mover.SprintController.CurrentRunStatus}", Color.white, Color.yellow);
+                        stringBuilder.AppendLabeledValue("Moving", $"{bot.Mover.PathWalker.CurrentMoveStatus}", Color.white, Color.yellow);
                     }
 
                     if (debug.Overlay_Info_Expanded)

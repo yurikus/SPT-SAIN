@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Experimental.AI;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
@@ -25,7 +26,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         private const float UPDATE_TARGET_FREQUENCY = 0.25f;
         private const float SAMPLE_POINT_ORIGIN_RANGE = 1f;
-        private const float SAMPLE_POINT_TARGET_RANGE = 1f;
+        private const float SAMPLE_POINT_TARGET_RANGE = 1.5f;
 
         private const float RECHECK_POSITION_CHANGE = 0.5f;
         private const float RECHECK_POSITION_CHANGE_SQR = RECHECK_POSITION_CHANGE * RECHECK_POSITION_CHANGE;
@@ -168,23 +169,25 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             {
                 return;
             }
-            var targetClass = Bot.CurrentTarget;
-            Enemy targetEnemy = targetClass.CurrentTargetEnemy;
-            Vector3? target = targetClass.CurrentTargetPosition;
-            if (target == null || targetEnemy == null)
+            Enemy targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy ?? Bot.Enemy;
+            if (targetEnemy == null)
             {
                 TargetData = null;
                 return;
             }
             if (_updateTargetTime < Time.time)
             {
-                calcTargetPoint(targetEnemy, target.Value);
+                if (targetEnemy.FindLookPoint(out Vector3 pos, out _))
+                {
+                    calcTargetPoint(targetEnemy, pos);
+                }
             }
         }
 
         private void clearTarget()
         {
             TargetData = null;
+            updateTarget();
         }
 
         private void calcTargetPoint(Enemy enemy, Vector3 target)

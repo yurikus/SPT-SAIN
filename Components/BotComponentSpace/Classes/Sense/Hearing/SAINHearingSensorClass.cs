@@ -14,7 +14,6 @@ namespace SAIN.SAINComponent.Classes
 
         public HearingInputClass SoundInput { get; }
         public HearingAnalysisClass Analysis { get; }
-        public HearingBulletAnalysisClass BulletAnalysis { get; }
         public HearingDispersionClass Dispersion { get; }
 
         public SAINHearingSensorClass(BotComponent sain) : base(sain)
@@ -22,7 +21,6 @@ namespace SAIN.SAINComponent.Classes
             TickRequirement = ESAINTickState.OnlyNoSleep;
             SoundInput = new HearingInputClass(this);
             Analysis = new HearingAnalysisClass(this);
-            BulletAnalysis = new HearingBulletAnalysisClass(this);
             Dispersion = new HearingDispersionClass(this);
         }
 
@@ -30,7 +28,6 @@ namespace SAIN.SAINComponent.Classes
         {
             SoundInput.Init();
             Analysis.Init();
-            BulletAnalysis.Init();
             Dispersion.Init();
             base.Init();
         }
@@ -39,7 +36,6 @@ namespace SAIN.SAINComponent.Classes
         {
             SoundInput.ManualUpdate();
             Analysis.ManualUpdate();
-            BulletAnalysis.ManualUpdate();
             Dispersion.ManualUpdate();
             base.ManualUpdate();
         }
@@ -48,7 +44,6 @@ namespace SAIN.SAINComponent.Classes
         {
             SoundInput.Dispose();
             Analysis.Dispose();
-            BulletAnalysis.Dispose();
             Dispersion.Dispose();
             base.Dispose();
         }

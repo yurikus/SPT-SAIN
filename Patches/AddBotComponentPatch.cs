@@ -71,6 +71,20 @@ namespace SAIN.Patches.Components
         }
     }
 
+    internal class WorldTickPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(GameWorld), nameof(GameWorld.DoWorldTick));
+        }
+
+        [PatchPostfix]
+        public static void Patch(GameWorld __instance, float dt)
+        {
+            GameWorldComponent.Instance?.WorldTickLoop(dt, __instance);
+        }
+    }
+
     internal class GetBotController : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -81,28 +95,34 @@ namespace SAIN.Patches.Components
         [PatchPostfix]
         public static void Patch(BotsController __instance)
         {
-            SAINBotController sainBotController = Singleton<GameWorld>.Instance?.GetComponent<SAINBotController>();
-            if (sainBotController == null)
+            GameWorldComponent gameWorld = GameWorldComponent.Instance;
+            if (gameWorld == null)
             {
-                Logger.LogError("sainBotControllerNull");
+                Logger.LogError("gameWorld Null");
                 return;
             }
-            sainBotController.DefaultController = __instance;
-            sainBotController.BotSpawner = __instance.BotSpawner;
+            gameWorld.Activate(__instance);
         }
     }
 
-    internal class BotUpdateByUnityPatch : ModulePatch
+    /// <summary>
+    /// Bot update is handled by sain's gameworld component, disable it here if that exists.
+    /// </summary>
+    internal class DisableBotUpdateByUnityPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotsClass), nameof(BotsClass.UpdateByUnity));
+            return AccessTools.Method(typeof(BotsController), nameof(BotsController.method_0));
         }
 
-        [PatchPostfix]
-        public static void Patch(BotsClass __instance)
+        [PatchPrefix]
+        public static bool Patch()
         {
-            //GameWorldComponent.Instance?.ManualUpdate();
+            if (GameWorldComponent.Instance == null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 

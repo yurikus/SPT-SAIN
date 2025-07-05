@@ -1,7 +1,5 @@
 ﻿using EFT;
 using EFT.Ballistics;
-using EFT.CameraControl;
-using EFT.HealthSystem;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using SAIN.Components.BotController;
@@ -10,285 +8,37 @@ using SAIN.Components.PlayerComponentSpace.Classes;
 using SAIN.Components.PlayerComponentSpace.Classes.Equipment;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Info;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UIElements;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
-    /// <summary>
-    /// A struct to pre-cache all relevant position data for a player for quicker memory access.
-    /// struct is updated from SAIN Gameworld Component in a batch.
-    /// </summary>
-    public struct PlayerPositionData
-    {
-        public PlayerPositionData(Player Player)
-        {
-            if (Player == null)
-            {
-                Logger.LogError($"Player == null");
-                return;
-            }
-            if (Player.Profile == null)
-            {
-                Logger.LogError($"Player.Profile == null");
-            }
-            PlayerNickname = Player.Profile.Nickname;
-            if (Player.MainParts == null)
-            {
-                Logger.LogError($"Player.MainParts == null");
-                return;
-            }
-            BodyParts = Player.MainParts;
-            if (BodyParts.TryGetValue(BodyPartType.head, out var head))
-            {
-                Head = head;
-            }
-            if (BodyParts.TryGetValue(BodyPartType.body, out var body))
-            {
-                MainBody = body;
-            }
-        }
-
-        private readonly Dictionary<BodyPartType, EnemyPart> BodyParts;
-        private readonly string PlayerNickname;
-
-        public readonly EnemyPart Head;
-        public readonly EnemyPart MainBody;
-
-        public Vector3 Forward;
-        public Vector3 Right;
-
-        /// <summary>
-        /// Cache all properties in this struct.
-        /// </summary>
-        public void Update(Player Player)
-        {
-            // The excessive null checks here are just to verify no mistakes are made. If there are no errors during gameplay during testing we should be able to safely remove them and remove some overhead  - Solarint
-            if (Player == null)
-            {
-                Logger.LogError($"Player Null");
-                return;
-            }
-            /////
-            Vector3 Zero = Vector3.zeroVector;
-
-            BifacialTransform Transform = Player.Transform;
-            if (Transform == null)
-            {
-                Logger.LogError($"Player Transform Null");
-            }
-            else
-            {
-                Position = Transform.position;
-            }
-            /////
-            MovementContext movementContext = Player.MovementContext;
-            if (movementContext == null)
-            {
-                Logger.LogError($"Player MovementContext Null");
-            }
-            else
-            {
-                LookDirection = movementContext.LookDirection;
-                Forward = movementContext.PlayerRealForward;
-                Right = movementContext.PlayerRealRight;
-            }
-            /////
-            EnemyPart MyHeadPart = Head;
-            if (MyHeadPart == null)
-            {
-                Logger.LogError($"{PlayerNickname}'s Head Part is null");
-                HeadPosition = Zero;
-            }
-            else
-            {
-                HeadPosition = MyHeadPart.Position;
-            }
-            /////
-            EnemyPart MyMainBodyPart = MainBody;
-            if (MyMainBodyPart == null)
-            {
-                Logger.LogError($"{PlayerNickname}'s MainBody Part is null");
-                BodyPosition = Zero;
-            }
-            else
-            {
-                BodyPosition = MyMainBodyPart.Position;
-            }
-            /////
-            BifacialTransform WeaponRoot = Player.WeaponRoot;
-            if (WeaponRoot == null)
-            {
-                HasWeaponEquipped = false;
-                WeaponFireport = Zero;
-                WeaponPointDirection = Zero;
-            }
-            else
-            {
-                HasWeaponEquipped = true;
-                WeaponFireport = WeaponRoot.position;
-                WeaponPointDirection = WeaponRoot.forward;
-            }
-        }
-
-        public readonly bool GetBodyPartPosition(BodyPartType PartType, out Vector3 Result)
-        {
-            Result = PartType switch {
-                BodyPartType.head => HeadPosition,
-                BodyPartType.body => BodyPosition,
-                _ => GetBodyPartPosition(PartType),
-            };
-            return Result != Vector3.zero;
-        }
-
-        private readonly Vector3 GetBodyPartPosition(BodyPartType PartType)
-        {
-            EnemyPart Part = GetBodyPart(PartType);
-            return Part != null ? Part.Position : Vector3.zero;
-        }
-
-        private readonly EnemyPart GetBodyPart(BodyPartType PartType)
-        {
-            EnemyPart Result = null;
-            if (BodyParts == null)
-            {
-                Logger.LogError($"[{PlayerNickname}] Body Parts Dictionary Null");
-                return Result;
-            }
-            if (!BodyParts.TryGetValue(PartType, out Result))
-            {
-                Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary");
-                return null;
-            }
-            if (Result == null)
-            {
-                Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is Null");
-            }
-            return Result;
-        }
-
-        public Vector3 Position;
-        public Vector3 LookDirection;
-        public Vector3 HeadPosition;
-        public Vector3 BodyPosition;
-
-        public bool HasWeaponEquipped;
-        public Vector3 WeaponFireport;
-        public Vector3 WeaponPointDirection;
-
-        public bool IsOnNavMesh;
-        public Vector3 NavMeshPosition;
-        public Vector3 LastValidNavMeshPosition;
-    }
-
-    public struct AISoundData(SoundEvent InSound, BotComponent InBot, float InPlayerDistance, Enemy InEnemy)
-    {
-        public bool Reported = false;
-        public readonly SoundEvent Sound = InSound;
-        public readonly BotComponent Bot = InBot;
-        public readonly Enemy Enemy = InEnemy;
-        public readonly float PlayerDistance = InPlayerDistance;
-        public readonly float SoundTravelTime = InPlayerDistance / InSound.SoundSpeed;
-        public readonly Player HeardPlayer => Sound.GetPlayer();
-        public readonly PlayerComponent HeardPlayerComponent => Sound.PlayerComponent;
-        public readonly SAINSoundType SoundType => Sound.SoundType;
-        public readonly bool IsGunShot => Sound.IsGunShot;
-        public readonly string HeardProfileId => Sound.ProfileId;
-        public readonly bool IsAI => Sound.IsAI;
-        public readonly int EnvironmentId => Sound.EnvironmentId;
-        public Vector3 Position => Sound.Position;
-
-        public readonly bool CanReport(float ReactionDelay) => Sound.IsValid() && Time.time - Sound.TimeCreated >= SoundTravelTime + ReactionDelay;
-    }
-
-    public readonly struct SoundEvent(SAINSoundType InSoundType, Vector3 InPosition, PlayerComponent InPlayerComponent, float InRange, float InVolume, float InSoundSpeed, EPhraseTrigger InPhrase = EPhraseTrigger.None, ETagStatus InTagStatus = ETagStatus.Unaware)
-    {
-        public readonly SAINSoundType SoundType = InSoundType;
-        public readonly EPhraseTrigger Phrase = InPhrase;
-        public readonly ETagStatus TagStatus = InTagStatus;
-        public readonly Vector3 Position = InPosition;
-        public readonly float SoundSpeed = InSoundSpeed;
-        public readonly float Range = InRange;
-        public readonly float Volume = InVolume;
-        public readonly float BaseRangeWithVolume = InRange * InVolume;
-        public readonly PlayerComponent PlayerComponent = InPlayerComponent;
-        public readonly float TimeCreated = Time.time;
-        public readonly bool IsGunShot = InSoundType.IsGunShot();
-        public readonly string ProfileId = InPlayerComponent.ProfileId;
-        public readonly bool IsAI = InPlayerComponent.IsAI;
-        public readonly int EnvironmentId = InPlayerComponent.Player.AIData.EnvironmentId;
-
-        public readonly bool IsValid() => PlayerComponent != null && PlayerComponent.IsActive;
-
-        public readonly Player GetPlayer() => PlayerComponent?.Player;
-    }
-
-    public struct SteeringData(Vector3 lookdirection)
-    {
-        public void SetTargetDirection(Vector3 direction)
-        {
-            InputTargetDirection = direction;
-        }
-
-        public void SetLookDirection(Vector3 direction)
-        {
-            LookDirection = direction;
-        }
-
-        public void CalcSmoothDampAngleTurn()
-        {
-            Vector3 dirNormal = InputTargetDirection.normalized;
-            if (Vector3.Angle(_targetLookDir, dirNormal) > 5)
-            {
-                CalcSmoothingAmount();
-            }
-
-            CalculatedLookDirection = new(
-                Mathf.SmoothDampAngle(LookDirection.x, dirNormal.x, ref xVel, smoothTime),
-                Mathf.SmoothDampAngle(LookDirection.y, dirNormal.y, ref yVel, smoothTime),
-                Mathf.SmoothDampAngle(LookDirection.z, dirNormal.z, ref zVel, smoothTime)
-                );
-            _targetLookDir = dirNormal;
-        }
-
-        private void CalcSmoothingAmount()
-        {
-            const float minAngle = 5;
-            const float maxAngle = 120f;
-            const float minSmoothing = 0.15f;
-            const float maxSmoothing = 0.15f;
-
-            smoothTime = minSmoothing;
-
-            //float angle = Mathf.Clamp(Vector3.Angle(_targetLookDir, LookDirection), minAngle, maxAngle);
-            //smoothTime = Mathf.Lerp(minSmoothing, maxSmoothing, (angle - minAngle) / (maxAngle - minAngle));
-        }
-
-        public Vector3 CalculatedLookDirection = lookdirection;
-        private float xVel = 0;
-        private float yVel = 0;
-        private float zVel = 0;
-        public float smoothTime = 0.5f;
-        public Vector3 _targetLookDir = lookdirection;
-        public Vector3 InputTargetDirection = lookdirection;
-        public Vector3 LookDirection = lookdirection;
-    }
-
     public class PlayerComponent : MonoBehaviour, IDisposable
     {
         public event Action<WeaponInfo, Vector3> OnShoot;
 
         public event Action<PlayerComponent, EftBulletClass> OnBulletFlyBy;
 
-        public SteeringData SteeringData => PlayerTickData.SteeringData;
         public PlayerTickData PlayerTickData { get; private set; }
+
+        private readonly SmoothDampVector ControlLookDirection = new(true);
+        private readonly SmoothDampVector ControlSteerDirection = new(false, 1);
+
+        public Vector3 CurrentControlLookDirection => ControlLookDirection.Current;
+        public Vector3 CurrentControlSteerDirection => ControlSteerDirection.Current;
+
+        public void UpdateControlRotation(float deltaTime)
+        {
+            var settings = GlobalSettingsClass.Instance.Steering;
+            ControlLookDirection.Calculate(deltaTime, settings.SmoothTurn_Smoothing, settings.SmoothTurn_MaxTurnSpeed, settings.SmoothTurn_X_Coef, settings.SmoothTurn_Y_Coef, settings.SmoothTurn_Z_Coef);
+            ControlSteerDirection.Calculate(deltaTime, 0.01f, float.MaxValue);
+        }
 
         public PlayerTickData GetPreparedTickData()
         {
@@ -298,12 +48,14 @@ namespace SAIN.Components.PlayerComponentSpace
             return data;
         }
 
-        public Vector3 TargetLookDir;
-
-        public Vector3 SmoothDampAngleTurn(Vector3 targetDirection)
+        public void SetTargetRotation(Vector3 targetDirection)
         {
-            TargetLookDir = targetDirection;
-            return SteeringData.CalculatedLookDirection;
+            ControlLookDirection.Target = targetDirection;
+        }
+
+        public void SetTargetSteering(Vector3 targetDirection)
+        {
+            ControlSteerDirection.Target = targetDirection;
         }
 
         public void SetTickData(PlayerTickData data)
@@ -514,6 +266,24 @@ namespace SAIN.Components.PlayerComponentSpace
                 //testNavMeshNodes();
                 //testObjectInFront();
             }
+        }
+
+        public void MovePlayerCharacter(Vector3 direction)
+        {
+            if (direction.sqrMagnitude < 0.001)
+            {
+                return;
+            }
+            ControlSteerDirection.Target = direction;
+            Player.CharacterController.SetSteerDirection(ControlSteerDirection.Current);
+            //Player.Move(FindMoveDirection(ControlSteerDirection.Current));
+            Player.Move(FindMoveDirection(ControlSteerDirection.Current));
+        }
+
+        private Vector2 FindMoveDirection(Vector3 direction)
+        {
+            Vector3 vector = Quaternion.Euler(0f, 0f, Player.Rotation.x) * new Vector2(direction.x, direction.z);
+            return new Vector2(vector.x, vector.y);
         }
 
         private void testObjectInFront()
@@ -828,6 +598,10 @@ namespace SAIN.Components.PlayerComponentSpace
         public bool Init(IPlayer iPlayer)
         {
             ProfileId = iPlayer.ProfileId;
+            ControlSteerDirection.Current = Vector3.zero;
+            ControlSteerDirection.Target = Vector3.zero;
+            ControlLookDirection.Target = iPlayer.LookDirection;
+            ControlLookDirection.Target = iPlayer.LookDirection;
 
             try
             {
@@ -842,7 +616,6 @@ namespace SAIN.Components.PlayerComponentSpace
                 AIData = new SAINAIData(Equipment.GearInfo, this);
                 Person.ActivationClass.OnPlayerActiveChanged += handleCoroutines;
                 handleCoroutines(true);
-
             }
             catch (Exception ex)
             {

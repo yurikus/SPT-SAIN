@@ -143,7 +143,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             corner.y += addHeight;
             Vector3 cornerDir = corner - lookPoint;
-
+            cornerDir.Normalize();
             Vector3 farPoint;
             if (Physics.Raycast(lookPoint, cornerDir, out var hit, addDistance, LayerMaskClass.HighPolyWithTerrainMask))
             {
@@ -151,7 +151,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             else
             {
-                farPoint = corner + cornerDir.normalized * addDistance;
+                farPoint = corner + cornerDir * addDistance;
             }
             Vector3 midPoint = Vector3.Lerp(farPoint, corner, 0.5f);
             return midPoint;

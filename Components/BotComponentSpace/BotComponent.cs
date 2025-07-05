@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace SAIN.SAINComponent
 {
@@ -64,6 +65,10 @@ namespace SAIN.SAINComponent
                 Dispose();
             }
         }
+
+        public bool IsInCombat => _isBotInCombat;
+
+        private bool _isBotInCombat = false;
 
         private bool _Activated = false;
 
@@ -150,41 +155,49 @@ namespace SAIN.SAINComponent
         public void ManualUpdate()
         {
             BotOwner botOwner = BotOwner;
-            if (botOwner == null) return;
-            Player player = Player;
-            if (player == null) return;
-
-            var enemy = CurrentTarget.CurrentTargetEnemy;
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SteeringData.CalculatedLookDirection, Color.yellow, 0.075f, true, 0.02f);
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SteeringData.InputTargetDirection.normalized, Color.white, 0.035f, true, 0.02f);
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection, Color.green, 0.022f, true, 0.02f);
-            if (enemy != null)
+            if (botOwner != null)
             {
-                if (enemy.VisiblePathPoint != null)
+                Player player = botOwner.GetPlayer;
+                if (player != null)
                 {
-                    DebugGizmos.Line(Transform.EyePosition, enemy.VisiblePathPoint.Value, Color.red, 0.05f, true, 0.02f);
-                }
-            }
+                    DrawDebugGizmos();
 
-            float CurrentTime = Time.time;
-            //Logger.LogDebug($"Ticking {AlwaysTickClasses.Count} AlwaysTickClasses");
-            TickClassGroup(AlwaysTickClasses, CurrentTime);
-            if (botOwner.BotState == EBotState.Active && player.HealthController.IsAlive)
-            {
-                //Logger.LogDebug($"Ticking {TickWhenActiveClasses.Count} TickWhenActiveClasses");
-                TickClassGroup(TickWhenActiveClasses, CurrentTime);
-                if (!BotInStandBy)
-                {
-                    //Logger.LogDebug($"Ticking {TickWhenNoSleepClasses.Count} TickWhenNoSleepClasses");
-                    TickClassGroup(TickWhenNoSleepClasses, CurrentTime);
-                    handleDumbShit();
-                    if (HasEnemy)
+                    float CurrentTime = Time.time;
+
+                    TickClassGroup(AlwaysTickClasses, CurrentTime);
+
+                    bool active = botOwner.BotState == EBotState.Active && player.HealthController.IsAlive;
+                    if (active)
                     {
-                        //Logger.LogDebug($"Ticking {TickWhenCombatClasses.Count} TickWhenCombatClasses");
+                        TickClassGroup(TickWhenActiveClasses, CurrentTime);
+                    }
+
+                    bool inStandBy = !active || BotInStandBy;
+                    if (!inStandBy)
+                    {
+                        TickClassGroup(TickWhenNoSleepClasses, CurrentTime);
+                        handleDumbShit();
+                    }
+
+                    bool hasEnemy = active && !inStandBy && (SAINLayersActive || HasEnemy || CurrentTarget.CurrentTargetEnemy != null);
+                    if (hasEnemy)
+                    {
                         TickClassGroup(TickWhenCombatClasses, CurrentTime);
                     }
+
+                    _isBotInCombat = hasEnemy && SAINLayersActive;
+                    return;
                 }
             }
+            _isBotInCombat = false;
+        }
+
+        private void DrawDebugGizmos()
+        {
+            var enemy = CurrentTarget.CurrentTargetEnemy;
+            //DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.TargetLookDirection.normalized * 1.5f, Color.white, 0.06f, true, 0.02f);
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.CurrentControlLookDirection, Color.yellow, 0.04f, true, 0.02f);
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, true, 0.02f);
         }
 
         private static void TickClassGroup(List<IBotClass> List, float CurrentTime)
@@ -225,6 +238,8 @@ namespace SAIN.SAINComponent
             return true;
         }
 
+        public NavMeshAgent NavMeshAgent { get; private set; }
+
         private bool CreateClasses()
         {
             try
@@ -233,6 +248,11 @@ namespace SAIN.SAINComponent
                 Info = new SAINBotInfoClass(this);
 
                 NoBushESP = this.gameObject.AddComponent<SAINNoBushESP>();
+                NavMeshAgent = this.gameObject.GetComponent<NavMeshAgent>();
+                if (NavMeshAgent == null)
+                {
+                    Logger.LogWarning("agent null");
+                }
 
                 Squad = new SAINSquadClass(this);
                 BusyHandsDetector = new BotBusyHandsDetector(this);

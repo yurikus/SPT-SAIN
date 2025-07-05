@@ -3,6 +3,7 @@ using EFT;
 using EFT.Interactive;
 using HarmonyLib;
 using SAIN.Preset.GlobalSettings;
+using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
@@ -90,7 +91,7 @@ namespace SAIN.Patches.Movement
     /// <summary>
     /// Disable specific functions in Manual Update that might be causing erratic movement in sain bots.
     /// </summary>
-    public class DisableLocalAvoidancePatch : ModulePatch
+    public class BotMoverManualUpdatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -100,19 +101,39 @@ namespace SAIN.Patches.Movement
         [PatchPrefix]
         public static bool PatchPrefix(BotMover __instance, BotOwner ___botOwner_0)
         {
-            if (SAINEnableClass.IsBotExcluded(___botOwner_0))
+            if (!SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 return true;
             }
+            __instance.LocalAvoidance.DropOffset();
+            __instance.PositionOnWayInner = ___botOwner_0.Position;
+
             //__instance.method_16();
-            __instance.method_15();
+            //__instance.method_15();
             __instance.method_11();
             //__instance.LocalAvoidance.ManualUpdate();
-            if (DebugBotData.UseDebugData && DebugBotData.Instance.CheckStuck)
-            {
-                __instance.method_0();
-            }
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Disable specific functions in Manual Update that might be causing erratic movement in sain bots if they are in combat.
+    /// </summary>
+    public class BotMoverManualFixedUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotMover), nameof(BotMover.ManualFixedUpdate));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(BotMover __instance, BotOwner ___botOwner_0)
+        {
+            if (SAINEnableClass.IsBotInCombat(___botOwner_0))
+            {
+                return false;
+            }
+            return true;
         }
     }
 
@@ -144,7 +165,7 @@ namespace SAIN.Patches.Movement
         [PatchPrefix]
         public static bool PatchPrefix(GClass485 __instance, BotOwner ___botOwner_0, Vector3 pos, bool slowAtTheEnd, bool getUpWithCheck)
         {
-            if (SAINPlugin.IsBotExluded(___botOwner_0))
+            if (!SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 return true;
             }
@@ -167,29 +188,6 @@ namespace SAIN.Patches.Movement
             }
             ___botOwner_0.WeaponManager.Stationary.StartMove();
             __instance.SlowAtTheEnd = slowAtTheEnd;
-            return true;
-        }
-    }
-
-    public class CrawlPatch2 : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotMover), nameof(BotMover.DoProne));
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(BotOwner ___botOwner_0, bool val)
-        {
-            if (!val)
-            {
-                return true;
-            }
-            if (SAINPlugin.IsBotExluded(___botOwner_0))
-            {
-                return true;
-            }
-            ___botOwner_0.GetPlayer.MovementContext.IsInPronePose = true;
             return false;
         }
     }
@@ -258,7 +256,7 @@ namespace SAIN.Patches.Movement
             }
             if (settings.NewDoorOpening &&
                 SAINEnableClass.GetSAIN(____owner, out var botComponent) &&
-                botComponent.SAINLayersActive)
+                botComponent.IsInCombat)
             {
                 __result = botComponent.DoorOpener.FindDoorsToOpen();
                 return false;

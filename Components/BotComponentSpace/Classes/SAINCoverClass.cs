@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
 using System.Collections.Generic;
@@ -247,8 +248,10 @@ namespace SAIN.SAINComponent.Classes
             CoverFinderComponent.OrderPointsByPathDist(CoverPoints);
         }
 
-        public bool DuckInCover()
+        public bool DuckInCover(Enemy enemy)
         {
+            const float minCoverHeightToProne = 0.5f;
+
             var point = CoverInUse;
             if (point != null)
             {
@@ -256,10 +259,9 @@ namespace SAIN.SAINComponent.Classes
                 var prone = move.Prone;
                 var myMoveSettings = Bot.Info.FileSettings.Move;
                 var globalMoveSettings = GlobalSettingsClass.Instance.Move;
-                bool shallProne = myMoveSettings.PRONE_TOGGLE && globalMoveSettings.PRONE_TOGGLE && prone.ShallProneHide();
-                if (shallProne
-                    && (Bot.Decision.CurrentSelfDecision != ESelfDecision.None
-                    || (myMoveSettings.PRONE_SUPPRESS_TOGGLE && globalMoveSettings.PRONE_SUPPRESS_TOGGLE && Bot.Suppression.IsHeavySuppressed)))
+
+                bool shallProne = myMoveSettings.PRONE_TOGGLE && globalMoveSettings.PRONE_TOGGLE && prone.ShallProneHide(enemy);
+                if (shallProne && (Bot.Decision.CurrentSelfDecision != ESelfDecision.None || (myMoveSettings.PRONE_SUPPRESS_TOGGLE && Bot.Suppression.IsHeavySuppressed)))
                 {
                     prone.SetProne(true);
                     return true;
@@ -269,7 +271,7 @@ namespace SAIN.SAINComponent.Classes
                     return true;
                 }
                 if (shallProne &&
-                    point.Collider.bounds.size.y < 0.85f)
+                    point.Collider.bounds.size.y < minCoverHeightToProne)
                 {
                     prone.SetProne(true);
                     return true;

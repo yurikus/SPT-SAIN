@@ -1,56 +1,67 @@
 ﻿using EFT;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-
-    public class SAINSprint(BotComponent sain) : BotBase(sain)
+    public class BotPathWalker(BotComponent sain) : BotBase(sain)
     {
-        public bool Running => _runToPointCoroutine != null;
-
+        public bool Moving => _moveToPointCoroutine != null;
+        public bool Running => _moveToPointCoroutine != null && _wantToSprint;
         public bool Canceling { get; private set; }
+        public Vector3 LastDestination { get; private set; }
+        public MoveStatus CurrentMoveStatus { get; private set; }
+        public NavMeshPath CurrentPath { get; private set; }
+        public float DistanceToCurrentCorner { get; private set; }
 
-        public void CancelRun(float afterTime = -1f)
+        public void Pause(float duration)
         {
-            if (Running)
+            _pauseTime = Time.time + duration;
+        }
+
+        private bool _wantToSprint;
+        private float _pauseTime = -1;
+        private bool _isPaused => _pauseTime > Time.time;
+
+        public void Cancel(float afterTime = -1f)
+        {
+            if (Moving)
             {
                 if (afterTime <= 0)
                 {
-                    StopRunCoroutine();
+                    StopMoveCoroutine();
                     return;
                 }
                 if (!Canceling)
                 {
                     Canceling = true;
-                    Bot.StartCoroutine(CancelRunAfterTime(afterTime));
+                    Bot.StartCoroutine(CancelMoveAfterTime(afterTime));
                 }
             }
         }
 
-        private void StopRunCoroutine()
+        private void StopMoveCoroutine()
         {
-            if (!Running)
+            if (!Moving)
             {
                 return;
             }
+            _pauseTime = -1;
             Canceling = false;
-            Bot.StopCoroutine(_runToPointCoroutine);
-            _runToPointCoroutine = null;
+            Bot.StopCoroutine(_moveToPointCoroutine);
+            _moveToPointCoroutine = null;
             Bot.Mover.Sprint(false);
             _path.Clear();
         }
 
-        private IEnumerator CancelRunAfterTime(float afterTime)
+        private IEnumerator CancelMoveAfterTime(float afterTime)
         {
             yield return new WaitForSeconds(afterTime);
-            StopRunCoroutine();
+            StopMoveCoroutine();
         }
 
         public bool RunToPointByWay(NavMeshPath way, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, System.Action callback = null)
@@ -62,9 +73,25 @@ namespace SAIN.SAINComponent.Classes.Mover
             ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
             if (checkSameWay && IsPointSameWay(point))
             {
+                _wantToSprint = true;
                 return true;
             }
             StartRun(way, point, urgency, callback);
+            return true;
+        }
+
+        public bool WalkToPointByWay(NavMeshPath way, bool checkSameWay = true, System.Action callback = null)
+        {
+            if (!GetLastCorner(way, out Vector3 point))
+            {
+                return false;
+            }
+            ShallStopSprintWhenSeeEnemy = false;
+            if (checkSameWay && IsPointSameWay(point))
+            {
+                return true;
+            }
+            StartWalk(way, point, callback);
             return true;
         }
 
@@ -97,6 +124,8 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (checkSameWay && IsPointSameWay(point))
             {
+                _wantToSprint = true;
+                Bot.Mover.Prone.SetProne(false);
                 return true;
             }
 
@@ -109,39 +138,56 @@ namespace SAIN.SAINComponent.Classes.Mover
             return true;
         }
 
-        private bool ShallStopSprintWhenSeeEnemy;
-
-        private bool IsPointSameWay(Vector3 point, float minDistSqr = 0.5f)
+        public bool WalkToPoint(Vector3 point, bool checkSameWay = true, System.Action callback = null)
         {
-            return Running && (LastRunDestination - point).sqrMagnitude < minDistSqr;
+            if (checkSameWay && IsPointSameWay(point))
+            {
+                _wantToSprint = false;
+                return true;
+            }
+            if (!Bot.Mover.CanGoToPoint(point, out NavMeshPath path))
+            {
+                return false;
+            }
+            ShallStopSprintWhenSeeEnemy = false;
+            StartWalk(path, point, callback);
+            return true;
+        }
+
+        private bool IsPointSameWay(Vector3 point, float minDistSqr = 0.25f)
+        {
+            return Moving && (LastDestination - point).sqrMagnitude < minDistSqr;
         }
 
         private void StartRun(NavMeshPath path, Vector3 point, ESprintUrgency urgency, System.Action callback)
         {
-            StopRunCoroutine();
-            Bot.Aim.LoseAimTarget();
-            LastRunDestination = point;
-            CurrentPath = path;
-            _lastUrgency = urgency;
-            _runToPointCoroutine = Bot.StartCoroutine(RunToPointCoroutine(path.corners, urgency, callback));
+            _wantToSprint = true;
+            Bot.Mover.Prone.SetProne(false);
+            TriggerNewMove(path, point, urgency, callback);
         }
 
-        private float _timeStartRun;
+        private void StartWalk(NavMeshPath path, Vector3 point, System.Action callback)
+        {
+            _wantToSprint = false;
+            TriggerNewMove(path, point, ESprintUrgency.None, callback);
+        }
 
-        private ESprintUrgency _lastUrgency;
-
-        public NavMeshPath CurrentPath;
+        private void TriggerNewMove(NavMeshPath path, Vector3 point, ESprintUrgency urgency, System.Action callback)
+        {
+            StopMoveCoroutine();
+            Bot.Aim.LoseAimTarget();
+            LastDestination = point;
+            CurrentPath = path;
+            _lastUrgency = urgency;
+            _moveToPointCoroutine = Bot.StartCoroutine(GoToPointCoRoutine(path.corners, urgency, callback));
+        }
 
         public bool RecalcPath()
         {
-            return RunToPoint(LastRunDestination, _lastUrgency, false);
+            if (_wantToSprint)
+                return RunToPoint(LastDestination, _lastUrgency, false);
+            return WalkToPoint(LastDestination, false);
         }
-
-        public Vector3 LastRunDestination { get; private set; }
-
-        private Coroutine _runToPointCoroutine;
-
-        public MoveStatus CurrentRunStatus { get; private set; }
 
         public Vector3 CurrentCornerDestination()
         {
@@ -152,9 +198,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             return _path[_currentIndex];
         }
 
-        private int _currentIndex = 0;
-
-        private IEnumerator RunToPointCoroutine(Vector3[] corners, ESprintUrgency urgency, System.Action callback = null)
+        private IEnumerator GoToPointCoRoutine(Vector3[] corners, ESprintUrgency urgency, System.Action callback = null)
         {
             _path.Clear();
             _path.AddRange(corners);
@@ -165,7 +209,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             _timeNotMoving = -1f;
             _timeStartRun = Time.time;
 
-            Bot.AimDownSightsController.SetADS(false);
+            if (_wantToSprint)
+                Bot.AimDownSightsController.SetADS(false);
             BotOwner.Mover.Stop();
             _currentIndex = 1;
 
@@ -173,15 +218,13 @@ namespace SAIN.SAINComponent.Classes.Mover
             //yield return firstTurn(path.corners[1]);
 
             // Start running!
-            yield return RunPath(urgency);
+            yield return ExecutePath(urgency);
 
             callback?.Invoke();
 
-            CurrentRunStatus = MoveStatus.None;
-            StopRunCoroutine();
+            CurrentMoveStatus = MoveStatus.None;
+            StopMoveCoroutine();
         }
-
-        private readonly List<Vector3> _path = new();
 
         private void MoveToNextCorner()
         {
@@ -189,7 +232,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 CheckCornerLength();
                 _currentIndex++;
-                Vector3 currentCorner = _path[_currentIndex];
+                //Vector3 currentCorner = _path[_currentIndex];
+                //OnMoveStarted?.Invoke(currentCorner);
             }
         }
 
@@ -200,8 +244,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             isShortCorner = (current - next).magnitude < 0.25f;
             _timeStartCorner = Time.time;
         }
-
-        private float _timeStartCorner;
 
         private int TotalCorners()
         {
@@ -218,9 +260,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             return _path[count - 1];
         }
 
-        private static MoveSettings _moveSettings => SAINPlugin.LoadedPreset.GlobalSettings.Move;
-
-        private IEnumerator RunPath(ESprintUrgency urgency)
+        private IEnumerator ExecutePath(ESprintUrgency urgency)
         {
             int total = TotalCorners();
             for (int i = 1; i <= total; i++)
@@ -229,20 +269,35 @@ namespace SAIN.SAINComponent.Classes.Mover
                 float distToCurrent = float.MaxValue;
                 while (distToCurrent > _moveSettings.BotSprintCornerReachDist)
                 {
+                    while (_isPaused)
+                    {
+                        if (_wantToSprint)
+                        {
+                            Bot.Steering.SteerByPriority(null, true, true);
+                            Bot.Mover.EnableSprintPlayer(false);
+                        }
+                        yield return null;
+                    }
+                    if (BotOwner.Mover.IsMoving)
+                    {
+                        BotOwner.Mover.Stop(); // Backwards sprint / moonwalking fix
+                    }
+
+                    Bot.Mover.Prone.SetProne(Bot.Mover.Crawling);
+
                     Vector3 BotPos = BotPosition;
-                    //if (BotOwner.Mover.IsMoving)
-                    //{
-                    //    BotOwner.Mover.Stop(); // Backwards sprint / moonwalking fix
-                    //}
                     Vector3 destination = CurrentCornerDestination();
-                    distToCurrent = (destination - BotPos).sqrMagnitude;
-                    DistanceToCurrentCorner = distToCurrent;
 
                     if (SAINPlugin.DebugMode)
                     {
-                        //DebugGizmos.Sphere(current, 0.1f);
-                        //DebugGizmos.Line(current, Bot.Position, 0.1f, 0.1f);
+                        Vector3 debugOffset = Vector3.up * 0.6f;
+                        DebugGizmos.Sphere(destination, 0.2f, Color.white, true, 0.02f);
+                        DebugGizmos.Line(destination, destination + debugOffset, Color.white, 0.075f, true, 0.02f);
+                        DebugGizmos.Line(destination + debugOffset, BotPos + debugOffset, Color.white, 0.075f, true, 0.02f);
                     }
+
+                    distToCurrent = (destination - BotPos).sqrMagnitude;
+                    DistanceToCurrentCorner = distToCurrent;
 
                     // Start or stop sprinting with a buffer
                     HandleSprinting(BotPos, urgency);
@@ -268,7 +323,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                             Bot.Mover.TryVault();
                         }
 
-                        Move((destination - Bot.Position).normalized);
+                        Move(destination - Bot.Position);
                     }
 
                     Steer(destination);
@@ -277,9 +332,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 MoveToNextCorner();
             }
         }
-
-        private bool isShortCorner;
-        public float DistanceToCurrentCorner { get; private set; }
 
         private float FindStartSprintStamina(ESprintUrgency urgency)
         {
@@ -326,30 +378,37 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void HandleSprinting(Vector3 BotPos, ESprintUrgency urgency)
         {
+            if (!_wantToSprint)
+            {
+                CurrentMoveStatus = MoveStatus.None;
+                Bot.Mover.EnableSprintPlayer(false);
+                return;
+            }
+
             // I cant sprint :(
             if (!Player.MovementContext.CanSprint)
             {
-                CurrentRunStatus = MoveStatus.CantSprint;
+                CurrentMoveStatus = MoveStatus.CantSprint;
                 return;
             }
 
             if (Canceling)
             {
-                CurrentRunStatus = MoveStatus.Canceling;
+                CurrentMoveStatus = MoveStatus.Canceling;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
 
             if (ShallLookAtEnemy())
             {
-                CurrentRunStatus = MoveStatus.LookAtEnemyNoSprint;
+                CurrentMoveStatus = MoveStatus.LookAtEnemyNoSprint;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
 
             if (isShortCorner)
             {
-                CurrentRunStatus = MoveStatus.ShortCorner;
+                CurrentMoveStatus = MoveStatus.ShortCorner;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
@@ -370,7 +429,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             // Were messing with a door, dont sprint
             if (Bot.DoorOpener.ShallPauseSprintForOpening())
             {
-                CurrentRunStatus = MoveStatus.InteractingWithDoor;
+                CurrentMoveStatus = MoveStatus.InteractingWithDoor;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
@@ -381,12 +440,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (sprintingNow && LastCornerDistSqr <= StopSprintDistSqr)
             {
                 Bot.Mover.EnableSprintPlayer(false);
-                CurrentRunStatus = MoveStatus.ArrivingAtDestination;
+                CurrentMoveStatus = MoveStatus.ArrivingAtDestination;
                 return;
             }
             else if (!sprintingNow && LastCornerDistSqr <= StopSprintDistSqr * 1.1f)
             {
-                CurrentRunStatus = MoveStatus.ArrivingAtDestination;
+                CurrentMoveStatus = MoveStatus.ArrivingAtDestination;
                 return;
             }
 
@@ -396,7 +455,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (ShallPauseSprintStamina(staminaValue, urgency))
             {
                 Bot.Mover.EnableSprintPlayer(false);
-                CurrentRunStatus = MoveStatus.NoStamina;
+                CurrentMoveStatus = MoveStatus.NoStamina;
                 return;
             }
 
@@ -404,7 +463,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (ShallPauseSprintAngle())
             {
                 Bot.Mover.EnableSprintPlayer(false);
-                CurrentRunStatus = MoveStatus.Turning;
+                CurrentMoveStatus = MoveStatus.Turning;
                 return;
             }
 
@@ -413,7 +472,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 _timeStartCorner + 0.25f < Time.time)
             {
                 Bot.Mover.EnableSprintPlayer(true);
-                CurrentRunStatus = MoveStatus.Running;
+                CurrentMoveStatus = MoveStatus.Running;
                 return;
             }
         }
@@ -461,12 +520,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        private bool positionMoving;
-        private Vector3 lastCheckPos;
-        private float nextCheckPosTime;
-        private float timeSinceNotMoving => positionMoving ? 0f : Time.time - _timeNotMoving;
-        private float _timeNotMoving;
-
         private Vector3 BotPosition {
             get
             {
@@ -492,7 +545,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void Steer(Vector3 target)
         {
-            if (!Bot.DoorOpener.Interacting)
+            if (_wantToSprint && !Bot.DoorOpener.Interacting)
             {
                 if (ShallLookAtEnemy())
                 {
@@ -509,7 +562,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool ShallSteerbyPriority()
         {
-            return CurrentRunStatus switch {
+            return CurrentMoveStatus switch {
                 MoveStatus.Turning or
                 MoveStatus.FirstTurn or
                 MoveStatus.Running or
@@ -524,13 +577,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 direction *= 10f;
             }
-            Player.CharacterController.SetSteerDirection(direction);
-            BotOwner.AimingManager.CurrentAiming.Move(Player.Speed);
-            if (BotOwner.Mover != null)
-            {
-                BotOwner.Mover.IsMoving = true;
-            }
-            Player.Move(FindMoveDirection(direction));
+            Bot.Mover.MovePlayerCharacter(direction);
         }
 
         public Vector2 FindMoveDirection(Vector3 direction)
@@ -539,14 +586,19 @@ namespace SAIN.SAINComponent.Classes.Mover
             return new Vector2(vector.x, vector.y);
         }
 
-        private bool IsSprintEnabled => Player.IsSprintEnabled;
-    }
-
-    public enum ESprintUrgency
-    {
-        None = 0,
-        Low = 1,
-        Middle = 2,
-        High = 3,
+        private Coroutine _moveToPointCoroutine;
+        private float _timeStartRun;
+        private ESprintUrgency _lastUrgency;
+        private int _currentIndex = 0;
+        private bool ShallStopSprintWhenSeeEnemy;
+        private readonly List<Vector3> _path = new();
+        private float _timeStartCorner;
+        private static MoveSettings _moveSettings => SAINPlugin.LoadedPreset.GlobalSettings.Move;
+        private bool isShortCorner;
+        private bool positionMoving;
+        private Vector3 lastCheckPos;
+        private float nextCheckPosTime;
+        private float timeSinceNotMoving => positionMoving ? 0f : Time.time - _timeNotMoving;
+        private float _timeNotMoving;
     }
 }

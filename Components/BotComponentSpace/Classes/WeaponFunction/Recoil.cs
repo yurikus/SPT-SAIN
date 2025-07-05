@@ -1,5 +1,6 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
+using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.Info;
@@ -49,7 +50,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return;
             }
 
-            float decayTime = Time.deltaTime * _recoilDecayCoef;
+            float decayTime = GameWorldComponent.WorldTickDeltaTime * _recoilDecayCoef;
             _barrelRecoveryTime += decayTime;
 
             if (_barrelRecoveryTime >= 1)

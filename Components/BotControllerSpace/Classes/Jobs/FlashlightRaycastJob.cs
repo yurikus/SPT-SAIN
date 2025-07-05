@@ -1,4 +1,5 @@
 ﻿using SAIN.Components.PlayerComponentSpace;
+using SAIN.Helpers;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.Types.Jobs;
@@ -12,12 +13,26 @@ namespace SAIN.Components
 {
     public class FlashlightRaycastJob : SainJobTemplate, IDisposable
     {
+        private const float LaserTraceDistance = 75;
+
+        private const float Wide_FlashLightBeamAngle = 16f;
+        private const int Wide_FlashlightBeamPointCount = 32;
+        private const float Wide_FlashlightTraceDistance = 30;
+
+        private const float Tight_FlashLightBeamAngle = 8f;
+        private const int Tight_FlashlightBeamPointCount = 16;
+        private const float Tight_FlashlightTraceDistance = 60;
+
         public FlashlightRaycastJob(MonoBehaviour gameWorld) : base("Flashlight Detection Job", gameWorld, true, 0.1f)
         {
             Start();
+            CreateRandomRotations(_rotationsList_Wide, Wide_FlashlightBeamPointCount, Wide_FlashLightBeamAngle);
+            CreateRandomRotations(_rotationsList_Tight, Tight_FlashlightBeamPointCount, Tight_FlashLightBeamAngle);
         }
 
         protected readonly List<RaycastJob> RaycastJobs = [];
+        protected readonly List<Quaternion> _rotationsList_Wide = [];
+        protected readonly List<Quaternion> _rotationsList_Tight = [];
 
         protected override IEnumerator PrimaryFunction()
         {
@@ -26,19 +41,102 @@ namespace SAIN.Components
             if (Total > 0)
             {
                 ScheduleJobs(Total);
-                yield return AwaitCompletion(Total);
+                yield return null;
                 ReadFlashlightJobData(Total);
                 Dispose();
-            }
 
-            CreateLightDetectionJobs();
-            Total = RaycastJobs.Count;
-            if (Total > 0)
+                CreateLightDetectionJobs();
+                Total = RaycastJobs.Count;
+                if (Total > 0)
+                {
+                    ScheduleJobs(Total);
+                    yield return null;
+                    ReadLightDetectionJobData(Total);
+                    Dispose();
+                }
+            }
+        }
+
+        private void CreateFlashlightJobs()
+        {
+            List<RandomDir> Directions = _directionsList;
+            HashSet<PlayerComponent> players = GameWorldComponent.Instance.PlayerTracker.AlivePlayerArray;
+            foreach (var player in players)
             {
-                ScheduleJobs(Total);
-                yield return AwaitCompletion(Total);
-                ReadLightDetectionJobData(Total);
-                Dispose();
+                if (player != null && player.IsActive && player.Flashlight.DeviceActive)
+                {
+                    Vector3 WeaponPointDir = player.Transform.WeaponPointDirection;
+                    if (player.Flashlight.Laser || player.Flashlight.IRLaser)
+                    {
+                        Directions.Add(new(LaserTraceDistance, WeaponPointDir));
+                    }
+                    if (player.Flashlight.WhiteLight || player.Flashlight.IRLight)
+                    {
+                        createFlashlightBeam(Directions, _rotationsList_Wide, WeaponPointDir, Wide_FlashlightTraceDistance);
+                        createFlashlightBeam(Directions, _rotationsList_Tight, WeaponPointDir, Tight_FlashlightTraceDistance);
+                    }
+                    if (Directions.Count > 0)
+                    {
+                        RaycastJobs.Add(new RaycastJob(Directions, player.Transform.WeaponFirePort, LayerMaskClass.HighPolyWithTerrainMaskAI, player.Player, null));
+                        Directions.Clear();
+                    }
+                }
+            }
+        }
+
+        private void ReadFlashlightJobData(int Total)
+        {
+            for (int i = 0; i < Total; i++)
+            {
+                RaycastJob Job = RaycastJobs[i];
+                Job.Complete();
+                NativeArray<RaycastHit> Hits = Job.Hits;
+                if (GameWorldComponent.TryGetPlayerComponent(Job.Owner, out PlayerComponent Player))
+                {
+                    List<Vector3> LightPoints = Player.Flashlight.LightDetection.LightPoints;
+                    LightPoints.Clear();
+                    for (int j = Hits.Length - 1; j >= 0; j--)
+                    {
+                        RaycastHit Hit = Hits[j];
+                        if (Hit.collider != null)
+                        {
+                            // Offset the hit point slightly away from the thing it hit to allow easy visibilty checking and simulate "glow"
+                            LightPoints.Add(Hit.point + (Hit.normal * 0.05f));
+                        }
+                    }
+
+                    if (Player.Player.IsYourPlayer)
+                    {
+                        Logger.LogDebug($"player has {LightPoints.Count} light points");
+                        foreach (var point in LightPoints)
+                        {
+                            DebugGizmos.Line(Player.Transform.WeaponFirePort, point, 0.025f, 0.02f, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CreateLightDetectionJobs()
+        {
+            foreach (BotComponent Bot in AliveBots.Values)
+            {
+                if (Bot != null && Bot.BotActive)
+                {
+                    foreach (Enemy Enemy in Bot.EnemyController.Enemies.Values)
+                    {
+                        if (Enemy != null && Enemy.EnemyPerson.Active)
+                        {
+                            FlashLightClass EnemyLight = Enemy.EnemyPlayerComponent.Flashlight;
+                            if (EnemyLight.DeviceActive &&
+                                Bot.PlayerComponent.Flashlight.LightDetection.CheckIsBeamVisible(EnemyLight) &&
+                                Enemy.RealDistance <= 125f)
+                            {
+                                RaycastJobs.Add(new RaycastJob(EnemyLight.LightDetection.LightPoints, Bot.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMaskAI, Bot.Player, Enemy.Player));
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -68,76 +166,7 @@ namespace SAIN.Components
             }
         }
 
-        private void CreateLightDetectionJobs()
-        {
-            foreach (BotComponent Bot in AliveBots.Values)
-            {
-                if (Bot != null && Bot.BotActive)
-                {
-                    foreach (Enemy Enemy in Bot.EnemyController.Enemies.Values)
-                    {
-                        if (Enemy != null && Enemy.EnemyPerson.Active)
-                        {
-                            FlashLightClass EnemyLight = Enemy.EnemyPlayerComponent.Flashlight;
-                            if (EnemyLight.DeviceActive &&
-                                Bot.PlayerComponent.Flashlight.LightDetection.CheckIsBeamVisible(EnemyLight) &&
-                                Enemy.RealDistance <= 125f)
-                            {
-                                RaycastJobs.Add(new RaycastJob(EnemyLight.LightDetection.LightPoints2, Enemy.EnemyTransform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMaskAI, Bot.Player, Enemy.Player));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ReadFlashlightJobData(int Total)
-        {
-            for (int i = 0; i < Total; i++)
-            {
-                RaycastJob Job = RaycastJobs[i];
-                Job.Complete();
-                NativeArray<RaycastHit> Hits = Job.Hits;
-                if (GameWorldComponent.TryGetPlayerComponent(Job.Owner, out PlayerComponent Player))
-                {
-                    List<Vector3> LightPoints = Player.Flashlight.LightDetection.LightPoints2;
-                    LightPoints.Clear();
-                    for (int j = Hits.Length - 1; j >= 0; j--)
-                    {
-                        RaycastHit Hit = Hits[j];
-                        if (Hit.collider != null)
-                        {
-                            LightPoints.Add(Hit.point + (Hit.normal * 0.1f));
-                        }
-                    }
-                }
-            }
-        }
-
-        private void CreateFlashlightJobs()
-        {
-            const float LaserTraceDistance = 75;
-            const float FlashlightTraceDistance = 40;
-
-            foreach (var player in AlivePlayers.Values)
-            {
-                if (player?.IsActive == true && player.Flashlight.DeviceActive)
-                {
-                    List<RandomDir> Directions = [];
-                    Vector3 WeaponPointDir = player.Transform.WeaponPointDirection;
-                    if (player.Flashlight.Laser || player.Flashlight.IRLaser)
-                    {
-                        Directions.Add(new(LaserTraceDistance, WeaponPointDir));
-                    }
-                    if (player.Flashlight.WhiteLight || player.Flashlight.IRLight)
-                    {
-                        createFlashlightBeam(Directions, WeaponPointDir, 30, FlashlightTraceDistance, 12.5f);
-                    }
-                    if (Directions.Count > 0)
-                        RaycastJobs.Add(new RaycastJob(Directions, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMaskAI, player.Player, null));
-                }
-            }
-        }
+        private readonly List<RandomDir> _directionsList = [];
 
         private void ScheduleJobs(int Total)
         {
@@ -145,30 +174,16 @@ namespace SAIN.Components
                 RaycastJobs[i].Schedule();
         }
 
-        private static void createFlashlightBeam(List<Vector3> beamDirections, Vector3 weaponPointDir, int count, float coneAngle = 10.0f)
+        private static void createFlashlightBeam(List<RandomDir> beamDirections, List<Quaternion> rotationsList, Vector3 weaponPointDir, float distance)
         {
-            beamDirections.Clear();
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < rotationsList.Count; i++)
             {
-                // Generate random angles within the cone range for yaw and pitch
-                float angle = coneAngle * 0.5f;
-                float x = UnityEngine.Random.Range(-angle, angle);
-                float y = UnityEngine.Random.Range(-angle, angle);
-                float z = UnityEngine.Random.Range(-angle, angle);
-
-                // AddColor a Quaternion rotation based on the random yaw and pitch angles
-                Quaternion randomRotation = Quaternion.Euler(x, y, z);
-
-                // Rotate the player's look direction by the Quaternion rotation
-                Vector3 randomBeamDirection = randomRotation * weaponPointDir;
-
-                beamDirections.Add(randomBeamDirection);
+                beamDirections.Add(new(distance, rotationsList[i] * weaponPointDir));
             }
         }
 
-        private static void createFlashlightBeam(List<RandomDir> beamDirections, Vector3 weaponPointDir, int count, float distance, float coneAngle = 10.0f)
+        private static void CreateRandomRotations(List<Quaternion> rotationsList, int count, float coneAngle = 10.0f)
         {
-            beamDirections.Clear();
             for (int i = 0; i < count; i++)
             {
                 // Generate random angles within the cone range for yaw and pitch
@@ -178,12 +193,7 @@ namespace SAIN.Components
                 float z = UnityEngine.Random.Range(-angle, angle);
 
                 // AddColor a Quaternion rotation based on the random yaw and pitch angles
-                Quaternion randomRotation = Quaternion.Euler(x, y, z);
-
-                // Rotate the player's look direction by the Quaternion rotation
-                Vector3 randomBeamDirection = randomRotation * weaponPointDir;
-
-                beamDirections.Add(new(distance, randomBeamDirection));
+                rotationsList.Add(Quaternion.Euler(x, y, z));
             }
         }
 
@@ -195,28 +205,6 @@ namespace SAIN.Components
                 Result[i] = new RandomDir(LengthMin, LengthMax);
             }
             return Result;
-        }
-
-        private IEnumerator AwaitCompletion(int Total)
-        {
-            int FramesWaited = 0;
-            float DeltaTimeWaited = 0;
-            const int MaxFramesToWait = 10;
-            bool JobsComplete = false;
-            while (!JobsComplete && FramesWaited < MaxFramesToWait)
-            {
-                for (int i = 0; i < Total; i++)
-                {
-                    if (!RaycastJobs[i].IsCompleted)
-                        continue;
-                    JobsComplete = true;
-                }
-                yield return null;
-                FramesWaited++;
-                DeltaTimeWaited += Time.deltaTime;
-            }
-
-            // Logger.LogDebug($"Took {FramesWaited} frames or {DeltaTimeWaited} seconds To Complete Navmesh Raycasts Jobs");
         }
 
         protected override bool CanProceed()

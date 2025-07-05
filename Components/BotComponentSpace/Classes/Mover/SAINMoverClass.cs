@@ -1,11 +1,7 @@
 ﻿using EFT;
-using HarmonyLib;
-using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
 using System.Collections;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -22,74 +18,39 @@ namespace SAIN.SAINComponent.Classes.Mover
             Lean = new LeanClass(sain);
             Prone = new ProneClass(sain);
             Pose = new PoseClass(sain);
-            SprintController = new SAINSprint(sain);
+            PathWalker = new BotPathWalker(sain);
             DogFight = new DogFight(sain);
         }
 
         private PathControllerClass PathController { get; }
-
-        public event Action<Vector3, Vector3> OnNewGoToPoint;
-
         public DogFight DogFight { get; private set; }
-        public SAINSprint SprintController { get; private set; }
-
-        public override void Init()
-        {
-            UpdateBodyNavObstacle(false);
-            base.Init();
-        }
-
-        public void UpdateBodyNavObstacle(bool value)
-        {
-            if (BotBodyObstacle == null)
-            {
-                //BotBodyObstacle = SAIN.GetOrAddComponent<NavMeshObstacle>();
-                if (BotBodyObstacle == null)
-                {
-                    //Logger.LogError($"Bot Body Navmesh obstacle is null for [{SAIN.BotOwner.name}]");
-                    return;
-                }
-                //BotBodyObstacle.radius = 0.25f;
-                //BotBodyObstacle.shape = NavMeshObstacleShape.Capsule;
-                //BotBodyObstacle.carveOnlyStationary = false;
-            }
-            //BotBodyObstacle.enabled = false;
-            //BotBodyObstacle.carving = value;
-        }
+        public BotPathWalker PathWalker { get; private set; }
 
         public override void ManualUpdate()
         {
-            if (SprintController.Running || Player.IsSprintEnabled)
-            {
-                float time = Time.time + 0.5f;
-                _changeSpeedTime = time;
-            }
-            if (Crawling && !BotOwner.Mover.IsMoving)
+            if (Crawling && !PathWalker.Moving)
             {
                 Crawling = false;
             }
 
-            HandlePatrolStance();
             //updateStamina();
             Pose.ManualUpdate();
             Lean.ManualUpdate();
-            Prone.ManualUpdate();
             BlindFire.ManualUpdate();
-            SprintController.ManualUpdate();
+
+            if (!Player.IsSprintEnabled)
+            {
+                UpdateStance(Time.time);
+            }
             //CheckSetBotToNavMesh();
 
             base.ManualUpdate();
         }
 
-        private void HandlePatrolStance()
+        public void MovePlayerCharacter(Vector3 direction)
         {
-            bool wantToPatrolStance = BotOwner.Memory.IsPeace && !Player.IsSprintEnabled;
-            bool inPatrol = IsInPatrol;
-            if (wantToPatrolStance == inPatrol)
-            {
-                return;
-            }
-            Player.MovementContext.SetPatrol(wantToPatrolStance && CanSetPatrol());
+            PlayerComponent.MovePlayerCharacter(direction);
+            BotOwner.AimingManager.CurrentAiming.Move(Player.Speed);
         }
 
         private bool CanSetPatrol()
@@ -109,8 +70,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        private bool IsInPatrol => Player.MovementContext._isInPatrol;
-
         private void CheckSetBotToNavMesh()
         {
             if (Player.UpdateQueue != EUpdateQueue.Update)
@@ -118,8 +77,12 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
             // Is the bot currently Moving somewhere?
-            if (SprintController.Running ||
-                BotOwner.Mover.HasPathAndNoComplete == true)
+            if (PathWalker.Moving || BotOwner.Mover.HasPathAndNoComplete)
+            {
+                _movingTime = Time.time + 1f;
+                return;
+            }
+            if (_movingTime > Time.time)
             {
                 return;
             }
@@ -136,16 +99,17 @@ namespace SAIN.SAINComponent.Classes.Mover
             // Is the bot currently falling?
             if (!Player.MovementContext.IsGrounded)
             {
-                _ungroundedTime = Time.time;
+                _ungroundedTime = Time.time + 1f;
                 return;
             }
-            if (_ungroundedTime + 1f < Time.time)
+            if (_ungroundedTime < Time.time)
             {
-                //ResetToNavMesh();
+                ResetToNavMesh();
             }
         }
 
         private float _ungroundedTime;
+        private float _movingTime;
 
         public void ResetToNavMesh()
         {
@@ -160,9 +124,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Vector3 castPoint = position + Vector3.up * 0.3f;
                 BotOwner.Mover.SetPlayerToNavMesh(castPoint);
                 _prevLinkPos = position;
-                
+
                 BotOwner.Mover.PositionOnWayInner = BotOwner.Mover.botOwner_0.Position;
-                BotOwner.Mover.botOwner_0.Mover.LocalAvoidance.DropOffset();
+                BotOwner.Mover.LocalAvoidance.DropOffset();
             }
         }
 
@@ -172,7 +136,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public override void Dispose()
         {
-            SprintController?.Dispose();
+            PathWalker?.Dispose();
             base.Dispose();
         }
 
@@ -188,36 +152,32 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public Vector3 CurrentMoveDestination { get; private set; }
 
-        public bool Moving => BotOwner.Mover?.IsMoving == true || BotOwner.Mover.HasPathAndNoComplete == true;
+        public bool Moving => PathWalker.Moving || BotOwner.Mover?.IsMoving == true || BotOwner.Mover.HasPathAndNoComplete;
 
         public bool GoToPoint(Vector3 point, out bool calculating, float reachDist = -1f, bool crawl = false, bool slowAtEnd = true, bool mustHaveCompletePath = true)
         {
             calculating = false;
-            //if (SprintController.Running)
-            //{
-            //    SprintController.CancelRun(0.25f);
-            //    if (SprintController.Canceling)
-            //    {
-            //        return false;
-            //    }
-            //}
-            if (reachDist < 0f)
+            if (PathWalker.WalkToPoint(point, true))
             {
-                //reachDist = SAINPlugin.LoadedPreset.GlobalSettings.General.BaseReachDistance;
-				reachDist = BotOwner.Settings.FileSettings.Move.REACH_DIST;
-            }
-
-            bool wasMoving = Moving;
-            CurrentPathStatus = BotOwner.Mover.GoToPoint(point, slowAtEnd, reachDist, false, false, true);
-            if (CurrentPathStatus != NavMeshPathStatus.PathInvalid)
-            {
-                SprintController.CancelRun();
+                CurrentPathStatus = NavMeshPathStatus.PathComplete;
                 Crawling = crawl && Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE;
-                Prone.SetProne(crawl);
-                CheckNewMove(point, wasMoving);
+                Prone.SetProne(Crawling);
+                CurrentMoveDestination = point;
                 return true;
             }
-            Crawling = false;
+            return false;
+        }
+
+        public bool RunToPoint(Vector3 point, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, bool mustHaveCompletePath = true)
+        {
+            if (PathWalker.RunToPoint(point, urgency, stopSprintEnemyVisible, checkSameWay))
+            {
+                CurrentPathStatus = NavMeshPathStatus.PathComplete;
+                Crawling = false;
+                Prone.SetProne(false);
+                CurrentMoveDestination = point;
+                return true;
+            }
             return false;
         }
 
@@ -257,44 +217,30 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return GoToPoint(enemy.EnemyTransform.Position, out _, reachDist, false, true, false);
                 }
                 CurrentPathStatus = status;
-                return GoToPointByWay(enemy.Path.PathCorners, reachDist, crawl);
+                return GoToPointByWay(enemy.Path.PathToEnemy, reachDist, crawl);
             }
 
             CurrentPathStatus = NavMeshPathStatus.PathInvalid;
             return false;
         }
 
-        public bool GoToPointByWay(Vector3[] way, float reachDist = -1f, bool crawl = false)
+        public bool GoToPointByWay(NavMeshPath Path, float reachDist = -1f, bool crawl = false)
         {
-            int length = way.Length;
-            if (way == null || length < 2)
+            if (Path == null || Path.corners.Length < 2)
             {
                 return false;
             }
-
-            if (reachDist < 0f)
-            {
-                reachDist = BotOwner.Settings.FileSettings.Move.REACH_DIST;
-            }
+            int length = Path.corners.Length;
 
             if (crawl && Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
                 Prone.SetProne(true);
 
-            bool wasMoving = Moving;
-            BotOwner.Mover.GoToByWay(way, reachDist);
-            SprintController.CancelRun();
-            CheckNewMove(way[length - 1], wasMoving);
-            return true;
-        }
-
-        private void CheckNewMove(Vector3 destination, bool wasMoving)
-        {
-            if (!wasMoving || (CurrentMoveDestination - destination).sqrMagnitude > 0.1f)
+            if (PathWalker.WalkToPointByWay(Path))
             {
-                Vector3 currentCorner = PathController.CurrentCorner();
-                OnNewGoToPoint?.Invoke(currentCorner, destination);
+                CurrentMoveDestination = Path.corners[length - 1];
+                return true;
             }
-            CurrentMoveDestination = destination;
+            return false;
         }
 
         public NavMeshPathStatus CurrentPathStatus { get; private set; } = NavMeshPathStatus.PathInvalid;
@@ -326,25 +272,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void SetTargetMoveSpeed(float speed)
         {
-            if (CanSetSpeed())
-            {
-                BotOwner.Mover?.SetTargetMoveSpeed(speed);
-            }
+            Pose.SetTargetSpeed(speed);
         }
 
-        private bool CanSetSpeed()
-        {
-            if (SprintController.Running || Player.IsSprintEnabled)
-            {
-                _changeSpeedTime = Time.time + 0.5f;
-                BotOwner.Mover?.SetTargetMoveSpeed(1f);
-            }
-            return _changeSpeedTime < Time.time;
-        }
-
-        private float _changeSpeedTime;
-
-        public void StopMove(float delay = 0.1f, float forDuration = 0f)
+        public void StopMove(float delay = 0.1f)
         {
             if (Player?.IsSprintEnabled == true)
             {
@@ -352,78 +283,67 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (delay <= 0f)
             {
-                Stop(forDuration);
+                Stop();
                 return;
             }
-            if (!_stopping &&
-                (BotOwner?.Mover?.IsMoving == true || Bot.Mover.SprintController.Running))
+            if (!_stopping && Bot.Mover.PathWalker.Moving)
             {
                 _stopping = true;
-                Bot.StartCoroutine(StopAfterDelay(delay, forDuration));
+                Bot.StartCoroutine(StopAfterDelay(delay));
             }
         }
 
-        private IEnumerator StopAfterDelay(float delay, float forDuration)
+        private IEnumerator StopAfterDelay(float delay)
         {
             yield return new WaitForSeconds(delay);
-            Stop(forDuration);
-            _stopping = false;
+            Stop();
         }
 
-        private void Stop(float forDuration)
+        private void Stop()
         {
-            if (BotOwner?.Mover?.IsMoving == true)
-            {
-                BotOwner.Mover.Stop();
-            }
-            Bot?.Mover.SprintController.CancelRun();
-            PauseMovement(forDuration);
+            Bot?.Mover.PathWalker.Cancel();
+            _stopping = false;
         }
 
         public void PauseMovement(float forDuration)
         {
             if (forDuration > 0)
             {
-                BotOwner?.Mover?.MovementPause(forDuration);
+                PathWalker.Pause(forDuration);
             }
         }
 
         public void ResetPath(float delay)
         {
-            Bot.StartCoroutine(ResetPathCoroutine(0.2f));
+            //Bot.StartCoroutine(ResetPathCoroutine(0.2f));
         }
 
-        private IEnumerator ResetPathCoroutine(float delay)
-        {
-            yield return StopAfterDelay(delay, 0f);
-            BotOwner?.Mover?.RecalcWay();
-        }
+        //private IEnumerator ResetPathCoroutine(float delay)
+        //{
+        //yield return StopAfterDelay(delay);
+        //BotOwner?.Mover?.RecalcWay();
+        //}
 
         private bool _stopping;
 
         public void Sprint(bool value)
         {
-            if (BotOwner == null || BotOwner.DoorOpener == null)
+            if (BotOwner == null)
             {
                 return;
             }
-            if (BotOwner.DoorOpener.Interacting)
+            EnableSprintPlayer(value);
+        }
+
+        public void EnableSprintPlayer(bool value)
+        {
+            if (BotOwner?.DoorOpener?.Interacting == true)
             {
                 value = false;
             }
             if (value)
             {
-                //SAINBot.Steering.LookToMovingDirection();
-                FastLean(0f);
-            }
-            BotOwner.Mover.Sprint(value);
-        }
-
-        public void EnableSprintPlayer(bool value)
-        {
-            if (value)
-            {
-                FastLean(0f);
+                Player.MovementContext.SetTilt(0);
             }
             Player.EnableSprint(value);
         }
@@ -431,7 +351,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool TryJump()
         {
             if (_nextJumpTime < Time.time &&
-                CanJump)
+                Player.MovementContext?.CanJump == true)
             {
                 _nextJumpTime = Time.time + 0.5f;
                 Player.MovementContext?.TryJump();
@@ -454,45 +374,41 @@ namespace SAIN.SAINComponent.Classes.Mover
         public float TimeLastJumped { get; private set; }
         public float TimeLastVaulted { get; private set; }
 
-        public void FastLean(LeanSetting value)
+        private void UpdateStance(float time)
         {
-            var num = value switch
+            if (_nextChangeStanceTime < time)
             {
-                LeanSetting.Left => -5f,
-                LeanSetting.Right => 5f,
-                _ => 0f,
-            };
-            FastLean(num);
-        }
+                _nextChangeStanceTime = time + CHANGE_STANCE_INTERVAL;
 
-        public void FastLean(float value)
-        {
-            SetTilt(value);
-            HandleShoulderSwap(value);
-        }
+                MovementContext movementContext = Player.MovementContext;
+                if (movementContext != null)
+                {
+                    LeftStanceController leftStance = movementContext.LeftStanceController;
 
-        private void SetTilt(float value)
-        {
-            if (Player.MovementContext.Tilt != value)
-            {
-                Player.MovementContext.SetTilt(value);
+                    bool wantToPatrolStance = !movementContext.IsSprintEnabled && Bot.CurrentTarget.CurrentTargetEnemy == null;
+                    if (wantToPatrolStance != movementContext._isInPatrol)
+                    {
+                        // If we are in left stance and want to patrol, reset back to normal  before setting patrol next update.
+                        if (wantToPatrolStance && leftStance?.LeftStance == true)
+                        {
+                            leftStance.ToggleLeftStance();
+                            return;
+                        }
+                        movementContext.SetPatrol(wantToPatrolStance && CanSetPatrol());
+                        return;
+                    }
+                    if (leftStance != null && leftStance.LeftStance != _wantLeftStance)
+                    {
+                        leftStance.ToggleLeftStance();
+                    }
+                }
             }
         }
-
-        private void HandleShoulderSwap(float leanValue)
-        {
-            bool shoulderSwapped = IsShoulderSwapped;
-            if ((leanValue < 0 && !shoulderSwapped)
-                || (leanValue >= 0 && shoulderSwapped))
-            {
-                Player.MovementContext.LeftStanceController.ToggleLeftStance();
-            }
-        }
-
-        private bool IsShoulderSwapped => Player.MovementContext?.LeftStanceController?.LeftStance == true;
-
-        public bool CanJump => Player.MovementContext?.CanJump == true;
+        private bool _wantLeftStance => Lean.LeanAngleValue.LastSmoothedValue < 0;
 
         private float _nextJumpTime = 0f;
+
+        private const float CHANGE_STANCE_INTERVAL = 0.33f;
+        private float _nextChangeStanceTime;
     }
 }

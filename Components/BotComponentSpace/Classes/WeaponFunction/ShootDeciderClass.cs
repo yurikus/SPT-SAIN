@@ -59,6 +59,11 @@ namespace SAIN.SAINComponent.Classes
 
         public bool CheckAimAndFire(Enemy Enemy)
         {
+            if (_changeAimTimer < Time.time)
+            {
+                _changeAimTimer = Time.time + 0.25f;
+                Bot.AimDownSightsController.UpdateADSstatus(Enemy);
+            }
             if (TryShoot(Enemy))
                 return true;
             Bot.Aim.LoseAimTarget();
@@ -76,12 +81,6 @@ namespace SAIN.SAINComponent.Classes
             var weaponManager = BotOwner.WeaponManager;
             if (weaponManager == null)
                 return false;
-
-            if (_changeAimTimer < Time.time)
-            {
-                _changeAimTimer = Time.time + 0.25f;
-                Bot.AimDownSightsController.UpdateADSstatus(Enemy);
-            }
 
             if (!weaponManager.HaveBullets)
             {

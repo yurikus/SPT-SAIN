@@ -83,7 +83,6 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             OwnerViewPosition = inOwner.Transform.EyePosition;
             OwnerPosition = inOwner.Position;
             OwnerLookDirection = inOwner.LookDirection;
-            SteeringData = new SteeringData(OwnerLookDirection);
         }
 
         public readonly PlayerComponent Owner;
@@ -92,19 +91,11 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         public Vector3 OwnerPosition;
         public Vector3 OwnerLookDirection;
 
-        public SteeringData SteeringData;
-
         public void Prepare(PlayerComponent Owner)
         {
             OwnerViewPosition = Owner.Transform.EyePosition;
             OwnerPosition = Owner.Position;
             OwnerLookDirection = Owner.LookDirection;
-
-            var steering = SteeringData;
-            steering.SetTargetDirection(Owner.TargetLookDir);
-            steering.SetLookDirection(OwnerLookDirection);
-            steering.CalcSmoothDampAngleTurn();
-            SteeringData = steering;
 
             OtherPlayerDirectionData.Clear();
             OtherPlayerData.Clear();
@@ -122,10 +113,6 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
 
         public void Execute()
         {
-            //var steering = SteeringData;
-            //steering.CalcSmoothDampAngleTurn();
-            //SteeringData = steering;
-
             for (int i = 0; i < OtherPlayerDirectionData.Count; i++)
             {
                 var data = OtherPlayerDirectionData[i];
@@ -143,16 +130,6 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             }
             OtherPlayerData.Clear();
             OtherPlayerDirectionData.Clear();
-
-            //if (Owner.IsAI)
-            //{
-            //    Logger.LogDebug($"" +
-            //        $"LookDir: [{SteeringData.LookDirection}]  : " +
-            //        $"CalculatedDir: [{SteeringData.CalculatedLookDirection}] : " +
-            //        $"TargetDir: [{SteeringData._targetLookDir}] : " +
-            //        $"InputTargetDir: [{SteeringData.InputTargetDirection}] : " +
-            //        $"Smoothing: [{SteeringData.smoothTime}]");
-            //}
         }
 
         public List<OtherPlayerData> OtherPlayerData = [];
@@ -180,13 +157,9 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
 
     public class DirectionDataJob : SAINControllerBase
     {
-        private JobHandle _PlayerDirectionDataJobHandle;
-        private PlayerDirectionDataJob _PlayerDirectionDataJob;
         private JobHandle _PlayerTickJobHandle;
         private PlayerTickJob _PlayerTickJob;
         private readonly List<PlayerTickData> _playerTickData = [];
-        private readonly List<PlayerDirectionData> _directionDatas = [];
-        private readonly List<OtherPlayerData> _otherPlayerData = [];
 
         public DirectionDataJob(SAINBotController botController) : base(botController)
         {
@@ -240,55 +213,6 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
                     _playerTickData.Clear();
                 }
                 yield return null;
-
-                //foreach (PlayerComponent playerComp in players)
-                //{
-                //    if (playerComp != null && playerComp.OtherPlayersData != null)
-                //    {
-                //        PlayerTickData tickData = playerComp.PlayerTickData;
-                //        tickData.Prepare(playerComp);
-                //        _playerTickData.Add(tickData);
-                //        List<OtherPlayerData> OtherPlayers = playerComp.OtherPlayersData.DataList;
-                //        for (int j = 0; j < OtherPlayers.Count; j++)
-                //        {
-                //            OtherPlayerData otherPlayer = OtherPlayers[j];
-                //            if (otherPlayer != null)
-                //            {
-                //                _directionDatas.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(playerComp, otherPlayer.PlayerComponent));
-                //                _otherPlayerData.Add(otherPlayer);
-                //            }
-                //        }
-                //    }
-                //}
-
-                //int jobCount = _directionDatas.Count;
-                //if (jobCount > 0)
-                //{
-                //    _PlayerDirectionDataJob = new() {
-                //        Input = new NativeArray<PlayerDirectionData>(jobCount, Allocator.TempJob),
-                //        Output = new NativeArray<PlayerDirectionData>(jobCount, Allocator.TempJob)
-                //    };
-                //    for (int i = 0; i < jobCount; i++)
-                //    {
-                //        _PlayerDirectionDataJob.Input[i] = _directionDatas[i];
-                //    }
-                //
-                //    // schedule job and wait for next frame to read data
-                //    _PlayerDirectionDataJobHandle = _PlayerDirectionDataJob.Schedule(jobCount, new JobHandle());
-                //
-                //    yield return null;
-                //    _PlayerDirectionDataJobHandle.Complete();
-                //
-                //    for (int i = 0; i < jobCount; i++)
-                //    {
-                //        _otherPlayerData[i]?.DistanceData.SetPlayerDirectionData(_PlayerDirectionDataJob.Output[i]);
-                //    }
-                //
-                //    _PlayerDirectionDataJob.Dispose();
-                //    _otherPlayerData.Clear();
-                //    _directionDatas.Clear();
-                //}
-                //yield return null;
             }
         }
 
@@ -296,9 +220,6 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         {
             _PlayerTickJobHandle.Complete();
             _PlayerTickJob.Dispose();
-
-            _PlayerDirectionDataJobHandle.Complete();
-            _PlayerDirectionDataJob.Dispose();
         }
     }
 }

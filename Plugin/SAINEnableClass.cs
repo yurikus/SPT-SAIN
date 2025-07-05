@@ -40,7 +40,7 @@ namespace SAIN
             if (settings == null)
                 return true;
 
-            botOwner.GetPlayer.OnIPlayerDeadOrUnspawn += ClearBot;
+            player.OnIPlayerDeadOrUnspawn += ClearBot;
 
             if (IsBotExcluded(botOwner)) {
                 ExcludedBots.Add(id);
@@ -49,6 +49,38 @@ namespace SAIN
             }
             EnabledBots.Add(id);
             Logger.LogDebug($"Added Enabled Bot [{player.Profile.Nickname},{id}]");
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if this IPlayer has SAIN enabled or if it is a vanilla bot.
+        /// </summary>
+        public static bool IsSAINDisabledForBot(IPlayer iPlayer)
+        {
+            if (iPlayer == null || !iPlayer.IsAI)
+                return true;
+
+            BotOwner botOwner = iPlayer.AIData?.BotOwner;
+            if (botOwner == null)
+                return true;
+
+            string id = iPlayer.ProfileId;
+            if (ExcludedBots.Contains(id))
+                return true;
+            if (EnabledBots.Contains(id))
+                return false;
+            
+            ProfileInfoSettingsClass settings = iPlayer.Profile?.Info?.Settings;
+            if (settings == null)
+                return true;
+
+            botOwner.GetPlayer.OnIPlayerDeadOrUnspawn += ClearBot;
+
+            if (IsBotExcluded(botOwner)) {
+                ExcludedBots.Add(id);
+                return true;
+            }
+            EnabledBots.Add(id);
             return false;
         }
 
@@ -163,6 +195,16 @@ namespace SAIN
             }
             // Check for player Scavs created by SPT
             return profile.Info.Settings.Role == WildSpawnType.assault && !string.IsNullOrEmpty(profile.Info.MainProfileNickname);
+        }
+
+        /// <summary>
+        /// Is this player a sain bot, and are they also in combat state?
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public static bool IsBotInCombat(IPlayer player)
+        {
+            return SAINBotController.Instance?.BotSpawnController?.GetSAIN(player.ProfileId)?.IsInCombat == true;
         }
 
         public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)

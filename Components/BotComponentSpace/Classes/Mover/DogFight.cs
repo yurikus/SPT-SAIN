@@ -40,6 +40,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
+            if (Player.IsInPronePose)
+            {
+                Bot.Mover.Prone.SetProne(false);
+            }
+
             Bot.Mover.SetTargetMoveSpeed(Bot.Info.FileSettings.Move.STRAFE_SPEED);
 
             if (HasEnemy && stopMoveToShoot(Enemy))

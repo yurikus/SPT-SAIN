@@ -433,7 +433,7 @@ namespace SAIN.Patches.Vision
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(ref Player ____player)
+        public static void PatchPostfix(Player ____player)
         {
             PlayerComponent playerComponent = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(____player?.ProfileId);
             if (playerComponent != null)

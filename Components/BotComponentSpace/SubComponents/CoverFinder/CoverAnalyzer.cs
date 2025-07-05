@@ -423,7 +423,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             point.y += 0.5f;
             target.y += 1.25f;
             Vector3 direction = target - point;
-            bool hitObject = Physics.Raycast(point, direction, out hit, distance, LayerMaskClass.HighPolyWithTerrainMask);
+            bool hitObject = Physics.Raycast(point, direction.normalized, out hit, distance, LayerMaskClass.HighPolyWithTerrainMask);
 
             if (DebugCoverFinder)
             {

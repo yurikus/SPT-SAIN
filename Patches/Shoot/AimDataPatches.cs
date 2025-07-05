@@ -466,29 +466,12 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 newTargetLookDirection.y = 0;
             }
-            __instance._lookDirection = playerComponent.SmoothDampAngleTurn(newTargetLookDirection);
+            playerComponent.SetTargetRotation(newTargetLookDirection);
+            __instance._lookDirection = playerComponent.CurrentControlLookDirection;
             __instance.Speed = float.MaxValue;
             __instance.SetXAngle(float.MaxValue);
             __instance.SetYByDir(__instance._lookDirection);
             return false;
-        }
-    }
-
-    public class SmoothTurnPatch2 : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotSteering), nameof(BotSteering.SetXAngle));
-        }
-
-        [PatchPrefix]
-        public static void Patch(BotSteering __instance)
-        {
-            if (GameWorldComponent.TryGetPlayerComponent(__instance.botOwner_0, out PlayerComponent playerComponent))
-            {
-                __instance._lookDirection = playerComponent.SmoothDampAngleTurn(__instance.LookDirection);
-                __instance.Speed = float.MaxValue;
-            }
         }
     }
 

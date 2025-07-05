@@ -34,41 +34,6 @@ namespace SAIN.Components
 
         public void Update()
         {
-            //ClearPoints();
-            //CreatePoints();
-            //DetectPoints();
-        }
-
-        private void ClearPoints()
-        {
-            var points = LightDetection.LightPoints;
-            if (points.Count > 0)
-            {
-                points.RemoveAll(x => x.ShallExpire);
-            }
-        }
-
-        private void CreatePoints()
-        {
-            if (!PlayerComponent.IsAI &&
-                _nextPointCreateTime < Time.time &&
-                ActiveModes.Count > 0)
-            {
-                _nextPointCreateTime = Time.time + 0.15f;
-                bool onlyLaser = !WhiteLight && !IRLight && (Laser || IRLaser);
-                LightDetection.CreateDetectionPoints(WhiteLight || Laser, onlyLaser);
-                //Logger.LogDebug("Creating flashlight points");
-            }
-        }
-
-        private void DetectPoints()
-        {
-            if (PlayerComponent.IsAI &&
-                _nextPointCheckTime < Time.time)
-            {
-                _nextPointCheckTime = Time.time + 0.05f;
-                LightDetection.DetectAndInvestigateFlashlight();
-            }
         }
 
         public void CheckDevice()
@@ -170,17 +135,10 @@ namespace SAIN.Components
             }
         }
 
-        private float _nextPointCheckTime;
-        private float _nextPointCreateTime;
         static bool _debugMode => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash;
 
         public List<DeviceMode> ActiveModes => activeModes;
 
-        static FlashLightClass()
-        {
-            _tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
-        }
-
-        private static readonly FieldInfo _tacticalModesField;
+        private static readonly FieldInfo _tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
     }
 }

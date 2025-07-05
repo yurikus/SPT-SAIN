@@ -2,14 +2,19 @@
 using EFT.Game.Spawning;
 using EFT.InventoryLogic;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
+using SAIN.Components.RotationController;
 using SAIN.Helpers;
 using SAIN.SAINComponent;
+using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.Types.Jobs;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Experimental.AI;
 
 namespace SAIN.Components
 {
@@ -142,57 +147,126 @@ namespace SAIN.Components
         public SpawnPointMarker[] SpawnPointMarkers { get; private set; }
         public JobManager JobManager { get; private set; }
 
-        public void Update()
+        public static float WorldTickDeltaTime { get; private set; }
+        public void WorldTickLoop(float deltaTime, GameWorld gameWorld)
         {
-            ExtractFinder.ManualUpdate();
-            Doors.Update();
-            Location.Update();
-            findSpawnPointMarkers();
-            TickPlayerComponents();
+            WorldTickDeltaTime = deltaTime;
+            ManualUpdate();
+            SAINBotController.ManualUpdate();
         }
+
+        protected void ManualUpdate()
+        {
+            if (_activated)
+            {
+                ExtractFinder.ManualUpdate();
+                Doors.Update();
+                Location.Update();
+                findSpawnPointMarkers();
+                HashSet<PlayerComponent> players = PlayerTracker?.AlivePlayerArray;
+                if (players != null && players.Count > 0)
+                {
+                    TickPlayerComponents(players, Time.time);
+                    TickSoundCaches(players, Time.time);
+                }
+            }
+        }
+
+        private IEnumerator CalcPathsJobs()
+        {
+            while (true)
+            {
+                _enemies.Clear();
+                HashSet<BotComponent> bots = SAINBotController?.BotSpawnController?.SAINBots;
+                if (bots != null && bots.Count > 0)
+                {
+                    foreach (BotComponent bot in bots)
+                    {
+                        if (bot != null)
+                        {
+                            foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
+                            {
+                                if (enemy != null)
+                                {
+                                    _enemies.Add(enemy);
+                                }
+                            }
+                        }
+                    }
+                }
+                int count = _enemies.Count;
+                if (count > 0)
+                {
+                    NavJob = new NavMeshPathQuerryJob(_enemies, _dataList);
+                    NavJobHandle = NavJob.Schedule(count, 2, new JobHandle());
+                    yield return null;
+                    while (!NavJobHandle.IsCompleted)
+                    {
+                        Logger.LogDebug("NavJobHandle not complete");
+                        yield return null;
+                    }
+                    NavJobHandle.Complete();
+                    foreach (var data in NavJob.Output)
+                    {
+                        PathQueryStatus Status = data.EndFindPath(out int pathLength);
+                        Logger.LogDebug($"{Status} :: {pathLength}");
+                        NativeArray<PolygonId> polygonPath = new(pathLength, Allocator.Temp);
+                        data.GetPathResult(new NativeSlice<PolygonId>(polygonPath));
+                        // Convert polygons to waypoints (midpoint of portal between polys)
+                        for (int i = 0; i < pathLength - 1; i++)
+                        {
+                            if (data.GetPortalPoints(polygonPath[i], polygonPath[i + 1], out Vector3 left, out Vector3 right))
+                            {
+                                Vector3 center = (left + right) * 0.5f;
+                                DebugGizmos.Line(left, right, Color.cyan, 5f, true, 0.25f);
+                                DebugGizmos.Line(center, center + Vector3.up, Color.red, 5f, true, 0.25f);
+                                Logger.LogDebug("Portal center at: " + center);
+                            }
+                        }
+                        polygonPath.Dispose();
+                        data.Dispose();
+                    }
+                    NavJob.Dispose();
+                }
+                yield return null;
+            }
+        }
+
+        private List<Enemy> _enemies = [];
+        private List<NavMeshQueryDataEnemy> _dataList = [];
+        private NavMeshPathQuerryJob NavJob;
+        private JobHandle NavJobHandle;
 
         private const float _Sounds_PlayerCache_Interval = 1f / 30f;
         private const float _Sounds_BotCache_Interval = 1f / 15f;
 
-        private void TickPlayerComponents()
+        protected void TickPlayerComponents(HashSet<PlayerComponent> PlayerComponents, float CurrentTime)
         {
-            UnityEngine.Profiling.Profiler.BeginSample("SAIN: TickPlayerComponents");
-
-            HashSet<PlayerComponent> PlayerComponents = PlayerTracker?.AlivePlayerArray;
-            if (PlayerComponents == null || PlayerComponents.Count == 0)
-                return;
-
-            float CurrentTime = Time.time;
-            bool TickPlayerSoundCache = CurrentTime >= _Sounds_PlayerCache_Time;
-            if (TickPlayerSoundCache)
-            {
-                _Sounds_PlayerCache_Time = CurrentTime + _Sounds_PlayerCache_Interval;
-            }
-            bool TickBotSoundCache = CurrentTime >= _Sounds_BotCache_Time;
-            if (TickBotSoundCache)
-            {
-                _Sounds_BotCache_Time = CurrentTime + _Sounds_BotCache_Interval;
-            }
-
-            UnityEngine.Profiling.Profiler.BeginSample("SAIN: Update Player Components");
-
             foreach (PlayerComponent Player in PlayerComponents)
             {
-                if (Player != null)
+                Player?.ManualUpdate();
+            }
+        }
+
+        protected void TickSoundCaches(HashSet<PlayerComponent> PlayerComponents, float CurrentTime)
+        {
+            if (_Sounds_PlayerCache_Time < CurrentTime)
+            {
+                _Sounds_PlayerCache_Time = CurrentTime + _Sounds_PlayerCache_Interval;
+
+                foreach (PlayerComponent Player in PlayerComponents)
                 {
-                    Player.ManualUpdate();
-                    if (TickPlayerSoundCache)
+                    if (Player != null)
                     {
                         UpdatePlayerSoundCache(Player);
                     }
                 }
             }
 
-            UnityEngine.Profiling.Profiler.EndSample();
-            UnityEngine.Profiling.Profiler.BeginSample("SAIN: Update SAIN Bots");
-
-            if (TickBotSoundCache)
+            if (_Sounds_BotCache_Time < CurrentTime)
             {
+                _Sounds_BotCache_Time = CurrentTime + _Sounds_BotCache_Interval;
+
                 foreach (var playerComponent in PlayerComponents)
                 {
                     BotComponent Bot = playerComponent?.BotComponent;
@@ -202,12 +276,9 @@ namespace SAIN.Components
                     }
                 }
             }
-
-            UnityEngine.Profiling.Profiler.EndSample();
-            UnityEngine.Profiling.Profiler.EndSample();
         }
 
-        private static void UpdatePlayerSoundCache(PlayerComponent Player)
+        protected static void UpdatePlayerSoundCache(PlayerComponent Player)
         {
             List<SoundEvent> events = Player.AISoundCachedEvents;
             if (Player.IsActive)
@@ -273,6 +344,19 @@ namespace SAIN.Components
             return spawnPointPositions;
         }
 
+        protected BotRotationManagerComponent BotRotationManager { get; set; }
+
+        public void Activate(BotsController botsController)
+        {
+            SAINBotController.DefaultController = botsController;
+            SAINBotController.BotSpawner = botsController.BotSpawner;
+            BotRotationManager = BotRotationManagerComponent.Create(gameObject, botsController.BotSpawner, PlayerTracker);
+            _activated = true;
+           // StartCoroutine(CalcPathsJobs());
+        }
+
+        private bool _activated = false;
+
         public void Init(GameWorld gameWorld, SAINBotController sainBotController)
         {
             Instance = this;
@@ -330,6 +414,7 @@ namespace SAIN.Components
                 Logger.LogError($"Dispose GameWorld SubComponent Error: {e}");
             }
 
+            StopAllCoroutines();
             Instance = null;
             GameWorld.OnDispose -= DestroyComponent;
             Destroy(this);

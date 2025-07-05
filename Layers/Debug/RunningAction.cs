@@ -27,9 +27,9 @@ namespace SAIN.Layers.Combat.Run
                 nextRandomRunTime = 0f;
             }
 
-            if (!Bot.Mover.SprintController.Running
+            if (!Bot.Mover.PathWalker.Running
                 && findRandomPlace(out var path)
-                && Bot.Mover.SprintController.RunToPoint(_runDestination, SAINComponent.Classes.Mover.ESprintUrgency.High, false))
+                && Bot.Mover.RunToPoint(_runDestination, SAINComponent.Classes.Mover.ESprintUrgency.High, false))
             {
                 nextRandomRunTime = Time.time + 20f;
             }
@@ -65,14 +65,14 @@ namespace SAIN.Layers.Combat.Run
         public override void Stop()
         {
             Toggle(false);
-            Bot.Mover.SprintController.CancelRun();
+            Bot.Mover.PathWalker.Cancel();
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {
             stringBuilder.AppendLine("Run Info");
             var cover = Bot.Cover;
-            stringBuilder.AppendLabeledValue("Run State", $"{Bot.Mover.SprintController.CurrentRunStatus}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("Run State", $"{Bot.Mover.PathWalker.CurrentMoveStatus}", Color.white, Color.yellow, true);
         }
     }
 }

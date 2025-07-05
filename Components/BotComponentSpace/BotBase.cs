@@ -26,15 +26,25 @@ namespace SAIN.SAINComponent
         {
             PresetHandler.OnPresetUpdated += UpdatePresetSettings;
         }
-
+        
+        /// <summary>
+        /// Check if we should tick this frame, Set Last Tick Time if return true
+        /// </summary>
         public virtual bool ShallTick(float CurrentTime)
         {
-            return CanEverTick && (TickInterval <= 0 || LastTickTime + TickInterval >= CurrentTime);
+            if (CanEverTick && LastTickTime + TickInterval < CurrentTime)
+            {
+                LastTickTime = Time.time;
+                return true;
+            }
+            return false;
         }
 
+        /// <summary>
+        /// Set Last Tick Time
+        /// </summary>
         public virtual void ManualUpdate()
         {
-            LastTickTime = Time.time;
         }
 
         protected virtual void UpdatePresetSettings(SAINPresetClass preset)
@@ -74,8 +84,7 @@ namespace SAIN.SAINComponent
         {
             float time = Time.time;
             foreach (IBotClass Class in SubClasses)
-                if (Class?.CanEverTick == true && Class.ShallTick(time))
-                    Class.ManualUpdate();
+                Class.ManualUpdate();
             base.ManualUpdate();
         }
 

@@ -11,9 +11,90 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.BotController;
 using EFT;
 using Comfort.Common;
+using UnityEngine.Experimental.AI;
 
 namespace SAIN.Types.Jobs
 {
+    public struct NavMeshPathQuerryJob : IJobParallelFor
+    {
+        [ReadOnly] public NativeArray<NavMeshQueryDataEnemy> Input;
+        [WriteOnly] public NativeArray<NavMeshQuery> Output;
+
+        public NavMeshPathQuerryJob(List<Enemy> enemies, List<NavMeshQueryDataEnemy> preAllocatedList)
+        {
+            preAllocatedList.Clear();
+            foreach (Enemy enemy in enemies)
+            {
+                if (enemy != null)
+                {
+                    preAllocatedList.Add(new(enemy));
+                }
+            }
+            int count = preAllocatedList.Count;
+            Input = new NativeArray<NavMeshQueryDataEnemy>(count, Allocator.TempJob);
+            Output = new NativeArray<NavMeshQuery>(count, Allocator.TempJob);
+
+            for (int i = 0; i < count; i++)
+            {
+                Input[i] = preAllocatedList[i];
+            }
+            preAllocatedList.Clear();
+        }
+
+        public void Execute(int index)
+        {
+            NavMeshQueryDataEnemy Data = Input[index];
+            Data.Execute(1024);
+            Output[index] = Data.Query;
+        }
+
+        public void Dispose()
+        {
+            Input.Dispose();
+            Output.Dispose();
+        }
+    }
+
+    public struct NavMeshQueryData(NavMeshLocation Start, NavMeshLocation End)
+    {
+        public NavMeshQuery Query = new(NavMeshWorld.GetDefaultWorld(), Allocator.TempJob, 60000);
+        public NavMeshLocation StartPosition = Start;
+        public NavMeshLocation EndPosition = End;
+        public void Execute(int iterations)
+        {
+            Query.BeginFindPath(StartPosition, EndPosition);
+            Query.UpdateFindPath(iterations, out _);
+            Query.UpdateFindPath(iterations, out _);
+            Query.UpdateFindPath(iterations, out _);
+            //Query.EndFindPath(out int pathSize);
+            //PathSize = pathSize;
+        }
+        //public int PathSize;
+    }
+
+    public struct NavMeshQueryDataEnemy
+    {
+        public NavMeshQuery Query = new(NavMeshWorld.GetDefaultWorld(), Allocator.TempJob, 60000);
+        public NavMeshLocation StartPosition;
+        public NavMeshLocation EndPosition;
+        public Enemy Enemy;
+
+        public NavMeshQueryDataEnemy(Enemy enemy)
+        {
+            StartPosition = Query.MapLocation(enemy.Bot.Position, new Vector3(1, 2, 1), 0);
+            EndPosition = Query.MapLocation(enemy.EnemyPosition, new Vector3(1, 2, 1), 0);
+            Enemy = enemy;
+        }
+        public void Execute(int iterations)
+        {
+            Query.BeginFindPath(StartPosition, EndPosition);
+            Query.UpdateFindPath(iterations, out _);
+            Query.EndFindPath(out int pathSize);
+            PathSize = pathSize;
+        }
+        public int PathSize;
+    }
+
     public interface ISainJob
     {
         public void Start();

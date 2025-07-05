@@ -98,7 +98,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private ESteerPriority strickChecks(bool ignoreRunningPath)
         {
-            if (!ignoreRunningPath && Bot.Mover.SprintController.Running)
+            if (!ignoreRunningPath && Bot.Mover.PathWalker.Running)
                 return ESteerPriority.RunningPath;
 
             if (Player.IsSprintEnabled)

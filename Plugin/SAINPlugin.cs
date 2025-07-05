@@ -72,7 +72,10 @@ namespace SAIN
         public static ConfigEntry<KeyboardShortcut> OpenEditorConfigEntry { get; private set; }
 
         private List<ModulePatch> SainPatches => [
-            new Patches.Components.BotUpdateByUnityPatch(),
+
+            new Patches.Components.WorldTickPatch(),
+            new Patches.Components.PlayerLateUpdatePatch(),
+            //new Patches.Components.DisableBotUpdateByUnityPatch(),
             new Patches.Components.AddBotComponentPatch(),
             new Patches.Components.ActivateBotComponentPatch(),
             new Patches.Components.AddGameWorldPatch(),
@@ -116,13 +119,13 @@ namespace SAIN
             new Patches.Movement.DoorOpenerPatch(),
             new Patches.Movement.DoorDisabledPatch(),
             new Patches.Movement.CrawlPatch(),
-            new Patches.Movement.CrawlPatch2(),
             new Patches.Movement.PoseStaminaPatch(),
             new Patches.Movement.AimStaminaPatch(),
             new Patches.Movement.GlobalShootSettingsPatch(),
             //new Patches.Movement.StopShootCauseAnimatorPatch(),
             new Patches.Movement.GlobalLookPatch(),
-            new Patches.Movement.DisableLocalAvoidancePatch(),
+            new Patches.Movement.BotMoverManualUpdatePatch(),
+            new Patches.Movement.BotMoverManualFixedUpdatePatch(),
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
             new Patches.Hearing.OnMakingShotPatch(),

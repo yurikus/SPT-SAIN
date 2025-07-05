@@ -43,7 +43,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             else
             {
                 adjustMyPosition();
-                Bot.Cover.DuckInCover();
+                Bot.Cover.DuckInCover(Bot.Enemy);
                 checkSetProne();
                 checkSetLean();
             }
@@ -94,14 +94,14 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 || Bot.Suppression.IsSuppressed
                 || Bot.Decision.CurrentSelfDecision != ESelfDecision.None)
             {
-                Bot.Mover.FastLean(LeanSetting.None);
+                Bot.Mover.Lean.FastLean(LeanSetting.None);
                 CurrentLean = LeanSetting.None;
                 return;
             }
 
             if (CurrentLean != LeanSetting.None && ShallHoldLean())
             {
-                Bot.Mover.FastLean(CurrentLean);
+                Bot.Mover.Lean.FastLean(CurrentLean);
                 ChangeLeanTimer = Time.time + 0.66f;
                 return;
             }
@@ -138,7 +138,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 return;
             }
             CurrentLean = newLean;
-            Bot.Mover.FastLean(newLean);
+            Bot.Mover.Lean.FastLean(newLean);
         }
 
         private const float RAYCAST_LEAN_HITOBJECT_DIST = 0.5f;
@@ -178,16 +178,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 return true;
             }
             return false;
-        }
-
-        private void Lean(LeanSetting setting, bool holdLean)
-        {
-            if (holdLean)
-            {
-                return;
-            }
-            CurrentLean = setting;
-            Bot.Mover.FastLean(setting);
         }
 
         private LeanSetting CurrentLean;

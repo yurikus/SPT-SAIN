@@ -48,41 +48,12 @@ namespace SAIN.Layers.Combat.Solo
 
         private bool checkHasEnemy()
         {
-            Enemy botEnemy = Bot.Enemy;
-            if (_enemy != null)
-            {
-                if (_enemy == botEnemy)
-                {
-                    return true;
-                }
-                _enemy.Events.OnPathUpdated -= onPathUpdated;
-                _enemy.OnEnemyDisposed -= clearEnemy;
-                _enemy = null;
-            }
-            _enemy = botEnemy;
-            if (_enemy != null)
-            {
-                _enemy.Events.OnPathUpdated += onPathUpdated;
-                _enemy.OnEnemyDisposed += clearEnemy;
-                _pathUpdated = true;
-                return true;
-            }
-            return false;
-        }
-
-        private void clearEnemy()
-        {
-            if (_enemy != null)
-            {
-                _enemy.Events.OnPathUpdated -= onPathUpdated;
-                _enemy.OnEnemyDisposed -= clearEnemy;
-                _enemy = null;
-            }
+            _enemy = Bot.Enemy;
+            return _enemy != null;
         }
 
         private void enemyInSight()
         {
-            _pathUpdated = true;
             checkJumpEnemyInSight();
 
             Shoot.CheckAimAndFire(_enemy);
@@ -144,17 +115,18 @@ namespace SAIN.Layers.Combat.Solo
 
         private void checkUpdateMove()
         {
-            if (_pathUpdated && _updateMoveTime < Time.time)
+            if (_updateMoveTime < Time.time)
             {
-                if (Bot.Mover.SprintController.Running && Bot.Mover.SprintController.Canceling)
+                if (Bot.Mover.PathWalker.Running && Bot.Mover.PathWalker.Canceling)
                 {
+                     _updateMoveTime = Time.time + 0.1f;
                     return;
                 }
-                _updateMoveTime = Time.time + 0.1f;
                 if (updateMove(_enemy))
                 {
-                    _pathUpdated = false;
+                    _updateMoveTime = Time.time + 2f;
                 }
+                _updateMoveTime = Time.time + 0.1f;
             }
         }
 
@@ -172,7 +144,7 @@ namespace SAIN.Layers.Combat.Solo
                 return false;
             }
 
-            var sprintController = Bot.Mover.SprintController;
+            var sprintController = Bot.Mover.PathWalker;
             float pathDistance = enemy.Path.PathDistance;
             if (pathDistance <= 1f && (sprintController.Running || BotOwner.Mover.IsMoving))
             {
@@ -215,34 +187,13 @@ namespace SAIN.Layers.Combat.Solo
         }
 
         private Enemy _enemy;
-
-        private void onPathUpdated(Enemy enemy, NavMeshPathStatus status)
-        {
-            if (_enemy != enemy)
-            {
-                enemy.Events.OnPathUpdated -= onPathUpdated;
-                return;
-            }
-
-            if (status != NavMeshPathStatus.PathInvalid)
-                _pathUpdated = true;
-        }
-
-        private bool _pathUpdated;
-
         private bool _shallTryJump = false;
 
         public override void Stop()
         {
             Toggle(false);
-            if (_enemy != null)
-            {
-                _enemy.Events.OnPathUpdated -= onPathUpdated;
-                _enemy = null;
-            }
-
             Bot.Mover.DogFight.ResetDogFightStatus();
-            Bot.Mover.SprintController.CancelRun(0.25f);
+            //Bot.Mover.PathWalker.CancelRun(0.25f);
         }
     }
 }

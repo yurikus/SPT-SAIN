@@ -43,7 +43,6 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public HeardSoundSteeringClass(SAINSteeringClass steering) : base(steering)
         {
-            _hearingPath = new NavMeshPath();
         }
 
         public override void Init()
@@ -117,16 +116,14 @@ namespace SAIN.SAINComponent.Classes.Mover
                     BaseClass.LookToPoint(heardSound.Value.Position + BaseClass.WeaponRootOffset);
                     return;
                 }
-                heardSound.Value.Enemy.Path.EnemyCorners.TryGetValue(ECornerType.First, out EnemyCorner corner);
-                if (corner != null)
+                if (heardSound.Value.Enemy.GetVisibilePathPoint(out Vector3 point))
                 {
-                    BaseClass.LookToPoint(corner.EyeLevelCorner(Bot.Transform.WeaponRoot, Bot.Position));
+                    BaseClass.LookToPoint(point);
                     return;
                 }
                 BaseClass.LookToPoint(heardSound.Value.Position + BaseClass.WeaponRootOffset);
                 return;
             }
-
             BaseClass.LookToRandomPosition();
         }
 
@@ -174,58 +171,5 @@ namespace SAIN.SAINComponent.Classes.Mover
                 LastHeardDanger = new SoundStruct(enemy, place);
             }
         }
-
-        public void LookToHeardPosition(Vector3 soundPos, bool visionCheck = false)
-        {
-            if ((soundPos - Bot.Position).sqrMagnitude > 125f.Sqr())
-            {
-                BaseClass.LookToPoint(soundPos);
-                return;
-            }
-
-            findCorner(soundPos);
-
-            if (_lastHeardSoundCorner != null)
-            {
-                BaseClass.LookToPoint(_lastHeardSoundCorner.Value);
-            }
-            else
-            {
-                BaseClass.LookToPoint(soundPos);
-            }
-        }
-
-        private void findCorner(Vector3 soundPos)
-        {
-            if (_lastHeardSoundTimer < Time.time || (_lastHeardSoundCheckedPos - soundPos).magnitude > 1f)
-            {
-                _lastHeardSoundTimer = Time.time + 1f;
-                _lastHeardSoundCheckedPos = soundPos;
-                _hearingPath.ClearCorners();
-                if (NavMesh.CalculatePath(Bot.Position, soundPos, -1, _hearingPath))
-                {
-                    if (_hearingPath.corners.Length > 2)
-                    {
-                        Vector3 headPos = BotOwner.LookSensor._headPoint;
-                        for (int i = _hearingPath.corners.Length - 1; i >= 0; i--)
-                        {
-                            Vector3 corner = _hearingPath.corners[i] + Vector3.up;
-                            Vector3 cornerDir = corner - headPos;
-                            if (!Physics.Raycast(headPos, cornerDir.normalized, cornerDir.magnitude, LayerMaskClass.HighPolyWithTerrainMask))
-                            {
-                                _lastHeardSoundCorner = corner;
-                                return;
-                            }
-                        }
-                    }
-                }
-                _lastHeardSoundCorner = null;
-            }
-        }
-
-        private float _lastHeardSoundTimer;
-        private Vector3 _lastHeardSoundCheckedPos;
-        private Vector3? _lastHeardSoundCorner;
-        private NavMeshPath _hearingPath;
     }
 }
