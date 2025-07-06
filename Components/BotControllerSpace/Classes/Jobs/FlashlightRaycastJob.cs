@@ -174,12 +174,8 @@ namespace SAIN.Components
                 RaycastJobs[i].Schedule();
         }
 
-        private static void CreateRandomRotations(List<Quaternion> rotationsList, int count, float coneAngle = 10.0f)
-        {
-        }
-
         /// <summary>
-        /// Generates a list of random rotations with given yaw and pitch ranges.
+        /// Generates a list of random rotations with given angle.
         /// </summary>
         /// <param name="count">Number of quaternions to generate.</param>
         /// <param name="maxYaw">Max yaw in degrees (horizontal rotation around Y).</param>

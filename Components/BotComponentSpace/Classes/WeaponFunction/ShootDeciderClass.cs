@@ -18,43 +18,65 @@ namespace SAIN.SAINComponent.Classes
 
         public ShootDeciderClass(BotComponent bot) : base(bot)
         {
-            TickRequirement = ESAINTickState.OnlyNoSleep;
+            TickRequirement = ESAINTickState.OnlyBotInCombat;
         }
 
         public override void Init()
         {
-            Bot.EnemyController.Events.OnEnemyRemoved += checkClearEnemy;
+            Bot.EnemyController.Events.OnEnemyRemoved += CheckClearEnemy;
             base.Init();
         }
 
         public override void ManualUpdate()
         {
-            checkEndShoot();
+            CheckEndShoot();
             base.ManualUpdate();
         }
 
         public override void Dispose()
         {
-            Bot.EnemyController.Events.OnEnemyRemoved -= checkClearEnemy;
+            Bot.EnemyController.Events.OnEnemyRemoved -= CheckClearEnemy;
             base.Dispose();
         }
 
-        private void checkEndShoot()
+        private void CheckEndShoot()
         {
-            if (_shooting &&
-                !BotOwner.ShootData.Shooting)
+            if (!_shooting) return;
+            BotWeaponManager weaponManager = BotOwner.WeaponManager;
+            if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
             {
-                _shooting = false;
-                OnEndShoot?.Invoke();
+                EndShoot();
+                return;
+            }
+            if (LastShotEnemy?.EnemyPlayer?.HealthController?.IsAlive != true)
+            {
+                EndShoot();
+                LastShotEnemy = null;
+                return;
+            }
+            if (!BotOwner.ShootData.Shooting)
+            {
+                EndShoot();
             }
         }
 
-        private void checkClearEnemy(string profileId, Enemy enemy)
+        private void CheckClearEnemy(string profileId, Enemy enemy)
         {
             if (LastShotEnemy != null && LastShotEnemy.EnemyProfileId == profileId)
             {
                 LastShotEnemy = null;
+                if (_shooting)
+                {
+                    EndShoot();
+                }
             }
+        }
+
+        public void EndShoot()
+        {
+            _shooting = false;
+            BotOwner.ShootData?.EndShoot();
+            OnEndShoot?.Invoke();
         }
 
         public bool CheckAimAndFire(Enemy Enemy)
@@ -64,13 +86,13 @@ namespace SAIN.SAINComponent.Classes
                 _changeAimTimer = Time.time + 0.25f;
                 Bot.AimDownSightsController.UpdateADSstatus(Enemy);
             }
-            if (TryShoot(Enemy))
+            if (AimAndShootAtEnemy(Enemy, Bot))
                 return true;
             Bot.Aim.LoseAimTarget();
             return false;
         }
 
-        private bool TryShoot(Enemy Enemy)
+        private bool AimAndShootAtEnemy(Enemy Enemy, BotComponent bot)
         {
             if (Enemy == null)
                 return false;
@@ -78,52 +100,60 @@ namespace SAIN.SAINComponent.Classes
             if (Enemy.Player?.HealthController?.IsAlive == false)
                 return false;
 
-            var weaponManager = BotOwner.WeaponManager;
+            var weaponManager = bot.BotOwner.WeaponManager;
             if (weaponManager == null)
                 return false;
 
-            if (!weaponManager.HaveBullets)
+            bool reloading = weaponManager.Reload.Reloading;
+            if (reloading || !weaponManager.HaveBullets)
             {
-                if (weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster && !weaponManager.Selector.TryChangeToMain())
-                    selectWeapon(Enemy);
+                if (!reloading && weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster && !weaponManager.Selector.TryChangeToMain())
+                    SelectWeapon(Enemy);
 
                 return false;
             }
 
-            if (!Bot.Aim.CanAim)
+            if (!bot.Aim.CanAim)
                 return false;
 
-            Vector3? target = GetShootTargetPosition(Enemy);
-            //Bot.BotLight.HandleLightForEnemy(enemy);
+            Vector3? target = GetShootTargetPosition(Enemy, bot);
             if (target != null &&
                 Enemy != null)
             {
-                Bot.BotLight.HandleLightForEnemy(Enemy);
+                bot.BotLight.HandleLightForEnemy(Enemy);
 
-                if (aimAtTarget(target.Value, out bool AimComplete))
+                if (bot.Aim.AimAtTarget(target.Value, Enemy, out bool AimComplete, bot.BotOwner.AimingManager.CurrentAiming, bot))
                 {
-                    if (weaponManager.HaveBullets && AimComplete)
-                    {
-                        tryShoot(Enemy);
-                    }
+                    ShootWhenAimComplete(Enemy, bot, AimComplete);
                     return true;
                 }
             }
             return false;
         }
 
-        private void selectWeapon(Enemy Enemy)
+        private void ShootWhenAimComplete(Enemy Enemy, BotComponent bot, bool AimComplete)
         {
-            EquipmentSlot optimalSlot = findOptimalWeaponForDistance(Enemy.RealDistance);
-            if (currentSlot != optimalSlot)
+            if (AimComplete && bot.BotOwner.ShootData.Shoot())
             {
-                tryChangeWeapon(optimalSlot);
+                OnShootEnemy?.Invoke(Enemy);
+                LastShotEnemy = Enemy;
+                Enemy.EnemyInfo?.SetLastShootTime();
+                _shooting = true;
             }
         }
 
-        private EquipmentSlot currentSlot => BotOwner.WeaponManager.Selector.EquipmentSlot;
+        private void SelectWeapon(Enemy Enemy)
+        {
+            FindOptimalWeaponForDistance(Enemy.RealDistance);
+            if (CurrentSlot != optimalSlot)
+            {
+                TryChangeWeapon(optimalSlot);
+            }
+        }
 
-        private void tryChangeWeapon(EquipmentSlot slot)
+        private EquipmentSlot CurrentSlot => BotOwner.WeaponManager.Selector.EquipmentSlot;
+
+        private void TryChangeWeapon(EquipmentSlot slot)
         {
             if (_nextChangeWeaponTime < Time.time)
             {
@@ -152,21 +182,7 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        private float getDistance()
-        {
-            if (_nextGetDistTime < Time.time)
-            {
-                _nextGetDistTime = Time.time + 0.5f;
-                Vector3? target = Bot.CurrentTargetPosition;
-                if (target != null)
-                {
-                    _lastDistance = Bot.CurrentTargetDistance;
-                }
-            }
-            return _lastDistance;
-        }
-
-        private EquipmentSlot findOptimalWeaponForDistance(float distance)
+        private void FindOptimalWeaponForDistance(float distance)
         {
             if (_nextCheckOptimalTime < Time.time)
             {
@@ -176,21 +192,21 @@ namespace SAIN.SAINComponent.Classes
 
                 float? primaryEngageDist = null;
                 var primary = equipment.PrimaryWeapon;
-                if (isWeaponDurableEnough(primary))
+                if (IsWeaponDurableEnough(primary))
                 {
                     primaryEngageDist = primary.EngagementDistance;
                 }
 
                 float? secondaryEngageDist = null;
                 var secondary = equipment.SecondaryWeapon;
-                if (isWeaponDurableEnough(secondary))
+                if (IsWeaponDurableEnough(secondary))
                 {
                     secondaryEngageDist = secondary.EngagementDistance;
                 }
 
                 float? holsterEngageDist = null;
                 var holster = equipment.HolsterWeapon;
-                if (isWeaponDurableEnough(holster))
+                if (IsWeaponDurableEnough(holster))
                 {
                     holsterEngageDist = holster.EngagementDistance;
                 }
@@ -214,57 +230,17 @@ namespace SAIN.SAINComponent.Classes
                         optimalSlot = EquipmentSlot.Holster;
                     }
                 }
-            }
-            return optimalSlot;
+            } 
         }
 
-        private bool isWeaponDurableEnough(WeaponInfo info, float min = 0.5f)
+        private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f) => info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;
+
+        private static Vector3? GetShootTargetPosition(Enemy enemy, BotComponent bot)
         {
-            return info != null &&
-                info.Durability > min &&
-                info.Weapon.ChamberAmmoCount > 0;
+            return GetAimTarget(enemy, bot) ?? GetAimTarget(bot.LastEnemy, bot);
         }
 
-        private bool aimAtTarget(Vector3 target, out bool AimComplete)
-        {
-            var aimData = BotOwner.AimingManager.CurrentAiming;
-            aimData.SetTarget(target);
-            aimData.NodeUpdate();
-            if (!Bot.FriendlyFire.CheckFriendlyFire(aimData.EndTargetPoint))
-            {
-                BotOwner.ShootData.EndShoot();
-                AimComplete = false;
-                return false;
-            }
-            if (Bot.NoBushESP.NoBushESPActive)
-            {
-                AimComplete = false;
-                return false;
-            }
-            AimComplete = aimData.IsReady;
-            return true;
-        }
-
-        private Vector3? GetShootTargetPosition(Enemy enemy)
-        {
-            Vector3? target = getAimTarget(enemy);
-            if (target != null)
-            {
-                return target;
-            }
-
-            enemy = Bot.LastEnemy;
-            target = getAimTarget(enemy);
-            if (target != null)
-            {
-                return target;
-            }
-
-            enemy = null;
-            return null;
-        }
-
-        private Vector3? getAimTarget(Enemy enemy)
+        private static Vector3? GetAimTarget(Enemy enemy, BotComponent bot)
         {
             if (enemy != null &&
                 enemy.IsVisible &&
@@ -275,9 +251,9 @@ namespace SAIN.SAINComponent.Classes
                 //    Logger.LogWarning($"cant get point to shoot with new system! oh no!");
                 //}
 
-                Vector3? centerMass = findCenterMassPoint(enemy);
-                Vector3? partToShoot = getEnemyPartToShoot(enemy.EnemyInfo);
-                Vector3? modifiedTarget = checkYValue(centerMass, partToShoot);
+                Vector3? centerMass = FindCenterMassPoint(enemy, bot);
+                Vector3? partToShoot = GetEnemyPartToShoot(enemy.EnemyInfo);
+                Vector3? modifiedTarget = CheckYValue(centerMass, partToShoot);
                 Vector3? finalTarget = modifiedTarget ?? partToShoot ?? centerMass;
 
                 return finalTarget;
@@ -285,7 +261,7 @@ namespace SAIN.SAINComponent.Classes
             return null;
         }
 
-        private Vector3? checkYValue(Vector3? centerMass, Vector3? partTarget)
+        private static Vector3? CheckYValue(Vector3? centerMass, Vector3? partTarget)
         {
             if (centerMass != null &&
                 partTarget != null &&
@@ -298,7 +274,7 @@ namespace SAIN.SAINComponent.Classes
             return null;
         }
 
-        private Vector3? findCenterMassPoint(Enemy enemy)
+        private static Vector3? FindCenterMassPoint(Enemy enemy, BotComponent bot)
         {
             if (enemy.IsAI)
             {
@@ -308,18 +284,18 @@ namespace SAIN.SAINComponent.Classes
             {
                 return null;
             }
-            if (!Bot.Info.FileSettings.Aiming.AimCenterMass)
+            if (!bot.Info.FileSettings.Aiming.AimCenterMass)
             {
                 return null;
             }
-            if (Bot.Info.Profile.IsPMC && GlobalSettingsClass.Instance.Aiming.PMCSAimForHead)
+            if (bot.Info.Profile.IsPMC && GlobalSettingsClass.Instance.Aiming.PMCSAimForHead)
             {
                 return null;
             }
             return enemy.CenterMass;
         }
 
-        private Vector3? getEnemyPartToShoot(EnemyInfo enemy)
+        private static Vector3? GetEnemyPartToShoot(EnemyInfo enemy)
         {
             if (enemy != null)
             {
@@ -337,22 +313,9 @@ namespace SAIN.SAINComponent.Classes
             return null;
         }
 
-        private void tryShoot(Enemy enemy)
-        {
-            if (BotOwner.ShootData.Shoot())
-            {
-                OnShootEnemy?.Invoke(enemy);
-                LastShotEnemy = enemy;
-                enemy.EnemyInfo?.SetLastShootTime();
-                _shooting = true;
-            }
-        }
-
         private bool _shooting;
         private EquipmentSlot optimalSlot;
         private float _nextCheckOptimalTime;
-        private float _lastDistance;
-        private float _nextGetDistTime;
         private float _nextChangeWeaponTime;
         private float _changeAimTimer;
     }

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using static RootMotion.FinalIK.FBIKChain;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
@@ -28,24 +27,33 @@ namespace SAIN.Components.PlayerComponentSpace
 
     public class SmoothDampVectorDirectionNormal
     {
-        public void Calculate(float deltaTime, float smoothing, float maxSpeed)
+        public void Calculate(float deltaTime, float smoothing, float maxSpeed, float pitchClamp)
         {
-            Vector3 targetDir = Target.normalized;
+            Vector3 dir = Target.normalized;
 
-            // Convert target direction to angle
-            float targetAngle = Mathf.Atan2(targetDir.z, targetDir.x) * Mathf.Rad2Deg;
+            float targetYaw = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
+            float targetPitch = Mathf.Clamp(Mathf.Asin(dir.y) * Mathf.Rad2Deg, -pitchClamp, pitchClamp);
 
-            // Smooth damp the angle
-            currentAngle = Mathf.SmoothDampAngle(currentAngle, targetAngle, ref angleVelocity, smoothing, maxSpeed, deltaTime);
+            currentYaw = Mathf.SmoothDampAngle(currentYaw, targetYaw, ref yawVelocity, smoothing, maxSpeed, deltaTime);
+            currentPitch = Mathf.SmoothDampAngle(currentPitch, targetPitch, ref pitchVelocity, smoothing, maxSpeed, deltaTime);
 
-            // Convert angle back to direction
-            float rad = currentAngle * Mathf.Deg2Rad;
-            Current = new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)).normalized;
+            float yawRad = currentYaw * Mathf.Deg2Rad;
+            float pitchRad = currentPitch * Mathf.Deg2Rad;
+            float cosPitch = Mathf.Cos(pitchRad);
+
+            Current = new Vector3(
+                Mathf.Cos(yawRad) * cosPitch,
+                Mathf.Sin(pitchRad),
+                Mathf.Sin(yawRad) * cosPitch
+            );
         }
 
         public Vector3 Current = Vector3.forward;
         public Vector3 Target = Vector3.forward;
-        private float currentAngle;
-        private float angleVelocity;
+
+        private float currentYaw;
+        private float currentPitch;
+        private float yawVelocity;
+        private float pitchVelocity;
     }
 }

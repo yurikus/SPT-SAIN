@@ -368,30 +368,6 @@ namespace SAIN.Patches.Shoot.Aim
         }
     }
 
-    public class AimRotateSpeedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotAimingClass), nameof(BotAimingClass.method_11));
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(BotAimingClass __instance, Vector3 dir)
-        {
-            __instance.vector3_2 = dir;
-            __instance.botOwner_0.Steering.LookToDirection(dir);
-            return false;
-            //if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent Bot))
-            //{
-            //    __instance.vector3_2 = dir;
-            //    Bot.Steering.LookToDirection(dir);
-            //    //__instance.botOwner_0.Steering.SetYByDir(__instance.vector3_0);
-            //    return false;
-            //}
-            //return true;
-        }
-    }
-
     public class SmoothTurnPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -464,7 +440,7 @@ namespace SAIN.Patches.Shoot.Aim
 
             if (flatten)
             {
-                newTargetLookDirection.y = 0;
+                //newTargetLookDirection.y = 0;
             }
             playerComponent.SetTargetRotation(newTargetLookDirection);
             __instance._lookDirection = playerComponent.CurrentControlLookDirection;

@@ -38,7 +38,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             switch (_steerPriorityClass.GetCurrentSteerPriority(lookRandom, ignoreRunningPath))
             {
                 case ESteerPriority.RunningPath:
+                    return true;
+
                 case ESteerPriority.Aiming:
+                    LookToPoint(Bot.Aim.EndTargetPoint());
                     return true;
 
                 case ESteerPriority.ManualShooting:

@@ -183,7 +183,6 @@ namespace SAIN
             new Patches.Shoot.Aim.AimOffsetPatch(),
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),
-            new Patches.Shoot.Aim.AimRotateSpeedPatch(),
             new Patches.Shoot.Aim.SmoothTurnPatch(),
 
             new Patches.Shoot.Grenades.ResetGrenadePatch(),

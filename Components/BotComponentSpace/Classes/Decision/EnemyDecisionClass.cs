@@ -44,7 +44,8 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             DecisionReasons.Clear();
 
-            if (BotOwner.WeaponManager?.HaveBullets == false)
+            BotWeaponManager weaponManager = BotOwner.WeaponManager;
+            if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
             {
                 result = ECombatDecision.Retreat;
                 return true;

@@ -13,6 +13,10 @@ namespace SAIN.Preset.GlobalSettings
         [MinMax(0f, 1f, 100f)]
         public float SMOOTHTURN_SMOOTHING = 0.3f;
 
+        [Advanced]
+        [MinMax(0f, 1f, 100f)]
+        public float SMOOTHTURN_SMOOTHING_AIM = 0.1f;
+
         [Name("Last Seen to Last Known Position Distance Threshold")]
         [Description("If the last known position of an enemy (something heard or reported by their squad) is within X distance (meters) to the place they last saw an enemy, focus on the place they were last seen.")]
         [Category("Look Point Decision")]

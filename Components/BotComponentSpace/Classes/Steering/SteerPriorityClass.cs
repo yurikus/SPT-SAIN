@@ -207,10 +207,6 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool lookToAimTarget()
         {
-            if (BotOwner.WeaponManager.Reload?.Reloading == true)
-            {
-                return false;
-            }
             if (Bot.Aim.AimStatus == AimStatus.NoTarget)
             {
                 return false;

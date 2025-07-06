@@ -120,8 +120,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private Vector3? findBackupTarget(Enemy Enemy)
         {
-            if (Enemy != null &&
-                ((Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold) || (!Enemy.Seen && Enemy.LastKnownPosition != null && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold)))
+            if (Enemy != null && (
+                Enemy.Bot.BotOwner.WeaponManager.Reload.Reloading || 
+                !Enemy.Bot.BotOwner.WeaponManager.HaveBullets || 
+                (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold) || 
+                (!Enemy.Seen && Enemy.LastKnownPosition != null && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold)
+                ))
             {
                 return Enemy.VisiblePathPoint ?? Enemy.LastKnownPosition ?? Enemy.EnemyTransform.Position;
             }

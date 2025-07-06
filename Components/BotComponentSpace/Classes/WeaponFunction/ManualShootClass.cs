@@ -61,7 +61,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (Enemy != null &&
                 CanShoot(checkFF) &&
                 Bot.Steering.AngleToPointFromLookDir(targetPos) <= 10 &&
-                Bot.FriendlyFire.CheckFriendlyFire(targetPos))
+                Bot.FriendlyFire.UpdateFriendlyFireStatus(targetPos, Bot.Transform.WeaponFirePort, Bot.Transform.WeaponPointDirection, Bot))
             {
                 ManualShootEnemy = Enemy;
                 ShootPosition = targetPos;

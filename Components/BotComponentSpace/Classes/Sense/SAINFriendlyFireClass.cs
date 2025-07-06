@@ -11,56 +11,53 @@ namespace SAIN.SAINComponent.Classes
 
         public SAINFriendlyFireClass(BotComponent sain) : base(sain)
         {
-            TickRequirement = ESAINTickState.OnlyNoSleep;
+            TickRequirement = ESAINTickState.OnlyBotInCombat;
         }
 
         public override void ManualUpdate()
         {
             if (FriendlyFireStatus == FriendlyFireStatus.FriendlyBlock)
             {
-                StopShooting();
+                BotOwner.ShootData?.EndShoot();
             }
             base.ManualUpdate();
         }
 
-        public bool CheckFriendlyFire(Vector3? target = null)
+        public bool UpdateFriendlyFireStatus(Vector3 target, Vector3 weaponFirePort, Vector3 weaponPointDirection, BotComponent bot)
         {
-            FriendlyFireStatus = CheckFriendlyFireStatus(target);
+            FriendlyFireStatus = CheckFriendlyFireStatus(target, weaponFirePort, weaponPointDirection, bot);
             return FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock;
         }
 
-        private FriendlyFireStatus CheckFriendlyFireStatus(Vector3? target = null)
+        public bool UpdateFriendlyFireStatus(float distance, Vector3 weaponFirePort, Vector3 weaponPointDirection, BotComponent bot)
         {
-            var members = Bot.Squad?.Members;
+            FriendlyFireStatus = CheckFriendlyFireStatus(distance, weaponFirePort, weaponPointDirection, bot);
+            return FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock;
+        }
+
+        public static FriendlyFireStatus CheckFriendlyFireStatus(float distance, Vector3 weaponFirePort, Vector3 weaponPointDirection, BotComponent bot)
+        {
+            var members = bot.Squad?.Members;
             if (members == null || members.Count <= 1)
             {
                 return FriendlyFireStatus.None;
             }
+            return CheckFriendlyFire(weaponFirePort, distance, weaponPointDirection, bot);
+        }
 
-            if (target != null)
-            {
-                return CheckFriendlyFire(target.Value);
-            }
-
-            var aimData = BotOwner.AimingManager.CurrentAiming;
-            if (aimData == null)
+        public static FriendlyFireStatus CheckFriendlyFireStatus(Vector3 target, Vector3 weaponFirePort, Vector3 weaponPointDirection, BotComponent bot)
+        {
+            var members = bot.Squad?.Members;
+            if (members == null || members.Count <= 1)
             {
                 return FriendlyFireStatus.None;
             }
-
-
-            FriendlyFireStatus friendlyFire = CheckFriendlyFire(aimData.RealTargetPoint);
-            if (friendlyFire != FriendlyFireStatus.FriendlyBlock)
-            {
-                friendlyFire = CheckFriendlyFire(aimData.EndTargetPoint);
-            }
-
-            return friendlyFire;
+            return CheckFriendlyFire(weaponFirePort, (weaponFirePort - target).magnitude, weaponPointDirection, bot);
         }
 
-        private FriendlyFireStatus CheckFriendlyFire(Vector3 target)
+        public static FriendlyFireStatus CheckFriendlyFire(Vector3 weaponFirePort, float distance, Vector3 weaponPointDirection, BotComponent bot)
         {
-            var hits = SphereCastAll(target);
+            RaycastHit[] hits = SphereCastAll(weaponFirePort, distance, weaponPointDirection);
             int count = hits.Length;
             if (count == 0)
             {
@@ -76,27 +73,19 @@ namespace SAIN.SAINComponent.Classes
                 Player player = GameWorldComponent.Instance.GameWorld.GetPlayerByCollider(hit.collider);
                 if (player == null)
                     continue;
-                if (player.ProfileId == Bot.ProfileId)
+                if (player.ProfileId == bot.ProfileId)
                     continue;
 
-                if (!Bot.EnemyController.IsPlayerAnEnemy(player.ProfileId))
+                if (!bot.EnemyController.IsPlayerAnEnemy(player.ProfileId))
                     return FriendlyFireStatus.FriendlyBlock;
             }
             return FriendlyFireStatus.Clear;
         }
 
-        private RaycastHit[] SphereCastAll(Vector3 target)
+        private static RaycastHit[] SphereCastAll(Vector3 weaponFirePort, float targetDistance, Vector3 weaponPointDirection)
         {
-            Vector3 firePort = Bot.Transform.WeaponFirePort;
-            float distance = (target - firePort).magnitude + 1;
-            float sphereCastRadius = 0.2f;
-            var hits = Physics.SphereCastAll(firePort, sphereCastRadius, Bot.Transform.WeaponPointDirection, distance, LayerMaskClass.PlayerMask);
-            return hits;
-        }
-
-        public void StopShooting()
-        {
-            BotOwner.ShootData?.EndShoot();
+            const float sphereCastRadius = 0.2f;
+            return Physics.SphereCastAll(weaponFirePort, sphereCastRadius, weaponPointDirection, targetDistance, LayerMaskClass.PlayerMask);
         }
     }
 }

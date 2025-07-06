@@ -36,9 +36,8 @@ namespace SAIN.Components.PlayerComponentSpace
         public void UpdateControlRotation(float deltaTime)
         {
             var settings = GlobalSettingsClass.Instance.Steering;
-            ControlLookDirection.Calculate(deltaTime, settings.SMOOTHTURN_SMOOTHING, settings.SMOOTHTURN_MAXTURNSPEED_DEGREES);
-            //ControlLookDirection.Calculate(deltaTime, settings.SmoothTurn_Smoothing, settings.SmoothTurn_MaxTurnSpeed, settings.SmoothTurn_X_Coef, settings.SmoothTurn_Y_Coef, settings.SmoothTurn_Z_Coef);
-            //ControlSteerDirection.Calculate(deltaTime, 0.01f, float.MaxValue);
+            bool aiming = Person?.AIInfo?.BotOwner?.AimingManager?.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
+            ControlLookDirection.Calculate(deltaTime, aiming ? settings.SMOOTHTURN_SMOOTHING_AIM : settings.SMOOTHTURN_SMOOTHING, settings.SMOOTHTURN_MAXTURNSPEED_DEGREES, 70f);
         }
 
         public PlayerTickData GetPreparedTickData()
@@ -253,6 +252,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
             if (!IsAI || Person.ActivationClass.BotActive)
             {
+                //UpdateControlRotation(deltaTime);
                 CheckMovePlayerCharacter(deltaTime);
                 drawTransformGizmos();
                 Flashlight.Update();

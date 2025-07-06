@@ -179,13 +179,11 @@ namespace SAIN.SAINComponent
                         handleDumbShit();
                     }
 
-                    bool hasEnemy = active && !inStandBy && (SAINLayersActive || HasEnemy || CurrentTarget.CurrentTargetEnemy != null);
-                    if (hasEnemy)
+                    _isBotInCombat = active && !inStandBy && SAINLayersActive && (HasEnemy || CurrentTarget.CurrentTargetEnemy != null);
+                    if (_isBotInCombat)
                     {
                         TickClassGroup(TickWhenCombatClasses, CurrentTime);
                     }
-
-                    _isBotInCombat = hasEnemy && SAINLayersActive;
                     return;
                 }
             }
