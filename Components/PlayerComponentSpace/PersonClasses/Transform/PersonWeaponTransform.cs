@@ -27,7 +27,7 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
                     Vector3 pointDir = currentFirePort.Original.TransformDirection(Player.LocalShotDirection);
                     controller.AdjustShotVectors(ref firePort, ref pointDir);
                     FirePort = firePort;
-                    PointDirection = pointDir;
+                    PointDirection = pointDir.normalized;
                     return;
                 }
             }

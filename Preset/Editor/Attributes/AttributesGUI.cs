@@ -135,10 +135,7 @@ namespace SAIN.Attributes
                 info != null &&
                 !info.DoNotShowGUI)
             {
-                if (entryConfig == null)
-                {
-                    entryConfig = _defaultEntryConfig;
-                }
+                entryConfig ??= _defaultEntryConfig;
                 StartConfigEntry(listDepth, entryConfig, info);
                 Label($"{info.Name}: ", Width(80), Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
                 Box(value, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
@@ -361,8 +358,17 @@ namespace SAIN.Attributes
 
         private static void StartConfigEntry(float listDepth, GUIEntryConfig entryConfig, ConfigInfoClass info)
         {
-            float horizDepth = listDepth * entryConfig.SubList_Indent_Horizontal;
-            if (info != null && (info.AdvancedOption || info.DeveloperOption))
+            entryConfig ??= _defaultEntryConfig;
+            float horizDepth = listDepth;
+            if (entryConfig != null)
+            {
+                horizDepth *= entryConfig.SubList_Indent_Horizontal;
+            }
+            else
+            {
+                horizDepth *= 25f;
+            }
+            if (info != null && (info.AdvancedOption || info.DeveloperOption) && _labelStyle != null)
             {
                 BeginHorizontal(25f);
                 var oldAlignment = _labelStyle.alignment;

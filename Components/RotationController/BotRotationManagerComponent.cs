@@ -54,8 +54,8 @@ namespace SAIN.Components.RotationController
             public void Execute(int index)
             {
                 CalcRotationInput Data = Input[index];
-                RotationTypes.CalcSmoothDampAngleTurn(ref Data, out CalcRotationOutput result, 400, DeltaTime);
-                Output[index] = result;
+                //RotationTypes.CalcSmoothDampAngleTurn(ref Data, out CalcRotationOutput result, 400, DeltaTime);
+                //Output[index] = result;
             }
         }
 

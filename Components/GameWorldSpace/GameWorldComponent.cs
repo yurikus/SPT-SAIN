@@ -151,11 +151,11 @@ namespace SAIN.Components
         public void WorldTickLoop(float deltaTime, GameWorld gameWorld)
         {
             WorldTickDeltaTime = deltaTime;
-            ManualUpdate();
+            ManualUpdate(Time.time, deltaTime);
             SAINBotController.ManualUpdate();
         }
 
-        protected void ManualUpdate()
+        protected void ManualUpdate(float CurrentTime, float DeltaTime)
         {
             if (_activated)
             {
@@ -166,8 +166,8 @@ namespace SAIN.Components
                 HashSet<PlayerComponent> players = PlayerTracker?.AlivePlayerArray;
                 if (players != null && players.Count > 0)
                 {
-                    TickPlayerComponents(players, Time.time);
-                    TickSoundCaches(players, Time.time);
+                    TickPlayerComponents(players, CurrentTime, DeltaTime);
+                    TickSoundCaches(players, CurrentTime);
                 }
             }
         }
@@ -240,11 +240,11 @@ namespace SAIN.Components
         private const float _Sounds_PlayerCache_Interval = 1f / 30f;
         private const float _Sounds_BotCache_Interval = 1f / 15f;
 
-        protected void TickPlayerComponents(HashSet<PlayerComponent> PlayerComponents, float CurrentTime)
+        protected void TickPlayerComponents(HashSet<PlayerComponent> PlayerComponents, float CurrentTime, float deltaTime)
         {
             foreach (PlayerComponent Player in PlayerComponents)
             {
-                Player?.ManualUpdate();
+                Player?.ManualUpdate(deltaTime);
             }
         }
 

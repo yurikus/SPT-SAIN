@@ -27,8 +27,8 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public PlayerTickData PlayerTickData { get; private set; }
 
-        private readonly SmoothDampVector ControlLookDirection = new(true);
-        private readonly SmoothDampVector ControlSteerDirection = new(false, 1);
+        private readonly SmoothDampVectorDirectionNormal ControlLookDirection = new();
+        private readonly SmoothDampVector ControlSteerDirection = new(1);
 
         public Vector3 CurrentControlLookDirection => ControlLookDirection.Current;
         public Vector3 CurrentControlSteerDirection => ControlSteerDirection.Current;
@@ -36,8 +36,9 @@ namespace SAIN.Components.PlayerComponentSpace
         public void UpdateControlRotation(float deltaTime)
         {
             var settings = GlobalSettingsClass.Instance.Steering;
-            ControlLookDirection.Calculate(deltaTime, settings.SmoothTurn_Smoothing, settings.SmoothTurn_MaxTurnSpeed, settings.SmoothTurn_X_Coef, settings.SmoothTurn_Y_Coef, settings.SmoothTurn_Z_Coef);
-            ControlSteerDirection.Calculate(deltaTime, 0.01f, float.MaxValue);
+            ControlLookDirection.Calculate(deltaTime, settings.SMOOTHTURN_SMOOTHING, settings.SMOOTHTURN_MAXTURNSPEED_DEGREES);
+            //ControlLookDirection.Calculate(deltaTime, settings.SmoothTurn_Smoothing, settings.SmoothTurn_MaxTurnSpeed, settings.SmoothTurn_X_Coef, settings.SmoothTurn_Y_Coef, settings.SmoothTurn_Z_Coef);
+            //ControlSteerDirection.Calculate(deltaTime, 0.01f, float.MaxValue);
         }
 
         public PlayerTickData GetPreparedTickData()
@@ -51,11 +52,6 @@ namespace SAIN.Components.PlayerComponentSpace
         public void SetTargetRotation(Vector3 targetDirection)
         {
             ControlLookDirection.Target = targetDirection;
-        }
-
-        public void SetTargetSteering(Vector3 targetDirection)
-        {
-            ControlSteerDirection.Target = targetDirection;
         }
 
         public void SetTickData(PlayerTickData data)
@@ -246,7 +242,7 @@ namespace SAIN.Components.PlayerComponentSpace
         public OtherPlayersData OtherPlayersData { get; private set; }
         public BodyPartsClass BodyParts { get; private set; }
 
-        public void ManualUpdate()
+        public void ManualUpdate(float deltaTime)
         {
             Person.Update();
 
@@ -257,6 +253,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
             if (!IsAI || Person.ActivationClass.BotActive)
             {
+                CheckMovePlayerCharacter(deltaTime);
                 drawTransformGizmos();
                 Flashlight.Update();
                 Equipment.Update();
@@ -268,17 +265,34 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        public void MovePlayerCharacter(Vector3 direction)
+        public void RequestMovePlayerCharacter(Vector3 direction)
         {
             if (direction.sqrMagnitude < 0.001)
             {
                 return;
             }
+            _moved = true;
             ControlSteerDirection.Target = direction;
-            Player.CharacterController.SetSteerDirection(ControlSteerDirection.Current);
-            //Player.Move(FindMoveDirection(ControlSteerDirection.Current));
-            Player.Move(FindMoveDirection(ControlSteerDirection.Current));
         }
+
+        private void CheckMovePlayerCharacter(float deltaTime)
+        {
+            if (_moved)
+            {
+                ControlSteerDirection.Calculate(deltaTime, 0.01f, float.MaxValue);
+                Player.CharacterController.SetSteerDirection(ControlSteerDirection.Current);
+                //Player.Move(FindMoveDirection(ControlSteerDirection.Current));
+                Player.Move(FindMoveDirection(ControlSteerDirection.Current));
+                _moved = false;
+            }
+            else
+            {
+                ControlSteerDirection.Target = Vector3.zero;
+                ControlSteerDirection.Calculate(deltaTime, 0.01f, float.MaxValue);
+            }
+        }
+
+        private bool _moved;
 
         private Vector2 FindMoveDirection(Vector3 direction)
         {

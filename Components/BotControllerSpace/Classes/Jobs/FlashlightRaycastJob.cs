@@ -26,8 +26,8 @@ namespace SAIN.Components
         public FlashlightRaycastJob(MonoBehaviour gameWorld) : base("Flashlight Detection Job", gameWorld, true, 0.1f)
         {
             Start();
-            CreateRandomRotations(_rotationsList_Wide, Wide_FlashlightBeamPointCount, Wide_FlashLightBeamAngle);
-            CreateRandomRotations(_rotationsList_Tight, Tight_FlashlightBeamPointCount, Tight_FlashLightBeamAngle);
+            GenerateRandomYawPitchRotationsNonAlloc(_rotationsList_Wide, Wide_FlashlightBeamPointCount, Wide_FlashLightBeamAngle);
+            GenerateRandomYawPitchRotationsNonAlloc(_rotationsList_Tight, Tight_FlashlightBeamPointCount, Tight_FlashLightBeamAngle);
         }
 
         protected readonly List<RaycastJob> RaycastJobs = [];
@@ -72,8 +72,8 @@ namespace SAIN.Components
                     }
                     if (player.Flashlight.WhiteLight || player.Flashlight.IRLight)
                     {
-                        createFlashlightBeam(Directions, _rotationsList_Wide, WeaponPointDir, Wide_FlashlightTraceDistance);
-                        createFlashlightBeam(Directions, _rotationsList_Tight, WeaponPointDir, Tight_FlashlightTraceDistance);
+                        CreateFlashlightBeam(Directions, _rotationsList_Wide, WeaponPointDir, Wide_FlashlightTraceDistance);
+                        CreateFlashlightBeam(Directions, _rotationsList_Tight, WeaponPointDir, Tight_FlashlightTraceDistance);
                     }
                     if (Directions.Count > 0)
                     {
@@ -105,14 +105,14 @@ namespace SAIN.Components
                         }
                     }
 
-                    if (Player.Player.IsYourPlayer)
-                    {
-                        Logger.LogDebug($"player has {LightPoints.Count} light points");
-                        foreach (var point in LightPoints)
-                        {
-                            DebugGizmos.Line(Player.Transform.WeaponFirePort, point, 0.025f, 0.02f, true);
-                        }
-                    }
+                    //if (Player.Player.IsYourPlayer)
+                    //{
+                    //    Logger.LogDebug($"player has {LightPoints.Count} light points");
+                    //    foreach (var point in LightPoints)
+                    //    {
+                    //        DebugGizmos.Line(Player.Transform.WeaponFirePort, point, 0.025f, 0.02f, true);
+                    //    }
+                    //}
                 }
             }
         }
@@ -174,26 +174,34 @@ namespace SAIN.Components
                 RaycastJobs[i].Schedule();
         }
 
-        private static void createFlashlightBeam(List<RandomDir> beamDirections, List<Quaternion> rotationsList, Vector3 weaponPointDir, float distance)
+        private static void CreateRandomRotations(List<Quaternion> rotationsList, int count, float coneAngle = 10.0f)
         {
-            for (int i = 0; i < rotationsList.Count; i++)
-            {
-                beamDirections.Add(new(distance, rotationsList[i] * weaponPointDir));
-            }
         }
 
-        private static void CreateRandomRotations(List<Quaternion> rotationsList, int count, float coneAngle = 10.0f)
+        /// <summary>
+        /// Generates a list of random rotations with given yaw and pitch ranges.
+        /// </summary>
+        /// <param name="count">Number of quaternions to generate.</param>
+        /// <param name="maxYaw">Max yaw in degrees (horizontal rotation around Y).</param>
+        /// <param name="maxPitch">Max pitch in degrees (vertical rotation around right axis).</param>
+        /// <returns>List of Quaternion rotations.</returns>
+        public static void GenerateRandomYawPitchRotationsNonAlloc(List<Quaternion> nonAllocList, int count, float coneAngle)
         {
             for (int i = 0; i < count; i++)
             {
-                // Generate random angles within the cone range for yaw and pitch
-                float angle = coneAngle * 0.5f;
-                float x = UnityEngine.Random.Range(-angle, angle);
-                float y = UnityEngine.Random.Range(-angle, angle);
-                float z = UnityEngine.Random.Range(-angle, angle);
+                float yaw = UnityEngine.Random.Range(-coneAngle, coneAngle);     // Y axis
+                float pitch = UnityEngine.Random.Range(-coneAngle, coneAngle); // X axis
+                float roll = UnityEngine.Random.Range(-coneAngle, coneAngle);   // Z axis
 
-                // AddColor a Quaternion rotation based on the random yaw and pitch angles
-                rotationsList.Add(Quaternion.Euler(x, y, z));
+                nonAllocList.Add(Quaternion.Euler(pitch, yaw, roll)); // (X, Y, Z) = (Pitch, Yaw, Roll)
+            }
+        }
+
+        private static void CreateFlashlightBeam(List<RandomDir> beamDirections, List<Quaternion> rotationsList, Vector3 weaponPointDir, float distance)
+        {
+            for (int i = 0; i < rotationsList.Count; i++)
+            {
+                beamDirections.Add(new(distance, (rotationsList[i] * weaponPointDir).normalized));
             }
         }
 

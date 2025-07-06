@@ -101,32 +101,32 @@ namespace SAIN.Components
 
                     foreach (var child in mode.GetChildren())
                     {
-                        // Try to find a "VolumetricLight", hopefully only visible flashlights have these
-                        if (!foundWhiteLight &&
-                            child.GetComponent<VolumetricLight>() != null)
+                        string name = child.name.ToLower();
+                        if (!foundWhiteLight && name.StartsWith("light_0"))
                         {
                             foundWhiteLight = true;
-                            if (_debugMode) Logger.LogDebug("Found Light!");
+                            if (_debugMode)
+                                Logger.LogDebug($"Found Light! Name:{name}");
                             ActiveModes.Add(DeviceMode.WhiteLight);
                         }
-                        if (!foundVisibleLaser &&
-                            child.name.StartsWith("VIS_"))
+                        if (!foundVisibleLaser && name.StartsWith("vis_0"))
                         {
                             foundVisibleLaser = true;
-                            if (_debugMode) Logger.LogDebug("Found Visible Laser!");
+                            if (_debugMode)
+                                Logger.LogDebug($"Found Visible Laser! Name:{name}");
                             ActiveModes.Add(DeviceMode.VisibleLaser);
                         }
-                        if (!foundIRLight &&
-                            child.GetComponent<IkLight>() != null)
+                        if (!foundIRLight && name.StartsWith("il_0"))
                         {
                             foundIRLight = true;
-                            if (_debugMode) Logger.LogDebug("Found IR Light!");
+                            if (_debugMode)
+                                Logger.LogDebug($"Found IR Light! Name:{name}");
                             ActiveModes.Add(DeviceMode.IRLight);
                         }
-                        if (!FoundIRLaser &&
-                            child.name.StartsWith("IR_"))
+                        if (!FoundIRLaser && name.StartsWith("ir_0"))
                         {
-                            if (_debugMode) Logger.LogDebug("Found IR Laser!");
+                            if (_debugMode)
+                                Logger.LogDebug($"Found IR Laser! Name:{name}");
                             FoundIRLaser = true;
                             ActiveModes.Add(DeviceMode.IRLaser);
                         }
@@ -135,7 +135,7 @@ namespace SAIN.Components
             }
         }
 
-        static bool _debugMode => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash;
+        private static bool _debugMode => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash;
 
         public List<DeviceMode> ActiveModes => activeModes;
 

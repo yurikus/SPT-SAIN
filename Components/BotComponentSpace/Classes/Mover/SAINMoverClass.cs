@@ -49,7 +49,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void MovePlayerCharacter(Vector3 direction)
         {
-            PlayerComponent.MovePlayerCharacter(direction);
+            PlayerComponent.RequestMovePlayerCharacter(direction);
             BotOwner.AimingManager.CurrentAiming.Move(Player.Speed);
         }
 
