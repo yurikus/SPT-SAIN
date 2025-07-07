@@ -3,6 +3,7 @@ using EFT.UI;
 using JetBrains.Annotations;
 using SAIN.Editor;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.Classes.Mover;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -24,6 +25,50 @@ namespace SAIN.Helpers
                 T value = list[k];
                 list[k] = list[n];
                 list[n] = value;
+            }
+        }
+
+        public static float CalcPathLength([NotNull] this List<BotCornerDetails> path)
+        {
+            float result = 0;
+            for (int i = 0; i < path.Count; i++)
+            {
+                result += path[i].Length;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Adds a new corner to an existing path, update point types to input paramater types
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="corner"></param>
+        /// <param name="nextCorner"></param>
+        /// <param name="secondToLastType"></param>
+        /// <param name="lastCornerType"></param>
+        /// <param name="Type"></param>
+        public static void AddCornerToPath([NotNull] this List<BotCornerDetails> path, Vector3 corner, Vector3? nextCorner, EBotCornerType secondToLastType, EBotCornerType lastCornerType, EBotCornerType Type)
+        {
+            int count = path.Count;
+
+            // Update what used to be the second to last corner
+            BotCornerDetails secondTolastCorner = path[count - 2];
+            secondTolastCorner.Type = secondToLastType;
+            path[count - 2] = secondTolastCorner;
+
+            // Update what used to be the last corner in the path
+            BotCornerDetails lastCorner = path[count - 1];
+            lastCorner.Type = lastCornerType;
+            lastCorner.SetDirection(corner - lastCorner.Position);
+            path[count - 1] = lastCorner;
+
+            if (nextCorner != null)
+            {
+                path.Add(BotCornerDetails.Create(corner, nextCorner.Value, Type, count));
+            }
+            else
+            {
+                path.Add(BotCornerDetails.Create(corner, Type, count));
             }
         }
 
@@ -99,6 +144,7 @@ namespace SAIN.Helpers
                 case WildSpawnType.arenaFighter:
                 case WildSpawnType.arenaFighterEvent:
                     return true;
+
                 default:
                     return false;
             }
@@ -140,6 +186,7 @@ namespace SAIN.Helpers
                 case WildSpawnType.crazyAssaultEvent:
                 case WildSpawnType.cursedAssault:
                     return true;
+
                 default:
                     return false;
             }
@@ -153,6 +200,7 @@ namespace SAIN.Helpers
                 case WildSpawnType.followerBirdEye:
                 case WildSpawnType.followerBigPipe:
                     return true;
+
                 default:
                     return false;
             }
@@ -425,8 +473,7 @@ namespace SAIN.Helpers
     {
         [ThreadStatic] private static System.Random Local;
 
-        public static System.Random ThisThreadsRandom
-        {
+        public static System.Random ThisThreadsRandom {
             get { return Local ?? (Local = new System.Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
         }
     }

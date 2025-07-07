@@ -1,6 +1,6 @@
 ﻿namespace SAIN.SAINComponent.Classes.Mover
 {
-    public enum MoveStatus
+    public enum EBotSprintStatus
     {
         None,
         FirstTurn,

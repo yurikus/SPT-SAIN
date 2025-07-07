@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.Classes.Debug
 
             // Check if a bot is being told to move by the botowner pathfinder, and record the time this starts and stops
             bool botWasMoving = _botIsMoving;
-            _botIsMoving = BotOwner.Mover.IsMoving || Bot.Mover.PathWalker.Running;
+            _botIsMoving = BotOwner.Mover.IsMoving || Bot.Mover.PathFollower.Running;
             if (_botIsMoving && !botWasMoving)
             {
                 _timeStartMoving = time;
@@ -280,7 +280,7 @@ namespace SAIN.SAINComponent.Classes.Debug
                 return;
             }
             if (_nextVaultCheckTime < Time.time
-                && (BotOwner?.Mover?.IsMoving == true || Bot.Mover.PathWalker.Running))
+                && (BotOwner?.Mover?.IsMoving == true || Bot.Mover.PathFollower.Moving))
             {
                 float timeAdd;
                 Vector3 lookDir = Player.LookDirection.normalized;

@@ -52,7 +52,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 return;
             }
 
-            if (!isRunning)
+            if (!Bot.Mover.PathFollower.Running)
             {
                 Bot.Mover.EnableSprintPlayer(false);
                 if (!Bot.Steering.SteerByPriority(enemy, false))
@@ -191,7 +191,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             return dot > minDot;
         }
 
-        private bool isRunning => Bot.Mover.PathWalker.Running;
+        private bool isRunning => Bot.Mover.PathFollower.Running;
 
         private Vector3 findTarget()
         {
@@ -297,11 +297,11 @@ namespace SAIN.Layers.Combat.Solo.Cover
         {
             stringBuilder.AppendLine("Run To Cover Info");
 
-            var sprint = Bot.Mover.PathWalker;
+            var pathFinder = Bot.Mover.PathFollower;
             stringBuilder.AppendLabeledValue("Move Success?", $"{_moveSuccess}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Run Success?", $"{!_runFailed}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Running?", $"{sprint.Running}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Move Status", $"{sprint.CurrentMoveStatus}", Color.white, Color.yellow, true);
+
+            DebugOverlay.AddMoveData(Bot, stringBuilder);
 
             var cover = Bot.Cover;
             stringBuilder.AppendLabeledValue("CoverFinder State", $"{cover.CurrentCoverFinderState}", Color.white, Color.yellow, true);

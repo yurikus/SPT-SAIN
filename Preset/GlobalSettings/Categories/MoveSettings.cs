@@ -93,12 +93,18 @@ namespace SAIN.Preset.GlobalSettings
         [MinMax(0f, 1f, 1000f)]
         public float BotSprintFirstTurnDotThreshold = 0.925f;
 
-        [Name("Path Corner Reach Distance")]
+        [Name("Path Corner Sprint Reach Distance")]
         [Description("How far from a corner along a path before a bot considers it self arrived, and attemps to navigate to the next corner.")]
         [Category("Sprinting")]
         [Advanced]
         [MinMax(0.01f, 1f, 100f)]
         public float BotSprintCornerReachDist = 0.2f;
+
+        [Name("Path Corner Walk Reach Distance")]
+        [Description("How far from a corner along a path before a bot considers it self arrived, and attemps to navigate to the next corner.")]
+        [Advanced]
+        [MinMax(0.01f, 1f, 100f)]
+        public float BotWalkCornerReachDist = 0.15f;
 
         [Name("Final Destination Reach Distance")]
         [Description("How far, in meters, to a bot's final destination before they will pause sprinting.")]

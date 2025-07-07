@@ -141,7 +141,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private Coroutine _runToPointCoroutine;
 
-        public MoveStatus CurrentRunStatus { get; private set; }
+        public EBotSprintStatus CurrentRunStatus { get; private set; }
 
         public Vector3 CurrentCornerDestination()
         {
@@ -177,7 +177,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             callback?.Invoke();
 
-            CurrentRunStatus = MoveStatus.None;
+            CurrentRunStatus = EBotSprintStatus.None;
             StopRunCoroutine();
         }
 
@@ -329,27 +329,27 @@ namespace SAIN.SAINComponent.Classes.Mover
             // I cant sprint :(
             if (!Player.MovementContext.CanSprint)
             {
-                CurrentRunStatus = MoveStatus.CantSprint;
+                CurrentRunStatus = EBotSprintStatus.CantSprint;
                 return;
             }
 
             if (Canceling)
             {
-                CurrentRunStatus = MoveStatus.Canceling;
+                CurrentRunStatus = EBotSprintStatus.Canceling;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
 
             if (ShallLookAtEnemy())
             {
-                CurrentRunStatus = MoveStatus.LookAtEnemyNoSprint;
+                CurrentRunStatus = EBotSprintStatus.LookAtEnemyNoSprint;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
 
             if (isShortCorner)
             {
-                CurrentRunStatus = MoveStatus.ShortCorner;
+                CurrentRunStatus = EBotSprintStatus.ShortCorner;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
@@ -370,7 +370,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             // Were messing with a door, dont sprint
             if (Bot.DoorOpener.ShallPauseSprintForOpening())
             {
-                CurrentRunStatus = MoveStatus.InteractingWithDoor;
+                CurrentRunStatus = EBotSprintStatus.InteractingWithDoor;
                 Bot.Mover.EnableSprintPlayer(false);
                 return;
             }
@@ -381,12 +381,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (sprintingNow && LastCornerDistSqr <= StopSprintDistSqr)
             {
                 Bot.Mover.EnableSprintPlayer(false);
-                CurrentRunStatus = MoveStatus.ArrivingAtDestination;
+                CurrentRunStatus = EBotSprintStatus.ArrivingAtDestination;
                 return;
             }
             else if (!sprintingNow && LastCornerDistSqr <= StopSprintDistSqr * 1.1f)
             {
-                CurrentRunStatus = MoveStatus.ArrivingAtDestination;
+                CurrentRunStatus = EBotSprintStatus.ArrivingAtDestination;
                 return;
             }
 
@@ -396,7 +396,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (ShallPauseSprintStamina(staminaValue, urgency))
             {
                 Bot.Mover.EnableSprintPlayer(false);
-                CurrentRunStatus = MoveStatus.NoStamina;
+                CurrentRunStatus = EBotSprintStatus.NoStamina;
                 return;
             }
 
@@ -404,7 +404,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (ShallPauseSprintAngle())
             {
                 Bot.Mover.EnableSprintPlayer(false);
-                CurrentRunStatus = MoveStatus.Turning;
+                CurrentRunStatus = EBotSprintStatus.Turning;
                 return;
             }
 
@@ -413,7 +413,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 _timeStartCorner + 0.25f < Time.time)
             {
                 Bot.Mover.EnableSprintPlayer(true);
-                CurrentRunStatus = MoveStatus.Running;
+                CurrentRunStatus = EBotSprintStatus.Running;
                 return;
             }
         }
@@ -510,10 +510,10 @@ namespace SAIN.SAINComponent.Classes.Mover
         private bool ShallSteerbyPriority()
         {
             return CurrentRunStatus switch {
-                MoveStatus.Turning or
-                MoveStatus.FirstTurn or
-                MoveStatus.Running or
-                MoveStatus.ShortCorner => false,
+                EBotSprintStatus.Turning or
+                EBotSprintStatus.FirstTurn or
+                EBotSprintStatus.Running or
+                EBotSprintStatus.ShortCorner => false,
                 _ => true,
             };
         }

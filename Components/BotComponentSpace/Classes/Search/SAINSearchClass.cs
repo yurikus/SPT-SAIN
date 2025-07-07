@@ -89,7 +89,7 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private bool MoveToPoint(Vector3 destination, bool shallSprint)
         {
-            var sprint = Bot.Mover.PathWalker;
+            var sprint = Bot.Mover.PathFollower;
             if (shallSprint &&
                 Bot.Mover.RunToPoint(destination, Mover.ESprintUrgency.Middle, true))
             {
@@ -104,7 +104,7 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private void HandleLight(bool stealthy)
         {
-            if (_Running || Bot.Mover.PathWalker.Running)
+            if (_Running || Bot.Mover.PathFollower.Running)
             {
                 return;
             }
@@ -308,7 +308,7 @@ namespace SAIN.SAINComponent.Classes.Search
             speed = 1f;
             pose = 1f;
             // are we sprinting?
-            if (sprinting || Player.IsSprintEnabled || _Running || Bot.Mover.PathWalker.Running)
+            if (sprinting || Player.IsSprintEnabled || _Running || Bot.Mover.PathFollower.Running)
             {
                 return;
             }
@@ -425,7 +425,7 @@ namespace SAIN.SAINComponent.Classes.Search
             return (point - Bot.Position).magnitude;
         }
 
-        private bool _Running => Bot.Mover.PathWalker.Running;
+        private bool _Running => Bot.Mover.PathFollower.Running;
         private float _waitAtPointTimer = -1;
         private float _advanceTime;
         private PersonalitySearchSettings _searchSettings => Bot.Info.PersonalitySettings.Search;

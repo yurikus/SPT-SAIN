@@ -18,17 +18,17 @@ namespace SAIN.SAINComponent.Classes.Mover
             Lean = new LeanClass(sain);
             Prone = new ProneClass(sain);
             Pose = new PoseClass(sain);
-            PathWalker = new BotPathWalker(sain);
+            PathFollower = new BotPathFollowerClass(sain);
             DogFight = new DogFight(sain);
         }
 
         private PathControllerClass PathController { get; }
         public DogFight DogFight { get; private set; }
-        public BotPathWalker PathWalker { get; private set; }
+        public BotPathFollowerClass PathFollower { get; private set; }
 
         public override void ManualUpdate()
         {
-            if (Crawling && !PathWalker.Moving)
+            if (Crawling && !PathFollower.Moving)
             {
                 Crawling = false;
             }
@@ -77,7 +77,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
             // Is the bot currently Moving somewhere?
-            if (PathWalker.Moving || BotOwner.Mover.HasPathAndNoComplete)
+            if (PathFollower.Moving || BotOwner.Mover.HasPathAndNoComplete)
             {
                 _movingTime = Time.time + 1f;
                 return;
@@ -136,7 +136,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public override void Dispose()
         {
-            PathWalker?.Dispose();
+            PathFollower?.Dispose();
             base.Dispose();
         }
 
@@ -152,12 +152,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public Vector3 CurrentMoveDestination { get; private set; }
 
-        public bool Moving => PathWalker.Moving || BotOwner.Mover?.IsMoving == true || BotOwner.Mover.HasPathAndNoComplete;
+        public bool Moving => PathFollower.Moving || BotOwner.Mover?.IsMoving == true || BotOwner.Mover.HasPathAndNoComplete;
 
         public bool GoToPoint(Vector3 point, out bool calculating, float reachDist = -1f, bool crawl = false, bool slowAtEnd = true, bool mustHaveCompletePath = true)
         {
             calculating = false;
-            if (PathWalker.WalkToPoint(point, true))
+            if (PathFollower.WalkToPoint(point, true))
             {
                 CurrentPathStatus = NavMeshPathStatus.PathComplete;
                 Crawling = crawl && Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE;
@@ -170,7 +170,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool RunToPoint(Vector3 point, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, bool mustHaveCompletePath = true)
         {
-            if (PathWalker.RunToPoint(point, urgency, stopSprintEnemyVisible, checkSameWay))
+            if (PathFollower.RunToPoint(point, urgency, stopSprintEnemyVisible, checkSameWay))
             {
                 CurrentPathStatus = NavMeshPathStatus.PathComplete;
                 Crawling = false;
@@ -235,7 +235,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (crawl && Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
                 Prone.SetProne(true);
 
-            if (PathWalker.WalkToPointByWay(Path))
+            if (PathFollower.WalkToPointByWay(Path))
             {
                 CurrentMoveDestination = Path.corners[length - 1];
                 return true;
@@ -286,7 +286,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Stop();
                 return;
             }
-            if (!_stopping && Bot.Mover.PathWalker.Moving)
+            if (!_stopping && Bot.Mover.PathFollower.Moving)
             {
                 _stopping = true;
                 Bot.StartCoroutine(StopAfterDelay(delay));
@@ -301,7 +301,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void Stop()
         {
-            Bot?.Mover.PathWalker.Cancel();
+            Bot?.Mover.PathFollower.Cancel();
             _stopping = false;
         }
 
@@ -309,7 +309,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (forDuration > 0)
             {
-                PathWalker.Pause(forDuration);
+                PathFollower.Pause(forDuration);
             }
         }
 

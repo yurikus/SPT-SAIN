@@ -54,7 +54,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public override void ManualUpdate()
         {
             DoorFinder.ManualUpdate();
-            if (BotOwner.Mover.IsMoving || Bot.Mover.PathWalker.Running)
+            if (Bot.Mover.PathFollower.Moving)
             {
                 CheckUseSAINOpener();
             }
@@ -276,8 +276,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             Vector3 targetMovePos;
             if (BotOwner.Mover.HasPathAndNoComplete)
                 targetMovePos = BotOwner.Mover.RealDestPoint;
-            else if (Bot.Mover.PathWalker.Running)
-                targetMovePos = Bot.Mover.PathWalker.CurrentCornerDestination();
+            else if (Bot.Mover.PathFollower.Moving)
+                targetMovePos = Bot.Mover.PathFollower.MoveData.CurrentCorner.Position;
             else return;
 
             Vector3 botPos = BotOwner.Transform.position;
@@ -368,16 +368,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             return lastInfo.CanInteractByTime();
         }
 
-        private Vector3 getMovePoint()
-        {
-            Vector3 targetDest;
-            if (Bot.Mover.PathWalker.Running)
-                targetDest = Bot.Mover.PathWalker.CurrentCornerDestination();
-            else
-                targetDest = BotOwner.Mover.RealDestPoint;
-            return targetDest;
-        }
-
         private void doDefaultInteract(Door door, EInteractionType Etype)
         {
             //BotOwner.GetPlayer.CurrentManagedState.StartDoorInteraction(door, new InteractionResult(Etype), new Action(endDoorInteraction));
@@ -411,7 +401,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             NearDoor = false;
             BreachingDoor = false;
             Interacting = false;
-            if (!Bot.Mover.PathWalker.Running)
+            if (!Bot.Mover.PathFollower.Moving)
             {
                 BotOwner.Mover.MovementResume();
                 BotOwner.Mover.SprintPause(-1f);

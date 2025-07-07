@@ -29,7 +29,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             if (Bot.Medical.Surgery.AreaClearForSurgery)
             {
                 Bot.Mover.PauseMovement(30);
-                Bot.Mover.PathWalker.Cancel();
+                Bot.Mover.PathFollower.Cancel();
                 Bot.Mover.SetTargetMoveSpeed(0f);
                 Bot.Cover.DuckInCover(Bot.Enemy);
                 tryStartSurgery();

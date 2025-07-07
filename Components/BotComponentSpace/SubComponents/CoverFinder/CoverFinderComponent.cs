@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Experimental.AI;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
@@ -47,8 +46,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         public ECoverFinderStatus CurrentStatus { get; private set; }
 
-        public TargetData TargetData
-        {
+        public TargetData TargetData {
             get
             {
                 return _targetData;
@@ -86,8 +84,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
         }
 
-        public Vector3 OriginPoint
-        {
+        public Vector3 OriginPoint {
             get
             {
                 var data = TargetData;
@@ -99,8 +96,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
         }
 
-        public Vector3 TargetPoint
-        {
+        public Vector3 TargetPoint {
             get
             {
                 var data = TargetData;
@@ -165,22 +161,15 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         private void updateTarget()
         {
-            if (TargetData == null)
-            {
-                return;
-            }
             Enemy targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy ?? Bot.Enemy;
             if (targetEnemy == null)
             {
                 TargetData = null;
                 return;
             }
-            if (_updateTargetTime < Time.time)
+            if (_updateTargetTime < Time.time && targetEnemy.LastKnownPosition != null)
             {
-                if (targetEnemy.FindLookPoint(out Vector3 pos, out _))
-                {
-                    calcTargetPoint(targetEnemy, pos);
-                }
+                calcTargetPoint(targetEnemy, targetEnemy.LastKnownPosition.Value);
             }
         }
 

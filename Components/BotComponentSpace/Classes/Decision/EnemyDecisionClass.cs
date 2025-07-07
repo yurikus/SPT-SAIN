@@ -366,7 +366,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     ShiftResetTimer = -1f;
                     return false;
                 }
-                if (!BotOwner.Mover.IsMoving && !Bot.Mover.PathWalker.Running)
+                if (!BotOwner.Mover.IsMoving && !Bot.Mover.PathFollower.Running)
                 {
                     return false;
                 }

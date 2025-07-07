@@ -117,7 +117,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             if (_updateMoveTime < Time.time)
             {
-                if (Bot.Mover.PathWalker.Running && Bot.Mover.PathWalker.Canceling)
+                if (Bot.Mover.PathFollower.Moving && Bot.Mover.PathFollower.MoveData.Canceling)
                 {
                      _updateMoveTime = Time.time + 0.1f;
                     return;
@@ -144,14 +144,13 @@ namespace SAIN.Layers.Combat.Solo
                 return false;
             }
 
-            var sprintController = Bot.Mover.PathWalker;
+            var sprintController = Bot.Mover.PathFollower;
             float pathDistance = enemy.Path.PathDistance;
-            if (pathDistance <= 1f && (sprintController.Running || BotOwner.Mover.IsMoving))
+            if (pathDistance <= 1f && sprintController.Moving)
             {
                 return true;
             }
-            if ((sprintController.Running || BotOwner.Mover.IsMoving) &&
-                (_lastMovePos - lastKnown.Value).sqrMagnitude < CHANGE_MOVE_THRESHOLD)
+            if (sprintController.Moving && (_lastMovePos - lastKnown.Value).sqrMagnitude < CHANGE_MOVE_THRESHOLD)
             {
                 return true;
             }

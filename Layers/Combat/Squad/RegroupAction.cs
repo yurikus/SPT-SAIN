@@ -28,7 +28,7 @@ namespace SAIN.Layers.Combat.Squad
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
 
-            if (!Bot.Mover.PathWalker.Running)
+            if (!Bot.Mover.PathFollower.Running)
             {
                 Shoot.CheckAimAndFire(Bot.Enemy);
                 Bot.Steering.SteerByPriority(Bot.Enemy);

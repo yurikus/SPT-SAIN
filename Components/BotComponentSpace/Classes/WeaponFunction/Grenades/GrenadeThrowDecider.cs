@@ -124,7 +124,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return false;
             }
             if (!_canThrowWhileSprint &&
-                (Player.IsSprintEnabled || Bot.Mover.PathWalker.Running))
+                (Player.IsSprintEnabled || Bot.Mover.PathFollower.Running))
             {
                 reason = "running";
                 return false;
@@ -312,7 +312,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 return false;
             }
-            if (Player.IsSprintEnabled || Bot.Mover.PathWalker.Running)
+            if (Player.IsSprintEnabled || Bot.Mover.PathFollower.Running)
             {
                 return false;
             }

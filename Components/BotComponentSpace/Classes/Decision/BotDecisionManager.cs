@@ -227,7 +227,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 return false;
             }
-            if (!Bot.Mover.PathWalker.Running)
+            if (!Bot.Mover.PathFollower.Running)
             {
                 return false;
             }

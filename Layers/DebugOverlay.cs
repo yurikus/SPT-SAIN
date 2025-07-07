@@ -34,13 +34,10 @@ namespace SAIN.Layers
                         $"CanLeanByState:{bot.Mover.Lean.CanLeanByState} " +
                         $"CurrentLeanSetting:{bot.Mover.Lean.LeanDirection} " +
                         $"DirectLOS:{bot.Mover.Lean.DirectLineOfSight} " +
-                        $"RaycastLeaning:{bot.Mover.Lean.IsRaycastLeaning}", 
+                        $"RaycastLeaning:{bot.Mover.Lean.IsRaycastLeaning}",
                         Color.white);
-                    //stringBuilder.AppendLabeledValue("Moving", $"{bot.Mover.Moving}", Color.white, Color.yellow);
-                    if (bot.Mover.PathWalker.Moving)
-                    {
-                        stringBuilder.AppendLabeledValue("Moving", $"{bot.Mover.PathWalker.CurrentMoveStatus}", Color.white, Color.yellow);
-                    }
+
+                    AddMoveData(bot, stringBuilder);
 
                     if (debug.Overlay_Info_Expanded)
                     {
@@ -142,6 +139,18 @@ namespace SAIN.Layers
             }
         }
 
+        public static void AddMoveData(BotComponent bot, StringBuilder stringBuilder)
+        {
+            var moveData = bot.Mover.PathFollower.MoveData;
+            stringBuilder.AppendLabeledValue("Move Status", $"{moveData.CurrentMoveStatus}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move Sprint Status", $"{moveData.CurrentSprintStatus}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move Active", $"{moveData.Active}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move Canceling", $"{moveData.Canceling}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move CornerCount", $"{moveData.CornerCount}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move CurrentIndex", $"{moveData.CurrentIndex}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move Corner Distance", $"{moveData.CurrentCornerDistanceSqr.Sqrt()}", Color.white, Color.yellow);
+        }
+
         private static Enemy getEnemy2Show(BotComponent bot)
         {
             var debug = SAINPlugin.DebugSettings.Overlay;
@@ -215,7 +224,7 @@ namespace SAIN.Layers
             stringBuilder.AppendLine($"Visible [{enemy.IsVisible}] Seen [{enemy.Seen}]");
 
             stringBuilder.AppendLine($"Aim/Scatter Multi [{enemy.Aim.AimAndScatterMultiplier}]");
-            stringBuilder.AppendLabeledValue("Time To Spot", $"{(1/enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("Time To Spot", $"{(1 / enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
             float highestPercent = getPercentSpotted(enemy, out var partType);
             if (highestPercent > 0)
                 stringBuilder.AppendLabeledValue("Percent Spotted", $"{partType} : {highestPercent}", Color.white, Color.yellow, true);
