@@ -2,6 +2,7 @@ using EFT;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -76,9 +77,9 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void UpdateLeanSetting(float time)
         {
-            if (ShallTick(time) && !IsHoldingLean)
+            if (ShallTick(time))
             {
-                CanLeanByState = CheckCanLeanByState();
+                CanLeanByState = CheckCanLeanByState(out bool resetLean);
                 if (CanLeanByState)
                 {
                     if (_leanTimer < Time.time)
@@ -90,15 +91,16 @@ namespace SAIN.SAINComponent.Classes.Mover
                     }
                     return;
                 }
-                if (Bot.Decision.CurrentCombatDecision != ECombatDecision.HoldInCover)
+                if (resetLean)
                 {
                     ResetLean();
                 }
             }
         }
 
-        private bool CheckCanLeanByState()
+        private bool CheckCanLeanByState(out bool resetLean)
         {
+            resetLean = true;
             if (!Bot.Info.FileSettings.Move.LEAN_TOGGLE || !GlobalSettingsClass.Instance.Move.LEAN_TOGGLE)
             {
                 return false;
@@ -107,7 +109,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            if (Player.IsSprintEnabled)
+            if (Bot.Mover.PathFollower.Running)
             {
                 return false;
             }
@@ -115,6 +117,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             var enemy = Bot.CurrentTarget.CurrentTargetEnemy;
             if (enemy == null || DontLean.Contains(CurrentDecision) || Bot.Suppression.IsHeavySuppressed)
             {
+                return false;
+            }
+            if (IsHoldingLean)
+            {
+                resetLean = false;
                 return false;
             }
             if (enemy.IsVisible && Bot.Decision.CurrentSelfDecision != ESelfDecision.None)
@@ -129,6 +136,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (CurrentDecision == ECombatDecision.HoldInCover)
             {
+                resetLean = false;
                 return false;
             }
             return true;

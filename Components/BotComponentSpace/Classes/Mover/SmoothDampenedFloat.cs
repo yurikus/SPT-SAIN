@@ -9,6 +9,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public float Get(float deltaTime)
         {
+            if (Mathf.Abs(LastSmoothedValue - TargetValue) < 0.001f)
+            {
+                LastSmoothedValue = TargetValue;
+                _velocity = 0;
+                return LastSmoothedValue;
+            }
             LastSmoothedValue = Mathf.SmoothDamp(LastSmoothedValue, TargetValue, ref _velocity, _smoothingValue, _maxVelocity, deltaTime);
             return LastSmoothedValue;
         }

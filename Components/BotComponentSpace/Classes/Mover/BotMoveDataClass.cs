@@ -1,5 +1,4 @@
-﻿using EFT;
-using SAIN.Helpers;
+﻿using SAIN.Helpers;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -90,14 +89,14 @@ namespace SAIN.SAINComponent.Classes.Mover
                 float distanceFromLastCornerSqr = (LastCorner.Position - possibleDestination).sqrMagnitude;
                 if (distanceFromLastCornerSqr < MIN_DIST_UPDATE_DESTINATION)
                 {
-                    Logger.LogDebug($"Move Destination Updated: [{Time.time}]");
+                    //Logger.LogDebug($"Move Destination Updated: [{Time.time}]");
                     SetNewDestination(possibleDestination);
                     return true;
                 }
                 // If the destination is close enough to the last corner, try calculating a short path from the second to last corner and see if it will work.
                 if (distanceFromLastCornerSqr < MIN_DIST_CALC_PATH_NEW_DESTINATION && TryCalcPathToNewDestination(possibleDestination, out Vector3[] newCorners) && newCorners.Length > 0)
                 {
-                    Logger.LogDebug($"Move Destination Path Modified: [{Time.time}]");
+                    //Logger.LogDebug($"Move Destination Path Modified: [{Time.time}]");
                     AddCornersToPath(newCorners);
                     SetNewDestination(possibleDestination);
                     return true;
@@ -145,7 +144,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             LastCorner = lastCorner;
             PathCornerDetails[count - 1] = lastCorner;
 
-             Logger.LogDebug($"Destination Set: [{Time.time}]");
+            //Logger.LogDebug($"Destination Set: [{Time.time}]");
         }
 
         /// <summary>

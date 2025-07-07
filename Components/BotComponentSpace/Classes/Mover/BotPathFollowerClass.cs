@@ -176,14 +176,14 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private IEnumerator GoToPointCoRoutine(BotMoveDataClass MoveData, System.Action callback = null)
         {
-            Logger.LogDebug($"[{BotOwner.name}] start Move Time: [{Time.time}]");
+            //Logger.LogDebug($"[{BotOwner.name}] start Move Time: [{Time.time}]");
             positionMoving = true;
             // Start running!
             yield return ExecutePath(MoveData);
 
             callback?.Invoke();
             StopMoveCoroutine();
-            Logger.LogDebug($"[{BotOwner.name}] end Move Time: [{Time.time}]");
+            //Logger.LogDebug($"[{BotOwner.name}] end Move Time: [{Time.time}]");
         }
 
         private IEnumerator ExecutePath(BotMoveDataClass MoveData)
