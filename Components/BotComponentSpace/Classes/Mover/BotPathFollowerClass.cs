@@ -4,7 +4,6 @@ using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -64,7 +63,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 Bot.StopCoroutine(_moveToPointCoroutine);
                 _moveData.Dispose();
-                Logger.LogDebug($"[{BotOwner.name}] Move Stopped: [{Time.time}]");
+                //Logger.LogDebug($"[{BotOwner.name}] Move Stopped: [{Time.time}]");
             }
         }
 
@@ -212,6 +211,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 MoveData.CurrentCornerDistanceSqr = (corner.Position - Bot.Position).sqrMagnitude;
                 while (Bot != null && MoveData.CurrentCornerDistanceSqr > ReachDist(_moveData.WantToSprint))
                 {
+                    if (!Bot.SAINLayersActive)
+                    {
+                        StopMoveCoroutine();
+                        yield break;
+                    }
                     BotOwner botOwner = Bot.BotOwner;
                     Player botPlayer = Bot.Player;
                     PersonTransformClass botTransform = Bot.Transform;
@@ -305,8 +309,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 MoveData.CurrentSprintStatus = EBotSprintStatus.None;
                 MoveData.ShallSprintNow = false;
-                bot.Mover.EnableSprintPlayer(false);
             }
+            bot.Mover.EnableSprintPlayer(MoveData.ShallSprintNow);
 
             TrackMovement(botPosition);
             float timeSinceNoMove = timeSinceNotMoving;
@@ -428,7 +432,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             // If we arne't already sprinting, and our corner were moving to is far enough away, and I have enough stamina, and the angle isn't too sharp... enable sprint
-            if (!MoveData.CurrentCorner.ShortCorner && ShallStartSprintStamina(staminaNormal, MoveData.SprintUrgency))
+            if (MoveData.CurrentCornerDistanceSqr > 0.5f && ShallStartSprintStamina(staminaNormal, MoveData.SprintUrgency))
             {
                 MoveData.CurrentSprintStatus = EBotSprintStatus.Running;
                 MoveData.ShallSprintNow = true;
@@ -452,14 +456,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private static bool CheckArrivingAtDestination(BotMoveDataClass MoveData, bool sprintingNow)
         {
-            // We are arriving to our destination, stop sprinting when you get close.e
+            // We are arriving to our destination, stop sprinting when you get close.
             switch (MoveData.CurrentCorner.Type)
             {
                 case EBotCornerType.PathEnd:
-                    break;
-
                 case EBotCornerType.Destination:
-                    return true;
+                    break;
 
                 default:
                     return false;

@@ -184,20 +184,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private void checkIfSeen()
-        {
-            if (!Enemy.IsCurrentEnemy)
-            {
-                return;
-            }
-            EnemyPlace lastKnown = LastKnownPlace;
-            if (lastKnown == null)
-            {
-                return;
-            }
-            lastKnown.CheckLineOfSight(Bot.Transform.EyePosition, LayerMaskClass.HighPolyWithTerrainMaskAI);
-        }
-
         private void tryTalk()
         {
             if (_nextTalkClearTime < Time.time
@@ -248,13 +234,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             if (LastSeenPlace == null)
             {
-                LastSeenPlace = new EnemyPlace(_placeData, position, true, EEnemyPlaceType.Vision, null);
-                LastSeenPlace.HasSeenPersonal = true;
+                LastSeenPlace = new EnemyPlace(_placeData, position, true, EEnemyPlaceType.Vision, null) {
+                    HasSeenPersonal = true
+                };
                 addPlace(LastSeenPlace);
             }
             else
             {
-                LastSeenPlace.Position = position;
+                LastSeenPlace.UpdatePosition(position);
             }
             return LastSeenPlace;
         }
@@ -295,13 +282,13 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             var lastHeard = LastHeardPlace;
             if (lastHeard != null)
             {
-                lastHeard.Position = report.position;
                 lastHeard.IsDanger = report.isDanger;
                 lastHeard.SoundType = report.soundType;
                 lastHeard.HasArrivedPersonal = false;
                 lastHeard.HasArrivedSquad = false;
                 lastHeard.HasSeenPersonal = false;
                 lastHeard.HasSeenSquad = false;
+                lastHeard.UpdatePosition(report.position);
                 return lastHeard;
             }
 

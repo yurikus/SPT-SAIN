@@ -169,15 +169,6 @@ namespace SAIN.SAINComponent.Classes.Decision
             return false;
         }
 
-        private void checkFreezeTime()
-        {
-            if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Freeze)
-            {
-                FrozenDuration = UnityEngine.Random.Range(10f, 120f);
-                TimeToUnfreeze = Time.time + FrozenDuration;
-            }
-        }
-
         private bool shallFreezeAndWait(Enemy enemy, out string reason)
         {
             if (Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior != EHeardFromPeaceBehavior.Freeze)
@@ -238,6 +229,11 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (health == ETagStatus.Dying)
             {
                 reason = "imDying";
+                return false;
+            }
+            if (enemy.Path.PathToEnemyStatus != UnityEngine.AI.NavMeshPathStatus.PathComplete)
+            {
+                reason = "incompletePath";
                 return false;
             }
             if (enemy.Hearing.EnemyHeardFromPeace &&

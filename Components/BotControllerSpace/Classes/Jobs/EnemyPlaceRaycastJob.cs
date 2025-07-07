@@ -44,6 +44,7 @@ namespace SAIN.Components
 
         private JobHandle EnemyPlaceJobHandle;
         private CalcEnemyPlaceJob EnemyPlaceJob;
+        private readonly List<EnemyPlace> PlacesToCheck = [];
 
         private IEnumerator EnemyPlaceJobLoop()
         {
@@ -57,7 +58,7 @@ namespace SAIN.Components
                     continue;
                 }
 
-                var bots = BotController.BotSpawnController?.BotDictionary;
+                var bots = BotController.BotSpawnController?.SAINBots;
                 if (bots == null || bots.Count == 0)
                 {
                     yield return null;
@@ -70,20 +71,24 @@ namespace SAIN.Components
                     continue;
                 }
 
-                List<EnemyPlace> PlacesToCheck = [];
-                foreach (BotComponent bot in bots.Values)
+                PlacesToCheck.Clear();
+                foreach (BotComponent bot in bots)
                 {
                     if (bot?.BotActive == true)
                     {
-                        foreach (Enemy enemy in bot.EnemyController.Enemies.Values)
+                        foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                         {
                             if (enemy?.EnemyKnown == true)
                             {
-                                foreach (EnemyPlace Place in enemy.KnownPlaces.AllEnemyPlaces)
-                                {
-                                    if (Place != null)
-                                        PlacesToCheck.Add(Place);
-                                }
+                                if (enemy.KnownPlaces.LastHeardPlace != null)
+                                    PlacesToCheck.Add(enemy.KnownPlaces.LastHeardPlace);
+                                if (enemy.KnownPlaces.LastSeenPlace != null)
+                                    PlacesToCheck.Add(enemy.KnownPlaces.LastSeenPlace);
+
+                                //if (enemy.KnownPlaces.LastSquadHeardPlace != null)
+                                //    PlacesToCheck.Add(enemy.KnownPlaces.LastSquadHeardPlace);
+                                //if (enemy.KnownPlaces.LastSquadSeenPlace != null)
+                                //    PlacesToCheck.Add(enemy.KnownPlaces.LastSquadSeenPlace);
                             }
                         }
                     }
@@ -94,6 +99,7 @@ namespace SAIN.Components
                     yield return null;
                     continue;
                 }
+
                 NativeArray<Vector3> PlacePositions = new(Count, Allocator.TempJob);
                 NativeArray<Vector3> BotPositions = new(Count, Allocator.TempJob);
                 NativeArray<Vector3> EnemyPositions = new(Count, Allocator.TempJob);
@@ -104,6 +110,7 @@ namespace SAIN.Components
                     BotPositions[i] = Place.PlaceData.Owner.Transform.HeadPosition;
                     EnemyPositions[i] = Place.PlaceData.Enemy.EnemyTransform.Position;
                 }
+
                 EnemyPlaceJob = new CalcEnemyPlaceJob {
                     PlacePositions = PlacePositions,
                     BotPositions = BotPositions,
@@ -112,10 +119,8 @@ namespace SAIN.Components
                     PlaceDistancesToEnemy = new NativeArray<float>(Count, Allocator.TempJob)
                 };
 
-                // schedule job and wait for next frame to read data
                 EnemyPlaceJobHandle = EnemyPlaceJob.Schedule(Count, new JobHandle());
-                yield return null;
-                EnemyPlaceJobHandle.Complete();
+
 
                 _commands = new NativeArray<RaycastCommand>(Count, Allocator.TempJob);
                 _hits = new NativeArray<RaycastHit>(Count, Allocator.TempJob);
@@ -123,30 +128,31 @@ namespace SAIN.Components
                 for (int i = 0; i < Count; i++)
                 {
                     EnemyPlace Place = PlacesToCheck[i];
-                    Vector3 HeadPosition = Place.PlaceData.Owner.Transform.HeadPosition;
-                    Vector3 PlacePosition = Place.Position;
-                    float Distance = Place.DistanceToBot;
+                    Vector3 HeadPosition = Place.PlaceData.Owner.Transform.EyePosition;
+                    Vector3 PlacePosition = Place.Position + Vector3.up;
                     _commands[i] = new RaycastCommand(HeadPosition, PlacePosition - HeadPosition, new QueryParameters {
-                        layerMask = _LOSMask
-                    }, Distance);
+                        layerMask = Mask
+                    }, 1f);
                 }
 
                 RaycastJobHandle = RaycastCommand.ScheduleBatch(_commands, _hits, 8);
+
                 yield return null;
                 RaycastJobHandle.Complete();
+                EnemyPlaceJobHandle.Complete();
 
-                //var stringBuilder = new StringBuilder();
-                //stringBuilder.AppendLine($"Checked {Count} Enemy Places");
                 for (int i = 0; i < Count; i++)
                 {
                     EnemyPlace Place = PlacesToCheck[i];
-                    RaycastHit Hit = _hits[i];
-                    //stringBuilder.AppendLine($"Hit: {Hit.collider?.name} : {Hit.distance} :: PlaceDistancesToBot: {EnemyPlaceJob.PlaceDistancesToBot[i]} : PlaceDistancesToEnemy: {EnemyPlaceJob.PlaceDistancesToEnemy[i]}");
-                    Place?.SetDistances(EnemyPlaceJob.PlaceDistancesToBot[i], EnemyPlaceJob.PlaceDistancesToEnemy[i]);
-                    Place?.SetVisibilityOfPlace(Hit.collider == null);
+                    if (Place != null)
+                    {
+                        RaycastHit Hit = _hits[i];
+                        Place.SetDistances(EnemyPlaceJob.PlaceDistancesToBot[i], EnemyPlaceJob.PlaceDistancesToEnemy[i], Place.PlaceData.Owner);
+                        Place.SetVisibilityOfPlace(Hit.collider == null, Place.PlaceData.Owner);
+                    }
                 }
 
-                //Logger.LogDebug(stringBuilder.ToString());
+                PlacesToCheck.Clear();
                 EnemyPlaceJob.Dispose();
                 _commands.Dispose();
                 _hits.Dispose();
@@ -166,6 +172,6 @@ namespace SAIN.Components
         private NativeArray<RaycastCommand> _commands;
         private JobHandle RaycastJobHandle;
 
-        private readonly LayerMask _LOSMask = LayerMaskClass.HighPolyWithTerrainMask;
+        private readonly LayerMask Mask = LayerMaskClass.HighPolyWithTerrainMaskAI;
     }
 }

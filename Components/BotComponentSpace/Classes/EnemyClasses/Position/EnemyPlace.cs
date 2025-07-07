@@ -1,5 +1,6 @@
 ﻿using SAIN.Models.Structs;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
@@ -33,6 +34,20 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool Visible { get; private set; }
         public bool IsDanger { get; set; }
 
+        public Vector3 BotPositionWhenUpdated { get; protected set; }
+        public Vector3 EnemyRealPositionWhenUpdated { get; protected set; }
+
+        public Dictionary<EBodyPart, Vector3> BodyPartPositions { get; } = [];
+
+        public Vector3 EnemyHeadAtPosition()
+        {
+            if (BodyPartPositions.ContainsKey(EBodyPart.Head))
+            {
+                return BodyPartPositions[EBodyPart.Head];
+            }
+            return Position + Vector3.up * 1.5f;
+        }
+
         public bool ShallClear {
             get
             {
@@ -46,7 +61,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     return true;
                 }
-                if (playerLeftArea)
+                if (PlayerLeftArea)
                 {
                     return true;
                 }
@@ -54,7 +69,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private bool playerLeftArea {
+        private bool PlayerLeftArea {
             get
             {
                 if (_nextCheckLeaveTime < Time.time)
@@ -72,15 +87,37 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public void SetDistances(float BotDistanceToPlace, float EnemyDistanceToPlace)
+        public void SetDistances(float BotDistanceToPlace, float EnemyDistanceToPlace, BotComponent bot)
         {
-            DistanceToBot = BotDistanceToPlace;
+            if (bot == PlaceData.Owner)
+            {
+                DistanceToBot = BotDistanceToPlace;
+                if (BotDistanceToPlace < 1f)
+                {
+                    HasArrivedPersonal = true;
+                }
+            }
+            else if (BotDistanceToPlace < 1f)
+            {
+                HasArrivedSquad = true;
+            }
             DistanceToEnemyRealPosition = EnemyDistanceToPlace;
         }
 
-        public void SetVisibilityOfPlace(bool Value)
+        public void SetVisibilityOfPlace(bool Value, BotComponent bot)
         {
-            Visible = Value;
+            if (bot == PlaceData.Owner)
+            {
+                Visible = Value;
+                if (Value)
+                {
+                    HasSeenPersonal = true;
+                }
+            }
+            else if (Value)
+            {
+                HasSeenSquad = true;
+            }
         }
 
         private const float ENEMY_DIST_TO_PLACE_CHECK_FREQ = 10;
@@ -90,27 +127,41 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
         {
             PlaceData = placeData;
-            Visible = placeData.Enemy.InLineOfSight;
             IsDanger = isDanger;
             PlaceType = placeType;
             SoundType = soundType;
-
-            _position = position;
-            updateDistancesNow(position);
-            _timeLastUpdated = Time.time;
+            SetPosition(position);
         }
 
         public EnemyPlace(PlaceData placeData, SAINHearingReport report)
         {
             PlaceData = placeData;
-            Visible = placeData.Enemy.InLineOfSight;
             IsDanger = report.isDanger;
             PlaceType = report.placeType;
             SoundType = report.soundType;
+            SetPosition(report.position);
+        }
 
-            _position = report.position;
-            updateDistancesNow(report.position);
+        private void SetPosition(Vector3 position)
+        {
+            BotPositionWhenUpdated = PlaceData.Owner.Position;
+            EnemyRealPositionWhenUpdated = PlaceData.Enemy.EnemyPosition;
+            _position = position;
+            updateDistancesNow(position);
+            SetLastKnownPartPositions(PlaceData.Enemy);
             _timeLastUpdated = Time.time;
+        }
+
+        private void SetLastKnownPartPositions(Enemy enemy)
+        {
+            BodyPartPositions.Clear();
+            Vector3 position = _position;
+            Vector3 enemyRealPos = enemy.EnemyPosition;
+            foreach (EnemyPartDataClass part in enemy.Vision.VisionChecker.EnemyParts.PartsArray)
+            {
+                Vector3 translatedPartPos = part.Transform.position - enemyRealPos + position;
+                BodyPartPositions.Add(part.BodyPart, translatedPartPos);
+            }
         }
 
         public void Dispose()
@@ -118,29 +169,26 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             OnDispose?.Invoke(this);
         }
 
-        public Vector3 GroundedPosition(float range = 2f)
-        {
-            Vector3 pos = _position;
-            if (Physics.Raycast(pos, Vector3.down, out var hit, range, LayerMaskClass.HighPolyWithTerrainMask))
-            {
-                return hit.point;
-            }
-            return pos + (Vector3.down * range);
-        }
-
         public Vector3 Position {
             get
             {
                 return _position;
             }
-            set
-            {
-                checkNewValue(value, _position);
-                _position = value;
-                _timeLastUpdated = Time.time;
-                Visible = PlaceData.Enemy.InLineOfSight;
-                OnPositionUpdated?.Invoke(this);
-            }
+        }
+
+        public void UpdatePosition(Vector3 value)
+        {
+            checkNewValue(value, _position);
+            _position = value;
+            _timeLastUpdated = Time.time;
+            BotPositionWhenUpdated = PlaceData.Owner.Position;
+            Visible = false;
+            SetLastKnownPartPositions(PlaceData.Enemy);
+            OnPositionUpdated?.Invoke(this);
+            HasArrivedPersonal = false;
+            HasArrivedSquad = false;
+            HasSeenPersonal = false;
+            HasSeenSquad = false;
         }
 
         private void checkNewValue(Vector3 value, Vector3 oldValue)
@@ -243,10 +291,5 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float _timeSeenPers;
         private bool _hasSquadSeen;
         public float _timeSquadSeen;
-
-        public bool CheckLineOfSight(Vector3 origin, LayerMask mask)
-        {
-            return Visible;
-        }
     }
 }

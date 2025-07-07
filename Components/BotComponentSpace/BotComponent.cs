@@ -183,6 +183,20 @@ namespace SAIN.SAINComponent
                     if (_isBotInCombat)
                     {
                         TickClassGroup(TickWhenCombatClasses, CurrentTime);
+
+                        Enemy enemy = CurrentTarget.CurrentTargetEnemy;
+                        if (enemy?.EnemyPlayer?.IsYourPlayer == true)
+                        {
+                            EnemyPlace lastKnownPlace = enemy.KnownPlaces.LastKnownPlace;
+                            if (lastKnownPlace != null)
+                            {
+                                foreach (var part in lastKnownPlace.BodyPartPositions.Values)
+                                {
+                                    DebugGizmos.Sphere(part, 0.1f, 0.02f);
+                                }
+                                DebugGizmos.Sphere(lastKnownPlace.EnemyHeadAtPosition(), 0.2f, 0.02f);
+                            }
+                        }
                     }
                     return;
                 }
