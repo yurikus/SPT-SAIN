@@ -205,11 +205,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        private bool CheckLength(NavMeshPath path, float straighDist)
-        {
-            return path.CalculatePathLength() < straighDist * 1.5f;
-        }
-
         private readonly NavMeshPath dogFightPath = new();
     }
 }
