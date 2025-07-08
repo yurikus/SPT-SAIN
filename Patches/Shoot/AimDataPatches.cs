@@ -6,7 +6,6 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Preset.BotSettings.SAINSettings.Categories;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
@@ -378,34 +377,26 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotSteering __instance)
         {
-            if (!GameWorldComponent.TryGetPlayerComponent(__instance.botOwner_0, out PlayerComponent playerComponent))
+            BotOwner botOwner = __instance.botOwner_0;
+            if (!GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent))
             {
                 return true;
             }
 
-            bool flatten = false;
             Vector3 newTargetLookDirection;
-            if (__instance.botOwner_0.Mover.Sprinting && __instance.botOwner_0.Mover.HasPathAndNoComplete)
+            if (botOwner.Mover.Sprinting && botOwner.Mover.HasPathAndNoComplete)
             {
-                newTargetLookDirection = __instance.botOwner_0.Mover.DirCurPoint;
+                newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Mover.RealDestPoint);
             }
             else
             {
                 switch (__instance.SteeringMode)
                 {
                     case EBotSteering.ToDestPoint:
-                        if (__instance.botOwner_0.Destination != null)
+                        if (botOwner.Destination != null)
                         {
-                            Vector3 lookDirection2 = __instance.botOwner_0.Destination.Value - __instance._ownerTransform.position;
-                            if (lookDirection2.sqrMagnitude > 0f)
-                            {
-                                newTargetLookDirection = lookDirection2;
-                                if (Mathf.Abs(newTargetLookDirection.y) < 0.001f)
-                                {
-                                    flatten = true;
-                                }
-                                break;
-                            }
+                            newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Destination.Value);
+                            break;
                         }
                         newTargetLookDirection = __instance.LookDirection;
                         break;
@@ -416,20 +407,15 @@ namespace SAIN.Patches.Shoot.Aim
                             newTargetLookDirection = __instance._customDirection;
                             break;
                         }
-                        flatten = true;
-                        newTargetLookDirection = __instance.botOwner_0.Mover.DirCurPoint;
+                        newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Mover.RealDestPoint);
                         break;
 
                     case EBotSteering.ToCustomPoint:
-                        newTargetLookDirection = __instance._customPoint - __instance.botOwner_0.WeaponRoot.position;
+                        newTargetLookDirection = __instance._customPoint - botOwner.WeaponRoot.position;
                         break;
 
                     case EBotSteering.Direction:
                         newTargetLookDirection = __instance._customDirection;
-                        if (Mathf.Abs(newTargetLookDirection.y) < 0.001f)
-                        {
-                            flatten = true;
-                        }
                         break;
 
                     default:
@@ -437,17 +423,25 @@ namespace SAIN.Patches.Shoot.Aim
                         break;
                 }
             }
-
-            if (flatten)
+            if (Mathf.Abs(newTargetLookDirection.y) < 0.001f)
             {
-                //newTargetLookDirection.y = 0;
+                newTargetLookDirection.y = 0;
             }
-            playerComponent.SetTargetRotation(newTargetLookDirection);
-            __instance._lookDirection = playerComponent.CurrentControlLookDirection;
+            playerComponent.SmoothController.SetTargetLookDirection(newTargetLookDirection);
+            __instance._lookDirection = playerComponent.SmoothController.CurrentControlLookDirection;
             __instance.Speed = float.MaxValue;
             __instance.SetXAngle(float.MaxValue);
             __instance.SetYByDir(__instance._lookDirection);
             return false;
+        }
+
+        private static Vector3 CalcLookPoint(BotOwner botOwner, Vector3 point)
+        {
+            Vector3 botPosition = botOwner.Position;
+            Vector3 weaponRoot = botOwner.WeaponRoot.position;
+            float rootOffset = weaponRoot.y - botPosition.y;
+            point.y += rootOffset;
+            return point - weaponRoot;
         }
     }
 

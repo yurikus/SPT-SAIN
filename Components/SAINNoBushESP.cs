@@ -1,7 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using System.Collections.Generic;

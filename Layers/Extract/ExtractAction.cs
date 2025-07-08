@@ -168,7 +168,7 @@ namespace SAIN.Layers
                     if ((pathStatus == NavMeshPathStatus.PathInvalid) || reachedEndOfIncompletePath)
                     {
                         // Need to reset the search timer to prevent the bot from immediately selecting (possibly) the same extract
-                        SAINBotController.Instance.BotExtractManager.ResetExfilSearchTime(Bot);
+                        BotManagerComponent.Instance.BotExtractManager.ResetExfilSearchTime(Bot);
 
                         Bot.Memory.Extract.ExfilPoint = null;
                         Bot.Memory.Extract.ExfilPosition = null;
@@ -182,7 +182,7 @@ namespace SAIN.Layers
             Bot.Memory.Extract.ExtractStatus = EExtractStatus.ExtractingNow;
             if (ExtractTimer == -1f)
             {
-                ExtractTimer = SAINBotController.Instance.BotExtractManager.GetExfilTime(Bot.Memory.Extract.ExfilPoint);
+                ExtractTimer = BotManagerComponent.Instance.BotExtractManager.GetExfilTime(Bot.Memory.Extract.ExfilPoint);
 
                 // Needed to get car extracts working
                 ActivateExfil(Bot.Memory.Extract.ExfilPoint);
@@ -195,7 +195,7 @@ namespace SAIN.Layers
             if (ExtractTimer < Time.time)
             {
                 Logger.LogInfo($"{BotOwner.name} Extracted at {point} for extract {Bot.Memory.Extract.ExfilPoint.Settings.Name} at {System.DateTime.UtcNow}");
-                SAINBotController.Instance?.BotExtractManager?.LogExtractionOfBot(BotOwner, point, Bot.Memory.Extract.ExtractReason.ToString(), Bot.Memory.Extract.ExfilPoint);
+                BotManagerComponent.Instance?.BotExtractManager?.LogExtractionOfBot(BotOwner, point, Bot.Memory.Extract.ExtractReason.ToString(), Bot.Memory.Extract.ExfilPoint);
 
                 var botgame = Singleton<IBotGame>.Instance;
                 Player player = Bot.Player;

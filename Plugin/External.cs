@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.Components;
-using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections.Generic;
@@ -35,7 +34,7 @@ namespace SAIN.Plugin
 
         private static BotComponent GetBotComponent(BotOwner bot)
         {
-            if (SAINBotController.Instance?.GetSAIN(bot, out BotComponent botComponent) == true)
+            if (BotManagerComponent.Instance?.GetSAIN(bot, out BotComponent botComponent) == true)
             {
                 return botComponent;
             }
@@ -57,7 +56,7 @@ namespace SAIN.Plugin
 
         public static void GetExtractedBots(List<string> list)
         {
-            var botController = SAINBotController.Instance;
+            var botController = BotManagerComponent.Instance;
             if (botController == null)
             {
                 Logger.LogWarning("SAIN Bot Controller is Null, cannot retrieve Extracted Bots List.");
@@ -75,7 +74,7 @@ namespace SAIN.Plugin
 
         public static void GetExtractionInfos(List<ExtractionInfo> list)
         {
-            var botController = SAINBotController.Instance;
+            var botController = BotManagerComponent.Instance;
             if (botController == null)
             {
                 Logger.LogWarning("SAIN Bot Controller is Null, cannot retrieve Extracted Bots List.");
@@ -104,7 +103,7 @@ namespace SAIN.Plugin
                 Logger.LogWarning($"{bot.name} is not allowed to use extracting logic.");
             }
 
-            if (!SAINBotController.Instance.BotExtractManager.TryFindExfilForBot(component))
+            if (!BotManagerComponent.Instance.BotExtractManager.TryFindExfilForBot(component))
             {
                 return false;
             }

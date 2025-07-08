@@ -2,7 +2,6 @@
 using SAIN.Components;
 using SAIN.Components.BotController;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using static SAIN.Helpers.EnumValues;
@@ -131,7 +130,7 @@ namespace SAIN
         {
             return
                 WildSpawn.IsPMC(wildSpawnType) ||
-                SAINBotController.Instance?.Bots?.ContainsKey(botOwner.ProfileId) == true;
+                BotManagerComponent.Instance?.Bots?.ContainsKey(botOwner.ProfileId) == true;
         }
 
         private static bool ExcludeBoss(WildSpawnType wildSpawnType)
@@ -204,7 +203,7 @@ namespace SAIN
         /// <returns></returns>
         public static bool IsBotInCombat(IPlayer player)
         {
-            return SAINBotController.Instance?.BotSpawnController?.GetSAIN(player.ProfileId)?.IsInCombat == true;
+            return BotManagerComponent.Instance?.BotSpawnController?.GetSAIN(player.ProfileId)?.SAINLayersActive == true;
         }
 
         public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)
@@ -213,11 +212,11 @@ namespace SAIN
             if (IsSAINDisabledForBot(botOwner)) {
                 return false;
             }
-            if (SAINBotController.Instance == null) {
+            if (BotManagerComponent.Instance == null) {
                 //Logger.LogError($"Bot Controller Null");
                 return false;
             }
-            return SAINBotController.Instance.GetSAIN(botOwner, out sain);
+            return BotManagerComponent.Instance.GetSAIN(botOwner, out sain);
         }
 
         public static bool GetSAIN(Player player, out BotComponent sain)

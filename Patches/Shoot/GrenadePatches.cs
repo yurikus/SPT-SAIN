@@ -21,7 +21,7 @@ namespace SAIN.Patches.Shoot.Grenades
             {
                 return;
             }
-            if (!SAINBotController.Instance.GetSAIN(___botOwner_0, out var botComponent))
+            if (!BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var botComponent))
             {
                 return;
             }
@@ -40,7 +40,7 @@ namespace SAIN.Patches.Shoot.Grenades
         [PatchPostfix]
         public static void Patch(BotOwner ___botOwner_0, ThrowWeapItemClass ___grenade)
         {
-            if (!SAINBotController.Instance.GetSAIN(___botOwner_0, out var botComponent))
+            if (!BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var botComponent))
             {
                 return;
             }

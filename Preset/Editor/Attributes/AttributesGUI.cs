@@ -1,5 +1,7 @@
 ﻿using EFT;
+using EFT.InventoryLogic;
 using EFT.UI;
+using SAIN.Components.RotationController;
 using SAIN.Editor;
 using SAIN.Editor.GUISections;
 using SAIN.Editor.Util;
@@ -17,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using UnityEngine;
+using static SAIN.Attributes.AttributesGUI;
 using static SAIN.Editor.SAINLayout;
 
 namespace SAIN.Attributes
@@ -87,7 +91,7 @@ namespace SAIN.Attributes
                     return value;
                 }
 
-                if (value is EHeardFromPeaceBehavior peaceBehavior)
+                if (value is EHeardFromPeaceBehavior)
                 {
                     return value;
                 }
@@ -96,19 +100,70 @@ namespace SAIN.Attributes
                 {
                     return value;
                 }
+                //if (CheckEditDictionary(ref value, ref wasEdited, listDepth, config, search))
+                //{
+                //    return value;
+                //}
                 if (value is ISAINSettings settings)
                 {
-                    EditAllValuesInObj(settings, out wasEdited, search, config, listDepth++);
+                    listDepth++;
+                    EditAllValuesInObj(settings, out wasEdited, search, config, listDepth);
                     return value;
                 }
                 if (value is ISettingsGroup group)
                 {
-                    EditAllValuesInObj(group, out wasEdited, search, config, listDepth++);
+                    listDepth++;
+                    EditAllValuesInObj(group, out wasEdited, search, config, listDepth);
                     return value;
                 }
                 value = FindListTypeAndEdit(ref value, settingsObject, info, listDepth, out wasEdited, config, search);
             }
             return value;
+        }
+
+        private static bool CheckEditDictionary(ref object value, ref bool wasEdited, int listDepth, GUIEntryConfig config, string search)
+        {
+            if (value is Dictionary<EBotLookMode, TurnSettings> dictionary)
+            {
+                listDepth++;
+                EditGenericStructDictionary(dictionary, out wasEdited, config, listDepth, search);
+                return true;
+            }
+            return false;
+        }
+
+        private static void EditGenericStructDictionary<T, K>(Dictionary<T, K> dictionary, out bool wasEdited, GUIEntryConfig entryConfig, int listDepth, string search) where T : Enum where K : struct
+        {
+            wasEdited = false;
+            Dictionary<T, K> changedValues = [];
+            foreach (KeyValuePair<T, K> item in dictionary)
+            {
+                object value = item.Value;
+                if (ExpandableList(item.Key.ToString(), string.Empty, PresetHandler.EditorDefaults.ConfigEntryHeight + 3, listDepth, entryConfig))
+                {
+                    ConfigParams config = new() {
+                        EntryConfig = entryConfig,
+                        ListDepth = listDepth,
+                        SettingsObject = value,
+                        Search = search,
+                    };
+                    BeginVertical(0f);
+                    List<ConfigInfoClass> attributeInfos = [];
+                    GetAllAttributeInfos(dictionary, attributeInfos, search);
+                    DisplayOptionsByCategory(config, attributeInfos, out bool newEdit);
+                    if (newEdit)
+                    {
+                        wasEdited = true;
+                        changedValues.Add(item.Key, item.Value);
+                    }
+                    attributeInfos.Clear();
+                    EndVertical(0f);
+                }
+            }
+            foreach (KeyValuePair<T, K> item in changedValues)
+            {
+                dictionary[item.Key] = item.Value;
+            }
         }
 
         private static void EditSuppressionDict(Dictionary<ESuppressionState, SuppressionConfig> suppDict, out bool wasEdited)
@@ -165,6 +220,13 @@ namespace SAIN.Attributes
         {
             wasEdited = false;
             CreateLabelStyle();
+
+            if (value is Dictionary<EBotLookMode, TurnSettings> dictionary)
+            {
+                listDepth++;
+                EditGenericStructDictionary(dictionary, out wasEdited, config, listDepth, search);
+                return value;
+            }
 
             if (value is Dictionary<ELocation, DifficultySettings> locationDict)
             {
@@ -347,8 +409,7 @@ namespace SAIN.Attributes
             if (_labelStyle == null)
             {
                 GUIStyle boxstyle = GetStyle(Style.box);
-                _labelStyle = new GUIStyle(GetStyle(Style.label))
-                {
+                _labelStyle = new GUIStyle(GetStyle(Style.label)) {
                     alignment = TextAnchor.MiddleLeft,
                     margin = boxstyle.margin,
                     padding = boxstyle.padding
@@ -929,8 +990,7 @@ namespace SAIN.Attributes
 
         public static void EditAllValuesInObj(object obj, out bool wasEdited, string search = null, GUIEntryConfig entryConfig = null, int listDepth = 0)
         {
-            ConfigParams configParams = new()
-            {
+            ConfigParams configParams = new() {
                 SettingsObject = obj,
                 Search = search,
                 EntryConfig = entryConfig,
@@ -943,7 +1003,11 @@ namespace SAIN.Attributes
         {
             float indent = GetIndentValue(configParams.EntryConfig);
             BeginVertical(0f);
-            List<ConfigInfoClass> attributeInfos = new();
+            if (!configParams.Name.IsNullOrEmpty())
+            {
+                Box(new GUIContent(configParams.Name), _labelStyle, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+            }
+            List<ConfigInfoClass> attributeInfos = [];
             GetAllAttributeInfos(configParams.SettingsObject, attributeInfos, configParams.Search);
             DisplayOptionsByCategory(configParams, attributeInfos, out wasEdited);
             attributeInfos.Clear();
@@ -1105,6 +1169,7 @@ namespace SAIN.Attributes
             public string Search;
             public GUIEntryConfig EntryConfig;
             public int ListDepth;
+            public string Name;
         }
 
         private static void DisplayConfigGUI(ConfigInfoClass configInfo, ConfigParams configParams, int count, out bool edited)

@@ -207,9 +207,9 @@ namespace SAIN.Editor
                 {
                     if (Button(triggers[i].ToString()))
                     {
-                        if (SAINBotController.Instance?.Bots != null)
+                        if (BotManagerComponent.Instance?.Bots != null)
                         {
-                            foreach (var bot in SAINBotController.Instance.Bots.Values)
+                            foreach (var bot in BotManagerComponent.Instance.Bots.Values)
                             {
                                 if (bot != null)
                                 {

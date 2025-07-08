@@ -1,7 +1,7 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using SAIN.SAINComponent;
+using SAIN.Components;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
@@ -95,10 +95,9 @@ namespace SAIN.Patches.Generic.Fixes
         }
 
         [PatchPrefix]
-        public static void PatchPrefix(ref Player __instance, ref bool ignoreClamp)
+        public static void PatchPrefix(Player __instance, ref bool ignoreClamp)
         {
-            if (__instance?.IsAI == true
-                && __instance.IsSprintEnabled)
+            if (__instance?.IsAI == true && __instance.IsSprintEnabled && SAINEnableClass.IsBotInCombat(__instance))
             {
                 ignoreClamp = true;
             }
@@ -153,11 +152,7 @@ namespace SAIN.Patches.Generic.Fixes
         [PatchPrefix]
         public static bool PatchPrefix(BotMover __instance, ref BotOwner ___botOwner_0)
         {
-            if (__instance.HasPathAndNoComplete)
-            {
-                return false;
-            }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent BotComponent) && (!___botOwner_0.Memory.IsPeace || BotComponent.HasEnemy))
+            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
             {
                 __instance.PositionOnWayInner = ___botOwner_0.Position;
                 ___botOwner_0.Mover.LocalAvoidance.DropOffset();
@@ -177,7 +172,7 @@ namespace SAIN.Patches.Generic.Fixes
         [PatchPrefix]
         public static bool PatchPrefix(GClass478 __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent BotComponent) && (!__instance.botOwner_0.Memory.IsPeace || BotComponent.HasEnemy))
+            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
             {
                 return false;
             }

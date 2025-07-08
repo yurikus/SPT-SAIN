@@ -1,7 +1,7 @@
 ﻿using EFT;
+using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
-using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
 using System;
@@ -22,25 +22,27 @@ namespace SAIN.Layers
                 if (debug.Overlay_Info)
                 {
                     stringBuilder.AppendLine($"Name: [{bot.Person.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
+                    stringBuilder.AppendLabeledValue("In Combat", $"{bot.IsInCombat}", Color.white, Color.yellow);
+                    stringBuilder.AppendLabeledValue("Target Enemy", $"{bot.CurrentTarget?.CurrentTargetEnemy?.EnemyName}", Color.white, Color.yellow);
+                    stringBuilder.AppendLabeledValue("Goal Enemy", $"{bot.Enemy?.EnemyName}", Color.white, Color.yellow);
+                    //stringBuilder.AppendLabeledValue("Active", $"{bot.BotActive}", Color.white, Color.yellow);
+                    //stringBuilder.AppendLabeledValue("Standby", $"{bot.BotInStandBy}", Color.white, Color.yellow);
+                    //stringBuilder.AppendLabeledValue("SAIN Layers Active", $"{bot.SAINLayersActive}", Color.white, Color.yellow);
                     stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("Steering", $"{bot.Steering.CurrentSteerPriority} : {bot.Steering.EnemySteerDir}", Color.white, Color.yellow);
                     stringBuilder.AppendLabeledValue("DogFight Status", $"{bot.Mover.DogFight.Status}", Color.white, Color.yellow);
-                    string poseInfo = $"Pose [{bot.Mover.Pose.PoseValue.LastSmoothedValue}:{bot.Player?.MovementContext?.PoseLevel}]";
-                    string speedInfo = $"Speed [{bot.Mover.Pose.SpeedValue.LastSmoothedValue}:{bot.Player?.MovementContext?.CharacterMovementSpeed}]";
+                    string poseInfo = $"Pose [{bot.Mover.Pose.PoseValue.LastSmoothedValue}:{bot.Mover.Pose.PoseValue.TargetValue}]";
+                    string speedInfo = $"Speed [{bot.Mover.Pose.SpeedValue.LastSmoothedValue} : {bot.Mover.Pose.SpeedValue.TargetValue}]";
                     stringBuilder.AppendLine($"[{poseInfo}] [{speedInfo}]", Color.white);
-                    string leanInfo = $"Lean [{bot.Mover.Lean.LeanAngleValue.LastSmoothedValue}:{bot.Player?.MovementContext?.Tilt}]";
-                    stringBuilder.AppendLine($"" +
-                        $"{leanInfo} " +
-                        $"CanLeanByState:{bot.Mover.Lean.CanLeanByState} " +
-                        $"CurrentLeanSetting:{bot.Mover.Lean.LeanDirection} " +
-                        $"DirectLOS:{bot.Mover.Lean.DirectLineOfSight} " +
-                        $"RaycastLeaning:{bot.Mover.Lean.IsRaycastLeaning}",
-                        Color.white);
-
-                    AddMoveData(bot, stringBuilder);
 
                     if (debug.Overlay_Info_Expanded)
                     {
+                        AddMoveData(bot, stringBuilder);
+                        stringBuilder.AppendLine($"" +
+                            $"Lean [{bot.Mover.Lean.LeanAngleValue.LastSmoothedValue}:{bot.Mover.Lean.LeanAngleValue.TargetValue}] " +
+                            $"CanLeanByState:{bot.Mover.Lean.CanLeanByState} " +
+                            $"CurrentLeanSetting:{bot.Mover.Lean.LeanDirection}",
+                            Color.white);
                         //stringBuilder.AppendLine($"AILimit [{bot.CurrentAILimit}] : HumanDist: [{bot.AILimit.ClosestPlayerDistanceSqr.Sqrt().Round10()}]");
                         stringBuilder.AppendLine($"Suppression Num: [{bot.Suppression?.SuppressionNumber}] State: [{bot.Suppression?.CurrentState}] Last State: [{bot.Suppression?.LastState}]");
                         stringBuilder.AppendLine($"CoverPoints: [{bot.Cover.CoverPoints.Count}] : StartSearchDelay [{info.TimeBeforeSearch}] : Hold Ground Time [{info.HoldGroundDelay}]");

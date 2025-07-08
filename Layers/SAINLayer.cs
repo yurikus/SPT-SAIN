@@ -2,7 +2,6 @@
 using EFT;
 using SAIN.Components;
 using SAIN.Models.Enums;
-using SAIN.SAINComponent;
 using System.Text;
 
 namespace SAIN.Layers
@@ -95,7 +94,7 @@ namespace SAIN.Layers
 
         public override string GetName() => LayerName;
 
-        public static SAINBotController BotController => SAINBotController.Instance;
+        public static BotManagerComponent BotController => BotManagerComponent.Instance;
 
         public BotComponent Bot => _bot;
 

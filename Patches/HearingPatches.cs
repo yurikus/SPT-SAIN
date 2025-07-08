@@ -30,7 +30,7 @@ namespace SAIN.Patches.Hearing
         {
             ___soundBank_0.Rolloff = _defaultRolloff * ROLLOFF_MULTI;
             //Logger.LogDebug($"Rolloff {_defaultRolloff} after {___soundBank_0.Rolloff}");
-            SAINBotController.Instance?.GrenadeController.GrenadeCollided(__instance, 35);
+            BotManagerComponent.Instance?.GrenadeController.GrenadeCollided(__instance, 35);
         }
 
         private static float _defaultRolloff = 40;
@@ -67,7 +67,7 @@ namespace SAIN.Patches.Hearing
                     baseRange = ____soundBank.Rolloff * player.SoundRadius * 0.8f;
                 }
                 //Logger.LogDebug($"Playing Bush Sound Range: {baseRange}");
-                SAINBotController.Instance?.BotHearing.PlayAISound(player.iPlayer.ProfileId, SAINSoundType.Bush, soundPosition, baseRange, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(player.iPlayer.ProfileId, SAINSoundType.Bush, soundPosition, baseRange, 1f);
             }
         }
     }
@@ -83,7 +83,7 @@ namespace SAIN.Patches.Hearing
         public static void PatchPrefix(Player ____player)
         {
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_OPEN_SOUND_RANGE;
-            SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
         }
     }
 
@@ -98,7 +98,7 @@ namespace SAIN.Patches.Hearing
         public static void PatchPrefix(Player ____player)
         {
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_KICK_SOUND_RANGE;
-            SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
         }
     }
 
@@ -261,7 +261,7 @@ namespace SAIN.Patches.Hearing
                     object StepSourceObj = NestedStepSoundSourceField.GetValue(player);
                     if (StepSourceObj != null) {
                         if (StepSourceObj is BetterSource NestedStepSoundSource) {
-                            SAINBotController.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
+                            BotManagerComponent.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
                             //if (player.IsYourPlayer)
                             //    Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                         }
@@ -295,7 +295,7 @@ namespace SAIN.Patches.Hearing
         public static void PatchPrefix(Player ____player)
         {
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_DryFire;
-            SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.DryFire, ____player.WeaponRoot.position, baseRange, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.DryFire, ____player.WeaponRoot.position, baseRange, 1f);
         }
     }
 
@@ -397,7 +397,7 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static void PatchPrefix(string soundName, BaseSoundPlayer __instance)
         {
-            if (SAINBotController.Instance != null) {
+            if (BotManagerComponent.Instance != null) {
                 object playerBridge = _PlayerBridge.GetValue(__instance);
                 Player player = _Player.Invoke(playerBridge, null) as Player;
                 SAINSoundTypeHandler.AISoundFileChecker(soundName, player);
@@ -439,7 +439,7 @@ namespace SAIN.Patches.Hearing
         {
             if (previousState != isOn) {
                 float baseRange = 10f;
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, baseRange, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, baseRange, 1f);
             }
         }
     }
@@ -471,7 +471,7 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(Player __instance, Vector3 ___SpeechLocalPosition)
         {
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, 10f, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, 10f, 1f);
         }
     }
 
@@ -489,7 +489,7 @@ namespace SAIN.Patches.Hearing
                 return;
             }
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Looting;
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Looting, __instance.Position, baseRange, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Looting, __instance.Position, baseRange, 1f);
         }
     }
 
@@ -507,7 +507,7 @@ namespace SAIN.Patches.Hearing
                 && __instance.SinceLastStep >= 0.5f
                 && __instance.CheckSurface(____runSurfaceCheck)) {
                 float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Prone;
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Prone, __instance.Position, range, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Prone, __instance.Position, range, 1f);
             }
         }
     }
@@ -523,7 +523,7 @@ namespace SAIN.Patches.Hearing
         public static void PatchPrefix(float volume, Player __instance)
         {
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_AimingandGearRattle;
-            SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, baseRange, volume);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, baseRange, volume);
         }
     }
 
@@ -537,8 +537,8 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(EftBulletClass info)
         {
-            if (SAINBotController.Instance != null) {
-                SAINBotController.Instance.BotHearing.BulletImpacted(info);
+            if (BotManagerComponent.Instance != null) {
+                BotManagerComponent.Instance.BotHearing.BulletImpacted(info);
             }
         }
     }

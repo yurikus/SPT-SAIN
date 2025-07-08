@@ -1,7 +1,6 @@
 ﻿using EFT;
 using HarmonyLib;
 using SAIN.Components;
-using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System.Reflection;
 
@@ -69,7 +68,7 @@ namespace SAIN.Patches.Talk
                 case EPhraseTrigger.OnBeingHurt:
                 case EPhraseTrigger.OnAgony:
                 case EPhraseTrigger.OnBreath:
-                    SAINBotController.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
+                    BotManagerComponent.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
                     return true;
 
                 default:
@@ -81,13 +80,13 @@ namespace SAIN.Patches.Talk
                 if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching ||
                     SAINPlugin.IsBotExluded(__instance.AIData?.BotOwner))
                 {
-                    SAINBotController.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
+                    BotManagerComponent.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
                     return true;
                 }
                 return false;
             }
 
-            SAINBotController.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
+            BotManagerComponent.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
             return true;
         }
     }

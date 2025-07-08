@@ -15,7 +15,7 @@ namespace SAIN
                 GameObject.Destroy(SAINGameWorld);
             }
             SAINGameWorld = gameWorld.gameObject.AddComponent<GameWorldComponent>();
-            SAINBotController botController = gameWorld.gameObject.AddComponent<SAINBotController>();
+            BotManagerComponent botController = gameWorld.gameObject.AddComponent<BotManagerComponent>();
             SAINGameWorld.Init(gameWorld, botController);
         }
 

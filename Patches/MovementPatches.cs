@@ -10,6 +10,24 @@ using UnityEngine;
 
 namespace SAIN.Patches.Movement
 {
+    /// <summary>
+    /// Disables the check for is ai in movement context. could break things in the future
+    /// </summary>
+    public class MovementContextIsAIPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.IsAI));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(ref bool __result)
+        {
+            __result = false;
+            return false;
+        }
+    }
+
     public class GlobalLookPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -256,7 +274,7 @@ namespace SAIN.Patches.Movement
             }
             if (settings.NewDoorOpening &&
                 SAINEnableClass.GetSAIN(____owner, out var botComponent) &&
-                botComponent.IsInCombat)
+                botComponent.SAINLayersActive)
             {
                 __result = botComponent.DoorOpener.FindDoorsToOpen();
                 return false;

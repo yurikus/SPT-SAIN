@@ -6,7 +6,6 @@ using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
-using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
@@ -113,7 +112,7 @@ namespace SAIN.Patches.Generic
             public static void PatchPrefix(Player __instance, ThrowWeapItemClass throwWeap)
             {
                 float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_GrenadePinDraw;
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GrenadeDraw, __instance.Position, range, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GrenadeDraw, __instance.Position, range, 1f);
                 Helpers.SetItemEquiped(__instance, throwWeap);
             }
         }
@@ -130,7 +129,7 @@ namespace SAIN.Patches.Generic
             public static void PatchPrefix(Player __instance, FoodDrinkItemClass foodDrink)
             {
                 float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_EatDrink;
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Food, __instance.Position, range, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Food, __instance.Position, range, 1f);
                 Helpers.SetItemEquiped(__instance, foodDrink);
             }
         }
@@ -158,7 +157,7 @@ namespace SAIN.Patches.Generic
                     soundType = SAINSoundType.Heal;
                     range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
                 }
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
                 Helpers.SetItemEquiped(__instance, meds);
             }
         }
@@ -186,7 +185,7 @@ namespace SAIN.Patches.Generic
                     soundType = SAINSoundType.Heal;
                     range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
                 }
-                SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
                 Helpers.SetItemEquiped(__instance, meds);
             }
         }
@@ -246,7 +245,7 @@ namespace SAIN.Patches.Generic
         [PatchPostfix]
         public static void Patch(GClass567 __instance, IndoorTrigger trigger)
         {
-            SAINBotController.Instance?.PlayerEnviromentChanged(__instance?.Player?.ProfileId, trigger);
+            BotManagerComponent.Instance?.PlayerEnviromentChanged(__instance?.Player?.ProfileId, trigger);
         }
     }
 

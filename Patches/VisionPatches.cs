@@ -4,7 +4,6 @@ using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SPT.Reflection.Patching;
 using System;
@@ -41,7 +40,7 @@ namespace SAIN.Patches.Vision
             }
             ____curLightDist = curLightDist;
 
-            float timeModifier = SAINBotController.Instance.TimeVision.TimeVisionDistanceModifier;
+            float timeModifier = BotManagerComponent.Instance.TimeVision.TimeVisionDistanceModifier;
             var lookSettings = GlobalSettingsClass.Instance.Look.Light;
             float turnOnRatio = lookSettings.LightOnRatio;
             float turnOffRatio = lookSettings.LightOffRatio;
@@ -120,7 +119,7 @@ namespace SAIN.Patches.Vision
             {
                 return false;
             }
-            float timeModifier = SAINBotController.Instance.TimeVision.TimeVisionDistanceModifier;
+            float timeModifier = BotManagerComponent.Instance.TimeVision.TimeVisionDistanceModifier;
             float turnOffRatio = GlobalSettingsClass.Instance.Look.Light.LightOffRatio;
             bool wantOff = timeModifier >= turnOffRatio;
             if (wantOff)
@@ -146,7 +145,7 @@ namespace SAIN.Patches.Vision
                 return false;
             }
 
-            float timeModifier = SAINBotController.Instance.TimeVision.TimeVisionDistanceModifier;
+            float timeModifier = BotManagerComponent.Instance.TimeVision.TimeVisionDistanceModifier;
             var lookSettings = GlobalSettingsClass.Instance.Look.Light;
             float turnOnRatio = lookSettings.NightVisionOnRatio;
             float turnOffRatio = lookSettings.NightVisionOffRatio;
@@ -438,7 +437,7 @@ namespace SAIN.Patches.Vision
             PlayerComponent playerComponent = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(____player?.ProfileId);
             if (playerComponent != null)
             {
-                SAINBotController.Instance.BotHearing.PlayAISound(playerComponent, SAINSoundType.GearSound, playerComponent.Player.WeaponRoot.position, 35f, 1f, true);
+                BotManagerComponent.Instance.BotHearing.PlayAISound(playerComponent, SAINSoundType.GearSound, playerComponent.Player.WeaponRoot.position, 35f, 1f, true);
                 var flashLight = playerComponent.Flashlight;
                 flashLight.CheckDevice();
 

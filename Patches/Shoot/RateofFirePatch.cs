@@ -60,7 +60,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
             {
                 return;
             }
-            if (SAINBotController.Instance.GetSAIN(___botOwner_0, out var component))
+            if (BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var component))
             {
                 __result = component.Info.WeaponInfo.Firerate.SemiAutoROF();
             }
@@ -81,7 +81,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
             {
                 return;
             }
-            if (SAINBotController.Instance.GetSAIN(___botOwner_0, out var component))
+            if (BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var component))
             {
                 __result = component.Info.WeaponInfo.Firerate.SemiAutoROF();
             }
@@ -102,7 +102,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
             {
                 return;
             }
-            if (SAINBotController.Instance.GetSAIN(___botOwner_0, out var component))
+            if (BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var component))
             {
                 __result = component.Info.WeaponInfo.Firerate.SemiAutoROF();
             }

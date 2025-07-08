@@ -1,6 +1,6 @@
 ﻿using EFT;
 using EFT.Interactive;
-using SAIN.SAINComponent;
+using SAIN.Components;
 using UnityEngine;
 
 namespace SAIN.Layers

@@ -1,5 +1,5 @@
-﻿using SAIN.Preset;
-using SAIN.SAINComponent;
+﻿using SAIN.Components;
+using SAIN.Preset;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 

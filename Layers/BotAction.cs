@@ -1,7 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Components;
-using SAIN.SAINComponent;
 using System.Text;
 
 namespace SAIN.Layers
@@ -39,7 +38,7 @@ namespace SAIN.Layers
             get
             {
                 if (_bot == null &&
-                    SAINBotController.Instance.GetSAIN(BotOwner, out var bot))
+                    BotManagerComponent.Instance.GetSAIN(BotOwner, out var bot))
                 {
                     _bot = bot;
                 }

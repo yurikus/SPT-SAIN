@@ -1,6 +1,6 @@
 ﻿using EFT;
+using SAIN.Components;
 using SAIN.Models.Enums;
-using SAIN.SAINComponent;
 using UnityEngine;
 
 namespace SAIN.Helpers

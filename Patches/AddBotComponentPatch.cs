@@ -4,7 +4,6 @@ using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.BotController;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
 using System;
 using System.Reflection;
@@ -81,7 +80,7 @@ namespace SAIN.Patches.Components
         [PatchPostfix]
         public static void Patch(GameWorld __instance, float dt)
         {
-            GameWorldComponent.Instance?.WorldTickLoop(dt, __instance);
+            GameWorldComponent.Instance?.WorldTick(dt);
         }
     }
 

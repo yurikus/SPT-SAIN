@@ -1,21 +1,25 @@
 ﻿using SAIN.Attributes;
+using SAIN.Components.RotationController;
 using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings
 {
     public class SteeringSettings : SAINSettingsBase<SteeringSettings>, ISAINSettings
     {
-        [MinMax(50f, 1000f, 100f)]
+        [Name("Smooth Turn Settings")]
+        [Hidden]
+        public Dictionary<EBotLookMode, TurnSettings> TURN_SETTINGS_BY_STATE = new() { 
+            { EBotLookMode.Peace, new TurnSettings(0.6f, 300f) },
+            { EBotLookMode.Combat, new TurnSettings(0.4f, 360f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.3f, 480f) },
+            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.35f, 360f) },
+            { EBotLookMode.Aiming, new TurnSettings(0.25f, 360f ) },
+            { EBotLookMode.RandomLook, new TurnSettings(0.8f, 200f ) },
+        };
+        
+        [MinMax(45f, 90f, 100f)]
         [Advanced]
-        public float SMOOTHTURN_MAXTURNSPEED_DEGREES = 500f;
-
-        [Advanced]
-        [MinMax(0f, 1f, 100f)]
-        public float SMOOTHTURN_SMOOTHING = 0.3f;
-
-        [Advanced]
-        [MinMax(0f, 1f, 100f)]
-        public float SMOOTHTURN_SMOOTHING_AIM = 0.1f;
+        public float TURN_PITCH_MAX = 65f;
 
         [Name("Last Seen to Last Known Position Distance Threshold")]
         [Description("If the last known position of an enemy (something heard or reported by their squad) is within X distance (meters) to the place they last saw an enemy, focus on the place they were last seen.")]
