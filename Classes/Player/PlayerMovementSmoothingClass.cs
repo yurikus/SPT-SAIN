@@ -25,9 +25,9 @@ namespace SAIN.Classes
         {
             TurnSettings turnSettings;
             var settings = GlobalSettingsClass.Instance.Steering;
-            if (bot.AimingManager.CurrentAiming?.IsReady == true)
+            if (bot.AimingManager.CurrentAiming?.IsReady == true || bot.AimingManager.CurrentAiming is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
             {
-                if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Aiming, out turnSettings))
+                if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Aiming, out turnSettings))
                 {
                     return turnSettings;
                 }
@@ -37,13 +37,13 @@ namespace SAIN.Classes
             {
                 if (botComponent.SAINLayersActive && botComponent.Mover.PathFollower.Running)
                 {
-                    if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
+                    if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
                         return turnSettings;
                     return new TurnSettings(0.25f, 500f);
                 }
                 if (botComponent.Steering.CurrentSteerPriority == Models.Enums.ESteerPriority.RandomLook)
                 {
-                    if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.RandomLook, out turnSettings))
+                    if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.RandomLook, out turnSettings))
                         return turnSettings;
                     return new TurnSettings(0.75f, 240f);
                 }
@@ -52,24 +52,30 @@ namespace SAIN.Classes
                 {
                     if (enemy.IsVisible)
                     {
-                        if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatVisibleEnemy, out turnSettings))
+                        if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatVisibleEnemy, out turnSettings))
                             return turnSettings;
                         return new TurnSettings(0.4f, 500f);
                     }
-                    if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
+                    if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
                         return turnSettings;
                     return new TurnSettings(0.5f, 360f);
                 }
             }
             else if (bot.Memory.GoalEnemy != null)
             {
-                if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
+                if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
                 {
                     return turnSettings;
                 }
                 return new TurnSettings(0.3f, 360f);
             }
-            if (settings.TURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Peace, out turnSettings))
+            else if (bot.Mover.Sprinting)
+            {
+                    if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
+                        return turnSettings;
+                    return new TurnSettings(0.2f, 500f);
+            }
+            if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Peace, out turnSettings))
             {
                 return turnSettings;
             }

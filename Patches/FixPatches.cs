@@ -24,41 +24,6 @@ namespace SAIN.Patches.Generic.Fixes
         }
     }
 
-    internal class FightShallReloadFixPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotReload), nameof(BotReload.FightShallReload));
-        }
-
-        [PatchPrefix]
-        public static bool Patch(BotOwner ___botOwner_0, ref bool __result)
-        {
-            if (SAINPlugin.IsBotExluded(___botOwner_0))
-            {
-                return true;
-            }
-            if (___botOwner_0.Medecine?.Using == true)
-            {
-                __result = false;
-                return false;
-            }
-            if (!___botOwner_0.WeaponManager.IsWeaponReady)
-            {
-                __result = false;
-                return false;
-            }
-            if (___botOwner_0.WeaponManager.Malfunctions.HaveMalfunction() &&
-                ___botOwner_0.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
-            {
-                __result = false;
-                return false;
-            }
-            __result = true;
-            return false;
-        }
-    }
-
     internal class FixItemTakerPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

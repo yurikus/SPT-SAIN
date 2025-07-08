@@ -107,7 +107,7 @@ namespace SAIN
 
             new Patches.Generic.Fixes.StopSetToNavMeshPatch(),
             new Patches.Generic.Fixes.StopSetToNavMeshPatch2(),
-            new Patches.Generic.Fixes.FightShallReloadFixPatch(),
+           // new Patches.Generic.Fixes.FightShallReloadFixPatch(),
             new Patches.Generic.Fixes.EnableVaultPatch(),
             new Patches.Generic.Fixes.BotMemoryAddEnemyPatch(),
             new Patches.Generic.Fixes.BotGroupAddEnemyPatch(),
@@ -125,6 +125,8 @@ namespace SAIN
             //new Patches.Movement.StopShootCauseAnimatorPatch(),
             new Patches.Movement.GlobalLookPatch(),
             new Patches.Movement.MovementContextIsAIPatch(),
+            new Patches.Movement.SetDoorCollisionPatch(),
+            new Patches.Movement.CanBeSnappedPatch(),
             new Patches.Movement.BotMoverManualUpdatePatch(),
             new Patches.Movement.BotMoverManualFixedUpdatePatch(),
 

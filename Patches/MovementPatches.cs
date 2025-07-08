@@ -3,8 +3,8 @@ using EFT;
 using EFT.Interactive;
 using HarmonyLib;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent;
 using SPT.Reflection.Patching;
+using System.Collections;
 using System.Reflection;
 using UnityEngine;
 
@@ -18,6 +18,94 @@ namespace SAIN.Patches.Movement
         protected override MethodBase GetTargetMethod()
         {
             return AccessTools.PropertyGetter(typeof(MovementContext), nameof(MovementContext.IsAI));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(ref bool __result)
+        {
+            __result = false;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Disables collision on doors when they open or close for a set amount of time for ai
+    /// </summary>
+    public class SetDoorCollisionPatch : ModulePatch
+    {
+        const float NO_COLLISION_INTERVAL = 1.0f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Door), nameof(Door.SetDoorState));
+        }
+
+        [PatchPrefix]
+        public static void Patch(Door __instance, EDoorState state)
+        {
+            switch (state)
+            {
+                case EDoorState.Open:
+                case EDoorState.Shut:
+                    break;
+                default:
+                    return;
+            }
+            if (__instance?.Collider != null)
+            {
+                for (int i = 0; i < _preAllocArray.Length; i++)
+                    _preAllocArray[i] = null;
+                Physics.OverlapSphereNonAlloc(__instance.transform.position, 20, _preAllocArray, LayerMaskClass.PlayerMask);
+                foreach (var collider in _preAllocArray)
+                {
+                    if (collider != null)
+                    {
+                        Player player = Singleton<GameWorld>.Instance?.GetPlayerByCollider(collider);
+                        if (player != null && player.IsAI)
+                        {
+                            Collider playerCollider = player.CharacterController.GetCollider();
+                            if (playerCollider != null)
+                            {
+                                player.StartCoroutine(SetDoorCollisionAfterDelay(player, playerCollider, __instance.Collider, NO_COLLISION_INTERVAL));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static IEnumerator SetDoorCollisionAfterDelay(Player player, Collider playerCollider, Collider doorCollider, float delay)
+        {
+            if (playerCollider != null && doorCollider != null && player != null)
+            {
+                player.POM.IgnoreCollider(doorCollider, true);
+                player.MovementContext.IgnoreInteractionCollision(doorCollider, true);
+                EFTPhysicsClass.IgnoreCollision(playerCollider, doorCollider, true);
+                //Logger.LogDebug("SetDoorCollisionPatch: player set to no collision with door");
+            }
+
+            yield return new WaitForSeconds(delay);
+
+            if (playerCollider != null && doorCollider != null && player != null)
+            {
+                player.POM.IgnoreCollider(doorCollider, false);
+                player.MovementContext.IgnoreInteractionCollision(doorCollider, false);
+                EFTPhysicsClass.IgnoreCollision(playerCollider, doorCollider, false);
+                //Logger.LogDebug("SetDoorCollisionPatch: reset");
+            }
+        }
+
+        private static Collider[] _preAllocArray = new Collider[10];
+    }
+
+    /// <summary>
+    /// Disables can be snapped for all players, its only used for door opening and ai
+    /// </summary>
+    public class CanBeSnappedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.PropertyGetter(typeof(Player), nameof(Player.CanBeSnapped));
         }
 
         [PatchPrefix]

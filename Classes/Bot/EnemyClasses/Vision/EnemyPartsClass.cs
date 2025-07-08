@@ -12,7 +12,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyPartsClass(Enemy enemy) : base(enemy)
         {
             createPartDatas(enemy.Player.PlayerBones);
-            PartsArray = Parts.Values.ToArray();
+            PartsArray = [.. Parts.Values];
             _indexMax = Parts.Count;
         }
 

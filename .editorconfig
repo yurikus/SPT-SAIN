@@ -20,3 +20,6 @@ dotnet_diagnostic.S3267.severity = none
 
 # S125: Sections of code should not be commented out
 dotnet_diagnostic.S125.severity = none
+
+# S1871: Two branches in a conditional structure should not have exactly the same implementation
+dotnet_diagnostic.S1871.severity = none

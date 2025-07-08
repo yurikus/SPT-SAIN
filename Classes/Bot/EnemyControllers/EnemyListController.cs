@@ -2,6 +2,7 @@
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
+using SAIN.Helpers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
@@ -29,6 +30,29 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public override void ManualUpdate()
         {
             compareEnemyLists();
+
+            if (SAINPlugin.DebugMode)
+            {
+                foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible))
+                {
+                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.red, 0.1f, true, 0.02f);
+                    if (enemy.LastKnownPosition != null)
+                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, true, 0.02f);
+                }
+                foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.InLineOfSight))
+                {
+                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.yellow, 0.075f, true, 0.02f);
+                    if (enemy.LastKnownPosition != null)
+                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, true, 0.02f);
+                }
+                foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Known))
+                {
+                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.blue, 0.05f, true, 0.02f);
+                    if (enemy.LastKnownPosition != null)
+                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, true, 0.02f);
+                }
+            }
+
             base.ManualUpdate();
         }
 
@@ -331,33 +355,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (_nextCompareListsTime < Time.time)
             {
                 _nextCompareListsTime = Time.time + COMPARE_ENEMY_LIST_FREQ;
-                int enemyCount = Enemies.Count;
 
+                int enemyCount = Enemies.Count;
                 int failedGroupAdds = 0;
                 var groupEnemies = BotOwner.BotsGroup.Enemies;
-                if (enemyCount != groupEnemies.Count)
+                foreach (var person in groupEnemies.Keys)
                 {
-                    foreach (var person in groupEnemies.Keys)
+                    Enemy enemy = tryAddEnemy(person);
+                    if (enemy == null)
                     {
-                        Enemy enemy = tryAddEnemy(person);
-                        if (enemy == null)
-                        {
-                            failedGroupAdds++;
-                        }
+                        failedGroupAdds++;
                     }
                 }
 
                 int failedMyAdds = 0;
                 var myEnemies = BotOwner.EnemiesController.EnemyInfos;
-                if (enemyCount != myEnemies.Count)
+                foreach (var person in myEnemies.Keys)
                 {
-                    foreach (var person in myEnemies.Keys)
+                    Enemy enemy = tryAddEnemy(person);
+                    if (enemy == null)
                     {
-                        Enemy enemy = tryAddEnemy(person);
-                        if (enemy == null)
-                        {
-                            failedMyAdds++;
-                        }
+                        failedMyAdds++;
                     }
                 }
 

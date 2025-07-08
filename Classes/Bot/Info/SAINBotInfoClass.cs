@@ -180,6 +180,9 @@ namespace SAIN.SAINComponent.Classes.Info
         private void SetConfigValues(SAINSettingsClass sainFileSettings)
         {
             var eftFileSettings = BotOwner.Settings.FileSettings;
+
+            eftFileSettings.Shoot.NOT_TO_SEE_ENEMY_TO_WANT_RELOAD_SEC = float.MaxValue;
+
             if (EFTSettingsCategories == null)
             {
                 var flags = BindingFlags.Instance | BindingFlags.Public;

@@ -129,7 +129,7 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckCalcGoal()
         {
-            if (BotOwner.Memory.GoalEnemy == null)
+            if (BotOwner.Memory.GoalEnemy == null || Bot.Enemy?.IsVisible != true)
             {
                 try
                 {

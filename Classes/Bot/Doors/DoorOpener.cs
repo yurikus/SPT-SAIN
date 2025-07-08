@@ -3,7 +3,7 @@ using EFT.Interactive;
 using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,8 +11,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 {
     public class DoorOpener : BotComponentClassBase
     {
-        public bool Interacting
-        {
+        public bool Interacting {
             get
             {
                 return BotOwner.DoorOpener.Interacting;
@@ -23,8 +22,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public bool NearDoor
-        {
+        public bool NearDoor {
             get
             {
                 return BotOwner.DoorOpener.NearDoor;
@@ -105,16 +103,37 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (Interacting)
             {
-                checkEndDoorOpening();
+                if (_traversingEnd < Time.time)
+                {
+                    NearDoor = false;
+                    BreachingDoor = false;
+                    Interacting = false;
+                    BotOwner.Mover.MovementResume();
+                    BotOwner.Mover.SprintPause(-1f);
+                    _interactingWithDoor = false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            if (Interacting)
+            {
                 return true;
             }
             if (_nextPosibleDoorInteractTime < Time.time)
             {
-                checkIfLastDoorExpire();
                 _interactingWithDoor = findADoorToOpen();
                 NearDoor = _interactingWithDoor;
             }
             return this._interactingWithDoor;
+        }
+
+        private static IEnumerator SetDoorCollisionAfterDelay(Collider playerCollider, Collider doorCollider, bool value, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (playerCollider != null && doorCollider != null)
+                EFTPhysicsClass.IgnoreCollision(playerCollider, doorCollider, value);
         }
 
         private void drawLink(NavMeshDoorLink link)
@@ -124,8 +143,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 !_debugObjects.ContainsKey(link))
             {
                 Vector3 linkPosition = link.transform.position + Vector3.down;
-                var objects = new linkObjects
-                {
+                var objects = new linkObjects {
                     link = DebugGizmos.Line(linkPosition, linkPosition + Vector3.up * 2f, Color.white, 0.2f, false, -1f),
                     midOpen = DebugGizmos.Line(linkPosition, link.MidOpen + Vector3.down, Color.blue, 0.2f, false, -1f),
                     midClose = DebugGizmos.Line(linkPosition, link.MidClose + Vector3.down, Color.green, 0.2f, false, -1f),
@@ -346,6 +364,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (lastInfo.LastInteractTime + DOOR_SINGLE_INTERACTION_FREQ < Time.time)
             {
+                EFTPhysicsClass.IgnoreCollision(Player.CharacterController.GetCollider(), lastInfo.Door.Collider, false);
                 _lastInteractedInfo = null;
             }
         }
@@ -366,34 +385,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return false;
             }
             return lastInfo.CanInteractByTime();
-        }
-
-        private void doDefaultInteract(Door door, EInteractionType Etype)
-        {
-            //BotOwner.GetPlayer.CurrentManagedState.StartDoorInteraction(door, new InteractionResult(Etype), new Action(endDoorInteraction));
-            method_0(door, Etype);
-        }
-
-        private void method_0(Door door, EInteractionType type)
-        {
-            Player.MovementContext.ResetCanUsePropState();
-            var gstruct = Door.Interact(Player, type);
-            if (gstruct.Succeeded)
-            {
-                //Logger.LogDebug("Success");
-                switch (type)
-                {
-                    case EInteractionType.Breach:
-                        Player.vmethod_0(door, gstruct.Value, new Action(endDoorInteraction));
-                        break;
-
-                    default:
-                        Player.vmethod_1(door, gstruct.Value);
-                        break;
-                }
-                return;
-            }
-            //Logger.LogDebug("Fail");
         }
 
         private void endDoorInteraction()
@@ -462,14 +453,22 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
+        public void IgnoreCollisionWithDoor(Door door, float resetDelay)
+        {
+            Collider player = Player?.CharacterController?.GetCollider();
+            if (player != null && door.Collider != null)
+            {
+                EFTPhysicsClass.IgnoreCollision(player, door.Collider, true);
+                Player.StartCoroutine(SetDoorCollisionAfterDelay(player, door.Collider, false, resetDelay));
+            }
+        }
+
         public void Interact(DoorData doorInfo, EInteractionType Etype)
         {
             doorInfo.LastInteractTime = Time.time;
             _lastInteractedInfo = doorInfo;
 
             Door door = doorInfo.Door;
-            //bool noAnimation = door.interactWithoutAnimation;
-            EDoorState snap = door.Snap;
             if (shallKickOpen(door, Etype) || Etype == EInteractionType.Breach)
             {
                 //Logger.LogDebug($"{BotOwner.name} Breaching Door {doorInfo.Link.Id}!");
@@ -479,8 +478,30 @@ namespace SAIN.SAINComponent.Classes.Mover
             else
             {
                 BreachingDoor = false;
-                //door.interactWithoutAnimation = true;
                 door.Snap = EDoorState.None;
+            }
+
+            const float DOOR_INTERACTION_TIME_BREACH = 1.5f;
+            const float DOOR_INTERACTION_TIME_OPEN = 0.6f;
+            const float DOOR_INTERACTION_TIME_CLOSE = 0.2f;
+
+            _traversingEnd = Time.time;
+            switch (Etype)
+            {
+                case EInteractionType.Breach:
+                    _traversingEnd += DOOR_INTERACTION_TIME_BREACH;
+                    break;
+
+                case EInteractionType.Open:
+                    _traversingEnd += DOOR_INTERACTION_TIME_OPEN;
+                    break;
+
+                case EInteractionType.Close:
+                    _traversingEnd += DOOR_INTERACTION_TIME_CLOSE;
+                    break;
+
+                default:
+                    return;
             }
 
             if (Etype == EInteractionType.Breach ||
@@ -490,17 +511,15 @@ namespace SAIN.SAINComponent.Classes.Mover
                 //Logger.LogDebug($"{BotOwner.name} Executing [{Etype}] door interaction on {doorInfo.Link.Id}");
                 this.BotOwner.Mover.SprintPause(2f);
                 this.BotOwner.Mover.MovementPause(2f);
+                BotOwner.DoorOpener.Interact(door, Etype);
+                Bot.Steering.LookToPoint(door.transform.position);
                 Interacting = true;
-                _traversingEnd = Time.time + (BreachingDoor ? 2f : 1f);
-                doDefaultInteract(door, Etype);
-                Bot.Steering.LookToPoint(door.transform.position + (door.transform.position - Bot.Position));
-                //door.interactWithoutAnimation = noAnimation;
                 return;
             }
 
             //Logger.LogDebug($"{BotOwner.name} Auto Opening Door on {doorInfo.Link.Id}");
 
-            EDoorState state = EDoorState.None;
+            EDoorState state;
             switch (Etype)
             {
                 case EInteractionType.Open:
@@ -556,41 +575,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 default:
                     return false;
             }
-        }
-
-        private bool checkCrossPoint(Vector3 goTo, Vector3 botPosition, DoorData data)
-        {
-            NavMeshDoorLink link = data.Link;
-            GClass355 gclass;
-            switch (link.Door.DoorState)
-            {
-                case EDoorState.Open:
-                    //if ((link.MidClose - vector).sqrMagnitude > 4)
-                    //    return false;
-
-                    gclass = link.SegmentClose;
-                    break;
-
-                case EDoorState.Shut:
-                    //if ((link.MidOpen - vector).sqrMagnitude > 4)
-                    //    return false;
-
-                    gclass = link.SegmentOpen;
-                    break;
-
-                default:
-                    return false;
-            }
-
-            Vector3 v = botPosition - goTo;
-            v.y = 0f;
-            Vector3 a = Vector.NormalizeFastSelf(v);
-            Vector3 b = a * 0.25f;
-            Vector3 b2 = a * 0.5f;
-            Vector3 a2 = botPosition + b;
-            Vector3 b3 = goTo - b2;
-            Vector3? crossPoint = Vector.GetCrossPoint(new Vector.VectorPair(a2, b3), new Vector.VectorPair(gclass.a, gclass.b));
-            return crossPoint != null;
         }
 
         private static bool _debugMode => SAINPlugin.DebugSettings.Gizmos.DrawDoorLinks;

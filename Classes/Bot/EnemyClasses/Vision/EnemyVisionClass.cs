@@ -80,7 +80,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             UpdateCanShootState(false);
         }
 
-        private bool isAnyPartVisible()
+        private bool IsAnyPartVisible()
         {
             foreach (var part in VisionChecker.EnemyParts.Parts.Values)
             {
@@ -93,18 +93,26 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             bool wasVisible = IsVisible;
             if (forceOff)
+            {
                 IsVisible = false;
+            }
+            else if (!IsAnyPartVisible())
+            {
+                if (EnemyInfo.IsVisible) try { EnemyInfo.SetVisible(false); } catch { /* eft code */ }
+                IsVisible = false;
+            }
             else
             {
-                if (!isAnyPartVisible())
-                {
-                    EnemyInfo.IsVisible = false;
-                    IsVisible = false;
-                }
-                else
-                {
-                    IsVisible = EnemyInfo.IsVisible;
-                }
+                IsVisible = EnemyInfo.IsVisible;
+            }
+
+            if (Enemy.IsCurrentEnemy && !IsVisible && wasVisible)
+            {
+                try { BotOwner.CalcGoal(); } catch { /* eft code */  }
+            }
+            else if (!Enemy.IsCurrentEnemy && IsVisible && Bot.CurrentTarget.CurrentTargetEnemy?.IsVisible != true)
+            {
+                try { BotOwner.CalcGoal(); } catch { /* eft code */  }
             }
 
             if (IsVisible)
@@ -158,7 +166,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 CanShoot = false;
                 return;
             }
-            CanShoot = EnemyInfo?.CanShoot == true;
+            CanShoot = VisionChecker.EnemyParts.CanShoot;
         }
 
         private readonly EnemyGainSightClass _gainSight;
