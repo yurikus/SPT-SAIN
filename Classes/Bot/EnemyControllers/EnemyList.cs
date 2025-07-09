@@ -1,10 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyList : List<Enemy>
     {
+        public enum EBotListSortType
+        {
+            None,
+            ByRealDistance,
+            ByTimeSinceSensed,
+            ByLastKnownDistance,
+            ByPathLength,
+            VisiblePathPointDistanceToBot,
+            VisiblePathPointDistanceToEnemy,
+        }
+
         public EnemyList(string name)
         {
             Name = name;
@@ -13,6 +25,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public string Name { get; }
 
         public event Action<bool> OnListEmptyOrGetFirst;
+
         public event Action<bool> OnListEmptyOrGetFirstHuman;
 
         public void SubOrUnSub(bool value, ref Action<bool, Enemy> action, Enemy enemy)
@@ -25,6 +38,42 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 action -= AddOrRemoveEnemy;
                 this.RemoveEnemy(enemy);
+            }
+        }
+
+        public void SortBy(EBotListSortType sortingType)
+        {
+            if (this.Count > 1)
+            {
+                switch (sortingType)
+                {
+                    case EBotListSortType.ByRealDistance:
+                        Sort((x, y) => x.RealDistance.CompareTo(y.RealDistance));
+                        break;
+
+                    case EBotListSortType.ByTimeSinceSensed:
+                        Sort((x, y) => x.TimeSinceLastKnownUpdated.CompareTo(y.TimeSinceLastKnownUpdated));
+                        break;
+
+                    case EBotListSortType.ByLastKnownDistance:
+                        Sort((x, y) => x.KnownPlaces.BotDistanceFromLastKnown.CompareTo(y.KnownPlaces.BotDistanceFromLastKnown));
+                        break;
+
+                    case EBotListSortType.ByPathLength:
+                        Sort((x, y) => x.Path.PathLength.CompareTo(y.Path.PathLength));
+                        break;
+
+                    case EBotListSortType.VisiblePathPointDistanceToBot:
+                        Sort((x, y) => x.VisiblePathPointDistanceToBot.CompareTo(y.VisiblePathPointDistanceToBot));
+                        break;
+
+                    case EBotListSortType.VisiblePathPointDistanceToEnemy:
+                        Sort((x, y) => x.VisiblePathPointDistanceToEnemyLastKnown.CompareTo(y.VisiblePathPointDistanceToEnemyLastKnown));
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
 

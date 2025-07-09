@@ -14,11 +14,11 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Enemy Enemy = Bot.Decision.DogFightDecision.DogFightTarget ?? Bot.Enemy;
+            Enemy Enemy = Bot.Decision.DogFightDecision.DogFightTarget ?? Bot.CurrentTarget.CurrentTargetEnemy;
             Bot.Mover.SetTargetPose(1f);
+            Shoot.ShootAnyVisibleEnemies(Enemy);
             Bot.Steering.SteerByPriority(Enemy);
             Bot.Mover.DogFight.DogFightMove(true, Enemy);
-            Shoot.CheckAimAndFire(Enemy);
             this.EndProfilingSample();
         }
 

@@ -56,7 +56,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             checkJumpEnemyInSight();
 
-            Shoot.CheckAimAndFire(_enemy);
+            Shoot.ShootAnyVisibleEnemies(_enemy);
             Bot.Mover.Sprint(false);
             Bot.Mover.DogFight.DogFightMove(true, _enemy);
 
@@ -145,7 +145,7 @@ namespace SAIN.Layers.Combat.Solo
             }
 
             var sprintController = Bot.Mover.PathFollower;
-            float pathDistance = enemy.Path.PathDistance;
+            float pathDistance = enemy.Path.PathLength;
             if (pathDistance <= 1f && sprintController.Moving)
             {
                 return true;

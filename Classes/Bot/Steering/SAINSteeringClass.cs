@@ -1,12 +1,8 @@
 ﻿using EFT;
 using SAIN.Components;
-using SAIN.Helpers;
 using SAIN.Models.Enums;
-using SAIN.Preset;
-using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
@@ -98,8 +94,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool LookToMovingDirection(bool sprint = false)
         {
-            var Steering = BotOwner.Steering;
-            if (Steering == null) return false;
+            var pathFollower = Bot.Mover.PathFollower;
+            if (pathFollower.Moving)
+            {
+                LookToPoint(pathFollower.MoveData.CurrentCorner.Position);
+                return true;
+            }
             if (BotOwner?.Mover?.HasPathAndNoComplete == true)
             {
                 Vector3 CurrentCorner = BotOwner.Mover.CurrentCornerPoint;
@@ -107,7 +107,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Vector3 Dir = CurrentCorner + WeaponRootOffset - WeaponRoot;
                 if (Dir.sqrMagnitude > 0.25f * 0.25f)
                 {
-                    Steering.LookToDirection(Dir);
+                    BotOwner.Steering?.LookToDirection(Dir);
                     return true;
                 }
             }

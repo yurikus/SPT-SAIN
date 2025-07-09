@@ -20,7 +20,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
             set
             {
-                RoundedPathLength = Mathf.RoundToInt(value);
+                RoundedPathLength = Mathf.FloorToInt(value);
                 _pathLength = value;
             }
         }

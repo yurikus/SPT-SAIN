@@ -1,10 +1,10 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.Classes.Coverfinder;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
 using UnityEngine;
 
@@ -25,56 +25,48 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.Mover.SetTargetPose(1f);
             checkJumpToCover();
-            Enemy enemy = Bot.CurrentTarget.CurrentTargetEnemy;
-            tryRun(enemy);
-            checkRunFailed(enemy);
-            this.EndProfilingSample();
-        }
+            Enemy enemy = Bot.Enemy;
+            UpdateCoverMove(enemy);
 
-        private void checkRunFailed(Enemy enemy)
-        {
             if (!_moveSuccess)
             {
-                Bot.Mover.EnableSprintPlayer(false);
-                Bot.Cover.CoverInUse = null;
-                //Bot.Mover.PathWalker.Cancel();
                 Bot.Mover.DogFight.DogFightMove(true, enemy);
-
-                if (!Bot.Steering.SteerByPriority(enemy, false))
-                {
-                    Bot.Steering.LookToLastKnownEnemyPosition(enemy);
-                }
-                Shoot.CheckAimAndFire(enemy);
-                return;
             }
-
-            if (!Bot.Mover.PathFollower.Running)
+            if ((!_moveSuccess || !Bot.Mover.PathFollower.Running) &&
+                !Shoot.ShootAnyVisibleEnemies(enemy) &&
+                !Bot.Steering.SteerByPriority(enemy, false))
             {
-                Bot.Mover.EnableSprintPlayer(false);
-                if (!Bot.Steering.SteerByPriority(enemy, false))
+                Enemy targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy;
+                if (!Shoot.ShootAnyVisibleEnemies(targetEnemy) &&
+                    !Bot.Steering.SteerByPriority(targetEnemy, false))
                 {
-                    Bot.Steering.LookToLastKnownEnemyPosition(enemy);
+                    Bot.Steering.LookToMovingDirection();
+                    //Bot.Steering.LookToLastKnownEnemyPosition(enemy);
                 }
-                Shoot.CheckAimAndFire(enemy);
             }
         }
 
-        private void tryRun(Enemy enemy)
+        private void UpdateCoverMove(Enemy enemy)
         {
             if (_recalcMoveTimer < Time.time)
             {
-                _moveSuccess = moveToCover(out bool sprinting, out CoverPoint coverDestination, false, enemy);
-                if (_moveSuccess)
+                if (FindCoverToMoveTo(out bool sprinting, out CoverPoint coverDestination, false, enemy))
                 {
                     _runFailed = false;
+                    _moveSuccess = true;
                 }
-                if (!_moveSuccess)
+                else if (FindCoverToMoveTo(out sprinting, out coverDestination, true, enemy))
                 {
-                    _moveSuccess = moveToCover(out sprinting, out coverDestination, true, enemy);
+                    _moveSuccess = true;
+                    _runFailed = true;
+                }
+                else
+                {
+                    Bot.Mover.EnableSprintPlayer(false);
+                    _moveSuccess = false;
                     _runFailed = true;
                 }
 
@@ -124,31 +116,16 @@ namespace SAIN.Layers.Combat.Solo.Cover
             }
         }
 
-        private bool moveToCover(out bool sprinting, out CoverPoint coverDestination, bool tryWalk, Enemy enemy)
+        private bool FindCoverToMoveTo(out bool sprinting, out CoverPoint coverDestination, bool tryWalk, Enemy enemy)
         {
-            //if (Bot.Mover.SprintController.Running && Bot.Mover.SprintController.Canceling)
-            //{
-            //    sprinting = true;
-            //    coverDestination = null;
-            //    return false;
-            //}
             CoverPoint coverInUse = Bot.Cover.CoverInUse;
-            if (tryRun(coverInUse, out sprinting, tryWalk, enemy))
+            if (TryRunToCoverPoint(coverInUse, out sprinting, tryWalk, enemy))
             {
                 coverDestination = coverInUse;
                 return true;
             }
 
-            //CoverPoint fallback = Bot.Cover.FallBackPoint;
             ECombatDecision currentDecision = Bot.Decision.CurrentCombatDecision;
-
-            //if (currentDecision == CombatDecision.Retreat &&
-            //    fallback != null &&
-            //    tryRun(fallback, out sprinting, tryWalk))
-            //{
-            //    coverDestination = fallback;
-            //    return true;
-            //}
 
             Bot.Cover.SortPointsByPathDist();
 
@@ -158,7 +135,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             for (int i = 0; i < coverPoints.Count; i++)
             {
                 CoverPoint coverPoint = coverPoints[i];
-                if (tryRun(coverPoint, out sprinting, tryWalk, enemy))
+                if (TryRunToCoverPoint(coverPoint, out sprinting, tryWalk, enemy))
                 {
                     coverDestination = coverPoint;
                     return true;
@@ -178,9 +155,14 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 return true;
             }
-            if (coverPoint.BotInThisCover)
+            switch (coverPoint.PathDistanceStatus)
             {
-                return false;
+                case CoverStatus.InCover:
+                case CoverStatus.CloseToCover:
+                    return true;
+
+                default:
+                    break;
             }
             Vector3 target = findTarget();
             if (target == Vector3.zero)
@@ -223,7 +205,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             return false;
         }
 
-        private bool tryRun(CoverPoint coverPoint, out bool sprinting, bool tryWalk, Enemy enemy)
+        private bool TryRunToCoverPoint(CoverPoint coverPoint, out bool sprinting, bool tryWalk, Enemy enemy)
         {
             bool result = false;
             sprinting = false;
@@ -246,10 +228,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
             if (tryWalk)
             {
-                bool shallCrawl = 
-                    Bot.Decision.CurrentSelfDecision != ESelfDecision.None && 
-                    Bot.Player.MovementContext.CanProne && 
-                    coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && 
+                bool shallCrawl =
+                    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
+                    Bot.Player.MovementContext.CanProne &&
+                    coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover &&
                     (_wasCrawling || Bot.Mover.Prone.ShallProneHide(enemy)
                     );
 

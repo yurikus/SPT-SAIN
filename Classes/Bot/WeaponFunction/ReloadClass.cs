@@ -10,287 +10,87 @@ namespace SAIN.Components.BotComponentSpace.Classes
 {
     public class ReloadClass : BotBase
     {
-        public bool TryReload()
-        {
-            if (!canReload())
-            {
-                return false;
-            }
-            if (tryCatchReload())
-            {
-                return true;
-            }
-            if (tryRefillAndReload())
-            {
-                return true;
-            }
-            checkChangeToMelee();
-            return false;
-        }
-
-        private void checkChangeToMelee()
-        {
-            if (!BotOwner.WeaponManager.Selector.TryChangeWeapon(true) &&
-                BotOwner.WeaponManager.Selector.CanChangeToMeleeWeapons)
-            {
-                var magWeapon = ActiveMagazineWeapon;
-                if (magWeapon != null &&
-                    magWeapon.FullMagazineCount == 0 &&
-                    magWeapon.PartialMagazineCount == 0)
-                {
-                    BotOwner.WeaponManager.Selector.ChangeToMelee();
-                }
-                if (magWeapon == null &&
-                    BotOwner.WeaponManager.Reload.BulletCount == 0 &&
-                    Bot.Enemy.RealDistance < 10f)
-                {
-                    BotOwner.WeaponManager.Selector.ChangeToMelee();
-                }
-            }
-        }
-
-        private bool tryRefillAndReload()
-        {
-            var magWeapon = ActiveMagazineWeapon;
-            if (magWeapon != null &&
-                //magWeapon.FullMagazineCount == 0 &&
-                //magWeapon.EmptyMagazineCount > 0 &&
-                magWeapon.TryRefillAllMags() &&
-                tryCatchReload())
-            {
-                magWeapon.BotReloaded();
-                return true;
-            }
-            return false;
-        }
-
-        private bool tryCatchReload()
+        /// <summary>
+        /// Returns true if any weapon was successfully refilled
+        /// </summary>
+        public static bool RefillMagsOnEachWeapon(BotComponent bot, BotWeaponManager weaponManager, int count = -1, bool includeActiveMag = false, params EquipmentSlot[] slotsToIgnore)
         {
             bool result = false;
-            try
+            foreach (var item in weaponManager.info)
             {
-                var reload = BotOwner.WeaponManager.Reload;
-                if (reload.CanReload(false, out var MagazineItemClass, out var list))
+                if (item.Value?.weapon != null &&
+                    IsMagFed(item.Value.weapon.ReloadMode))
                 {
-                    if (MagazineItemClass != null && MagazineItemClass != ActiveMagazineWeapon?.GetActiveMagazine())
+                    bool canFill = true;
+                    if (slotsToIgnore != null)
+                        foreach (var slot in slotsToIgnore)
+                            if (slot == item.Key)
+                            {
+                                canFill = false;
+                                break;
+                            }
+
+                    if (canFill && BotMagazineWeapon.RefillMags(bot, item.Value, count, includeActiveMag))
                     {
-                        reload.ReloadMagazine(MagazineItemClass);
                         result = true;
-                        reload.Reloading = true;
-                    }
-                    else if (list != null && list.Count > 0)
-                    {
-                        reload.ReloadAmmo(list);
-                        result = true;
-                        reload.Reloading = true;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Error Trying to get Bot to reload: {ex}");
-            }
-
             return result;
         }
 
-        private bool canReload()
+        /// <summary>
+        /// Returns true if this weapon was refilled
+        /// </summary>
+        public static bool RefillMagsInSlot(EquipmentSlot slot, BotComponent bot, BotWeaponManager weaponManager, int count = -1, bool includeActiveMag = false)
         {
-            if (BotOwner.WeaponManager.Reload.Reloading)
+            if (weaponManager.info.TryGetValue(slot, out var weapon))
             {
-                return false;
+                return BotMagazineWeapon.RefillMags(bot, weapon, count, includeActiveMag);
             }
-            if (BotOwner.ShootData.Shooting)
-            {
-                return false;
-            }
-            if (BotOwner.Medecine.Using)
-            {
-                return false;
-            }
-            if (BotOwner.WeaponManager.Malfunctions.HaveMalfunction() &&
-                BotOwner.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
-            {
-                return false;
-            }
-            var magWeapon = ActiveMagazineWeapon;
-            if (magWeapon != null)
-            {
-                var currentMag = magWeapon.Weapon.GetCurrentMagazine();
-                if (currentMag != null && currentMag.Count == currentMag.MaxCount)
-                {
-                    return false;
-                }
-                if (magWeapon.FullMagazineCount == 0)
-                {
-                    magWeapon.TryRefillMags(1, currentMag);
-                }
-            }
-
-            return true;
+            return false;
         }
-
-        public BotMagazineWeapon ActiveMagazineWeapon { get; private set; }
-        public EquipmentSlot ActiveEquipmentSlot => _weaponManager.Selector.EquipmentSlot;
-        public Weapon CurrentWeapon => _weaponManager?.CurrentWeapon;
-
-        public readonly Dictionary<EquipmentSlot, BotMagazineWeapon> BotMagazineWeapons = new();
 
         public ReloadClass(BotComponent bot) : base(bot)
         {
             _weaponManager = Bot.BotOwner.WeaponManager;
-            findWeapons();
         }
 
-        private void findWeapons()
+        //public override void ManualUpdate()
+        //{
+        //    checkRefill();
+        //}
+
+        //private void checkRefill()
+        //{
+        //    if (_nextCheckRefillTime > Time.time)
+        //    {
+        //        return;
+        //    }
+        //    if (BotOwner.WeaponManager.Reload.Reloading)
+        //    {
+        //        _nextCheckRefillTime = Time.time + 3;
+        //        return;
+        //    }
+        //    if (Bot.IsInCombat)
+        //    {
+        //        _nextCheckRefillTime = Time.time + 3;
+        //        return;
+        //    }
+        //    RefillMagsOnEachWeapon(Bot, BotOwner.WeaponManager, 4);
+        //    _nextCheckRefillTime = Time.time + 30;
+        //}
+
+        //private float _nextCheckRefillTime;
+
+        private static bool IsMagFed(EReloadMode reloadMode)
         {
-            foreach (EquipmentSlot slot in _weapSlots)
-            {
-                Item item = Bot.Player.Equipment.GetSlot(slot).ContainedItem;
-                if (item is Weapon weapon &&
-                    isMagFed(weapon.ReloadMode))
-                {
-                    BotMagazineWeapons.Add(slot, new BotMagazineWeapon(weapon, Bot));
-                }
-            }
+            return reloadMode switch {
+                EReloadMode.ExternalMagazine or EReloadMode.ExternalMagazineWithInternalReloadSupport => true,
+                _ => false,
+            };
         }
 
-        public override void Init()
-        {
-            _weaponManager.Selector.OnActiveEquipmentSlotChanged += weaponChanged;
-            foreach (var weapon in BotMagazineWeapons.Values)
-            {
-                weapon.Init(BotOwner);
-            }
-            base.Init();
-        }
-
-        private void weaponChanged(EquipmentSlot slot)
-        {
-            _weaponChanged = true;
-        }
-
-        public override void ManualUpdate()
-        {
-            checkWeapChanged();
-            foreach (var weapon in BotMagazineWeapons.Values)
-            {
-                weapon?.Update();
-            }
-            checkRefill();
-        }
-
-        private void checkRefill()
-        {
-            if (_nextCheckRefillTime > Time.time)
-            {
-                return;
-            }
-            _nextCheckRefillTime = Time.time + 2;
-            if (BotOwner.WeaponManager.Reload.Reloading)
-            {
-                return;
-            }
-            if (!Bot.EnemyController.AtPeace)
-            {
-                foreach (var weapon in BotMagazineWeapons)
-                {
-                    weapon.Value?.TryRefillMags(1);
-                }
-                return;
-            }
-            foreach (var weapon in BotMagazineWeapons)
-            {
-                weapon.Value?.RefillRatioOfMags(0.5f);
-            }
-        }
-
-        private float _nextCheckRefillTime;
-
-        private void checkWeapChanged()
-        {
-            if (!_weaponChanged)
-            {
-                return;
-            }
-            if (ActiveEquipmentSlot == EquipmentSlot.Scabbard)
-            {
-                _weaponChanged = false;
-                return;
-            }
-            Weapon weapon = CurrentWeapon;
-            if (weapon == null)
-            {
-                return;
-            }
-            ActiveMagazineWeapon = findOrCreateMagWeapon(weapon);
-            _weaponChanged = false;
-        }
-
-        private static bool isMagFed(EReloadMode reloadMode)
-        {
-            switch (reloadMode)
-            {
-                case EReloadMode.ExternalMagazine:
-                case EReloadMode.ExternalMagazineWithInternalReloadSupport:
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        private BotMagazineWeapon findOrCreateMagWeapon(Weapon weapon)
-        {
-            if (!isMagFed(weapon.ReloadMode))
-            {
-                return null;
-            }
-
-            EquipmentSlot activeSlot = ActiveEquipmentSlot;
-            if (!BotMagazineWeapons.TryGetValue(activeSlot, out BotMagazineWeapon magazineWeapon))
-            {
-                magazineWeapon = new BotMagazineWeapon(weapon, Bot);
-                magazineWeapon.Init(BotOwner);
-                BotMagazineWeapons.Add(activeSlot, magazineWeapon);
-                return magazineWeapon;
-            }
-
-            if (magazineWeapon.Weapon != weapon)
-            {
-                magazineWeapon.Dispose(BotOwner);
-                magazineWeapon = new BotMagazineWeapon(weapon, Bot);
-                magazineWeapon.Init(BotOwner);
-                BotMagazineWeapons[activeSlot] = magazineWeapon;
-            }
-            return magazineWeapon;
-        }
-
-        public override void Dispose()
-        {
-            if (_weaponManager.Selector != null)
-            {
-                _weaponManager.Selector.OnActiveEquipmentSlotChanged -= weaponChanged;
-            }
-            if (BotOwner != null)
-            {
-                foreach (var weapon in BotMagazineWeapons.Values)
-                {
-                    weapon.Dispose(BotOwner);
-                }
-            }
-            BotMagazineWeapons.Clear();
-            base.Dispose();
-        }
-
-        private static EquipmentSlot[] _weapSlots =
-        [
-            EquipmentSlot.FirstPrimaryWeapon,
-            EquipmentSlot.SecondPrimaryWeapon,
-            EquipmentSlot.Holster
-        ];
-
-        private bool _weaponChanged = true;
         private readonly BotWeaponManager _weaponManager;
     }
 }

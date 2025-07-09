@@ -5,6 +5,7 @@ using SAIN.Models.Structs;
 using SAIN.Preset.Personalities;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Search
@@ -77,11 +78,11 @@ namespace SAIN.SAINComponent.Classes.Search
                 baseTime *= Bot.Info.PersonalitySettings.Search.SearchWaitMultiplier;
                 float waitTime = baseTime * Random.Range(0.25f, 1.25f);
                 _waitAtPointTimer = Time.time + waitTime;
-                //BotOwner.Mover.MovementPause(waitTime, false);
+                Bot.Mover.PathFollower.Pause(waitTime);
             }
             if (_waitAtPointTimer < Time.time)
             {
-                //BotOwner.Mover.MovementResume();
+                Bot.Mover.PathFollower.Unpause();
                 _waitAtPointTimer = -1;
                 return false;
             }
@@ -90,7 +91,6 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private bool MoveToPoint(Vector3 destination, bool shallSprint)
         {
-            var sprint = Bot.Mover.PathFollower;
             if (shallSprint &&
                 Bot.Mover.RunToPoint(destination, Mover.ESprintUrgency.Middle, true))
             {
@@ -114,10 +114,9 @@ namespace SAIN.SAINComponent.Classes.Search
                 Bot.BotLight.ToggleLight(false);
                 return;
             }
-            if (BotOwner.Mover?.IsMoving == true)
+            if (Bot.Mover.PathFollower.Moving)
             {
-                Bot.BotLight.HandleLightForSearch(BotOwner.Mover.DirCurPoint.magnitude);
-                return;
+                Bot.BotLight.HandleLightForSearch(Bot.Mover.PathFollower.MoveData.CurrentCornerDistanceSqr);
             }
         }
 
@@ -125,7 +124,7 @@ namespace SAIN.SAINComponent.Classes.Search
         {
             if (FinalDestination == null)
             {
-                Logger.LogWarning($"{BotOwner.name}'s Final Destination is null, cannot search!");
+                //Logger.LogWarning($"{BotOwner.name}'s Final Destination is null, cannot search!");
                 return;
             }
 
@@ -145,6 +144,20 @@ namespace SAIN.SAINComponent.Classes.Search
                 return;
             }
 
+            // if a bot is looking towards something they heard or got shot, pause their search movement temporarily
+            switch (Bot.Steering.CurrentSteerPriority)
+            {
+                case ESteerPriority.LastHit:
+                case ESteerPriority.HeardThreat:
+                    Bot.Mover.PathFollower.Pause(0.33f);
+                    break;
+
+                default:
+                    if (CurrentState != ESearchMove.Wait)
+                        Bot.Mover.PathFollower.Unpause();
+                    break;
+            }
+
             ESearchMove previousState = CurrentState;
             PeekPosition? peekPosition;
             switch (CurrentState)
@@ -161,7 +174,7 @@ namespace SAIN.SAINComponent.Classes.Search
                         CurrentState = ESearchMove.DirectMove;
                         break;
                     }
-                    Logger.LogWarning($"{BotOwner.name}'s cannot peek and cannot direct move!");
+                    //Logger.LogWarning($"{BotOwner.name}'s cannot peek and cannot direct move!");
                     break;
 
                 case ESearchMove.DirectMove:

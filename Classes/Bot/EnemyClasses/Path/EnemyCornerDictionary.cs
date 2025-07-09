@@ -22,18 +22,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return corner?.GroundPosition;
         }
 
-        public Vector3? EyeLevelPosition(ECornerType type)
-        {
-            var corner = GetCorner(type);
-            return corner?.EyeLevelCorner(_weaponRoot.position + Vector3.down * 0.15f, _transform.Position);
-        }
-
-        public Vector3? PointPastCorner(ECornerType type)
-        {
-            var corner = GetCorner(type);
-            return corner?.PointPastCorner(_weaponRoot.position, _transform.Position);
-        }
-
         private PersonTransformClass _transform;
 
         public EnemyCorner GetCorner(ECornerType cornerType)

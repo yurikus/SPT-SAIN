@@ -1,4 +1,6 @@
 ﻿using EFT;
+using SAIN.Classes.Coverfinder;
+using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Plugin;
@@ -9,6 +11,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -136,7 +141,7 @@ namespace SAIN.Components.CoverFinder
             {
                 if (CoverPoints.Count > 0)
                 {
-                    DebugGizmos.Line(CoverPoints.PickRandom().Position, Bot.Transform.HeadPosition, Color.yellow, 0.035f, true, 0.1f);
+                    DebugGizmos.Line(CoverPoints.PickRandom().Position, Bot.Transform.HeadPosition, Color.yellow, 0.035f, 0.1f);
                 }
             }
         }
@@ -146,6 +151,7 @@ namespace SAIN.Components.CoverFinder
             base.Dispose();
             StopLooking();
             StopAllCoroutines();
+            DisposeJobs();
             if (Bot != null)
             {
                 Bot.OnDispose -= botDisposed;
@@ -153,6 +159,12 @@ namespace SAIN.Components.CoverFinder
                 Bot.BotActivation.BotStandByToggle.OnToggle -= botInStandBy;
             }
             Destroy(this);
+        }
+
+        private void DisposeJobs()
+        {
+            _coverJobHandle.Complete();
+            _coverJob.Dispose();
         }
 
         private void updateTarget()
@@ -282,6 +294,37 @@ namespace SAIN.Components.CoverFinder
 
                 FallBackPoint = null;
                 ClearTarget();
+                DisposeJobs();
+            }
+        }
+
+        private IEnumerator findCoverLoop()
+        {
+            WaitForSeconds wait = new(FIND_COVER_WAIT_FREQ);
+            while (true)
+            {
+                int coverCount = CoverPoints.Count;
+                if (needToFindCover(coverCount, out int max))
+                {
+                    CurrentStatus = ECoverFinderStatus.SearchingColliders;
+                    _lastPositionChecked = OriginPoint;
+
+                    bool debug = DebugCoverFinder;
+                    Stopwatch fullStopWatch = debug ? Stopwatch.StartNew() : null;
+                    Stopwatch findFirstPointStopWatch = coverCount == 0 && debug ? Stopwatch.StartNew() : null;
+
+                    Collider[] colliders = _colliderArray;
+                    yield return ColliderFinder.GetNewColliders(colliders);
+                    //yield return CheckDistanceToAllColliders(colliders);
+                    ColliderFinder.SortArrayBotDist(colliders);
+                    yield return findNewCoverPoints(colliders, ColliderFinder.HitCount, max, findFirstPointStopWatch);
+
+                    coverCount = CoverPoints.Count;
+                    sort(coverCount, CoverPoints);
+                    log(coverCount, findFirstPointStopWatch, fullStopWatch);
+                }
+                CurrentStatus = ECoverFinderStatus.None;
+                yield return wait;
             }
         }
 
@@ -441,36 +484,65 @@ namespace SAIN.Components.CoverFinder
             return false;
         }
 
-        private IEnumerator findCoverLoop()
+
+
+        private IEnumerator CheckDistanceToAllColliders(Collider[] colliders)
         {
-            WaitForSeconds wait = new(FIND_COVER_WAIT_FREQ);
-            while (true)
+            if (colliders == null || colliders.Length == 0)
+                yield break;
+            if (TargetData == null)
+                yield break;
+
+            ColliderCoverDataList.Clear();
+            DirCalcData botToTargetData = new() {
+                Point = TargetData.TargetPosition,
+                Dir = TargetData.DirBotToTarget,
+                DirNormal = TargetData.DirBotToTargetNormal,
+                Magnitude = TargetData.TargetDistance
+            };
+            for (int i = 0; i < colliders.Length; i++)
             {
-                int coverCount = CoverPoints.Count;
-                if (needToFindCover(coverCount, out int max))
+                Collider collider = colliders[i];
+                if (collider != null)
                 {
-                    CurrentStatus = ECoverFinderStatus.SearchingColliders;
-                    _lastPositionChecked = OriginPoint;
-
-                    bool debug = DebugCoverFinder;
-                    Stopwatch fullStopWatch = debug ? Stopwatch.StartNew() : null;
-                    Stopwatch findFirstPointStopWatch = coverCount == 0 && debug ? Stopwatch.StartNew() : null;
-
-                    Collider[] colliders = _colliderArray;
-                    yield return StartCoroutine(ColliderFinder.GetNewColliders(colliders));
-                    yield return null;
-                    ColliderFinder.SortArrayBotDist(colliders);
-                    yield return null;
-                    yield return StartCoroutine(findNewCoverPoints(colliders, ColliderFinder.HitCount, max, findFirstPointStopWatch));
-
-                    coverCount = CoverPoints.Count;
-                    sort(coverCount, CoverPoints);
-                    log(coverCount, findFirstPointStopWatch, fullStopWatch);
+                    ColliderCoverData coverData = new(i, collider, TargetData.TargetPosition, TargetData.BotPosition, botToTargetData);
+                    ColliderCoverDataList.Add(coverData);
                 }
-                CurrentStatus = ECoverFinderStatus.None;
-                yield return wait;
+            }
+            int count = ColliderCoverDataList.Count;
+            if (count > 0)
+            {
+                _coverJob = new CheckCoverJob {
+                    Input = new NativeArray<ColliderCoverData>(count, Allocator.TempJob),
+                    Output = new NativeArray<ColliderCoverData>(count, Allocator.TempJob),
+                };
+                for (int i = 0; i < count; i++)
+                    _coverJob.Input[i] = ColliderCoverDataList[i];
+
+                _coverJobHandle = _coverJob.Schedule(count, new JobHandle());
+                yield return null;
+                _coverJobHandle.Complete();
+
+                // Retrieve the results from the job, assign members in cover data.
+                var outputData = _coverJob.Output;
+                StringBuilder stringBuilder = new();
+                stringBuilder.AppendLine($"[{BotOwner?.name}] Completed Cover Job Count: [{count}]");
+                for (int i = 0;i < count; i++)
+                {
+                    ColliderCoverData coverData = outputData[i];
+                    GameWorldComponent.Instance.CoverManager.CreateCover(coverData.Collider);
+                    stringBuilder.AppendLine($"[{i}:{coverData.Index}]:[{coverData.BotToCoverDirectionData.Magnitude}]:[{coverData.TargetToCoverDirectionData.Magnitude}]");
+                    ColliderCoverDataList[i] = coverData;
+                }
+                Logger.LogDebug(stringBuilder.ToString());
+                _coverJob.Dispose();
             }
         }
+
+        private readonly List<ColliderCoverData> ColliderCoverDataList = [];
+
+        private CheckCoverJob _coverJob;
+        private JobHandle _coverJobHandle;
 
         private void sort(int coverCount, List<CoverPoint> points)
         {

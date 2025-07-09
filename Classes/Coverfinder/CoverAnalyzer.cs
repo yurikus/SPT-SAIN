@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using SAIN.Classes.Coverfinder;
 using SAIN.Components;
 using SAIN.Components.CoverFinder;
 using SAIN.Helpers;
@@ -431,12 +432,12 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             {
                 if (hitObject)
                 {
-                    DebugGizmos.Line(point, hit.point, Color.white, 0.1f, true, 10f);
+                    DebugGizmos.Line(point, hit.point, Color.white, 0.1f, 10f);
                 }
                 else
                 {
                     Vector3 testPoint = direction.normalized * distance + point;
-                    DebugGizmos.Line(point, testPoint, Color.red, 0.1f, true, 10f);
+                    DebugGizmos.Line(point, testPoint, Color.red, 0.1f, 10f);
                 }
             }
             return hitObject;

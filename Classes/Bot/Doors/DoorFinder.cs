@@ -192,7 +192,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     result.Add(door);
         }
 
-        private bool _moving => BotOwner.Mover.IsMoving || Bot.Mover.PathFollower.Running;
+        private bool _moving => BotOwner.Mover.HasPathAndNoComplete || Bot.Mover.PathFollower.Moving;
         private float _nextUpdateDoorTime;
         private float _nextCheckDistanceTime;
         private float _nextUpdateVoxelTime;

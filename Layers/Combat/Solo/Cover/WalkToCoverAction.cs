@@ -1,8 +1,8 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.Classes.Coverfinder;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
 using UnityEngine;
 
@@ -126,23 +126,12 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 return;
             }
 
-            if (Shoot.CheckAimAndFire(Enemy))
-                return;
-
-            if (!Enemy.IsVisible &&
-                Time.time - _timeStart > 1f &&
-                BotOwner.WeaponManager.HaveBullets &&
-                Enemy.TimeSinceLastKnownUpdated < 30f)
+            if (!Shoot.ShootAnyVisibleEnemies(Enemy) && 
+                !Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies) &&
+                !Bot.Steering.SteerByPriority(Enemy, false))
             {
-                Vector3? suppressTarget = Enemy.SuppressionTarget;
-                if (suppressTarget != null && Bot.Suppression.SuppressPosition(suppressTarget.Value, Enemy))
-                {
-                    return;
-                }
-            }
-
-            if (!Bot.Steering.SteerByPriority(Enemy, false))
                 Bot.Steering.LookToLastKnownEnemyPosition(Enemy);
+            }
         }
 
         public override void Start()

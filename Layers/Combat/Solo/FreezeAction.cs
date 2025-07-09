@@ -22,7 +22,7 @@ namespace SAIN.Layers.Combat.Solo
             Enemy Enemy = Bot.Enemy;
             if (Enemy != null)
             {
-                Shoot.CheckAimAndFire(Enemy);
+                Shoot.ShootAnyVisibleEnemies(Enemy);
                 if (!Bot.Steering.SteerByPriority(Enemy, false))
                 {
                     Bot.Steering.LookToLastKnownEnemyPosition(Enemy);

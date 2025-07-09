@@ -15,25 +15,152 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         public ESelfDecision CurrentSelfAction => Bot.Decision.CurrentSelfDecision;
 
-        public bool GetDecision(out ESelfDecision Decision)
+        public bool GetDecision(out ESelfDecision Decision, Enemy enemy)
         {
-            if (Bot.Enemy == null)
+            if (enemy == null)
             {
                 Decision = ESelfDecision.None;
                 return false;
             }
 
-            if (CheckContinueSelfAction(out Decision))
+            BotOwner botOwner = BotOwner;
+            if (botOwner.WeaponManager?.Reload.Reloading == true)
+            {
+                _lastReloadTime = Time.time;
+            }
+            if (CheckContinueSelfAction(out Decision, enemy))
             {
                 return true;
             }
-
-            if (StartBotReload())
+            if (botOwner.ShootData.Shooting)
             {
+                Decision = ESelfDecision.None;
+                return false;
+            }
+            if (CheckDoReload(enemy, Bot))
+            {
+                botOwner.ShootData.BlockFor(0.7f);
                 Decision = ESelfDecision.Reload;
                 return true;
             }
             return StartBotHeal(ref Decision);
+        }
+
+        private float _lastReloadTime;
+
+        private bool CheckDoReload(Enemy enemy, BotComponent bot)
+        {
+            const float RELOAD_AMMORATIO_MIN_PEACE = 0.7f;
+            const float RELOAD_AMMORATIO_MAX = 0.8f;
+
+            if (Time.time - _lastReloadTime < 1f)
+                return false;
+
+            BotOwner botOwner = bot.BotOwner;
+            if (botOwner.Medecine?.Using == true) return false;
+            if (botOwner.GetPlayer.HandsController?.IsInInteractionStrictCheck() == true)
+                return false;
+
+            var weaponManager = botOwner.WeaponManager;
+            if (weaponManager == null) return false;
+
+            if (weaponManager.IsMelee)
+            {
+                if (!weaponManager.Melee.ShallEndRun)
+                {
+                    return false;
+                }
+                //bool holsterRefilled = ReloadClass.RefillMagsInSlot(EquipmentSlot.Holster, bot, weaponManager, 1, true);
+                //bool secondRefilled = ReloadClass.RefillMagsInSlot(EquipmentSlot.SecondPrimaryWeapon, bot, weaponManager, 1, true);
+                //bool primaryRefilled = ReloadClass.RefillMagsInSlot(EquipmentSlot.FirstPrimaryWeapon, bot, weaponManager, 1, true);
+                //if (!holsterRefilled &&
+                //    !secondRefilled &&
+                //    !primaryRefilled)
+                //{
+                //    Logger.LogWarning("Cant refill weapons!");
+                //    return false;
+                //}
+                if (weaponManager.Reload?.Reloading != true) weaponManager.Selector.TryChangeWeapon(true);
+                return false;
+            }
+
+            var reload = weaponManager.Reload;
+            if (reload == null) return false;
+            if (reload.Reloading) return false;
+
+            if (!weaponManager.IsReady) return false;
+            if (weaponManager.ShootController?.CanStartReload() != true) return false;
+
+
+            if (botOwner.WeaponManager.Malfunctions.HaveMalfunction() && botOwner.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
+                return false;
+
+            _nextGetRatioTime = Time.time + 0.025f;
+            _ammoRatio = getAmmoRatio(reload);
+            if (_ammoRatio <= 0)
+                botOwner.ShootData.EndShoot();
+
+
+            if (CheckReloadRatiosCanReload(enemy, RELOAD_AMMORATIO_MIN_PEACE, RELOAD_AMMORATIO_MAX, _ammoRatio))
+            {
+                if (reload.CanReload(true, out var MagazineItemClass, out var list))
+                {
+                    botOwner.ShootData.EndShoot();
+                    if (MagazineItemClass != null)
+                    {
+                        reload.ReloadMagazine(MagazineItemClass);
+                        reload.Reloading = true;
+                        _lastReloadTime = Time.time;
+                        return true;
+                    }
+                    else if (list != null && list.Count > 0)
+                    {
+                        reload.ReloadAmmo(list);
+                        reload.Reloading = true;
+                        _lastReloadTime = Time.time;
+                        return true;
+                    }
+                }
+                if (enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
+                {
+                    weaponManager.Selector.ChangeToMelee();
+                }
+
+            }
+            return false;
+        }
+
+        private static bool CheckReloadRatiosCanReload(Enemy enemy, float RELOAD_AMMORATIO_MIN_PEACE, float RELOAD_AMMORATIO_MAX, float ammoRatio)
+        {
+            if (ammoRatio > 0f)
+            {
+                if (ammoRatio >= RELOAD_AMMORATIO_MAX)
+                {
+                    return false;
+                }
+                if (enemy == null)
+                {
+                    if (ammoRatio < RELOAD_AMMORATIO_MIN_PEACE)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (!CheckReloadByAmmoRemaining(enemy, ammoRatio))
+                {
+                    return false;
+                }
+                // TODO: Test to see if this is too much and makes bots not reload often enough
+                //foreach (var knownEnemy in bot.EnemyController.EnemyLists.KnownEnemies)
+                //{
+                //    if (!CheckReloadByAmmoRemaining(knownEnemy, ammoRatio))
+                //    {
+                //        return false;
+                //    }
+                //}
+            }
+            return true;
         }
 
         private bool StartBotHeal(ref ESelfDecision Decision)
@@ -45,10 +172,10 @@ namespace SAIN.SAINComponent.Classes.Decision
                 float TimeSinceShot = Bot.Medical.TimeSinceShot;
                 if (TimeSinceShot < TimeSinceShotToBlockHeal)
                 {
+                    _nextCheckHealTime = Time.time + 0.2f;
                     return false;
                 }
-                _nextCheckHealTime = Time.time + 0.5f;
-
+                _nextCheckHealTime = Time.time + 1f;
                 if (startUseStims())
                 {
                     Decision = ESelfDecision.Stims;
@@ -65,62 +192,26 @@ namespace SAIN.SAINComponent.Classes.Decision
                     return true;
                 }
             }
-
             return false;
-        }
-
-        private bool ShotRecently()
-        {
-            const float TimeSinceShotToBlockHeal = 1.0f;
-            return Bot.Medical.TimeSinceShot <= TimeSinceShotToBlockHeal;
         }
 
         private float _nextCheckHealTime;
 
-        private void TryFixBusyHands()
+        private bool CheckContinueSelfAction(out ESelfDecision Decision, Enemy enemy)
         {
-            if (BusyHandsTimer > Time.time)
-            {
-                return;
-            }
-            BusyHandsTimer = Time.time + 1f;
-
-            var selector = BotOwner.WeaponManager?.Selector;
-            if (selector == null)
-            {
-                return;
-            }
-            if (selector.TryChangeWeapon(true))
-            {
-                return;
-            }
-            if (selector.TakePrevWeapon())
-            {
-                return;
-            }
-            if (selector.TryChangeToMain())
-            {
-                return;
-            }
-            if (selector.CanChangeToSecondWeapons)
-            {
-                selector.ChangeToSecond();
-                return;
-            }
-        }
-
-        private float BusyHandsTimer;
-        private float _nextCheckReloadTime;
-
-        private bool CheckContinueSelfAction(out ESelfDecision Decision)
-        {
+            Decision = ESelfDecision.None;
             switch (CurrentSelfAction)
             {
                 case ESelfDecision.FirstAid:
-                    return checkContinueFirstAid(_timeSinceChangeDecision, out Decision);
+                    return checkContinueFirstAid(_timeSinceChangeDecision, out Decision, enemy);
 
                 case ESelfDecision.Reload:
-                    return checkContinueReload(_timeSinceChangeDecision, out Decision);
+                    if (checkContinueReload(_timeSinceChangeDecision, enemy))
+                    {
+                        Decision = ESelfDecision.Reload;
+                        return true;
+                    }
+                    return false;
 
                 case ESelfDecision.Surgery:
                     return checkContinueSurgery(out Decision);
@@ -134,33 +225,44 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
         }
 
-        private bool checkContinueReload(float timeSinceChange, out ESelfDecision Decision)
+        private bool checkContinueReload(float timeSinceChange, Enemy enemy)
         {
-            bool reloading = BotOwner.WeaponManager.Reload?.Reloading == true;
-            if (!StartBotReload())
+            BotComponent bot = Bot;
+            if (bot.Decision.CurrentSelfDecision != ESelfDecision.Reload)
+                return false;
+            BotWeaponManager weaponManager = bot.BotOwner.WeaponManager;
+            if (weaponManager == null) return false;
+            BotReload reload = weaponManager.Reload;
+            if (reload == null) return false;
+            bool reloading = reload.Reloading;
+            if (!reloading) return false;
+            Weapon currentWeapon = weaponManager.CurrentWeapon;
+            if (currentWeapon == null) return false;
+
+            const int BULLET_COUNT_TO_STOP_RELOAD = 3;
+            if (currentWeapon.ReloadMode == Weapon.EReloadMode.InternalMagazine &&
+                reload.BulletCount >= BULLET_COUNT_TO_STOP_RELOAD &&
+                enemy != null &&
+                enemy.IsVisible &&
+                Time.time - enemy.Vision.VisibleStartTime > 0.25f)
             {
-                if (reloading)
-                {
-                    Bot.SelfActions.BotCancelReload();
-                }
-                Decision = ESelfDecision.None;
+                reload.TryStopReload();
+                //if (this._nextPossibleTryStopReload < Time.time)
+                //{
+                //    this._nextPossibleTryStopReload = Time.time + 1f;
+                //    BotOwner.ShootData.Shoot();
+                //}
+                //return false;
+            }
+
+            reload.CheckReloadLongTime();
+
+            if (timeSinceChange > 8f)
+            {
+                Bot.SelfActions.BotCancelReload();
                 return false;
             }
-
-            if (reloading || timeSinceChange < 0.5f)
-            {
-                if (timeSinceChange > 5f)
-                {
-                    Bot.SelfActions.BotCancelReload();
-                    Decision = ESelfDecision.None;
-                    return false;
-                }
-                Decision = ESelfDecision.Reload;
-                return true;
-            }
-
-            Decision = ESelfDecision.None;
-            return false;
+            return true;
         }
 
         private bool checkContinueSurgery(out ESelfDecision Decision)
@@ -181,7 +283,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             return false;
         }
 
-        private bool checkContinueFirstAid(float timeSinceChange, out ESelfDecision Decision)
+        private bool checkContinueFirstAid(float timeSinceChange, out ESelfDecision Decision, Enemy enemy)
         {
             if (BotOwner?.Medecine == null)
             {
@@ -192,7 +294,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 Bot.Medical.TryCancelHeal();
                 Decision = ESelfDecision.None;
-                TryFixBusyHands();
+                //TryFixBusyHands();
                 return false;
             }
             Decision = ESelfDecision.FirstAid;
@@ -209,7 +311,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (timeSinceChange > 3f)
             {
                 Bot.Medical.TryCancelHeal();
-                TryFixBusyHands();
+                //TryFixBusyHands();
                 Decision = ESelfDecision.None;
                 return false;
             }
@@ -226,10 +328,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         public bool UsingMeds => BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfDecision.None;
 
-        private bool ContinueReload => BotOwner.WeaponManager.Reload?.Reloading == true && CurrentSelfAction == ESelfDecision.Reload; //  && !StartCancelReload()
-
-        public bool CanUseStims
-        {
+        public bool CanUseStims {
             get
             {
                 var stims = BotOwner.Medecine?.Stimulators;
@@ -262,13 +361,17 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return true;
             }
             foreach (Enemy enemy in Bot.EnemyController.EnemyLists.KnownEnemies)
-                if (!shallUseStimsCheckEnemy(enemy))
+                if (!ShallUseStimsCheckEnemy(enemy))
                     return false;
             return true;
         }
 
         private bool startFirstAid()
         {
+            if (Bot.Medical.TimeSinceShot < 0.25f)
+            {
+                return false;
+            }
             if (!CanUseFirstAid)
             {
                 return false;
@@ -282,33 +385,24 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return true;
             }
             foreach (Enemy enemy in Bot.EnemyController.EnemyLists.KnownEnemies)
-                if (!shallFirstAidCheckEnemy(enemy))
+                if (!ShallFirstAidCheckEnemy(enemy))
                     return false;
 
             return true;
         }
 
-        private bool shallHealInLineOfSight(Enemy enemy, out bool enemyVisible)
-        {
-            if (enemy == null)
-            {
-                enemyVisible = false;
-                return false;
-            }
-            if (!enemy.IsVisible && !enemy.InLineOfSight)
-            {
-                enemyVisible = false;
-                return false;
-            }
-            enemyVisible = true;
-            if (Bot.Decision.RunningToCover)
-            {
-                return Bot.Memory.Health.Dying || Bot.Memory.Health.BadlyInjured;
-            }
-            return false;
-        }
+        //public struct BotCombatStimsSettings()
+        //{
+        //    bool MustBeSeen = true;
+        //    bool MustBeHeard = true;
+        //    bool MustBeSeenAndHeard = true;
+        //    bool CanBeInLineOfSight = false;
+        //    float TimeSinceKnownIfUnseenToUse = 3f;
+        //    float PathVeryCloseDist =
+        //
+        //}
 
-        private bool shallUseStimsCheckEnemy(Enemy enemy)
+        private static bool ShallUseStimsCheckEnemy(Enemy enemy)
         {
             if (enemy == null)
             {
@@ -329,29 +423,17 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return true;
             }
 
-            switch (enemy.EPathDistance)
-            {
-                case EPathDistance.VeryClose:
-                    return timeSinceLastKnownUpdated > 6f;
-
-                case EPathDistance.Close:
-                    return timeSinceLastKnownUpdated > 3f;
-
-                case EPathDistance.Mid:
-                    return enemy.TimeSinceSeen > 2f;
-
-                case EPathDistance.Far:
-                    return true;
-
-                case EPathDistance.VeryFar:
-                    return true;
-
-                default:
-                    return false;
-            }
+            return enemy.EPathDistance switch {
+                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 6f,
+                EPathDistance.Close => timeSinceLastKnownUpdated > 3f,
+                EPathDistance.Mid => enemy.TimeSinceSeen > 2f,
+                EPathDistance.Far => true,
+                EPathDistance.VeryFar => true,
+                _ => false,
+            };
         }
 
-        private bool shallFirstAidCheckEnemy(Enemy enemy)
+        private bool ShallFirstAidCheckEnemy(Enemy enemy)
         {
             if (enemy == null || !enemy.CheckValid())
             {
@@ -366,342 +448,197 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return false;
             }
             float timeSinceLastKnownUpdated = enemy.TimeSinceLastKnownUpdated;
-            if (!enemy.Seen && timeSinceLastKnownUpdated > 8f)
+            ETagStatus healthStatus = Bot.Memory.Health.HealthStatus;
+            if (healthStatus != ETagStatus.BadlyInjured && healthStatus != ETagStatus.Dying && !enemy.Seen && timeSinceLastKnownUpdated > 8f)
             {
                 return true;
             }
 
-            switch (Bot.Memory.Health.HealthStatus)
-            {
-                default:
-                    return false;
-
-                case ETagStatus.Injured:
-
-                    switch (enemy.EPathDistance)
-                    {
-                        case EPathDistance.VeryClose:
-                            return timeSinceLastKnownUpdated > 20f;
-
-                        case EPathDistance.Close:
-                            return timeSinceLastKnownUpdated > 15f;
-
-                        case EPathDistance.Mid:
-                            return enemy.TimeSinceSeen > 8f;
-
-                        case EPathDistance.Far:
-                            return enemy.TimeSinceSeen > 5f;
-
-                        case EPathDistance.VeryFar:
-                            return enemy.TimeSinceSeen > 3f;
-
-                        default:
-                            return false;
-                    }
-
-                case ETagStatus.BadlyInjured:
-
-                    switch (enemy.EPathDistance)
-                    {
-                        case EPathDistance.VeryClose:
-                            return timeSinceLastKnownUpdated > 18;
-
-                        case EPathDistance.Close:
-                            return timeSinceLastKnownUpdated > 12;
-
-                        case EPathDistance.Mid:
-                            return enemy.TimeSinceSeen > 6;
-
-                        case EPathDistance.Far:
-                            return enemy.TimeSinceSeen > 4;
-
-                        case EPathDistance.VeryFar:
-                            return enemy.TimeSinceSeen > 2;
-
-                        default:
-                            return false;
-                    }
-
-                case ETagStatus.Dying:
-
-                    switch (enemy.EPathDistance)
-                    {
-                        case EPathDistance.VeryClose:
-                            return timeSinceLastKnownUpdated > 15;
-
-                        case EPathDistance.Close:
-                            return timeSinceLastKnownUpdated > 10;
-
-                        case EPathDistance.Mid:
-                            return enemy.TimeSinceSeen > 4;
-
-                        case EPathDistance.Far:
-                            return enemy.TimeSinceSeen > 3;
-
-                        case EPathDistance.VeryFar:
-                            return enemy.TimeSinceSeen > 2;
-
-                        default:
-                            return false;
-                    }
-            }
+            return healthStatus switch {
+                ETagStatus.Injured => enemy.EPathDistance switch {
+                    EPathDistance.VeryClose => timeSinceLastKnownUpdated > 20f && (!enemy.Seen || enemy.TimeSinceSeen > 20f),
+                    EPathDistance.Close => timeSinceLastKnownUpdated > 15f && (!enemy.Seen || enemy.TimeSinceSeen > 15f),
+                    EPathDistance.Mid => enemy.TimeSinceSeen > 8f && (!enemy.Seen || enemy.TimeSinceSeen > 8f),
+                    EPathDistance.Far => enemy.TimeSinceSeen > 5f && (!enemy.Seen || enemy.TimeSinceSeen > 5f),
+                    EPathDistance.VeryFar => enemy.TimeSinceSeen > 3f && (!enemy.Seen || enemy.TimeSinceSeen > 3f),
+                    _ => false,
+                },
+                ETagStatus.BadlyInjured => enemy.EPathDistance switch {
+                    EPathDistance.VeryClose => timeSinceLastKnownUpdated > 18 && (!enemy.Seen || enemy.TimeSinceSeen > 18),
+                    EPathDistance.Close => timeSinceLastKnownUpdated > 12 && (!enemy.Seen || enemy.TimeSinceSeen > 12),
+                    EPathDistance.Mid => timeSinceLastKnownUpdated > 6 && (!enemy.Seen || enemy.TimeSinceSeen > 6),
+                    EPathDistance.Far => timeSinceLastKnownUpdated > 4 && (!enemy.Seen || enemy.TimeSinceSeen > 4),
+                    EPathDistance.VeryFar => timeSinceLastKnownUpdated > 2 && (!enemy.Seen || enemy.TimeSinceSeen > 2),
+                    _ => false,
+                },
+                ETagStatus.Dying => enemy.EPathDistance switch {
+                    EPathDistance.VeryClose => timeSinceLastKnownUpdated > 15 && (!enemy.Seen || enemy.TimeSinceSeen > 15),
+                    EPathDistance.Close => timeSinceLastKnownUpdated > 10 && (!enemy.Seen || enemy.TimeSinceSeen > 10),
+                    EPathDistance.Mid => timeSinceLastKnownUpdated > 4 && (!enemy.Seen || enemy.TimeSinceSeen > 4),
+                    EPathDistance.Far => timeSinceLastKnownUpdated > 3 && (!enemy.Seen || enemy.TimeSinceSeen > 3),
+                    EPathDistance.VeryFar => timeSinceLastKnownUpdated > 2 && (!enemy.Seen || enemy.TimeSinceSeen > 2),
+                    _ => false,
+                },
+                _ => false,
+            };
         }
 
-        public bool StartCancelReload()
+        private static bool CheckReloadByAmmoRemaining(Enemy enemy, float ammoRatio)
         {
-            if (!BotOwner.WeaponManager?.IsReady == true || BotOwner.WeaponManager.Reload.BulletCount == 0 || BotOwner.WeaponManager.CurrentWeapon.ReloadMode == EFT.InventoryLogic.Weapon.EReloadMode.ExternalMagazine)
+            const float RELOAD_AMMORATIO_UPPER = 0.66f;
+            const float RELOAD_AMMORATIO_UPPER_TimeSinceSeen = 15f;
+            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose = 90f;
+            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close = 12f;
+            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid = 6f;
+            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far = 3f;
+            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryFar = 3f;
+
+            const float RELOAD_AMMORATIO_MID = 0.4f;
+            const float RELOAD_AMMORATIO_MID_TimeSinceSeen = 20f;
+            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose = 60;
+            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Close = 8f;
+            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid = 4f;
+            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Far = 2f;
+            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar = 2f;
+
+            const float RELOAD_AMMORATIO_LOW = 0.2f;
+            const float RELOAD_AMMORATIO_LOW_TimeSinceSeen = 4f;
+            const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose = 2f;
+            const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close = 2f;
+            const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Mid = 1f;
+            const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Far = 1f;
+            const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryFar = 1f;
+
+            const float RELOAD_AMMORATIO_MINIMUM_TIMESINCESEEN = 2f;
+
+            if (enemy.IsVisible && enemy.CanShoot)
             {
                 return false;
             }
-
-            var enemy = Bot.Enemy;
-            if (enemy != null && BotOwner.WeaponManager.Reload.Reloading && Bot.Enemy != null)
-            {
-                var pathStatus = enemy.EPathDistance;
-                bool SeenRecent = Time.time - enemy.TimeSinceSeen > 3f;
-
-                if (SeenRecent && Vector3.Distance(BotOwner.Position, enemy.EnemyIPlayer.Position) < 8f)
-                {
-                    return true;
-                }
-
-                if (!LowOnAmmo(0.15f) && enemy.IsVisible)
-                {
-                    return true;
-                }
-                if (pathStatus == EPathDistance.VeryClose)
-                {
-                    return true;
-                }
-                if (BotOwner.WeaponManager.Reload.BulletCount > 1 && pathStatus == EPathDistance.Close)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool StartBotReload()
-        {
-            if (BotOwner.WeaponManager?.Reload?.Reloading == true)
-            {
-                if (Bot.Enemy?.IsVisible == true && BotOwner.WeaponManager.Reload.BulletCount > 3)
-                {
-                    TryStopReload();
-                    return false;
-                }
-                BotOwner.WeaponManager.Reload.CheckReloadLongTime();
-                _nextCheckReloadTime = Time.time + 0.5f;
-                _needToReload = false;
-                return Bot.Decision.CurrentSelfDecision == ESelfDecision.Reload;
-            }
-
-            // Only allow reloading every 1 seconds to avoid spamming reload when the weapon data is bad
-            if (_nextCheckReloadTime < Time.time)
-            {
-                _nextCheckReloadTime = Time.time + 0.5f;
-                _needToReload = checkNeedToReload();
-            }
-            return _needToReload;
-        }
-
-        public void TryStopReload()
-        {
-            if (this._nextPossibleTryStopReload < Time.time)
-            {
-                this._nextPossibleTryStopReload = Time.time + 1f;
-                BotOwner.ShootData.Shoot();
-            }
-        }
-
-        private float _nextPossibleTryStopReload;
-
-        private bool checkNeedToReload()
-        {
-            if (BotOwner.WeaponManager?.IsReady == false)
+            float timeSinceSensed = enemy.TimeSinceLastKnownUpdated;
+            if (timeSinceSensed < 0.2f)
             {
                 return false;
-            }
-
-            if (BotOwner.Medecine?.Using == true)
-            {
-                return false;
-            }
-
-            if (BotOwner.WeaponManager.Malfunctions.HaveMalfunction() &&
-                BotOwner.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
-            {
-                return false;
-            }
-
-            var currentMagazine = BotOwner.WeaponManager.CurrentWeapon.GetCurrentMagazine();
-            if (currentMagazine != null && currentMagazine.MaxCount == BotOwner.WeaponManager.CurrentWeapon.GetCurrentMagazineCount())
-            {
-                return false;
-            }
-
-            if (!BotOwner.WeaponManager.Reload.CanReload(true))
-            {
-                return false;
-            }
-
-            float ammoRatio = AmmoRatio;
-            if (ammoRatio >= 0.85f)
-            {
-                return false;
-            }
-            if (ammoRatio <= 0)
-            {
-                return true;
-            }
-
-            var enemy = Bot.Enemy;
-            if (enemy == null)
-            {
-                return ammoRatio < 0.8f;
             }
 
             EPathDistance distance = enemy.EPathDistance;
 
-            if (ammoRatio > 0.66f)
+            if (ammoRatio > RELOAD_AMMORATIO_UPPER)
             {
-                if (enemy.TimeSinceSeen > 15f)
-                {
+                if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_TimeSinceSeen)
                     return true;
-                }
                 switch (distance)
                 {
                     case EPathDistance.VeryClose:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose)
+                            return true;
                         break;
 
                     case EPathDistance.Close:
-                        if (enemyNotSeenFor(enemy, 12f))
-                        {
+                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close)
                             return true;
-                        }
                         break;
 
                     case EPathDistance.Mid:
-                        if (enemyNotSeenFor(enemy, 6f))
-                        {
+                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid)
                             return true;
-                        }
                         break;
 
                     case EPathDistance.Far:
-                    case EPathDistance.VeryFar:
-                        if (enemyNotSeenFor(enemy, 3f))
-                        {
+                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far)
                             return true;
-                        }
+                        break;
+
+                    case EPathDistance.VeryFar:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryFar)
+                            return true;
+                        break;
+                }
+                return false;
+            }
+            if (ammoRatio > RELOAD_AMMORATIO_MID)
+            {
+                if (timeSinceSensed > RELOAD_AMMORATIO_MID_TimeSinceSeen)
+                    return true;
+                return distance switch {
+                    EPathDistance.VeryClose => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose,
+                    EPathDistance.Close => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_Close,
+                    EPathDistance.Mid => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid,
+                    EPathDistance.Far => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_Far,
+                    EPathDistance.VeryFar => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar,
+                    _ => false,
+                };
+            }
+
+            if (ammoRatio > RELOAD_AMMORATIO_LOW)
+            {
+                if (enemy.TimeSinceSeen > RELOAD_AMMORATIO_LOW_TimeSinceSeen)
+                    return true;
+                switch (distance)
+                {
+                    case EPathDistance.VeryClose:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose)
+                            return true;
+                        break;
+
+                    case EPathDistance.Close:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close)
+                            return true;
+                        break;
+
+                    case EPathDistance.Mid:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Mid)
+                            return true;
+                        break;
+
+                    case EPathDistance.Far:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Far)
+                            return true;
+                        break;
+
+                    case EPathDistance.VeryFar:
+                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryFar)
+                            return true;
                         break;
                 }
                 return false;
             }
 
-            if (ammoRatio > 0.4f)
+            if (timeSinceSensed > RELOAD_AMMORATIO_MINIMUM_TIMESINCESEEN)
             {
-                if (enemy.TimeSinceSeen > 10f)
-                {
-                    return true;
-                }
-                switch (distance)
-                {
-                    case EPathDistance.VeryClose:
-                        break;
-
-                    case EPathDistance.Close:
-                        if (enemyNotSeenFor(enemy, 8f))
-                        {
-                            return true;
-                        }
-                        break;
-
-                    case EPathDistance.Mid:
-                        if (enemyNotSeenFor(enemy, 4f))
-                        {
-                            return true;
-                        }
-                        break;
-
-                    case EPathDistance.Far:
-                    case EPathDistance.VeryFar:
-                        if (enemyNotSeenFor(enemy, 2f))
-                        {
-                            return true;
-                        }
-                        break;
-                }
-                return false;
+                return true;
             }
-
-            if (ammoRatio > 0.2f)
-            {
-                if (enemy.TimeSinceSeen > 4f)
-                {
-                    return true;
-                }
-                switch (distance)
-                {
-                    case EPathDistance.VeryClose:
-                    case EPathDistance.Close:
-                        if (enemyNotSeenFor(enemy, 2f))
-                        {
-                            return true;
-                        }
-                        break;
-
-                    case EPathDistance.Mid:
-                    case EPathDistance.Far:
-                    case EPathDistance.VeryFar:
-                        if (enemyNotSeenFor(enemy, 1f))
-                        {
-                            return true;
-                        }
-                        break;
-                }
-                return false;
-            }
-
-            return enemy.TimeSinceSeen > 2f;
+            return false;
         }
-
-        private bool enemyNotSeenFor(Enemy enemy, float time)
-        {
-            return enemy != null &&
-                !enemy.IsVisible &&
-                enemy.TimeSinceSeen > time;
-        }
-
-        private bool _needToReload;
 
         public bool LowOnAmmo(float ratio = 0.3f)
         {
             return AmmoRatio < ratio;
         }
 
-        public float AmmoRatio
-        {
+        public float AmmoRatio {
             get
             {
                 if (_nextGetRatioTime < Time.time)
                 {
-                    _nextGetRatioTime = Time.time + 0.1f;
-                    _ammoRatio = getAmmoRatio();
+                    _nextGetRatioTime = Time.time + 0.025f;
+                    _ammoRatio = getAmmoRatio(BotOwner.WeaponManager?.Reload);
                 }
                 return _ammoRatio;
             }
         }
 
-        private float getAmmoRatio()
+        private float getAmmoRatio(BotReload reload)
         {
             float ratio = _ammoRatio;
             try
             {
-                int currentAmmo = BotOwner.WeaponManager.Reload.BulletCount;
-                int maxAmmo = BotOwner.WeaponManager.Reload.MaxBulletCount;
-                ratio = (float)currentAmmo / maxAmmo;
+                if (reload != null)
+                {
+                    int currentAmmo = reload.BulletCount;
+                    int maxAmmo = reload.MaxBulletCount;
+                    ratio = (float)currentAmmo / maxAmmo;
+                }
             }
             catch
             {

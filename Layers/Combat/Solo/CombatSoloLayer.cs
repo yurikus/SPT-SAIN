@@ -28,9 +28,11 @@ namespace SAIN.Layers.Combat.Solo
                 case ECombatDecision.MoveToEngage:
                     return new Action(typeof(MoveToEngageAction), $"{_lastDecision}");
 
-                case ECombatDecision.TagillaMelee:
                 case ECombatDecision.MeleeAttack:
                     return new Action(typeof(MeleeAttackAction), $"{_lastDecision}");
+
+                case ECombatDecision.FightZombies:
+                    return new Action(typeof(FightZombiesAction), $"{_lastDecision}");
 
                 case ECombatDecision.RushEnemy:
                     return new Action(typeof(RushEnemyAction), $"{_lastDecision}");

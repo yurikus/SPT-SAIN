@@ -12,6 +12,28 @@ namespace SAIN.Preset.GlobalSettings.Categories
         public override void Update()
         {
         }
+        
+        [Name("Enemy Suppression Toggle")]
+        [Category("Enemy Suppression")]
+        public bool TARGET_SUPPRESS_TOGGLE = true;
+        
+        [Name("Suppression Distance - Close")]
+        [Category("Enemy Suppression")]
+        [Description("If a enemy's visible path point is closer than this to where a bot thinks they are, they can suppress without checking the angle")]
+        [MinMax(0f, 10f, 100f)]
+        public float TARGET_SUPPRESS_DIST = 3f;
+
+        [Name("Suppression Distance - Far")]
+        [Category("Enemy Suppression")]
+        [Description("If a enemy's visible path point is closer than this to where a bot thinks they are, they can suppress after checking the angle.")]
+        [MinMax(0f, 30f, 100f)]
+        public float TARGET_SUPPRESS_DIST_MAX = 12f;
+
+        [Name("Suppression Distance - Far Angle")]
+        [Category("Enemy Suppression")]
+        [Description("If the horizontal angle from an enemy visible path point to where their last known position is less than this, they can suppress.")]
+        [MinMax(0f, 180f, 1f)]
+        public float MAX_TARGET_SUPPRESS_ANGLE = 45f;
 
         [Category("Enemy Sniper Reaction")]
         [Description("If a bot thinks it is under fire from a sniper, they will always want to sprint to cover.")]

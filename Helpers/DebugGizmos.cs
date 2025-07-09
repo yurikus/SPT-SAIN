@@ -178,7 +178,7 @@ namespace SAIN.Helpers
         private static float _screenScale = 1.0f;
         private static float _nextCheckScreenTime;
 
-        public static GameObject Sphere(Vector3 position, float size, Color color, bool temporary = false, float expiretime = 1f)
+        public static GameObject Sphere(Vector3 position, float size, Color color, float expiretime = -1f)
         {
             if (!DrawGizmos)
             {
@@ -254,15 +254,15 @@ namespace SAIN.Helpers
 
         public static GameObject Sphere(Vector3 position, float size, float expiretime = 1f)
         {
-            return Sphere(position, size, RandomColor, expiretime > 0, expiretime);
+            return Sphere(position, size, RandomColor, expiretime);
         }
 
         public static GameObject Sphere(Vector3 position, float expiretime = 1f)
         {
-            return Sphere(position, 0.25f, RandomColor, expiretime > 0, expiretime);
+            return Sphere(position, 0.25f, RandomColor, expiretime);
         }
 
-        public static GameObject Line(Vector3 startPoint, Vector3 endPoint, Color color, float lineWidth = 0.1f, bool temporary = false, float expiretime = 1f, bool taperLine = false)
+        public static GameObject Line(Vector3 startPoint, Vector3 endPoint, Color color, float lineWidth = 0.1f, float expiretime = -1f, bool taperLine = false)
         {
             if (!DrawGizmos)
             {
@@ -326,13 +326,13 @@ namespace SAIN.Helpers
 
         public static GameObject Line(Vector3 startPoint, Vector3 endPoint, float lineWidth = 0.1f, float expiretime = 1f, bool taperLine = false)
         {
-            return Line(startPoint, endPoint, RandomColor, lineWidth, expiretime > 0, expiretime, taperLine);
+            return Line(startPoint, endPoint, RandomColor, lineWidth, expiretime, taperLine);
         }
 
         public static GameObject Ray(Vector3 startPoint, Vector3 direction, Color color, float length = 0.35f, float lineWidth = 0.1f, bool temporary = false, float expiretime = 1f, bool taperLine = false)
         {
             Vector3 endPoint = startPoint + direction.normalized * length;
-            return Line(startPoint, endPoint, color, lineWidth, expiretime > 0, expiretime, taperLine);
+            return Line(startPoint, endPoint, color, lineWidth, expiretime, taperLine);
         }
 
         public static List<GameObject> DrawLinesBetweenPoints(float lineSize, float raisePoints, params Vector3[] points)
@@ -395,7 +395,7 @@ namespace SAIN.Helpers
             {
                 Vector3 pointA = points[i];
                 pointA.y += raisePoints;
-                GameObject sphere = Sphere(pointA, size, color, expireTime > 0, expireTime);
+                GameObject sphere = Sphere(pointA, size, color, expireTime);
                 list.Add(sphere);
             }
         }
@@ -427,7 +427,7 @@ namespace SAIN.Helpers
                 Color color = RandomColor;
 
                 float sphereSize = Mathf.Clamp(lineSize * sphereMulti, minSphere, maxSphere);
-                GameObject sphere = Sphere(pointA, sphereSize, color, expireTime > 0, expireTime);
+                GameObject sphere = Sphere(pointA, sphereSize, color, expireTime);
                 list.Add(sphere);
 
                 DrawLinesToPoint(list, pointA, color, lineSize, expireTime, raisePoints, points);
@@ -449,7 +449,7 @@ namespace SAIN.Helpers
                 pointA.y += raisePoints;
 
                 float sphereSize = Mathf.Clamp(lineSize * sphereMulti, minSphere, maxSphere);
-                GameObject sphere = Sphere(pointA, sphereSize, color, expireTime > 0, expireTime);
+                GameObject sphere = Sphere(pointA, sphereSize, color, expireTime);
                 list.Add(sphere);
 
                 DrawLinesToPoint(list, pointA, color, lineSize, expireTime, raisePoints, points);
@@ -506,7 +506,7 @@ namespace SAIN.Helpers
                         color = active ? colorActive : colorInActive;
                     }
 
-                    Line(corner1, corner2, color, lineSize, true, expireTime);
+                    Line(corner1, corner2, color, lineSize, expireTime);
                 }
             }
 

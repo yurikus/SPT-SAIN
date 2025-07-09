@@ -52,7 +52,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public override void ManualUpdate()
         {
             DoorFinder.ManualUpdate();
-            if (Bot.Mover.PathFollower.Moving)
+            if (Bot.Mover.PathFollower.Moving || BotOwner.Mover.HasPathAndNoComplete)
             {
                 CheckUseSAINOpener();
             }
@@ -78,6 +78,10 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool CheckUseSAINOpener()
         {
             if (!SAINPlugin.LoadedPreset.GlobalSettings.General.Doors.NewDoorOpening)
+            {
+                return BotOwner.DoorOpener.Update();
+            }
+            if (ModDetection.ProjectFikaLoaded)
             {
                 return BotOwner.DoorOpener.Update();
             }
@@ -144,9 +148,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 Vector3 linkPosition = link.transform.position + Vector3.down;
                 var objects = new linkObjects {
-                    link = DebugGizmos.Line(linkPosition, linkPosition + Vector3.up * 2f, Color.white, 0.2f, false, -1f),
-                    midOpen = DebugGizmos.Line(linkPosition, link.MidOpen + Vector3.down, Color.blue, 0.2f, false, -1f),
-                    midClose = DebugGizmos.Line(linkPosition, link.MidClose + Vector3.down, Color.green, 0.2f, false, -1f),
+                    link = DebugGizmos.Line(linkPosition, linkPosition + Vector3.up * 2f, Color.white, 0.2f),
+                    midOpen = DebugGizmos.Line(linkPosition, link.MidOpen + Vector3.down, Color.blue, 0.2f),
+                    midClose = DebugGizmos.Line(linkPosition, link.MidClose + Vector3.down, Color.green, 0.2f),
                 };
                 _debugObjects.Add(link, objects);
             }
@@ -401,10 +405,11 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool ShallPauseSprintForOpening()
         {
-            if (!Interacting)
+            if (!Interacting || !BreachingDoor)
             {
                 return false;
             }
+            return true;
 
             var general = GlobalSettingsClass.Instance.General.Doors;
             return
@@ -440,14 +445,17 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     return true;
                 }
-                float timeSinceSeen = enemy.TimeSinceSeen;
-                if (timeSinceSeen < 3f)
+                float? timeSinceSeen = enemy.TimeSinceSeen;
+                if (timeSinceSeen != null)
                 {
-                    return true;
-                }
-                if (timeSinceSeen < 5f && enemy.InLineOfSight)
-                {
-                    return true;
+                    if (timeSinceSeen.Value < 3f)
+                    {
+                        return true;
+                    }
+                    if (timeSinceSeen.Value < 5f && enemy.InLineOfSight)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -482,8 +490,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             const float DOOR_INTERACTION_TIME_BREACH = 1.5f;
-            const float DOOR_INTERACTION_TIME_OPEN = 0.6f;
-            const float DOOR_INTERACTION_TIME_CLOSE = 0.2f;
+            const float DOOR_INTERACTION_TIME_OPEN = 0.35f;
+            const float DOOR_INTERACTION_TIME_CLOSE = 0.1f;
 
             _traversingEnd = Time.time;
             switch (Etype)

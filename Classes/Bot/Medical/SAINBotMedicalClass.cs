@@ -23,6 +23,7 @@ namespace SAIN.SAINComponent.Classes
             if (_nextCancelTime < Time.time)
             {
                 _nextCancelTime = Time.time + _cancelFreq;
+                BotOwner.Medecine?.Stimulators?.CancelCurrent();
                 BotOwner.Medecine?.FirstAid?.CancelCurrent();
             }
         }

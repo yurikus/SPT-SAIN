@@ -16,7 +16,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private SAINSquadClass Squad => Bot.Squad;
 
-        public bool GetDecision(out ESquadDecision Decision)
+        public bool GetDecision(out ESquadDecision Decision, Enemy enemy)
         {
             Decision = ESquadDecision.None;
             if (!Squad.BotInGroup || Bot.Squad.SquadInfo?.LeaderComponent == null || Squad.LeaderComponent?.IsDead == true)
@@ -24,7 +24,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return false;
             }
 
-            if (EnemyDecision(out Decision))
+            if (EnemyDecision(out Decision, enemy))
             {
                 return true;
             }
@@ -41,7 +41,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         float SquaDecision_RadioCom_MaxDistSq = 1200f;
         float SquadDecision_MyEnemySeenRecentTime = 10f;
 
-        private bool EnemyDecision(out ESquadDecision Decision)
+        private bool EnemyDecision(out ESquadDecision Decision, Enemy enemy)
         {
             Decision = ESquadDecision.None;
             Enemy myEnemy = Bot.Enemy;
@@ -109,12 +109,12 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 bool inRange = false;
                 float modifier = enemy.Status.VulnerableAction == EEnemyAction.UsingSurgery ? 1.25f : 1f;
-                if (enemy.Path.PathDistance < PushSuppressedEnemyMaxPathDistanceSprint * modifier
+                if (enemy.Path.PathLength < PushSuppressedEnemyMaxPathDistanceSprint * modifier
                     && BotOwner?.CanSprintPlayer == true)
                 {
                     inRange = true;
                 }
-                else if (enemy.Path.PathDistance < PushSuppressedEnemyMaxPathDistance * modifier)
+                else if (enemy.Path.PathLength < PushSuppressedEnemyMaxPathDistance * modifier)
                 {
                     inRange = true;
                 }
@@ -238,7 +238,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallHelp(BotComponent member)
         {
-            float distance = member.Enemy.Path.PathDistance;
+            float distance = member.Enemy.Path.PathLength;
             bool visible = member.Enemy.IsVisible;
 
             if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Help

@@ -1,6 +1,7 @@
 ﻿using EFT;
 using EFT.Game.Spawning;
 using EFT.InventoryLogic;
+using SAIN.Components.CoverFinder;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.RotationController;
 using SAIN.Helpers;
@@ -135,7 +136,8 @@ namespace SAIN.Components
         }
 
         private List<BulletData> ActiveBullets { get; } = [];
-
+         
+        public ColliderCoverManager CoverManager { get; private set; }
         public static GameWorldComponent Instance { get; private set; }
         public GameWorld GameWorld { get; private set; }
         public PlayerSpawnTracker PlayerTracker { get; private set; }
@@ -299,6 +301,7 @@ namespace SAIN.Components
             }
 
             SAINBotController = sainBotController;
+            CoverManager = gameWorld.GetOrAddComponent<ColliderCoverManager>();
             PlayerTracker = new PlayerSpawnTracker(this);
             Doors = new DoorHandler(this);
             Location = new LocationClass(this);

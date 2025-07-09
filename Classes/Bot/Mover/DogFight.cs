@@ -32,6 +32,18 @@ namespace SAIN.SAINComponent.Classes.Mover
         public void DogFightMove(bool aggressive, Enemy Enemy)
         {
             bool HasEnemy = Enemy != null;
+            if (HasEnemy && BotOwner.WeaponManager.IsMelee)
+            {
+                Bot.Mover.SetTargetPose(1f);
+                Bot.Mover.SetTargetMoveSpeed(1f);
+                Bot.Mover.Prone.SetProne(false);
+                BotOwner.WeaponManager.Melee.RunToEnemyUpdate();
+                if (BotOwner.WeaponManager.Melee.ShallEndRun)
+                {
+                    BotOwner.WeaponManager.Selector.TryChangeToMain();
+                }
+                return;
+            }
             if (HasEnemy &&
                 Enemy.IsVisible &&
                 Enemy.CanShoot &&
@@ -62,13 +74,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return;
             }
+            
+            Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies);
 
-            if (HasEnemy && !Enemy.IsVisible)
-            {
-                Bot.Suppression.TrySuppressEnemy(Enemy);
-            }
-
-            if (HasEnemy && backUpFromEnemy(Enemy))
+            if (HasEnemy && BackUpFromEnemy(Enemy))
             {
                 Status = EDogFightStatus.BackingUp;
                 float baseTime = Enemy.IsVisible ? 0.75f : 1f;
@@ -104,8 +113,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             //Enemy.CanShoot;
         }
 
-        private bool backUpFromEnemy(Enemy Enemy)
+        public bool BackUpFromEnemy(Enemy Enemy)
         {
+            if (Enemy == null) return false;
             if (findStrafePoint(out Vector3 backupPoint, Enemy))
             {
                 return true;

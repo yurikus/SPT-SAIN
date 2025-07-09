@@ -7,280 +7,74 @@ namespace SAIN.Components.BotComponentSpace.Classes
 {
     public class BotMagazineWeapon
     {
-        public BotMagazineWeapon(Weapon weapon, BotComponent bot)
+        private static readonly List<MagazineItemClass> _preAllocMagList = new(20);
+
+        public static bool RefillMags(BotComponent bot, BotWeaponInfo weapon, int numberToRefill = -1, bool includeActiveMag = false)
         {
-            Weapon = weapon;
-            _inventoryController = bot.Player.InventoryController;
-            _weaponManager = bot.BotOwner.WeaponManager;
-        }
-
-        public void Init(BotOwner botOwner)
-        {
-            RecheckMagazines();
-
-            if (botOwner == null)
-                return;
-
-            if (botOwner.ItemTaker != null)
-                botOwner.ItemTaker.OnItemTaken += checkItemTaken;
-
-            if (botOwner.ItemDropper != null)
-                botOwner.ItemDropper.OnItemDrop += checkItemDropped;
-        }
-
-        public void Dispose(BotOwner botOwner)
-        {
-            Magazines.Clear();
-
-            if (botOwner == null)
-                return;
-
-            if (botOwner.ItemTaker != null)
-                botOwner.ItemTaker.OnItemTaken -= checkItemTaken;
-
-            if (botOwner.ItemDropper != null)
-                botOwner.ItemDropper.OnItemDrop -= checkItemDropped;
-        }
-
-        private void checkItemTaken(Item item, IPlayer player)
-        {
-            if (item == null) return;
-            if (item is MagazineItemClass mag &&
-                _refill.magazineSlot?.CanAccept(mag) == true)
+            Slot slot = weapon.weapon.GetMagazineSlot();
+            if (slot == null)
             {
-                _needToRecheck = true;
-            }
-        }
-
-        private void checkItemDropped(Item item)
-        {
-            if (item == null) return;
-            if (item is MagazineItemClass mag &&
-                Magazines.Contains(mag))
-            {
-                _needToRecheck = true;
-            }
-        }
-
-        private void findMags()
-        {
-            Weapon weapon = Weapon;
-            if (weapon == null)
-            {
-                //Logger.LogDebug("Weapon Null");
-                _magsFound = false;
-                return;
-            }
-            _magsFound = GetNonActiveMagazines() > 0;
-        }
-
-        public void RecheckMagazines()
-        {
-            _needToRecheck = false;
-            Weapon weapon = Weapon;
-            if (weapon == null)
-            {
-                //Logger.LogDebug("Weapon Null");
-                _magsFound = false;
-                return;
-            }
-            MagazineItemClass currentMag = GetActiveMagazine();
-            _magsFound = GetNonActiveMagazines(currentMag) > 0;
-
-            FullMagazineCount = 0;
-            PartialMagazineCount = 0;
-            EmptyMagazineCount = 0;
-            if (_magsFound)
-            {
-                foreach (MagazineItemClass mag in Magazines)
-                {
-                    if (mag == null || mag == currentMag) continue;
-                    float ratio = getAmmoRatio(mag);
-                    if (ratio <= 0)
-                    {
-                        EmptyMagazineCount++;
-                        continue;
-                    }
-                    if (ratio < 1f)
-                    {
-                        PartialMagazineCount++;
-                        continue;
-                    }
-                    FullMagazineCount++;
-                }
-            }
-        }
-
-        public bool RefillRatioOfMags(float ratio)
-        {
-            RecheckMagazines();
-            int magCount = Magazines.Count;
-            if (magCount == 0)
-            {
+                Logger.LogError("slot null");
                 return false;
             }
-            int fullCount = FullMagazineCount;
-            float fullRatio = (float)fullCount / (float)magCount;
-            if (fullRatio >= ratio)
+            if (slot.ContainedItem is not MagazineItemClass activeMag)
             {
+                Logger.LogError($"mag null :: {slot.ContainedItem?.Name} :: {slot.ContainedItem?.ShortName}");
+                return false;
+            }
+
+            _preAllocMagList.Clear();
+            bot.Player.InventoryController.GetReachableItemsOfTypeNonAlloc<MagazineItemClass>(_preAllocMagList, null);
+            if (_preAllocMagList.Count == 0)
+            {
+                _preAllocMagList.Clear();
+                Logger.LogDebug($"[{bot.Info.Profile.NickName}] no mags");
+                return false;
+            }
+
+            int refilledMags = 0;
+            int fullMags = 0;
+            if (includeActiveMag)
+            {
+                CheckMag(weapon, ref refilledMags, ref fullMags, activeMag);
+            }
+            foreach (var mag in _preAllocMagList)
+            {
+                if (slot.CanAccept(mag))
+                {
+                    CheckMag(weapon, ref refilledMags, ref fullMags, mag);
+                    if (numberToRefill < 0) continue;
+                    if (refilledMags >= numberToRefill) break;
+                }
+            }
+            _preAllocMagList.Clear();
+
+            if (refilledMags > 0 || fullMags >= numberToRefill)
+            {
+                Logger.LogDebug($"[{bot.Info.Profile.NickName}] success mags {refilledMags} : {fullMags}");
                 return true;
             }
-
-            int countToReload = Mathf.RoundToInt((float)magCount / 2f);
-            if (countToReload < 1)
-                countToReload = 1;
-
-            return TryRefillMags(countToReload);
-        }
-
-        public void BotReloaded()
-        {
-            _needToRecheck = true;
-        }
-
-        private bool _magsFound;
-        private bool _needToRecheck;
-
-        public void Update()
-        {
-            if (_needToRecheck &&
-                !_weaponManager.Reload.Reloading)
-            {
-                RecheckMagazines();
-            }
-        }
-
-        private int GetNonActiveMagazines(MagazineItemClass activeMag = null)
-        {
-            Magazines.Clear();
-            _inventoryController.GetReachableItemsOfTypeNonAlloc<MagazineItemClass>(Magazines, _refill.canAccept);
-            int count = Magazines.Count;
-            activeMag ??= GetActiveMagazine();
-            if (activeMag != null && Magazines.Contains(activeMag))
-            {
-                count--;
-            }
-            return count;
-        }
-
-        public bool TryRefillAllMags()
-        {
-            return TryRefillMags(-1);
-        }
-
-        public bool TryRefillMags(int count, MagazineItemClass currentMagazine = null)
-        {
-            if (!_magsFound)
-            {
-                return false;
-            }
-            Weapon weapon = Weapon;
-            if (weapon == null)
-            {
-                //Logger.LogDebug("Weapon Null");
-                return false;
-            }
-            currentMagazine ??= weapon.GetMagazineSlot()?.ContainedItem as MagazineItemClass;
-            return RefillMagsInList(Magazines, currentMagazine, weapon, count);
-        }
-
-        public MagazineItemClass GetActiveMagazine()
-        {
-            Slot slot = Weapon?.GetMagazineSlot();
-            _refill.magazineSlot = slot;
-            return slot?.ContainedItem as MagazineItemClass;
-        }
-
-        private bool RefillMagsInList(List<MagazineItemClass> list, MagazineItemClass CurrentMagazine, Weapon weapon, int numberToRefill = -1)
-        {
-            int refilled = 0;
-            int full = 0;
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                MagazineItemClass mag = list[i];
-                if (mag == null || mag == CurrentMagazine) continue;
-                int capacity = mag.MaxCount;
-                if (mag.Count == capacity)
-                {
-                    full++;
-                    continue;
-                }
-                _weaponManager.Reload.method_2(weapon, mag);
-                if (mag.Count == capacity) refilled++;
-                if (numberToRefill < 0) continue;
-                if (refilled >= numberToRefill) break;
-            }
-
-            //foreach (MagazineItemClass mag in list)
-            //{
-            //    if (mag == null) continue;
-            //    int capacity = mag.MaxCount;
-            //    if (mag.Count == capacity)
-            //    {
-            //        full++;
-            //        continue;
-            //    }
-            //    _weaponManager.Reload.method_2(weapon, mag);
-            //    if (mag.Count == capacity) refilled++;
-            //    if (numberToRefill < 0) continue;
-            //    if (refilled >= numberToRefill) break;
-            //}
-
-            //Logger.LogDebug($"Refilled [{refilled}] magazines. Full Mags: [{full}]");
-            return refilled > 0 || full > 0;
-        }
-
-        private void checkMagAmmoStatus()
-        {
-            FullMagazineCount = 0;
-            PartialMagazineCount = 0;
-            EmptyMagazineCount = 0;
-            foreach (MagazineItemClass mag in Magazines)
-            {
-                if (mag == null) continue;
-                float ratio = getAmmoRatio(mag);
-                if (ratio <= 0)
-                {
-                    EmptyMagazineCount++;
-                    continue;
-                }
-                if (ratio < 1f)
-                {
-                    PartialMagazineCount++;
-                    continue;
-                }
-                FullMagazineCount++;
-            }
-        }
-
-        public bool CheckAnyMagHasAmmo(float ratioToCheck)
-        {
-            foreach (MagazineItemClass mag in Magazines)
-            {
-                float ammoRatio = getAmmoRatio(mag);
-                if (ammoRatio >= ratioToCheck)
-                {
-                    return true;
-                }
-            }
+            Logger.LogDebug($"[{bot.Info.Profile.NickName}] failed mags {refilledMags} : {fullMags}");
             return false;
         }
 
-        private float getAmmoRatio(MagazineItemClass magazine)
+        private static void CheckMag(BotWeaponInfo weapon, ref int refilled, ref int full, MagazineItemClass mag)
+        {
+            if (mag == null) return;
+            if (mag.Count == mag.MaxCount)
+            {
+                full++;
+                return;
+            }
+            weapon.Reload.method_2(weapon.weapon, mag);
+            refilled++;
+        }
+
+        public static float GetAmmoRatio(MagazineItemClass magazine)
         {
             if (magazine == null) return 0.0f;
 
             return (float)magazine.Count / (float)magazine.MaxCount;
         }
-
-        public int FullMagazineCount { get; private set; }
-        public int PartialMagazineCount { get; private set; }
-        public int EmptyMagazineCount { get; private set; }
-
-        public readonly Weapon Weapon;
-        public readonly List<MagazineItemClass> Magazines = new();
-        private readonly BotWeaponManager _weaponManager;
-        private readonly InventoryController _inventoryController;
-        private MagRefillClass _refill = new();
     }
 }

@@ -107,8 +107,8 @@ namespace SAIN.Layers
                 Bot.Mover.SetTargetMoveSpeed(1f);
             }
 
+            Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
             Bot.Steering.SteerByPriority(Bot.Enemy);
-            Shoot.CheckAimAndFire(Bot.Enemy);
             this.EndProfilingSample();
         }
 
@@ -123,7 +123,7 @@ namespace SAIN.Layers
         {
             return Bot.Enemy != null
                 && Bot.Enemy.Seen
-                && (Bot.Enemy.Path.PathDistance < 50f || Bot.Enemy.InLineOfSight);
+                && (Bot.Enemy.Path.PathLength < 50f || Bot.Enemy.InLineOfSight);
         }
 
         private bool shallSprint;

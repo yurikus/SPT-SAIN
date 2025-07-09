@@ -65,35 +65,36 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public bool AimAtTarget(Vector3 shootPoint, Enemy enemy, out bool AimComplete, IBotAiming currentAiming, BotComponent bot)
         {
-            currentAiming.SetTarget(shootPoint);
             BotOwner botOwner = bot.BotOwner;
             BotWeaponManager weaponManager = botOwner.WeaponManager;
             if (!weaponManager.HaveBullets || weaponManager.Reload.Reloading)
             {
                 botOwner.ShootData.EndShoot();
                 AimComplete = false;
+                Bot.Aim.LoseAimTarget();
                 return false;
             }
+            currentAiming.SetTarget(shootPoint);
             if (!bot.FriendlyFire.UpdateFriendlyFireStatus(currentAiming.LastDist2Target, bot.Transform.WeaponFirePort, bot.Transform.WeaponPointDirection, bot))
             {
                 botOwner.ShootData.EndShoot();
                 AimComplete = false;
+                Bot.Aim.LoseAimTarget();
                 return false;
             }
-            if (bot.NoBushESP.NoBushESPActive)
-            {
-                AimComplete = false;
-                return false;
-            }
+            //if (bot.NoBushESP.NoBushESPActive)
+            //{
+            //    AimComplete = false;
+            //    return false;
+            //}
 
-            CheckAimToEnemy(shootPoint, enemy);
+            CheckAimToEnemy(enemy);
             if (TurningWeaponToAimPoint)
             {
                 AimComplete = false;
                 // return true because we want to aim at this enemy, but haven't turned to do so yet.
                 return true;
             }
-
             // Tick aim
             currentAiming.NodeUpdate();
             AimComplete = currentAiming.IsReady;
@@ -105,7 +106,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         /// </summary>
         /// <param name="shootPoint"></param>
         /// <param name="enemy"></param>
-        private void CheckAimToEnemy(Vector3 shootPoint, Enemy enemy)
+        private void CheckAimToEnemy(Enemy enemy)
         {
             if (enemy != _lastAimEnemy)
             {
@@ -114,11 +115,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
             if (TurningWeaponToAimPoint)
             {
-                const float ANGLE_TO_START_AIM = 5f;
-                Vector3 weaponFirePort = Person.Transform.WeaponFirePort;
-                Vector3 weaponPointDir = Person.Transform.WeaponPointDirection;
-                Vector3 shootPointDir = (shootPoint - weaponFirePort).normalized;
-                if (Vector3.Angle(shootPointDir, weaponPointDir) < ANGLE_TO_START_AIM)
+                const float STARTAIMANGLE = 20f;
+                if (enemy.Vision.Angles.AngleToEnemyHorizontal <= STARTAIMANGLE)
                 {
                     TurningWeaponToAimPoint = false;
                 }

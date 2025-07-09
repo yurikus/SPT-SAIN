@@ -20,7 +20,7 @@
         Freeze,
         CreepOnEnemy,
         MeleeAttack,
-        TagillaMelee,
+        FightZombies,
         DebugNoDecision
     }
 

@@ -190,8 +190,8 @@ namespace SAIN.Components
         {
             var enemy = CurrentTarget.CurrentTargetEnemy;
             //DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.TargetLookDirection.normalized * 1.5f, Color.white, 0.06f, true, 0.02f);
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SmoothController.CurrentControlLookDirection, Color.yellow, 0.04f, true, 0.02f);
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, true, 0.02f);
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SmoothController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
+            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, 0.02f);
         }
 
         private static void TickClassGroup(List<IBotClass> List, float CurrentTime)

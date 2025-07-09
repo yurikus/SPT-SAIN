@@ -61,7 +61,7 @@ namespace SAIN.Components.PlayerComponentSpace
                         && (rayHit2.point - start).sqrMagnitude > minPointDist * minPointDist
                         && NavMesh.SamplePosition(rayHit2.point, out var navHit2, navSampleRange, -1))
                     {
-                        DebugGizmos.Sphere(navHit2.position, 0.1f, Color.blue, true, 3f);
+                        DebugGizmos.Sphere(navHit2.position, 0.1f, Color.blue, 3f);
                         DebugGizmos.Line(navHit2.position, start, 0.025f, Time.deltaTime, true);
                         places.Add(navHit2.position);
                         successCount++;

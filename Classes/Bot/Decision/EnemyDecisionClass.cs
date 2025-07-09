@@ -14,7 +14,7 @@ namespace SAIN.SAINComponent.Classes.Decision
     {
         private static readonly float RushEnemyMaxPathDistance = 10f;
         private static readonly float RushEnemyMaxPathDistanceSprint = 20f;
-        private static readonly float RushEnemyLowAmmoRatio = 0.4f;
+        private static readonly float RushEnemyLowAmmoRatio = 0.5f;
         private static readonly float RunToCoverTime = 1.5f;
         private static readonly float RunToCoverTimeRandomMin = 0.66f;
         private static readonly float RunToCoverTimeRandomMax = 1.33f;
@@ -34,15 +34,13 @@ namespace SAIN.SAINComponent.Classes.Decision
             CanEverTick = false;
         }
 
-        public bool GetDecision(out ECombatDecision result)
+        public bool GetDecision(out ECombatDecision result, Enemy enemy, EnemyList knownEnemies)
         {
-            Enemy enemy = Bot.Enemy;
             if (enemy == null)
             {
                 result = ECombatDecision.None;
                 return false;
             }
-
             DecisionReasons.Clear();
 
             BotWeaponManager weaponManager = BotOwner.WeaponManager;
@@ -70,14 +68,15 @@ namespace SAIN.SAINComponent.Classes.Decision
                     canTakeAggressiveAction = false;
                     reason = $"Suppressed [{suppState}]";
                     break;
+
                 default:
                     break;
             }
-            
+
             DecisionReasons.AppendLine($"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]");
             if (canTakeAggressiveAction)
             {
-                bool shallShoot = shallStandAndShoot(enemy, out reason);
+                bool shallShoot = shallStandAndShoot(enemy, out reason, knownEnemies);
                 DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
                 if (shallShoot)
                 {
@@ -237,6 +236,16 @@ namespace SAIN.SAINComponent.Classes.Decision
                 reason = "incompletePath";
                 return false;
             }
+            if (Bot.Decision.SelfActionDecisions.LowOnAmmo(RushEnemyLowAmmoRatio))
+            {
+                reason = "lowAmmo";
+                return false;
+            }
+            if (!checkInRangeForRush(enemy))
+            {
+                reason = "outOfRange";
+                return false;
+            }
             if (enemy.Hearing.EnemyHeardFromPeace &&
                 Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior == EHeardFromPeaceBehavior.Charge)
             {
@@ -248,17 +257,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 reason = "cantRush";
                 return false;
             }
-            if (Bot.Decision.SelfActionDecisions.LowOnAmmo(RushEnemyLowAmmoRatio))
-            {
-                reason = "lowAmmo";
-                return false;
-            }
 
-            if (!checkInRangeForRush(enemy))
-            {
-                reason = "outOfRange";
-                return false;
-            }
             if (enemy.Status.VulnerableAction != EEnemyAction.None)
             {
                 reason = "enemyVulnerable";
@@ -284,11 +283,11 @@ namespace SAIN.SAINComponent.Classes.Decision
         {
             EEnemyAction vulnerableAction = enemy.Status.VulnerableAction;
             float modifier = vulnerableAction == EEnemyAction.UsingSurgery ? 2f : 1f;
-            if (enemy.Path.PathDistance < RushEnemyMaxPathDistance * modifier)
+            if (enemy.Path.PathLength < RushEnemyMaxPathDistance * modifier)
             {
                 return true;
             }
-            if (enemy.Path.PathDistance < RushEnemyMaxPathDistanceSprint * modifier &&
+            if (enemy.Path.PathLength < RushEnemyMaxPathDistanceSprint * modifier &&
                 BotOwner.CanSprintPlayer)
             {
                 return true;
@@ -363,7 +362,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     ShiftResetTimer = -1f;
                     return false;
                 }
-                if (!BotOwner.Mover.IsMoving && !Bot.Mover.PathFollower.Running)
+                if (!Bot.Mover.Moving)
                 {
                     return false;
                 }
@@ -401,12 +400,12 @@ namespace SAIN.SAINComponent.Classes.Decision
             //    return true;
             //}
 
-            if (Bot.Cover.SpottedInCover == true)
+            if (Bot.Cover.SpottedInCover)
             {
                 reason = "coverSpotted";
                 return true;
             }
-            if ((enemy.EPathDistance == EPathDistance.VeryClose && Bot.Enemy.IsVisible))
+            if (enemy != null && enemy.EPathDistance == EPathDistance.VeryClose && enemy.IsVisible)
             {
                 reason = "enemyClose";
                 return true;
@@ -559,7 +558,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             return false;
         }
 
-        private bool shallStandAndShoot(Enemy enemy, out string reason)
+        private bool shallStandAndShoot(Enemy enemy, out string reason, EnemyList KnownEnemies)
         {
             if (!enemy.IsVisible)
             {
@@ -580,6 +579,22 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 reason = "outOfRange";
                 return false;
+            }
+            if (enemy.IsZombie)
+            {
+                bool hasShooterContact = false;
+                foreach (var knownEnemy in KnownEnemies)
+                {
+                    if (knownEnemy?.IsZombie != true)
+                    {
+                        hasShooterContact = true;
+                    }
+                }
+                if (!hasShooterContact)
+                {
+                    reason = "shootZombie";
+                    return true;
+                }
             }
             bool searchingForEnemy = enemy.Events.OnSearch.Value;
             float holdGroundInterval = Bot.Info.HoldGroundDelay;

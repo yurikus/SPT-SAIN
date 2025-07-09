@@ -1,8 +1,9 @@
 ﻿using EFT;
+using SAIN.Classes.Coverfinder;
 using SAIN.Components;
 using SAIN.Helpers.Events;
 using SAIN.Models.Enums;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using UnityEngine;
 
@@ -59,33 +60,35 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
         }
 
-        private bool shallTagillaHammerAttack()
+        private bool shallTagillaHammerAttack(Enemy enemy)
         {
-            if (CurrentSelfDecision != ESelfDecision.None)
-            {
-                return false;
-            }
-            var status = Bot.Memory.Health.HealthStatus;
-            if (status != ETagStatus.Healthy && status != ETagStatus.Injured)
-            {
-                return false;
-            }
-
-            var enemy = Bot.Enemy;
             if (enemy == null)
             {
                 return false;
             }
-            if (enemy.RealDistance > 50f)
+            bool alreadyAttacking = CurrentCombatDecision == ECombatDecision.MeleeAttack;
+            ETagStatus status = Bot.Memory.Health.HealthStatus;
+
+            if (!alreadyAttacking)
+            {
+                if (CurrentSelfDecision != ESelfDecision.None)
+                    return false;
+                if (status != ETagStatus.Healthy && status != ETagStatus.Injured)
+                    return false;
+                if (enemy.Path.PathToEnemyStatus != UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                    return false;
+                if (enemy.RealDistance < 30 && enemy.Path.PathLength < 20 && enemy.Status.VulnerableAction != EEnemyAction.None)
+                {
+                    enemy.BotOwner.WeaponManager.Melee.ShallEndRun = false;
+                    return true;
+                }
+                return false;
+            }
+            if (enemy.BotOwner.WeaponManager.Melee.ShallEndRun)
             {
                 return false;
             }
-            bool alreadyAttacking = CurrentCombatDecision == ECombatDecision.TagillaMelee;
-            if (!alreadyAttacking && enemy.Path.PathDistance < 20 && enemy.Status.VulnerableAction != EEnemyAction.None)
-            {
-                return true;
-            }
-            if (alreadyAttacking && enemy.Path.PathDistance < 25)
+            if (status != ETagStatus.Dying && enemy.RealDistance < 40 && enemy.Path.PathLength < 35)
             {
                 return true;
             }
@@ -94,18 +97,35 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private void getDecision()
         {
+            Enemy enemy = Bot.Enemy;
+            EnemyList knownEnemies = Bot.EnemyController.EnemyLists.KnownEnemies;
             BaseClass.EnemyDecisions.DebugShallSearch = null;
             if (Bot.Info.Profile.WildSpawnType == WildSpawnType.bossTagilla)
             {
-                if (shallTagillaHammerAttack())
+                if (shallTagillaHammerAttack(enemy))
                 {
-                    if (!BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMelee();
-                    SetDecisions(ECombatDecision.TagillaMelee, ESquadDecision.None, ESelfDecision.None);
+                    SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfDecision.None);
                     return;
                 }
                 if (BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMain();
             }
-            if (BaseClass.DogFightDecision.ShallDogFight())
+
+            if (enemy != null && enemy.IsZombie)
+            {
+                bool hasShooterContact = false;
+                foreach (var knownEnemy in knownEnemies)
+                    if (knownEnemy?.IsZombie != true)
+                        hasShooterContact = true;
+                if (!hasShooterContact)
+                {
+                    BaseClass.SelfActionDecisions.GetDecision(out ESelfDecision zombieDecision, enemy);
+                    BaseClass.SquadDecisions.GetDecision(out ESquadDecision zombieSqdDecision, enemy);
+                    SetDecisions(ECombatDecision.FightZombies, zombieSqdDecision, zombieDecision);
+                    return;
+                }
+            }
+
+            if (BaseClass.DogFightDecision.ShallDogFight(knownEnemies))
             {
                 SetDecisions(ECombatDecision.DogFight, ESquadDecision.None, ESelfDecision.None);
                 return;
@@ -115,7 +135,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfDecision.None);
                 return;
             }
-            if (BaseClass.SelfActionDecisions.GetDecision(out ESelfDecision selfDecision))
+            if (BaseClass.SelfActionDecisions.GetDecision(out ESelfDecision selfDecision, enemy))
             {
                 var selfCombat = Bot.Cover.InCover ? ECombatDecision.HoldInCover : ECombatDecision.Retreat;
                 SetDecisions(selfCombat, ESquadDecision.None, selfDecision);
@@ -126,12 +146,12 @@ namespace SAIN.SAINComponent.Classes.Decision
                 SetDecisions(ECombatDecision.Retreat, ESquadDecision.None, ESelfDecision.None);
                 return;
             }
-            if (BaseClass.SquadDecisions.GetDecision(out ESquadDecision squadDecision))
+            if (BaseClass.SquadDecisions.GetDecision(out ESquadDecision squadDecision, enemy))
             {
                 SetDecisions(ECombatDecision.None, squadDecision, ESelfDecision.None);
                 return;
             }
-            if (BaseClass.EnemyDecisions.GetDecision(out ECombatDecision combatDecision))
+            if (BaseClass.EnemyDecisions.GetDecision(out ECombatDecision combatDecision, enemy, knownEnemies))
             {
                 SetDecisions(combatDecision, ESquadDecision.None, ESelfDecision.None);
                 return;

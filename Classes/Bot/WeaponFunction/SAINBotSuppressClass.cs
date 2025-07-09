@@ -64,9 +64,46 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private Enemy EnemyBeingSuppressed;
 
+        public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 2)
+        {
+            if (SuppressingTarget && _suppressTime > Time.time)
+            {
+                return true;
+            }
+
+            BotReload reload = BotOwner.WeaponManager?.Reload;
+            int currentAmmo = 0;
+            float ratio = 0;
+            if (reload != null)
+            {
+                currentAmmo = reload.BulletCount;
+                ratio = (float)currentAmmo / reload.MaxBulletCount;
+            }
+            if (ratio >= minimumAmmoRatio && currentAmmo >= minimumBullets)
+            {
+                if (TrySuppressEnemy(priorityEnemy))
+                {
+                    return true;
+                }
+                knownEnemies.SortBy(EnemyList.EBotListSortType.VisiblePathPointDistanceToEnemy);
+                foreach (Enemy enemy in knownEnemies)
+                {
+                    if (TrySuppressEnemy(enemy))
+                    {
+                        return true;
+                    }
+                }
+            }
+            ResetSuppressing();
+            return false;
+        }
+
         public bool TrySuppressEnemy(Enemy Enemy)
         {
-            if (!Enemy.IsVisible && BotOwner.WeaponManager.HaveBullets && ((Enemy.Seen && Enemy.TimeSinceSeen < 4) || Enemy.Status.ShotAtMeRecently || Enemy.Status.ShotByEnemyRecently))
+            if (Enemy != null && !Enemy.IsZombie && !Enemy.IsVisible &&
+                ((Enemy.Seen && Enemy.TimeSinceSeen < 4) ||
+                Enemy.Status.ShotAtMeRecently ||
+                Enemy.Status.ShotByEnemyRecently))
             {
                 Vector3? suppressTarget = Enemy.SuppressionTarget;
                 if (suppressTarget != null)
@@ -74,7 +111,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                     return Bot.Suppression.SuppressPosition(suppressTarget.Value, Enemy);
                 }
             }
-            ResetSuppressing();
+            //ResetSuppressing();
             return false;
         }
 
@@ -93,15 +130,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (_suppressTime < Time.time)
             {
                 float timeAdd;
-                if (Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
-                {
-                    timeAdd = 0.05f * UnityEngine.Random.Range(0.75f, 1.25f);
-                }
-                else
-                {
-                    timeAdd = 0.25f * UnityEngine.Random.Range(0.66f, 1.33f);
-                }
-                _suppressTime = Time.time + timeAdd;
+                bool isMachineGun = Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun;
+                timeAdd = isMachineGun ? 0.05f : 0.25f;
+                _suppressTime = Time.time + timeAdd * UnityEngine.Random.Range(0.66f, 1.33f);
             }
             return true;
         }

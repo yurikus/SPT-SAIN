@@ -10,12 +10,27 @@ namespace SAIN.Preset.GlobalSettings
         [Hidden]
         public Dictionary<EBotLookMode, TurnSettings> SMOOTHTURN_SETTINGS_BY_STATE = new() { 
             { EBotLookMode.Peace, new TurnSettings(0.5f, 300f) },
-            { EBotLookMode.Combat, new TurnSettings(0.35f, 360f) },
-            { EBotLookMode.CombatSprint, new TurnSettings(0.25f, 480f) },
-            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.3f, 480f) },
-            { EBotLookMode.Aiming, new TurnSettings(0.2f, 360f ) },
+            { EBotLookMode.Combat, new TurnSettings(0.4f, 360f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.3f, 420f) },
+            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.35f, 420f) },
+            { EBotLookMode.Aiming, new TurnSettings(0.25f, 360f ) },
             { EBotLookMode.RandomLook, new TurnSettings(0.8f, 200f ) },
         };
+        
+        [Name("Random Bot Aim Sway")]
+        public bool RANDOMSWAY_TOGGLE = true;
+
+        [MinMax(0f, 1f, 1000f)]
+        [Advanced]
+        public float RANDOMSWAY_RADIUS = 0.15f;
+        
+        [MinMax(0f, 10f, 10f)]
+        [Advanced]
+        public float RANDOMSWAY_LOOPDURATION = 3.5f;
+        
+        [MinMax(0f, 1f, 1000f)]
+        [Advanced]
+        public float RANDOMSWAY_SCALE = 0.05f; 
         
         [MinMax(45f, 90f, 100f)]
         [Advanced]

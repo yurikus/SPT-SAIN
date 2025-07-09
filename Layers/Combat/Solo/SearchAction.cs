@@ -55,7 +55,7 @@ namespace SAIN.Layers.Combat.Solo
             var enemy = _searchTarget;
             if (enemy != null)
             {
-                if (Shoot.CheckAimAndFire(enemy))
+                if (Shoot.ShootAnyVisibleEnemies(enemy))
                 {
                     Bot.Steering.SteerByPriority(enemy);
                     return;

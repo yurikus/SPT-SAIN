@@ -10,9 +10,8 @@ using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-
-using QuickGrenadeUseCallbackType = GInterface179;
 using FoodAndMedsEquipCallbackType = GInterface176;
+using QuickGrenadeUseCallbackType = GInterface179;
 using SetInHandsMedsStruct = GStruct353<EBodyPart>;
 
 namespace SAIN.Patches.Generic
@@ -233,6 +232,98 @@ namespace SAIN.Patches.Generic
         {
             return SAINPlugin.IsBotExluded(___botOwner_0);
         }
+    }
+
+    public class RefillMagazinePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotReload), nameof(BotReload.method_2));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotReload __instance, BotOwner ___botOwner_0, Weapon weapon, MagazineItemClass foundMag)
+        {
+            if (!___botOwner_0.GetPlayer.HealthController.IsAlive)
+            {
+                return false;
+            }
+            AmmoItemClass ammoItemClass = method_3(weapon, foundMag, ___botOwner_0.GetPlayer);
+            if (ammoItemClass == null)
+            {
+                //__instance.NoAmmoForReloadCached = true;
+                return false;
+            }
+            //__instance.NoAmmoForReloadCached = false;
+            GStruct454 operationResult = foundMag.Apply(__instance.botOwner_0.GetPlayer.InventoryController, ammoItemClass, ammoItemClass.StackObjectsCount, true);
+            if (operationResult.Failed)
+            {
+                Logger.LogDebug($"failed to fill mag [{operationResult.Error?.ToString()}]");
+            }
+            __instance.botOwner_0.GetPlayer.InventoryController.TryRunNetworkTransaction(operationResult, new Callback(BotReload.smethod_0));
+            return false;
+        }
+
+        private static AmmoItemClass method_3(Weapon weapon, MagazineItemClass foundMag, Player player)
+        {
+            Slot slot = weapon.HasChambers ? weapon.Chambers[0] : null;
+            _preallocatedAmmoList.Clear();
+            player.InventoryController.GetAcceptableItemsNonAlloc<AmmoItemClass>(BotReload._availableEquipmentSlots, _preallocatedAmmoList, null, null);
+            AmmoItemClass selectedAmmo = null;
+            foreach (AmmoItemClass inventoryAmmo in _preallocatedAmmoList)
+            {
+                bool slotAccepts = slot != null && slot.CanAccept(inventoryAmmo);
+                bool filterAccepts = foundMag.Cartridges.Filters.CheckItemFilter(inventoryAmmo) && (selectedAmmo == null || selectedAmmo.StackObjectsCount < inventoryAmmo.StackObjectsCount);
+                if (slotAccepts || filterAccepts)
+                {
+                    Logger.LogDebug($"Ammo [{inventoryAmmo.Name}] Slot Accepts? [{slotAccepts}] filterAccepts? [{filterAccepts}]");
+                    selectedAmmo = inventoryAmmo;
+                }
+            }
+            Logger.LogDebug($"Ammo [{selectedAmmo?.Name}] Selected out of {_preallocatedAmmoList.Count}");
+            _preallocatedAmmoList.Clear();
+            return selectedAmmo;
+        }
+
+        private static readonly List<AmmoItemClass> _preallocatedAmmoList = new(100);
+    }
+
+    public class GetAmmoForRefillPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotReload), nameof(BotReload.method_3));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotOwner ___botOwner_0, Weapon weapon, MagazineItemClass foundMag, ref AmmoItemClass __result)
+        {
+            __result = method_3(weapon, foundMag, ___botOwner_0.GetPlayer);
+            return false;
+        }
+
+        private static AmmoItemClass method_3(Weapon weapon, MagazineItemClass foundMag, Player player)
+        {
+            Slot slot = weapon.HasChambers ? weapon.Chambers[0] : null;
+            _preallocatedAmmoList.Clear();
+            player.InventoryController.GetAcceptableItemsNonAlloc<AmmoItemClass>(BotReload._availableEquipmentSlots, _preallocatedAmmoList, null, null);
+            AmmoItemClass ammoItemClass = null;
+            foreach (AmmoItemClass ammoItemClass2 in _preallocatedAmmoList)
+            {
+                bool slotAccepts = slot != null && slot.CanAccept(ammoItemClass2);
+                bool filterAccepts = foundMag.Cartridges.Filters.CheckItemFilter(ammoItemClass2) && (ammoItemClass == null || ammoItemClass.StackObjectsCount < ammoItemClass2.StackObjectsCount);
+                Logger.LogDebug($"Ammo [{ammoItemClass2.Name}] Slot Accepts? [{slotAccepts}] filterAccepts? [{filterAccepts}]");
+                if (slotAccepts || filterAccepts)
+                {
+                    ammoItemClass = ammoItemClass2;
+                }
+            }
+            Logger.LogDebug($"Ammo [{ammoItemClass?.Name}] Selected out of {_preallocatedAmmoList.Count}");
+            _preallocatedAmmoList.Clear();
+            return ammoItemClass;
+        }
+
+        private static readonly List<AmmoItemClass> _preallocatedAmmoList = new(100);
     }
 
     public class SetEnvironmentPatch : ModulePatch

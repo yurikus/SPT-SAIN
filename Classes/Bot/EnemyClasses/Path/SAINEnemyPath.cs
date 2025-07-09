@@ -22,7 +22,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EPathDistance EPathDistance {
             get
             {
-                float distance = PathDistance;
+                float distance = PathLength;
                 if (distance <= ENEMY_DISTANCE_VERYCLOSE)
                 {
                     return EPathDistance.VeryClose;
@@ -48,7 +48,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float ENEMY_DISTANCE_MID = 80f;
         private const float ENEMY_DISTANCE_FAR = 150f;
 
-        public float PathDistance { get; private set; } = float.MaxValue;
+        public float PathLength { get; private set; } = float.MaxValue;
 
         public float DistanceToEnemyPositionFromLastCorner { get; private set; }
 
@@ -176,7 +176,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             PathVisionSegments.Clear();
             VisionPathCheckPoints.Clear();
-            PathDistance = 0f;
+            PathLength = 0f;
             int CornerCount = PathCorners.Length;
             for (int i = 0; i < CornerCount - 1; i++)
             {
@@ -185,7 +185,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 //Vector3 Direction = Corner - End; OLD
                 Vector3 Direction = End - Corner;
                 float Magnitude = Direction.magnitude;
-                PathDistance += Magnitude;
+                PathLength += Magnitude;
 
                 // Dont include the corner index 0, as it is what the bot's position is, we dont need to see if thats visible or not.
                 // Only add a segment if we are under our maximum length, or if we have no segments at all.
@@ -195,7 +195,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     if (firstCorner)
                         VisionPathCheckPoints.Add(Corner);
                     bool lastCorner = i == CornerCount - 2;
-                    if (PathDistance <= DistToCheckVision)
+                    if (PathLength <= DistToCheckVision)
                     {
                         // Create Equal dist points along the line between two corners.
                         if (Magnitude > distanceBetweenPoints)
@@ -261,7 +261,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             PathToEnemy.ClearCorners();
             PathToEnemyStatus = NavMeshPathStatus.PathInvalid;
             EnemyCorners.Clear();
-            PathDistance = float.MaxValue;
+            PathLength = float.MaxValue;
             PathCorners = null;
             DistanceToEnemyPositionFromLastCorner = 0;
             PathVisionSegments.Clear();
@@ -396,9 +396,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 index = length - 1;
                 lastCorner = corners[index];
             }
-
-            float signedAngle = Vector.FindFlatSignedAngle(lastCorner, enemyPosition, Bot.Transform.EyePosition);
-            return new EnemyCorner(lastCorner, signedAngle, index);
+            return new EnemyCorner(lastCorner, index);
         }
 
         private EnemyCorner findFirstCorner(Vector3 enemyPosition, Vector3[] corners)
@@ -409,13 +407,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
 
             Vector3 firstCorner = corners[1];
-            float signedAngle = Vector.FindFlatSignedAngle(firstCorner, enemyPosition, Bot.Transform.EyePosition);
-            return new EnemyCorner(firstCorner, signedAngle, 1);
+            return new EnemyCorner(firstCorner, 1);
         }
 
         private EnemyCorner createLastKnownCorner(Vector3 enemyPosition, int index)
         {
-            return new EnemyCorner(enemyPosition, 0f, index);
+            return new EnemyCorner(enemyPosition, index);
         }
 
         private Vector3? _enemyLastPosChecked;

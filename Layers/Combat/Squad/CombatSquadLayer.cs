@@ -1,44 +1,41 @@
 ﻿using EFT;
+using SAIN.Components;
 using SAIN.Layers.Combat.Solo;
 using SAIN.Models.Enums;
+using SAIN.SAINComponent.Classes.Decision;
 
 namespace SAIN.Layers.Combat.Squad
 {
-    internal class CombatSquadLayer : SAINLayer
+    internal class CombatSquadLayer(BotOwner botOwner, int priority) : SAINLayer(botOwner, priority, Name, ESAINLayer.Squad)
     {
         public static readonly string Name = BuildLayerName("Squad Layer");
 
-        public CombatSquadLayer(BotOwner bot, int priority) : base(bot, priority, Name, ESAINLayer.Squad)
-        {
-        }
-
         public override Action GetNextAction()
         {
-            var Decision = SquadDecision;
-            LastActionDecision = Decision;
-            switch (Decision)
+            LastActionDecision = Bot.Decision.CurrentSquadDecision;
+            switch (LastActionDecision)
             {
                 case ESquadDecision.Regroup:
-                    return new Action(typeof(RegroupAction), $"{Decision}");
+                    return new Action(typeof(RegroupAction), $"{LastActionDecision}");
 
                 case ESquadDecision.Suppress:
-                    return new Action(typeof(SuppressAction), $"{Decision}");
+                    return new Action(typeof(SuppressAction), $"{LastActionDecision}");
 
                 case ESquadDecision.Search:
-                    return new Action(typeof(SearchAction), $"{Decision}");
+                    return new Action(typeof(SearchAction), $"{LastActionDecision}");
 
                 case ESquadDecision.GroupSearch:
                     if (Bot.Squad.IAmLeader)
                     {
-                        return new Action(typeof(SearchAction), $"{Decision} : Lead Search Party");
+                        return new Action(typeof(SearchAction), $"{LastActionDecision} : Lead Search Party");
                     }
-                    return new Action(typeof(FollowSearchParty), $"{Decision} : Follow Squad Leader");
+                    return new Action(typeof(FollowSearchParty), $"{LastActionDecision} : Follow Squad Leader");
 
                 case ESquadDecision.Help:
-                    return new Action(typeof(SearchAction), $"{Decision}");
+                    return new Action(typeof(SearchAction), $"{LastActionDecision}");
 
                 case ESquadDecision.PushSuppressedEnemy:
-                    return new Action(typeof(RushEnemyAction), $"{Decision}");
+                    return new Action(typeof(RushEnemyAction), $"{LastActionDecision}");
 
                 default:
                     return new Action(typeof(RegroupAction), $"DEFAULT!");
@@ -48,19 +45,24 @@ namespace SAIN.Layers.Combat.Squad
         public override bool IsActive()
         {
             base.IsActive();
-            bool active =
-                Bot?.BotActive == true &&
-                SquadDecision != ESquadDecision.None &&
-                Bot.Decision.CurrentSelfDecision == ESelfDecision.None;
-
-            if (active && Bot.Cover.CoverInUse != null)
+            BotComponent bot = Bot;
+            if (bot != null && bot.BotActive)
             {
-                Bot.Cover.CoverInUse = null;
+                SAINDecisionClass decisions = bot.Decision;
+                if (decisions.CurrentSelfDecision == ESelfDecision.None &&
+                    decisions.CurrentCombatDecision != ECombatDecision.DogFight &&
+                    decisions.CurrentSquadDecision != ESquadDecision.None)
+                {
+                    if (bot.Cover.CoverInUse != null)
+                    {
+                        bot.Cover.CoverInUse = null;
+                    }
+                    setLayer(true);
+                    return true;
+                }
             }
-
-            setLayer(active);
-
-            return active;
+            setLayer(false);
+            return false;
         }
 
         public override bool IsCurrentActionEnding()
@@ -70,11 +72,14 @@ namespace SAIN.Layers.Combat.Squad
                 ResetAction = false;
                 return true;
             }
-            return Bot?.BotActive == true &&
-                SquadDecision != LastActionDecision;
+            BotComponent bot = Bot;
+            if (bot != null && bot.BotActive && bot.Decision.CurrentSquadDecision != LastActionDecision)
+            {
+                return true;
+            }
+            return false;
         }
 
         private ESquadDecision LastActionDecision = ESquadDecision.None;
-        public ESquadDecision SquadDecision => Bot.Decision.CurrentSquadDecision;
     }
 }

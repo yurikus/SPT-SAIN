@@ -1,6 +1,7 @@
 ﻿using EFT;
 using HarmonyLib;
 using RootMotion.FinalIK;
+using SAIN.Classes.Coverfinder;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
@@ -8,7 +9,6 @@ using SAIN.Preset.BotSettings.SAINSettings.Categories;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Text;
@@ -98,9 +98,9 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 ___aimStatus_0 = value;
                 //bool flag;
-                //if ((flag = (((this.bool_0 && this.botOwner_0.Tactic.IsCurTactic(BotsGroup.BotCurrentTactic.Attack)) || this.botOwner_0.Memory.IsInCover || this.method_1()) && this.aimStatus_0 != AimStatus.NoTarget && this.method_0())) != this.botOwner_0.WeaponManager.ShootController.IsAiming)
+                //if ((flag = (((this.bool_0 && __instance.botOwner_0.Tactic.IsCurTactic(BotsGroup.BotCurrentTactic.Attack)) || __instance.botOwner_0.Memory.IsInCover || this.method_1()) && this.aimStatus_0 != AimStatus.NoTarget && this.method_0())) != __instance.botOwner_0.WeaponManager.ShootController.IsAiming)
                 //{
-                //	this.botOwner_0.WeaponManager.ShootController.SetAim(flag);
+                //	__instance.botOwner_0.WeaponManager.ShootController.SetAim(flag);
                 //}
                 //this.HardAim = flag;
                 if (value == AimStatus.AimComplete)
@@ -179,11 +179,11 @@ namespace SAIN.Patches.Shoot.Aim
                 enemy.EnemyPerson.IPlayer.IsYourPlayer == true)
             {
                 Vector3 weaponRoot = __instance.botOwner_0.WeaponRoot.position;
-                DebugGizmos.Line(weaponRoot, result, Color.red, 0.02f, true, 0.25f, true);
-                DebugGizmos.Sphere(result, 0.025f, Color.red, true, 10f);
+                DebugGizmos.Line(weaponRoot, result, Color.red, 0.02f, 0.25f, true);
+                DebugGizmos.Sphere(result, 0.025f, Color.red, 10f);
 
-                DebugGizmos.Line(weaponRoot, realTargetPoint, Color.white, 0.02f, true, 0.25f, true);
-                DebugGizmos.Sphere(realTargetPoint, 0.025f, Color.white, true, 10f);
+                DebugGizmos.Line(weaponRoot, realTargetPoint, Color.white, 0.02f, 0.25f, true);
+                DebugGizmos.Sphere(realTargetPoint, 0.025f, Color.white , 10f);
             }
             //if (SAINPlugin.DebugSettings.Gizmos.DebugDrawRecoilGizmos &&
             //    enemy.EnemyPerson.IPlayer.IsYourPlayer == true &&

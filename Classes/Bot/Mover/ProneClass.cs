@@ -91,22 +91,14 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool CheckShootProne(Vector3? lastKnownPos, Enemy enemy)
         {
-            if (_nextCheckShootTime > Time.time)
+            if (enemy.GetVisibilePathPoint(out Vector3 point))
             {
-                return _canshoot;
-            }
-            _nextCheckShootTime = Time.time + 0.5f;
-
-            var blindCorner = enemy.Path.EnemyCorners.EyeLevelPosition(ECornerType.Blind);
-            if (blindCorner != null)
-            {
-                _canshoot = CanShootFromProne(blindCorner.Value);
+                return CanShootFromProne(point);
             }
             else
             {
-                _canshoot = CanShootFromProne(lastKnownPos.Value);
+                return CanShootFromProne(lastKnownPos.Value);
             }
-            return _canshoot;
         }
 
         public bool CanShootFromProne(Vector3 target)

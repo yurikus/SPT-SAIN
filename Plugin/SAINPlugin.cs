@@ -81,7 +81,9 @@ namespace SAIN
             new Patches.Components.AddGameWorldPatch(),
             new Patches.Components.GetBotController(),
 
-            new Patches.Generic.StopRefillMagsPatch(),
+            //new Patches.Generic.StopRefillMagsPatch(),
+            //new Patches.Generic.GetAmmoForRefillPatch(),
+            //new Patches.Generic.RefillMagazinePatch(),
             new Patches.Generic.SetEnvironmentPatch(),
             new Patches.Generic.SetPanicPointPatch(),
             new Patches.Generic.AddPointToSearchPatch(),
@@ -107,13 +109,15 @@ namespace SAIN
 
             new Patches.Generic.Fixes.StopSetToNavMeshPatch(),
             new Patches.Generic.Fixes.StopSetToNavMeshPatch2(),
-           // new Patches.Generic.Fixes.FightShallReloadFixPatch(),
+            new Patches.Generic.Fixes.FightShallReloadFixPatch(),
             new Patches.Generic.Fixes.EnableVaultPatch(),
             new Patches.Generic.Fixes.BotMemoryAddEnemyPatch(),
             new Patches.Generic.Fixes.BotGroupAddEnemyPatch(),
             new Patches.Generic.Fixes.FixItemTakerPatch(),
             new Patches.Generic.Fixes.FixItemTakerPatch2(),
             new Patches.Generic.Fixes.RotateClampPatch(),
+            new Patches.Generic.Fixes.RunToEnemyUpdatePatch(),
+            new Patches.Generic.Fixes.InfiniteMagFixPatch(),
 
             new Patches.Movement.EncumberedPatch(),
             new Patches.Movement.DoorOpenerPatch(),
@@ -129,6 +133,7 @@ namespace SAIN
             new Patches.Movement.CanBeSnappedPatch(),
             new Patches.Movement.BotMoverManualUpdatePatch(),
             new Patches.Movement.BotMoverManualFixedUpdatePatch(),
+            new Patches.Movement.SprintLookDirPatch(),
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
             new Patches.Hearing.OnMakingShotPatch(),

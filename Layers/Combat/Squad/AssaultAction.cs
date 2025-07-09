@@ -1,7 +1,7 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.Classes.Coverfinder;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Squad
@@ -15,6 +15,7 @@ namespace SAIN.Layers.Combat.Squad
         public override void Update(CustomLayer.ActionData data)
         {
             Enemy enemy = Bot.Enemy;
+            Shoot.ShootAnyVisibleEnemies(enemy);
             if (!Bot.Steering.SteerByPriority(enemy, false) && enemy != null)
             {
                 Bot.Steering.LookToEnemy(enemy);
@@ -22,7 +23,6 @@ namespace SAIN.Layers.Combat.Squad
 
             if (enemy != null)
             {
-                Shoot.CheckAimAndFire(enemy);
                 if (PointDestination == null)
                 {
                     PointDestination = Bot.Cover.FindPointInDirection(enemy.EnemyDirection);

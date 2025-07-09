@@ -1,5 +1,6 @@
 ﻿using EFT;
 using JetBrains.Annotations;
+using SAIN.Classes.Coverfinder;
 using SAIN.Components;
 using SAIN.Components.CoverFinder;
 using SAIN.Helpers;

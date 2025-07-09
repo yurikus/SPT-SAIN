@@ -14,10 +14,15 @@ namespace SAIN.SAINComponent.Classes.Decision
         private float _handsBusyTimer;
         private float _nextCheckTime;
 
+        // TODO: this should be getting called from the main layers and not in a random manual update. Similar to steer by priority
         public override void ManualUpdate()
         {
             base.ManualUpdate();
             if (!Bot.SAINLayersActive)
+            {
+                return;
+            }
+            if (_nextCheckTime > Time.time)
             {
                 return;
             }
@@ -28,10 +33,12 @@ namespace SAIN.SAINComponent.Classes.Decision
             var decision = Bot.Decision.CurrentSelfDecision;
             if (decision == ESelfDecision.None)
             {
+                _nextCheckTime = Time.time + 1f;
                 return;
             }
-            if (_nextCheckTime > Time.time)
+            if (decision == ESelfDecision.Reload)
             {
+                _nextCheckTime = Time.time + 1f;
                 return;
             }
             if (UsingMeds)
@@ -39,13 +46,17 @@ namespace SAIN.SAINComponent.Classes.Decision
                 _nextCheckTime = Time.time + 1f;
                 return;
             }
-            _nextCheckTime = Time.time + 0.1f;
-
-            if (decision == ESelfDecision.Reload)
+            if (BotOwner.WeaponManager.Reload.Reloading)
             {
-                Bot.Info.WeaponInfo.Reload.TryReload();
+                _nextCheckTime = Time.time + 1f;
                 return;
             }
+            if (Bot.Medical.TimeSinceShot < 0.5f)
+            {
+                return;
+            }
+            _nextCheckTime = Time.time + 0.2f;
+
 
             if (_handsBusyTimer > Time.time)
             {
@@ -53,7 +64,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (Player.HandsController.IsInInteractionStrictCheck())
             {
-                _handsBusyTimer = Time.time + 0.25f;
+                _handsBusyTimer = Time.time + 0.5f;
                 return;
             }
 
@@ -65,7 +76,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     didAction = DoFirstAid();
                     break;
                 case ESelfDecision.Surgery:
-                    didAction = DoSurgery();
+                    didAction = true; // surgery calls are handled by the brain layer action
                     break;
                 case ESelfDecision.Stims:
                     didAction = DoStims();

@@ -122,7 +122,7 @@ namespace SAIN.SAINComponent.Classes
                 {
                     return false;
                 }
-                if (enemy.Path.PathDistance < minPathDist)
+                if (enemy.Path.PathLength < minPathDist)
                 {
                     return false;
                 }

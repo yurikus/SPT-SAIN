@@ -18,15 +18,12 @@ namespace SAIN.Layers.Combat.Squad
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
             var enemy = Bot.Enemy;
             if (enemy != null)
             {
-                if (enemy.IsVisible && enemy.CanShoot)
+                if (Shoot.ShootAnyVisibleEnemies(enemy))
                 {
                     Bot.Mover.StopMove();
-                    Shoot.CheckAimAndFire(enemy);
-                    this.EndProfilingSample();
                     return;
                 }
 
@@ -51,7 +48,6 @@ namespace SAIN.Layers.Combat.Squad
                         float waitTime = hasMachineGun ? 0.1f : 0.5f;
                         _nextShotTime = Time.time + (waitTime * Random.Range(0.75f, 1.25f));
                     }
-                    this.EndProfilingSample();
                     return;
                 }
 
@@ -67,7 +63,6 @@ namespace SAIN.Layers.Combat.Squad
             {
                 Bot.Steering.LookToLastKnownEnemyPosition(enemy);
             }
-            this.EndProfilingSample();
         }
 
         private void ResetManualShoot()

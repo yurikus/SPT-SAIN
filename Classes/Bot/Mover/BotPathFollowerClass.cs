@@ -41,6 +41,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
+        public void Unpause()
+        {
+            _moveData.PauseTime = -1;
+        }
+
         public void Cancel(float afterTime = -1f)
         {
             if (Moving)
@@ -78,23 +83,20 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path))
             {
-                TriggerNewMove(path, point, true, urgency, callback);
+                TriggerNewMove(path.corners, point, true, urgency, callback);
                 _moveData.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
                 return true;
             }
             return false;
         }
 
-        public bool RunToPointByWay(NavMeshPath way, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, System.Action callback = null)
+        public bool RunToPointByWay(Vector3[] way, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, System.Action callback = null)
         {
             if (way == null)
                 return false;
-            Vector3[] corners = way.corners;
-            if (corners.Length <= 1)
-            {
+            if (way.Length <= 1)
                 return false;
-            }
-            Vector3 lastCorner = corners[corners.Length - 1];
+            Vector3 lastCorner = way[way.Length - 1];
             if (checkSameWay && TryUpdatePath(lastCorner, true))
             {
                 _moveData.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
@@ -105,6 +107,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             return true;
         }
 
+        public bool RunToPointByWay(NavMeshPath way, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, System.Action callback = null)
+        {
+            return RunToPointByWay(way?.corners, urgency, stopSprintEnemyVisible, checkSameWay, callback);
+        }
+
         public bool WalkToPoint(Vector3 point, bool checkSameWay = true, System.Action callback = null)
         {
             if (checkSameWay && TryUpdatePath(point, false))
@@ -113,27 +120,24 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path))
             {
-                TriggerNewMove(path, point, false, ESprintUrgency.None, callback);
+                TriggerNewMove(path.corners, point, false, ESprintUrgency.None, callback);
             }
             return false;
         }
 
-        public bool WalkToPointByWay(NavMeshPath way, bool checkSameWay = true, System.Action callback = null)
+        public bool WalkToPointByWay(Vector3[] way, bool checkSameWay = true, System.Action callback = null)
         {
-            if (way == null)
-                return false;
-            Vector3[] corners = way.corners;
-            if (corners.Length <= 1)
-            {
-                return false;
-            }
-            Vector3 lastCorner = corners[corners.Length - 1];
-            if (checkSameWay && TryUpdatePath(lastCorner, false))
-            {
-                return true;
-            }
+            if (way == null) return false;
+            if (way.Length <= 1) return false;
+            Vector3 lastCorner = way[way.Length - 1];
+            if (checkSameWay && TryUpdatePath(lastCorner, false)) return true;
             TriggerNewMove(way, lastCorner, false, ESprintUrgency.None, callback);
             return true;
+        }
+
+        public bool WalkToPointByWay(NavMeshPath way, bool checkSameWay = true, System.Action callback = null)
+        {
+            return WalkToPointByWay(way.corners, checkSameWay, callback);
         }
 
         private bool TryUpdatePath(Vector3 point, bool shallSprint)
@@ -146,12 +150,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        private void TriggerNewMove(NavMeshPath path, Vector3 point, bool shallSprint, ESprintUrgency urgency, System.Action callback)
+        private void TriggerNewMove(Vector3[] path, Vector3 point, bool shallSprint, ESprintUrgency urgency, System.Action callback)
         {
             const float SHORT_CORNER_LENGTH = 0.25f;
             StopMoveCoroutine();
             PrepareBot(shallSprint);
-            _moveData.ActivateNewPath(point, shallSprint, urgency, path.corners, SHORT_CORNER_LENGTH);
+            _moveData.ActivateNewPath(point, shallSprint, urgency, path, SHORT_CORNER_LENGTH);
             _moveToPointCoroutine = Bot.StartCoroutine(GoToPointCoRoutine(_moveData, callback));
         }
 
@@ -223,13 +227,17 @@ namespace SAIN.SAINComponent.Classes.Mover
                     BotMover botOwnerMover = botOwner.Mover;
                     SAINMoverClass sainMover = Bot.Mover;
                     DoorOpener doorOpener = Bot.DoorOpener;
-                    if (doorOpener.Interacting || doorOpener.BreachingDoor)
+                    if (doorOpener.Interacting)
                     {
                         _timeNotMoving = -1f;
+                        positionMoving = true;
                         sainMover.Prone.SetProne(false);
                         sainMover.EnableSprintPlayer(false);
-                        yield return null;
-                        continue;
+                        if (doorOpener.BreachingDoor)
+                        {
+                            yield return null;
+                            continue;
+                        }
                     }
                     if (MoveData.Paused && MoveData.CheckPaused())
                     {
@@ -328,7 +336,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 bot.Mover.TryVault();
             }
-            
+
             Bot.Mover.MovePlayerCharacterToPoint(activeCorner.Position);
             SetPlayerSteering(MoveData, activeCorner.Position, bot, enemy);
             recalcPath = false;
@@ -337,9 +345,9 @@ namespace SAIN.SAINComponent.Classes.Mover
         private static void DrawMoverDebug(Vector3 BotPos, Vector3 destination)
         {
             Vector3 debugOffset = Vector3.up * 0.6f;
-            DebugGizmos.Sphere(destination, 0.2f, Color.white, true, 0.02f);
-            DebugGizmos.Line(destination, destination + debugOffset, Color.white, 0.075f, true, 0.02f);
-            DebugGizmos.Line(destination + debugOffset, BotPos + debugOffset, Color.white, 0.075f, true, 0.02f);
+            DebugGizmos.Sphere(destination, 0.2f, Color.white, 0.02f);
+            DebugGizmos.Line(destination, destination + debugOffset, Color.white, 0.075f, 0.02f);
+            DebugGizmos.Line(destination + debugOffset, BotPos + debugOffset, Color.white, 0.075f, 0.02f);
         }
 
         private static float FindStartSprintStamina(ESprintUrgency urgency)
@@ -510,8 +518,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     bot.Steering.LookToEnemy(enemy);
                 }
-               // else if (!ShallSteerbyPriority(MoveData) || !bot.Steering.SteerByPriority(enemy, false, true))
-                else if (MoveData.ShallSprintNow || !bot.Steering.SteerByPriority(enemy, false, true))
+                else if (!ShallSteerbyPriority(MoveData) || !bot.Steering.SteerByPriority(enemy, false, true))
                 {
                     bot.Steering.LookToPoint(target + bot.Steering.WeaponRootOffset);
                 }

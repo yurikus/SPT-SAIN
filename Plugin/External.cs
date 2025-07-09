@@ -208,7 +208,7 @@ namespace SAIN.Plugin
             const float TimeSinceUnderFireThreshold = 10f;
 
             reason = ECombatReason.None;
-            Enemy enemy = component?.Enemy;
+            Enemy enemy = component?.CurrentTarget.CurrentTargetEnemy;
             if (enemy == null)
             {
                 return false;

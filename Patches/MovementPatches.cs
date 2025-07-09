@@ -11,6 +11,52 @@ using UnityEngine;
 namespace SAIN.Patches.Movement
 {
     /// <summary>
+    /// stops sideways sprinting
+    /// </summary>
+    public class SprintLookDirPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotMover), nameof(BotMover.Sprint));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotMover __instance, bool val)
+        {
+            if (__instance.Sprinting == val)
+            {
+                return false;
+            }
+            BotOwner botOwner = __instance.botOwner_0;
+            if (__instance.NoSprint)
+            {
+                __instance._player.EnableSprint(false);
+                return false;
+            }
+            if (val && botOwner.Mover.HasPathAndNoComplete)
+            {
+                Vector3 destinationDirection = botOwner.Mover.RealDestPoint - botOwner.Position;
+                destinationDirection.y = 0;
+                destinationDirection.Normalize();
+                Vector3 lookDirection = botOwner.LookDirection;
+                lookDirection.y = 0;
+                lookDirection.Normalize();
+                if (Vector3.Angle(lookDirection, destinationDirection) > 20f)
+                {
+                    val = false;
+                }
+            }
+            __instance.Sprinting = val;
+            if (val)
+            {
+                botOwner.SetTargetMoveSpeed(1f);
+            }
+            __instance._player.EnableSprint(val);
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Disables the check for is ai in movement context. could break things in the future
     /// </summary>
     public class MovementContextIsAIPatch : ModulePatch
@@ -33,7 +79,7 @@ namespace SAIN.Patches.Movement
     /// </summary>
     public class SetDoorCollisionPatch : ModulePatch
     {
-        const float NO_COLLISION_INTERVAL = 1.0f;
+        private const float NO_COLLISION_INTERVAL = 3.0f;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -48,6 +94,7 @@ namespace SAIN.Patches.Movement
                 case EDoorState.Open:
                 case EDoorState.Shut:
                     break;
+
                 default:
                     return;
             }

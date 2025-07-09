@@ -605,16 +605,16 @@ namespace SAIN.Components.PlayerComponentSpace
                 SAINPlugin.DrawDebugGizmos &&
                 SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
             {
-                DebugGizmos.Sphere(Transform.EyePosition, 0.05f, Color.white, true, 0.1f);
+                DebugGizmos.Sphere(Transform.EyePosition, 0.05f, Color.white, 0.1f);
                 DebugGizmos.Ray(Transform.EyePosition, Transform.HeadLookDirection, Color.white, Transform.HeadLookDirection.magnitude, 0.025f, true, 0.1f);
 
-                DebugGizmos.Sphere(Transform.HeadPosition, 0.075f, Color.yellow, true, 0.1f);
+                DebugGizmos.Sphere(Transform.HeadPosition, 0.075f, Color.yellow, 0.1f);
                 DebugGizmos.Ray(Transform.HeadPosition, Transform.LookDirection, Color.yellow, Transform.LookDirection.magnitude, 0.025f, true, 0.1f);
 
-                DebugGizmos.Sphere(Transform.WeaponFirePort, 0.075f, Color.green, true, 0.1f);
+                DebugGizmos.Sphere(Transform.WeaponFirePort, 0.075f, Color.green, 0.1f);
                 DebugGizmos.Ray(Transform.WeaponFirePort, Transform.WeaponPointDirection, Color.green, Transform.WeaponPointDirection.magnitude, 0.05f, true, 0.1f);
 
-                DebugGizmos.Sphere(Transform.BodyPosition, 0.1f, Color.blue, true, 0.1f);
+                DebugGizmos.Sphere(Transform.BodyPosition, 0.1f, Color.blue, 0.1f);
                 DebugGizmos.Ray(Transform.BodyPosition, Transform.LookDirection, Color.blue, Transform.LookDirection.magnitude, 0.05f, true, 0.1f);
             }
         }

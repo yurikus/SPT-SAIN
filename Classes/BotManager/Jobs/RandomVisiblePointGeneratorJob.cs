@@ -58,7 +58,7 @@ namespace SAIN.Components
                                 Color RandomColor = DebugGizmos.RandomColor;
                                 if (Player.Player.IsYourPlayer)
                                 {
-                                    DebugGizmos.Sphere(Point, 0.025f, RandomColor, true, 0.05f);
+                                    DebugGizmos.Sphere(Point, 0.025f, RandomColor, 0.05f);
                                     //DebugGizmos.Line(Command.from, Point, RandomColor, 0.01f, true, 0.05f);
                                 }
                                 if (Command.distance > 3)
@@ -67,8 +67,8 @@ namespace SAIN.Components
                                     {
                                         if (Player.Player.IsYourPlayer)
                                         {
-                                            DebugGizmos.Sphere(NavHit.position, 0.1f, RandomColor, true, 0.05f);
-                                            DebugGizmos.Line(NavHit.position, NavHit.position + Vector3.up * 1.5f, RandomColor, 0.025f, true, 0.05f);
+                                            DebugGizmos.Sphere(NavHit.position, 0.1f, RandomColor, 0.05f);
+                                            DebugGizmos.Line(NavHit.position, NavHit.position + Vector3.up * 1.5f, RandomColor, 0.025f, 0.05f);
                                         }
                                     }
                                 }
@@ -108,8 +108,8 @@ namespace SAIN.Components
                             if (Player.Player.IsYourPlayer)
                             {
                                 Color RandomColor = DebugGizmos.RandomColor;
-                                DebugGizmos.Sphere(Point, 0.05f, RandomColor, true, 0.1f);
-                                DebugGizmos.Line(Command.from, Point, RandomColor, 0.025f, true, 0.1f);
+                                DebugGizmos.Sphere(Point, 0.05f, RandomColor, 0.1f);
+                                DebugGizmos.Line(Command.from, Point, RandomColor, 0.025f, 0.1f);
                             }
                         }
                     }

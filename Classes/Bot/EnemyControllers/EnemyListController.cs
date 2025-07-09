@@ -35,21 +35,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible))
                 {
-                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.red, 0.1f, true, 0.02f);
+                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.red, 0.1f, 0.02f);
                     if (enemy.LastKnownPosition != null)
-                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, true, 0.02f);
+                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
                 }
                 foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.InLineOfSight))
                 {
-                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.yellow, 0.075f, true, 0.02f);
+                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.yellow, 0.075f, 0.02f);
                     if (enemy.LastKnownPosition != null)
-                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, true, 0.02f);
+                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
                 }
                 foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Known))
                 {
-                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.blue, 0.05f, true, 0.02f);
+                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.blue, 0.05f, 0.02f);
                     if (enemy.LastKnownPosition != null)
-                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, true, 0.02f);
+                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
                 }
             }
 

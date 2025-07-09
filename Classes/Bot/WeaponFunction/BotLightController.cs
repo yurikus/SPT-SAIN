@@ -62,9 +62,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         }
 
-        public void HandleLightForSearch(float distanceToCurrentCorner)
+        public void HandleLightForSearch(float distanceToCurrentCornerSqr)
         {
-            if (distanceToCurrentCorner < 30f)
+            if (distanceToCurrentCornerSqr < 30f * 30f)
             {
                 _timeWithinDistanceSearch = Time.time;
                 ToggleLight(true);

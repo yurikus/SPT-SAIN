@@ -30,7 +30,7 @@ namespace SAIN.Layers.Combat.Squad
 
             if (!Bot.Mover.PathFollower.Running)
             {
-                Shoot.CheckAimAndFire(Bot.Enemy);
+                Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
                 Bot.Steering.SteerByPriority(Bot.Enemy);
             }
             this.EndProfilingSample();

@@ -1,12 +1,134 @@
 ﻿using EFT;
-using EFT.InventoryLogic;
 using HarmonyLib;
 using SAIN.Components;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SPT.Reflection.Patching;
 using System.Reflection;
+using UnityEngine;
 
 namespace SAIN.Patches.Generic.Fixes
 {
+    internal class RunToEnemyUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotMeleeWeaponData), nameof(BotMeleeWeaponData.RunToEnemyUpdate));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotMeleeWeaponData __instance)
+        {
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent bot) && bot.SAINLayersActive)
+            {
+                Enemy enemy = bot.Enemy;
+                if (enemy == null)
+                {
+                    return false;
+                }
+                __instance.ShallEndRun = false;
+                if (!__instance.botOwner_0.WeaponManager.IsMelee)
+                {
+                    if (!__instance.botOwner_0.WeaponManager.Selector.CanChangeToMeleeWeapons)
+                    {
+                        __instance.ShallEndRun = true;
+                        return false;
+                    }
+                    __instance.botOwner_0.WeaponManager.Selector.ChangeToMelee();
+                }
+                if (__instance.botOwner_0.BotLay.IsLay)
+                {
+                    __instance.botOwner_0.BotLay.GetUp(false);
+                }
+                bot.Mover.SetTargetPose(1f);
+                EnemyInfo goalEnemy = enemy.EnemyInfo;
+                bool flag;
+                if (flag = (goalEnemy.Distance < __instance.Single_0))
+                {
+                    __instance.botOwner_0.Steering.LookToPoint(goalEnemy.BodyData().Key.Position);
+                    if (goalEnemy.Person.AIData.Player.MovementContext.IsInPronePose)
+                    {
+                        bot.Mover.SetTargetPose(0f);
+                    }
+                }
+                else
+                {
+                    bot.Mover.SetTargetPose(1f);
+                    bot.Steering.LookToMovingDirection(true);
+                }
+
+                bot.Mover.Sprint(__instance.Running && goalEnemy.Distance > __instance.Single_1);
+                if (__instance._nextTryHitTime < Time.time)
+                {
+                    __instance.method_0((flag && __instance.method_2(goalEnemy)) ? 10f : __instance.TRY_HIT_PERIOD_FALSE);
+                }
+                if (bot.Mover.PathFollower.Running)
+                {
+                    if (__instance._runPathCheck < Time.time)
+                    {
+                        float num;
+                        if (__instance._useZigZag)
+                        {
+                            num = ((goalEnemy.Distance > __instance.FAR_DIST) ? __instance.farRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.midRecalcZZ : __instance.closeRecalcZZ));
+                        }
+                        else
+                        {
+                            num = (goalEnemy.Distance > __instance.FAR_DIST) ? __instance.farRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.midRecalc : __instance.closeRecalc);
+                        }
+                        __instance._runPathCheck = Time.time + num;
+                        if (!__instance.CanRunToEnemyToHit(goalEnemy, out Vector3[] way))
+                        {
+                            __instance.ShallEndRun = true;
+                            return false;
+                        }
+                        if (goalEnemy.Distance < __instance.botOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
+                        {
+                            bot.Mover.PathFollower.Cancel(0.1f);
+                        }
+                        else
+                        {
+                            bot.Mover.PathFollower.RunToPointByWay(way, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
+                        }
+                    }
+                }
+                else
+                {
+                    Vector3[] way2;
+                    if (!__instance.CanRunToEnemyToHit(goalEnemy, out way2))
+                    {
+                        __instance.ShallEndRun = true;
+                        return false;
+                    }
+                    if (goalEnemy.Distance < __instance.botOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
+                    {
+                        bot.Mover.PathFollower.Cancel(0.1f);
+                    }
+                    else
+                    {
+                        bot.Mover.PathFollower.RunToPointByWay(way2, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
+                    }
+                }
+                return false;
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Test
+    /// </summary>
+    internal class InfiniteMagFixPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotReload), nameof(BotReload.TryUploadMagazine));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotReload __instance)
+        {
+            return false;
+        }
+    }
     internal class EnableVaultPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -21,6 +143,25 @@ namespace SAIN.Patches.Generic.Fixes
                 return;
 
             aiControlled = false;
+        }
+    }
+
+    internal class FightShallReloadFixPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotReload), nameof(BotReload.FightShallReload));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotOwner ___botOwner_0, ref bool __result)
+        {
+            if (SAINEnableClass.IsBotInCombat(___botOwner_0))
+            {
+                __result = true;
+                return false;
+            }
+            return true;
         }
     }
 

@@ -20,12 +20,12 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
+            Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
             Bot.Steering.SteerByPriority(Bot.Enemy);
             if (!shallMoveShoot)
             {
                 Bot.Mover.Pose.SetPoseToCover();
             }
-            Shoot.CheckAimAndFire(Bot.Enemy);
             this.EndProfilingSample();
         }
 

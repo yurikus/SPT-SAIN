@@ -71,7 +71,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     {
                         if (debugLastHeardPosition == null)
                         {
-                            debugLastHeardPosition = DebugGizmos.Line(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, Color.yellow, 0.01f, false, Time.deltaTime, true);
+                            debugLastHeardPosition = DebugGizmos.Line(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, Color.yellow, 0.01f, Time.deltaTime, true);
                         }
                         DebugGizmos.UpdatePositionLine(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, debugLastHeardPosition);
                     }
@@ -79,7 +79,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     {
                         if (debugLastSeenPosition == null)
                         {
-                            debugLastSeenPosition = DebugGizmos.Line(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, Color.red, 0.01f, false, Time.deltaTime, true);
+                            debugLastSeenPosition = DebugGizmos.Line(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, Color.red, 0.01f, Time.deltaTime, true);
                         }
                         DebugGizmos.UpdatePositionLine(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, debugLastSeenPosition);
                     }

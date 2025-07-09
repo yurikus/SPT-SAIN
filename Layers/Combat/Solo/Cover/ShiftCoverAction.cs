@@ -1,6 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
+using SAIN.Classes.Coverfinder;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -21,8 +21,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
+            Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
             Bot.Steering.SteerByPriority(Bot.Enemy);
-            Shoot.CheckAimAndFire(Bot.Enemy);
             if (NewPoint == null
                 && FindPointToGo())
             {

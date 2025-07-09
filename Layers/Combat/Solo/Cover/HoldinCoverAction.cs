@@ -1,9 +1,9 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.Classes.Coverfinder;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
 using UnityEngine;
 
@@ -25,11 +25,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
             this.StartProfilingSample("Update");
             checkPositionAdjustments();
             Enemy Enemy = Bot.Enemy;
-            if (Enemy != null && !Shoot.CheckAimAndFire(Enemy))
+            if (!Shoot.ShootAnyVisibleEnemies(Enemy) && !Bot.Suppression.TrySuppressEnemy(Enemy))
             {
-                Bot.Suppression.TrySuppressEnemy(Enemy);
+                Bot.Steering.SteerByPriority(Enemy);
             }
-            Bot.Steering.SteerByPriority(Enemy);
             this.EndProfilingSample();
         }
 

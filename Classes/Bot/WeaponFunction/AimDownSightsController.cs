@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
@@ -10,7 +11,13 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
     {
         public AimDownSightsController(BotComponent sain) : base(sain)
         {
-            CanEverTick = false;
+            TickRequirement = ESAINTickState.OnlyBotInCombat;
+        }
+
+        public override void ManualUpdate()
+        {
+            SetADS(AimingDownSights);
+            base.ManualUpdate();
         }
 
         public void UpdateADSstatus(Enemy Enemy)
@@ -24,17 +31,18 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return;
             }
 
-            bool shallADS = ShallAimDownSights(Enemy?.KnownPlaces.LastKnownPosition);
-            SetADS(shallADS);
+            AimingDownSights = ShallAimDownSights(Enemy?.KnownPlaces.LastKnownPosition, Enemy);
         }
 
-        public bool ShallAimDownSights(Vector3? targetPosition = null)
+        public bool AimingDownSights { get; private set; }
+
+        public bool ShallAimDownSights(Vector3? targetPosition = null, Enemy enemy = null)
         {
             bool result = false;
             EAimDownSightsStatus status = EAimDownSightsStatus.None;
             if (targetPosition != null)
             {
-                status = GetADSStatus(targetPosition.Value);
+                status = GetADSStatus(targetPosition.Value, enemy);
             }
             float timeSinceChangeDecision = Bot.Decision.TimeSinceChangeDecision;
             switch (status)
@@ -42,26 +50,30 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 case EAimDownSightsStatus.EnemyHeardRecent:
                 case EAimDownSightsStatus.EnemySeenRecent:
                 case EAimDownSightsStatus.EnemyVisible:
-                    result = true;
+                    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f);
+                    break;
+
+                case EAimDownSightsStatus.DogFight:
+                    result = Bot.Mover.DogFight.Status == Mover.EDogFightStatus.Shooting;
                     break;
 
                 case EAimDownSightsStatus.None:
                 case EAimDownSightsStatus.Sprinting:
-                case EAimDownSightsStatus.DogFight:
                 case EAimDownSightsStatus.MovingToCover:
                     result = false;
                     break;
 
                 case EAimDownSightsStatus.HoldInCover:
-                    result = timeSinceChangeDecision > 3f;
+                    result = timeSinceChangeDecision > 3f && 
+                        (EFTMath.RandomBool(60) || enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f));
                     break;
 
                 case EAimDownSightsStatus.StandAndShoot:
-                    result = Bot.Enemy != null && Bot.Enemy.RealDistance > 15f;
+                    result = enemy != null && enemy.RealDistance > (AimingDownSights ? 10f : 15f);
                     break;
 
                 case EAimDownSightsStatus.Suppressing:
-                    result = Bot.ManualShoot.Reason == EShootReason.SquadSuppressing;
+                    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f);
                     break;
 
                 default:
@@ -75,8 +87,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void SetADS(bool value)
         {
-            var aim = BotAimingClass;
-            if (aim != null)
+            if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aim)
             {
                 aim.HardAim = value;
             }
@@ -85,32 +96,22 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 shootController.SetAim(value);
             }
+            AimingDownSights = value;
         }
 
         public BotAimingClass BotAimingClass
         {
             get
             {
-                if (_botAimingClass == null)
-                {
-                    var aimData = BotOwner.AimingManager.CurrentAiming;
-                    if (aimData != null && aimData is BotAimingClass aimClass)
-                    {
-                        _botAimingClass = aimClass;
-                    }
-                }
-                return _botAimingClass;
+                return BotOwner.AimingManager.CurrentAiming as BotAimingClass;
             }
         }
-
-        private BotAimingClass _botAimingClass;
 
         public EAimDownSightsStatus CurrentADSstatus { get; private set; }
         public EAimDownSightsStatus LastADSstatus { get; private set; }
 
-        public EAimDownSightsStatus GetADSStatus(Vector3 targetPosition)
+        public EAimDownSightsStatus GetADSStatus(Vector3 targetPosition, Enemy enemy)
         {
-            var enemy = Bot.Enemy;
             float sqrMagToTarget = (targetPosition - Bot.Position).sqrMagnitude;
 
             if (Bot.Player.IsSprintEnabled || Bot.Mover.PathFollower.Running)

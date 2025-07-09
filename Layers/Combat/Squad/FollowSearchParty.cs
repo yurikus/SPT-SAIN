@@ -23,7 +23,7 @@ namespace SAIN.Layers.Combat.Squad
             this.StartProfilingSample("Update");
             if (!Bot.Mover.PathFollower.Running)
             {
-                Shoot.CheckAimAndFire(_enemy);
+                Shoot.ShootAnyVisibleEnemies(_enemy);
                 if (!Bot.Steering.SteerByPriority(_enemy, false))
                 {
                     Bot.Steering.LookToLastKnownEnemyPosition(_enemy ?? Bot.Enemy);

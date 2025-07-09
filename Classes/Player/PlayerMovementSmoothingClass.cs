@@ -16,10 +16,61 @@ namespace SAIN.Classes
         public void ManualUpdate(float currentTime, float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent)
         {
             var settings = GlobalSettingsClass.Instance.Steering;
+            if (settings.RANDOMSWAY_TOGGLE) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
+            else RandomSwayOffset = Vector3.zero;
             TurnSettings turnSettings = GetTurnSettings(botOwner, botComponent);
             ControlLookDirection.Calculate(deltaTime, turnSettings.SmoothingValue, turnSettings.MaxTurnSpeed, settings.TURN_PITCH_MAX);
             player.CharacterController.SetSteerDirection(ControlLookDirection.Current);
         }
+
+        private Vector3 RandomSwayOffset;
+
+        private Vector3 CalcRandomSway(float deltaTime)
+        {
+            var settings = GlobalSettingsClass.Instance.Steering;
+            loopTime += deltaTime;
+            float t = (loopTime % settings.RANDOMSWAY_LOOPDURATION) / settings.RANDOMSWAY_LOOPDURATION; // 0 to 1 looping
+
+            // Base circular loop
+            float angle = t * Mathf.PI * 2f;
+            float x = Mathf.Cos(angle);
+            float z = Mathf.Sin(angle);
+
+            // Add smooth looping wobble using extra sine waves
+            float y = Mathf.Sin(angle * 2f) * 0.5f + Mathf.Sin(angle * 3.1f) * 0.3f;
+
+            Vector3 basePos = new Vector3(x, y, z).normalized * settings.RANDOMSWAY_RADIUS;
+
+            // Add small chaotic offset for more natural motion
+            float wobble = Mathf.Sin(angle * 4f + Mathf.PI * 0.5f) * settings.RANDOMSWAY_SCALE;
+            return basePos + new Vector3(wobble, -wobble, wobble * 0.5f);
+        }
+
+        private static float CalcRandomSwayModifier(Player player, BotOwner botOwner, BotComponent botComponent)
+        {
+            float result = 1f;
+            bool sprinting = player.IsSprintEnabled;
+            if (sprinting)
+            {
+                return 0.25f;
+            }
+
+            MovementContext movementContext = player.MovementContext;
+            bool armsDamaged = movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged) || movementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
+            bool noStamina = player.Physical.Stamina.NormalValue <= 0.1f;
+            bool moving = botComponent?.Mover?.PathFollower?.Moving == true || botOwner.Mover?.IsMoving == true;
+            bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
+            bool aimingDownSights = botOwner.WeaponManager.ShootController?.IsAiming == true;
+
+            if (aiming) result *= 0.66f;
+            if (aimingDownSights) result *= 0.66f;
+            if (moving) result *= 2f;
+            if (armsDamaged) result *= 1.5f;
+            if (noStamina) result *= 1.5f;
+            return Mathf.Clamp(result, 0.001f, 2.5f);
+        }
+
+        private float loopTime;
 
         private static TurnSettings GetTurnSettings(BotOwner bot, BotComponent botComponent)
         {
@@ -71,9 +122,9 @@ namespace SAIN.Classes
             }
             else if (bot.Mover.Sprinting)
             {
-                    if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
-                        return turnSettings;
-                    return new TurnSettings(0.2f, 500f);
+                if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
+                    return turnSettings;
+                return new TurnSettings(0.2f, 500f);
             }
             if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.Peace, out turnSettings))
             {
@@ -84,7 +135,7 @@ namespace SAIN.Classes
 
         public void SetTargetLookDirection(Vector3 targetDirection)
         {
-            ControlLookDirection.Target = targetDirection;
+            ControlLookDirection.Target = targetDirection + RandomSwayOffset;
         }
 
         public void SetTargetMoveDirection(Vector3 direction, Player player)

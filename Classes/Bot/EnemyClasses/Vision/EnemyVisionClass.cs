@@ -16,7 +16,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool IsVisible { get; private set; }
         public bool CanShoot { get; private set; }
         public float VisibleStartTime { get; private set; }
-        public float TimeSinceSeen => Seen ? Time.time - TimeLastSeen : -1f;
+        public float TimeSinceSeen => Seen ? Time.time - TimeLastSeen : -1;
         public bool Seen { get; private set; }
         public float TimeFirstSeen { get; private set; }
         public float TimeLastSeen { get; private set; }

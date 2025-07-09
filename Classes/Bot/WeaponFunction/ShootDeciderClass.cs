@@ -4,7 +4,6 @@ using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Info;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
@@ -74,18 +73,45 @@ namespace SAIN.SAINComponent.Classes
             _shooting = false;
             BotOwner.ShootData?.EndShoot();
         }
+        
+        public Enemy GetEnemyToShoot(Enemy priorityEnemy = null)
+        {
+            if (AimAndShootAtEnemy(priorityEnemy, Bot))
+            {
+                UpdateADS(priorityEnemy);
+                return priorityEnemy;
+            }
+            Enemy targetEnemy = CheckEnemiesForShootableTargets(priorityEnemy.Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible));
+            if (targetEnemy != null)
+            {
+                UpdateADS(targetEnemy);
+                return targetEnemy;
+            }
+            UpdateADS(priorityEnemy);
+            Bot.Aim.LoseAimTarget();
+            return null;
+        }
 
-        public bool CheckAimAndFire(Enemy Enemy)
+        public bool ShootAnyVisibleEnemies(Enemy priorityEnemy = null)
+        {
+            return GetEnemyToShoot(priorityEnemy) != null;
+        }
+
+        private void UpdateADS(Enemy enemy)
         {
             if (_changeAimTimer < Time.time)
             {
                 _changeAimTimer = Time.time + 0.25f;
-                Bot.AimDownSightsController.UpdateADSstatus(Enemy);
+                Bot.AimDownSightsController.UpdateADSstatus(enemy);
             }
-            if (AimAndShootAtEnemy(Enemy, Bot))
-                return true;
-            Bot.Aim.LoseAimTarget();
-            return false;
+        }
+
+        public Enemy CheckEnemiesForShootableTargets(EnemyList VisibleEnemies)
+        {
+            foreach (Enemy Enemy in VisibleEnemies)
+                if (AimAndShootAtEnemy(Enemy, Bot))
+                    return Enemy;
+            return null;
         }
 
         private bool AimAndShootAtEnemy(Enemy Enemy, BotComponent bot)
@@ -225,7 +251,7 @@ namespace SAIN.SAINComponent.Classes
                         optimalSlot = EquipmentSlot.Holster;
                     }
                 }
-            } 
+            }
         }
 
         private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f) => info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.UIElements.UIR.Implementation.UIRStylePainter;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -23,17 +24,43 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
     public class Enemy : BotBase
     {
+        public override void ManualUpdate()
+        {
+            IsCurrentEnemy = Bot.CurrentTarget.CurrentTargetEnemy == this;
+
+            CalcFrequencyCoef();
+            UpdateDistAndDirection();
+            UpdateSniperStatus();
+
+            KnownChecker.ManualUpdate();
+            ActiveThreatChecker.ManualUpdate();
+            UpdateActiveState();
+            Vision.ManualUpdate();
+            KnownPlaces.ManualUpdate();
+            Path.ManualUpdate();
+            Status.ManualUpdate();
+
+            if (IsCurrentEnemy && GetVisibilePathPoint(out Vector3 point))
+            {
+                DebugGizmos.Sphere(point, 0.06f, Color.red, 0.02f);
+                DebugGizmos.Line(point, Bot.Transform.HeadPosition, Color.red, 0.015f, 0.02f);
+            }
+
+            base.ManualUpdate();
+        }
+
         public event Action OnEnemyDisposed;
 
         public string EnemyName { get; }
         public string EnemyProfileId { get; }
         public PlayerComponent EnemyPlayerComponent { get; }
         public PersonClass EnemyPerson { get; }
-        public IPlayer EnemyIPlayer  { get; private set; }
-        public Player EnemyPlayer  { get; private set; }
+        public IPlayer EnemyIPlayer { get; private set; }
+        public Player EnemyPlayer { get; private set; }
         public PersonTransformClass EnemyTransform { get; }
         public OtherPlayerData EnemyPlayerData { get; }
         public bool IsAI => EnemyPlayer.IsAI;
+        public bool IsZombie => EnemyPlayer.UsedSimplifiedSkeleton;
 
         public EnemyEvents Events { get; }
         public EnemyKnownPlaces KnownPlaces { get; private set; }
@@ -48,12 +75,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float RealDistance => EnemyPlayerData.DistanceData.Distance;
         public bool IsSniper { get; private set; }
         public Vector3? VisiblePathPoint { get; private set; }
+        public float VisiblePathPointDistanceToBot { get; private set; }
+        public float VisiblePathPointDistanceToEnemyLastKnown { get; private set; }
         public int? VisiblePathCornerIndex { get; private set; }
         public float? VisiblePathPointSignedAngle { get; private set; }
 
         public Vector3? SuppressionTarget {
             get
             {
+                if (!GlobalSettingsClass.Instance.Mind.TARGET_SUPPRESS_TOGGLE)
+                {
+                    return null;
+                }
                 Vector3? enemyLastKnown = KnownPlaces.LastKnownPosition;
                 if (enemyLastKnown == null)
                 {
@@ -140,9 +173,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public float TimeSinceCurrentEnemy => _hasBeenActive ? Time.time - _timeLastActive : float.MaxValue;
 
-        private const float TARGET_SUPPRESS_DIST = 3f * 3f;
-        private const float TARGET_SUPPRESS_DIST_MAX = 12f * 12f;
-        private const float MAX_TARGET_SUPPRESS_ANGLE = 45f;
         private const float ENEMY_UPDATEFREQUENCY_MAX_SCALE = 5f;
         private const float ENEMY_UPDATEFREQUENCY_MAX_DIST = 500f;
         private const float ENEMY_UPDATEFREQUENCY_MIN_DIST = 50f;
@@ -190,31 +220,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             base.Init();
         }
 
-        public override void ManualUpdate()
-        {
-            IsCurrentEnemy = Bot.CurrentTarget.CurrentTargetEnemy == this;
-
-            CalcFrequencyCoef();
-            UpdateDistAndDirection();
-            UpdateSniperStatus();
-
-            KnownChecker.ManualUpdate();
-            ActiveThreatChecker.ManualUpdate();
-            UpdateActiveState();
-            Vision.ManualUpdate();
-            KnownPlaces.ManualUpdate();
-            Path.ManualUpdate();
-            Status.ManualUpdate();
-
-            if (IsCurrentEnemy && GetVisibilePathPoint(out Vector3 point))
-            {
-                DebugGizmos.Sphere(point, 0.06f, Color.red, true, 0.02f);
-                DebugGizmos.Line(point, Bot.Transform.HeadPosition, Color.red, 0.015f, true, 0.02f);
-            }
-
-            base.ManualUpdate();
-        }
-
         public override void Dispose()
         {
             OnEnemyDisposed?.Invoke();
@@ -231,7 +236,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             base.Dispose();
         }
 
-        void OnEnemyKnownChanged(bool value, Enemy enemy)
+        private void OnEnemyKnownChanged(bool value, Enemy enemy)
         {
             if (!value)
             {
@@ -240,6 +245,29 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 FirstContactReported = false;
                 IsCurrentEnemy = false;
             }
+        }
+
+        private void UpdateVisiblePathPointDist(Vector3 headPosition)
+        {
+            TryUpdateVisPathDist(headPosition, VisiblePathPoint, LastKnownPosition, out float distToBot, out float distToEnemy);
+            VisiblePathPointDistanceToBot = distToBot;
+            VisiblePathPointDistanceToEnemyLastKnown = distToEnemy;
+        }
+
+        private static void TryUpdateVisPathDist(Vector3 headPosition, Vector3? visPathPoint, Vector3? lastKnown, out float distToBot, out float distToEnemy)
+        {
+            distToBot = float.MaxValue;
+            distToEnemy = float.MaxValue;
+            if (visPathPoint == null)
+            {
+                return;
+            }
+            if (lastKnown == null)
+            {
+                return;
+            }
+            distToBot = (visPathPoint.Value - headPosition).magnitude;
+            distToEnemy = (visPathPoint.Value - lastKnown.Value).magnitude;
         }
 
         public void SetIsCurrentEnemy(bool value)
@@ -274,6 +302,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             VisiblePathPoint = null;
             VisiblePathPointSignedAngle = null;
             VisiblePathCornerIndex = null;
+            VisiblePathPointDistanceToBot = float.MaxValue;
+            VisiblePathPointDistanceToEnemyLastKnown = float.MaxValue;
         }
 
         public void SetLastVisiblePathPoint(Vector3 Point, int CornerIndex)
@@ -282,6 +312,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             VisiblePathPoint = Point;
             VisiblePathCornerIndex = CornerIndex;
             Vector3? LastKnown = LastKnownPosition;
+            UpdateVisiblePathPointDist(Bot.Transform.EyePosition);
             if (LastKnown != null)
             {
                 Vector3 botPosition = Bot.Position;
@@ -297,6 +328,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             VisiblePathPoint = LastCorner;
             VisiblePathCornerIndex = CornerIndex;
             VisiblePathPointSignedAngle = null;
+            UpdateVisiblePathPointDist(Bot.Transform.EyePosition);
         }
 
         public bool FindLookPoint(out Vector3 Position, out EEnemySteerDir EnemySteerDir)
@@ -340,19 +372,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private bool IsTargetInSuppRange(Vector3 target, Vector3 suppressPoint)
         {
+            var settings = GlobalSettingsClass.Instance.Mind;
+
             float distSqr = (target - suppressPoint).sqrMagnitude;
-            if (distSqr <= TARGET_SUPPRESS_DIST)
+            if (distSqr <= settings.TARGET_SUPPRESS_DIST.Sqr())
             {
                 return true;
             }
-            if (distSqr > TARGET_SUPPRESS_DIST_MAX)
+            if (distSqr > settings.TARGET_SUPPRESS_DIST_MAX.Sqr())
             {
                 return false;
             }
             Vector3 directionToSuppPoint = suppressPoint - Bot.Position;
             Vector3 directionToTarget = target - Bot.Position;
             float angle = Vector3.Angle(directionToSuppPoint.normalized, directionToTarget.normalized);
-            if (angle < MAX_TARGET_SUPPRESS_ANGLE)
+            if (angle < settings.MAX_TARGET_SUPPRESS_ANGLE.Sqr())
             {
                 return true;
             }

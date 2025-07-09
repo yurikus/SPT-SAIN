@@ -132,7 +132,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             // Debug Info
             Color debugSphereColor = heightGood ? Color.green : Color.red;
             float debugSphereSize = heightGood ? 1f : 0.5f;
-            DebugGizmos.Sphere(hit.collider.transform.position, debugSphereSize, debugSphereColor, true, 60f);
+            DebugGizmos.Sphere(hit.collider.transform.position, debugSphereSize, debugSphereColor, 60f);
 
             return heightGood;
         }

@@ -95,13 +95,13 @@ namespace SAIN.Components.Extract
 
             foreach (Vector3 pathEndPoint in finder.PathEndpoints)
             {
-                DebugGizmos.Sphere(pathEndPoint, 1f, Color.blue, true, CheckExtractDelay);
+                DebugGizmos.Sphere(pathEndPoint, 1f, Color.blue, CheckExtractDelay);
             }
 
             if (finder.ExtractPosition.HasValue)
             {
                 Color color = finder.ValidPathFound ? Color.green : Color.red;
-                DebugGizmos.Sphere(finder.ExtractPosition.Value, 1f, color, true, CheckExtractDelay);
+                DebugGizmos.Sphere(finder.ExtractPosition.Value, 1f, color, CheckExtractDelay);
             }
         }
 

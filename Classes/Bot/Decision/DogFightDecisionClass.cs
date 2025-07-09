@@ -24,11 +24,12 @@ namespace SAIN.SAINComponent.Classes.Decision
             base.Dispose();
         }
 
-        public bool ShallDogFight()
+        public bool ShallDogFight(EnemyList KnownEnemies)
         {
-            if (!BotOwner.WeaponManager.HaveBullets ||
-                BotOwner.WeaponManager.Reload.Reloading)
+            BotWeaponManager weaponManager = BotOwner?.WeaponManager;
+            if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
             {
+                DogFightTarget = null;
                 return false;
             }
             switch (Bot.Decision.CurrentCombatDecision)
@@ -74,7 +75,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 }
                 else
                 {
-                    foreach (var enemy in Bot.EnemyController.EnemiesArray)
+                    foreach (var enemy in KnownEnemies)
                         if (!_dogFightTargets.Contains(enemy) && shallDogFightEnemy(enemy))
                             _dogFightTargets.Add(enemy);
 
@@ -105,7 +106,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 return true;
             }
-            float pathDist = enemy.Path.PathDistance;
+            float pathDist = enemy.Path.PathLength;
             if (pathDist > _dogFightEndDist)
             {
                 return true;
@@ -166,7 +167,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 enemy?.CheckValid() == true &&
                 enemy.IsVisible &&
                 enemy.EnemyKnown &&
-                enemy.Path.PathDistance <= _dogFightStartDist;
+                enemy.Path.PathLength <= _dogFightStartDist;
         }
 
         private float _dogFightStartDist = 8f;

@@ -42,7 +42,7 @@ namespace SAIN.Layers.Combat.Solo
             Vector3 enemyPosition = Bot.Enemy.EnemyPosition;
             Vector3 botPosition = Bot.Position;
 
-            Vector3? middleNode = FindMiddlePoint(enemy.Path.PathToEnemy, enemy.Path.PathDistance, out int index);
+            Vector3? middleNode = FindMiddlePoint(enemy.Path.PathToEnemy, enemy.Path.PathLength, out int index);
 
             if (middleNode != null)
             {
