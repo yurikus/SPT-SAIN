@@ -63,7 +63,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (HasEnemy && stopMoveToShoot(Enemy))
             {
                 Status = EDogFightStatus.Shooting;
-                Bot.Mover.StopMove(0f);
+                Bot.Mover.Stop();
                 float timeAdd = 0.5f * UnityEngine.Random.Range(0.5f, 1.33f);
                 Bot.Mover.Lean.HoldLean(timeAdd);
                 _updateDogFightTimer = Time.time + timeAdd;
@@ -74,7 +74,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return;
             }
-            
+
             Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies);
 
             if (HasEnemy && BackUpFromEnemy(Enemy))
@@ -93,7 +93,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (HasEnemy &&
                 canMoveToEnemy(Enemy) &&
-                Bot.Mover.GoToEnemy(Enemy, -1, false, false))
+                Bot.Mover.WalkToPointByWay(Enemy.Path.PathToEnemy))
             {
                 Bot.Mover.SetTargetMoveSpeed(0.9f);
                 Status = EDogFightStatus.MovingToEnemy;
@@ -116,13 +116,14 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool BackUpFromEnemy(Enemy Enemy)
         {
             if (Enemy == null) return false;
+            if (Bot.Transform.NavData.PlayerNavMeshStatus != SAIN.Classes.Transform.EPlayerNavMeshDistance.OnNavMesh) return false;
             if (findStrafePoint(out Vector3 backupPoint, Enemy))
             {
                 return true;
             }
             if (findStrafePoint2(out backupPoint, Enemy))
             {
-                return Bot.Mover.GoToPoint(backupPoint, out _, -1, false, true, false);
+                return Bot.Mover.WalkToPoint(backupPoint, false);
             }
             return false;
         }
@@ -132,10 +133,10 @@ namespace SAIN.SAINComponent.Classes.Mover
         private Vector3? findBackupTarget(Enemy Enemy)
         {
             if (Enemy != null && (
-                Enemy.Bot.BotOwner.WeaponManager.Reload.Reloading || 
-                !Enemy.Bot.BotOwner.WeaponManager.HaveBullets || 
-                !Enemy.Bot.BotOwner.Medecine?.Using == true || 
-                (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold) || 
+                Enemy.Bot.BotOwner.WeaponManager.Reload.Reloading ||
+                !Enemy.Bot.BotOwner.WeaponManager.HaveBullets ||
+                !Enemy.Bot.BotOwner.Medecine?.Using == true ||
+                (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold) ||
                 (!Enemy.Seen && Enemy.LastKnownPosition != null && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold)
                 ))
             {
@@ -156,7 +157,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Vector3? target = findBackupTarget(Enemy);
             if (target != null)
             {
-                Vector3 BotPosition = Bot.Position;
+                Vector3 BotPosition = Bot.Transform.NavData.NavMeshPosition;
                 Vector3 targetDirection = target.Value - BotPosition;
                 targetDirection.y = 0;
                 Vector3 directionAwayFromTargetNormal = -Vector.NormalizeFastSelf(targetDirection);
@@ -171,7 +172,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     if (NavMesh.SamplePosition(RandomBackupPoint, out NavMeshHit navMeshHit, 2f, -1) && (navMeshHit.position - BotPosition).sqrMagnitude > 1)
                     {
                         movePosition = navMeshHit.position;
-                        if (Bot.Mover.GoToPoint(movePosition, out _, -1, false, true, false))
+                        if (Bot.Mover.WalkToPoint(movePosition, false))
                         {
                             return true;
                         }
@@ -187,14 +188,14 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold * Random.Range(0.66f, 1.33f))
             {
                 Vector3? LastKnown = Enemy.LastKnownPosition;
-                if (LastKnown != null && NavMesh.SamplePosition(Bot.Position, out NavMeshHit Hit, 0.5f, -1))
+                if (LastKnown != null)
                 {
-                    Vector3 Origin = Hit.position;
-                    Vector3 direction = (Origin - LastKnown.Value).normalized;
+                    Vector3 botNavPos = Bot.Transform.NavData.NavMeshPosition;
+                    Vector3 direction = (botNavPos - LastKnown.Value).normalized;
                     Vector3 random = Random.onUnitSphere * Random.Range(1.25f, 2f);
                     random.y = 0f;
-                    Vector3 Point = Origin + (direction * Random.Range(1f, 2f)) + random;
-                    if (NavMesh.Raycast(Origin, Point, out NavMeshHit RaycastHit, -1))
+                    Vector3 Point = botNavPos + (direction * Random.Range(1f, 2f)) + random;
+                    if (NavMesh.Raycast(botNavPos, Point, out NavMeshHit RaycastHit, -1))
                     {
                         if (RaycastHit.distance <= 0.5f)
                         {

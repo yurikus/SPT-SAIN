@@ -1,5 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Squad
@@ -18,20 +19,45 @@ namespace SAIN.Layers.Combat.Squad
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
+            Enemy enemy = Bot.CurrentTarget.CurrentTargetEnemy;
             var SquadLeadPos = Bot.Squad.LeaderComponent?.Position;
             if (SquadLeadPos != null)
             {
-                Bot.Mover.GoToPoint(SquadLeadPos.Value, out _);
-                CheckShouldSprint(SquadLeadPos.Value);
+                bool hasEnemy = enemy != null;
+                bool enemyLOS = enemy?.InLineOfSight == true;
+                float leadDist = (SquadLeadPos.Value - BotOwner.Position).magnitude;
+                float enemyDist = hasEnemy ? enemy.KnownPlaces.BotDistanceFromLastKnown : 999f;
+
+                bool sprint =
+                    hasEnemy &&
+                    leadDist > 30f &&
+                    !enemyLOS &&
+                    enemyDist > 50f;
+
+                if (_nextChangeSprintTime < Time.time)
+                {
+                    _nextChangeSprintTime = Time.time + 1f;
+                    if (sprint)
+                    {
+                        Bot.Mover.RunToPoint(SquadLeadPos.Value);
+                    }
+                    else
+                    {
+                        Bot.Mover.WalkToPoint(SquadLeadPos.Value);
+                    }
+                }
             }
 
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
 
-            if (!Bot.Mover.PathFollower.Running)
+            if (!Bot.Mover.Running && 
+                !Shoot.ShootAnyVisibleEnemies(enemy) && 
+                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies) && 
+                !Bot.Steering.SteerByPriority(enemy) && 
+                !Bot.Steering.SteeringLocked)
             {
-                Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
-                Bot.Steering.SteerByPriority(Bot.Enemy);
+                Bot.Steering.LookToMovingDirection();
             }
             this.EndProfilingSample();
         }
@@ -39,39 +65,6 @@ namespace SAIN.Layers.Combat.Squad
         public override void Start()
         {
             Toggle(true);
-        }
-
-        private void CheckShouldSprint(Vector3 pos)
-        {
-            bool hasEnemy = Bot.HasEnemy;
-            bool enemyLOS = Bot.Enemy?.InLineOfSight == true;
-            float leadDist = (pos - BotOwner.Position).magnitude;
-            float enemyDist = hasEnemy ? (Bot.Enemy.EnemyIPlayer.Position - BotOwner.Position).magnitude : 999f;
-
-            bool sprint =
-                hasEnemy &&
-                leadDist > 30f &&
-                !enemyLOS &&
-                enemyDist > 50f;
-
-            if (Bot.Steering.SteerByPriority(null, false))
-            {
-                sprint = false;
-            }
-
-            if (_nextChangeSprintTime < Time.time)
-            {
-                _nextChangeSprintTime = Time.time + 1f;
-                if (sprint)
-                {
-                    Bot.Mover.Sprint(true);
-                }
-                else
-                {
-                    Bot.Mover.Sprint(false);
-                    Bot.Steering.SteerByPriority();
-                }
-            }
         }
 
         private float _nextChangeSprintTime;

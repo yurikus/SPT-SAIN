@@ -19,7 +19,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             this.StartProfilingSample("Update");
             Bot.Mover.SetTargetPose(0f);
-            Enemy Enemy = Bot.Enemy;
+            Enemy Enemy = Bot.GoalEnemy;
             if (Enemy != null)
             {
                 Shoot.ShootAnyVisibleEnemies(Enemy);
@@ -34,7 +34,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Start()
         {
             Toggle(true);
-            Bot.Mover.StopMove();
+            Bot.Mover.Stop();
         }
 
         public override void Stop()

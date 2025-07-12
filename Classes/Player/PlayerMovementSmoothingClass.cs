@@ -16,11 +16,26 @@ namespace SAIN.Classes
         public void ManualUpdate(float currentTime, float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent)
         {
             var settings = GlobalSettingsClass.Instance.Steering;
-            if (settings.RANDOMSWAY_TOGGLE) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
-            else RandomSwayOffset = Vector3.zero;
+            UpdateRandomSway(deltaTime, player, botOwner, botComponent, settings);
+            UpdateTurnSmoothing(deltaTime, botOwner, botComponent, settings);
+            //player.CharacterController.SetSteerDirection(ControlLookDirection.Current);
+        }
+
+        private void UpdateTurnSmoothing(float deltaTime, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
+        {
             TurnSettings turnSettings = GetTurnSettings(botOwner, botComponent);
             ControlLookDirection.Calculate(deltaTime, turnSettings.SmoothingValue, turnSettings.MaxTurnSpeed, settings.TURN_PITCH_MAX);
-            player.CharacterController.SetSteerDirection(ControlLookDirection.Current);
+        }
+
+        private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
+        {
+            if (settings.RANDOMSWAY_TOGGLE) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
+            else RandomSwayOffset = Vector3.zero;
+        }
+
+        private void CalcRecoil()
+        {
+
         }
 
         private Vector3 RandomSwayOffset;
@@ -29,7 +44,7 @@ namespace SAIN.Classes
         {
             var settings = GlobalSettingsClass.Instance.Steering;
             loopTime += deltaTime;
-            float t = (loopTime % settings.RANDOMSWAY_LOOPDURATION) / settings.RANDOMSWAY_LOOPDURATION; // 0 to 1 looping
+            float t = (loopTime % settings.RANDOMSWAY_LOOP_DURATION) / settings.RANDOMSWAY_LOOP_DURATION; // 0 to 1 looping
 
             // Base circular loop
             float angle = t * Mathf.PI * 2f;
@@ -39,10 +54,10 @@ namespace SAIN.Classes
             // Add smooth looping wobble using extra sine waves
             float y = Mathf.Sin(angle * 2f) * 0.5f + Mathf.Sin(angle * 3.1f) * 0.3f;
 
-            Vector3 basePos = new Vector3(x, y, z).normalized * settings.RANDOMSWAY_RADIUS;
+            Vector3 basePos = new Vector3(x, y, z).normalized * settings.RANDOMSWAY_CIRCLE_RADIUS;
 
             // Add small chaotic offset for more natural motion
-            float wobble = Mathf.Sin(angle * 4f + Mathf.PI * 0.5f) * settings.RANDOMSWAY_SCALE;
+            float wobble = Mathf.Sin(angle * 4f + Mathf.PI * 0.5f) * settings.RANDOMSWAY_CIRCLE_SCALE;
             return basePos + new Vector3(wobble, -wobble, wobble * 0.5f);
         }
 
@@ -58,12 +73,12 @@ namespace SAIN.Classes
             MovementContext movementContext = player.MovementContext;
             bool armsDamaged = movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged) || movementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool noStamina = player.Physical.Stamina.NormalValue <= 0.1f;
-            bool moving = botComponent?.Mover?.PathFollower?.Moving == true || botOwner.Mover?.IsMoving == true;
+            bool moving = botComponent?.Mover?.Moving == true || botOwner.Mover?.IsMoving == true;
             bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
             bool aimingDownSights = botOwner.WeaponManager.ShootController?.IsAiming == true;
 
-            if (aiming) result *= 0.66f;
-            if (aimingDownSights) result *= 0.66f;
+            if (aiming) result *= 0.5f;
+            if (aimingDownSights) result *= 0.5f;
             if (moving) result *= 2f;
             if (armsDamaged) result *= 1.5f;
             if (noStamina) result *= 1.5f;
@@ -86,11 +101,11 @@ namespace SAIN.Classes
             }
             if (botComponent != null)
             {
-                if (botComponent.SAINLayersActive && botComponent.Mover.PathFollower.Running)
+                if (botComponent.SAINLayersActive && botComponent.Mover.Running)
                 {
                     if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
                         return turnSettings;
-                    return new TurnSettings(0.25f, 500f);
+                    return new TurnSettings(0.2f, 500f);
                 }
                 if (botComponent.Steering.CurrentSteerPriority == Models.Enums.ESteerPriority.RandomLook)
                 {
@@ -142,6 +157,7 @@ namespace SAIN.Classes
         {
             if (direction.sqrMagnitude > 0.0001f)
             {
+                player.CharacterController.SetSteerDirection(direction);
                 Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
                 if (moveDir.sqrMagnitude > 0.0001f)
                 {

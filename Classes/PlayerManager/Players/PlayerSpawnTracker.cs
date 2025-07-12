@@ -1,28 +1,44 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings.Categories;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Profiling;
+using static DrakiaXYZ.BigBrain.Brains.BrainManager;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
     public class PlayerSpawnTracker
     {
-        public readonly HashSet<PlayerComponent> AlivePlayerArray = [];
-
         public event Action<PlayerComponent> OnPlayerAdded;
-
         public event Action<string, PlayerComponent> OnPlayerRemoved;
-
-        public readonly PlayerDictionary AlivePlayersDictionary = [];
-
+        public readonly HashSet<PlayerComponent> AlivePlayerArray = [];
+        public readonly Dictionary<string, PlayerComponent> AlivePlayersDictionary = [];
         public readonly List<IPlayer> DeadPlayers = [];
+        
+        public PlayerComponent GetPlayerComponent(IPlayer Player)
+        {
+            if (Player != null && 
+                AlivePlayersDictionary.TryGetValue(Player.ProfileId, out PlayerComponent component))
+            {
+                return component;
+            }
+            return null;
+        }
 
-        public PlayerComponent GetPlayerComponent(string profileId) => AlivePlayersDictionary.GetPlayerComponent(profileId);
-        public PlayerComponent GetPlayerComponent(IPlayer Player) => AlivePlayersDictionary.GetPlayerComponent(Player);
+        public PlayerComponent GetPlayerComponent(string profileId)
+        {
+            if (!profileId.IsNullOrEmpty() &&
+                AlivePlayersDictionary.TryGetValue(profileId, out PlayerComponent component))
+            {
+                return component;
+            }
+            return null;
+        }
 
         public PlayerComponent FindClosestHumanPlayer(out float closestPlayerSqrMag, Vector3 targetPosition, out Player player)
         {
@@ -48,10 +64,23 @@ namespace SAIN.Components.PlayerComponentSpace
             return closestPlayer;
         }
 
-        public Player FindClosestHumanPlayer(out float closestPlayerSqrMag, Vector3 targetPosition)
+        public PlayerComponent FindClosestHumanPlayer(out float distance, PlayerComponent quierrier, out Player player)
         {
-            FindClosestHumanPlayer(out closestPlayerSqrMag, targetPosition, out Player player);
-            return player;
+            List<OtherPlayerData> otherPlayers = quierrier.OtherPlayersData.DataList;
+            otherPlayers.Sort((x, y) => x.DistanceData.Distance.CompareTo(y.DistanceData.Distance));
+            for (int i = 0; i < otherPlayers.Count; i++)
+            {
+                OtherPlayerData otherPlayer = otherPlayers[i];
+                if (otherPlayer != null && !otherPlayer.OtherPlayerComponent.IsAI)
+                {
+                    distance = otherPlayer.DistanceData.Distance;
+                    player = otherPlayer.OtherPlayerComponent.Player;
+                    return otherPlayer.OtherPlayerComponent;
+                }
+            }
+            distance = float.MaxValue;
+            player = null;
+            return null;
         }
 
         public PlayerComponent AddPlayerManual(IPlayer player)
@@ -91,42 +120,34 @@ namespace SAIN.Components.PlayerComponentSpace
                 return;
             }
 
-            if (AlivePlayersDictionary.TryRemove(profileId, out bool compDestroyed))
+            if (TryRemove(profileId, out bool compDestroyed))
             {
-                string playerInfo = $"{player.name} : {player.Profile?.Nickname} : {profileId}";
-                Logger.LogWarning($"PlayerComponent already exists for Player: {playerInfo}");
+                Logger.LogWarning($"PlayerComponent already exists for Player: {player.name} : {player.Profile?.Nickname} : {profileId}");
                 if (compDestroyed)
                 {
-                    Logger.LogWarning($"Destroyed old Component for: {playerInfo}");
+                    Logger.LogWarning($"Destroyed old Component for: {player.name} : {player.Profile?.Nickname} : {profileId}");
                 }
             }
-
-            PlayerComponent component = player.gameObject.AddComponent<PlayerComponent>();
-            if (component?.Init(iPlayer) == true)
+            if (TryAddPlayerComponent(player))
             {
-                component.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
-                AlivePlayersDictionary.Add(profileId, component);
-                AlivePlayerArray.Add(component);
-                OnPlayerAdded?.Invoke(component);
-            }
-            else
-            {
-                Logger.LogError($"Init PlayerComponent Failed for {player.name} : {player.ProfileId}");
-                GameObject.Destroy(component);
+                Logger.LogDebug($"Added New Player [{player.name}] : [{player.Profile.Nickname}]");
             }
         }
 
-        private void removePerson(PersonClass person)
+        private void RemovePerson(IPlayer player)
         {
-            OnPlayerRemoved?.Invoke(person.ProfileId, person.PlayerComponent);
-            AlivePlayerArray.Remove(person.PlayerComponent);
-            person.ActivationClass.OnPersonDeadOrDespawned -= removePerson;
-            AlivePlayersDictionary.TryRemove(person.ProfileId, out _);
-
-            if (!person.ActivationClass.IsAlive &&
-                person.Player != null)
+            if (player == null)
             {
-                //SAINGameWorld.StartCoroutine(addDeadPlayer(person.Player));
+                Logger.LogError("Can't Remove player. Player Null");
+                return;
+            }
+            if (TryRemove(player.ProfileId, out _))
+            {
+                Logger.LogDebug($"Removed Player Component [{player.Profile.Nickname}]]");
+            }
+            else
+            {
+                Logger.LogWarning("Could not find player in Player Component Dictionary!");
             }
         }
 
@@ -149,6 +170,75 @@ namespace SAIN.Components.PlayerComponentSpace
             }
             AlivePlayersDictionary.Clear();
         }
+
+        private bool TryAddPlayerComponent(Player player)
+        {
+            PlayerComponent component = player.gameObject.AddComponent<PlayerComponent>();
+            if (component?.Init(player) == true)
+            {
+                player.OnIPlayerDeadOrUnspawn += RemovePerson;
+                AlivePlayersDictionary.Add(player.ProfileId, component);
+                AlivePlayerArray.Add(component);
+                OnPlayerAdded?.Invoke(component);
+                return true;
+            }
+            else
+            {
+                Logger.LogError($"Init PlayerComponent Failed for {player.name} : {player.ProfileId}");
+                GameObject.Destroy(component);
+                return false;
+            }
+        }
+
+        private bool TryRemove(string profileId, out bool destroyedComponent)
+        {
+            destroyedComponent = false;
+            if (profileId.IsNullOrEmpty())
+            {
+                ClearNullPlayers();
+                return false;
+            }
+            if (AlivePlayersDictionary.TryGetValue(profileId, out PlayerComponent playerComponent))
+            {
+                OnPlayerRemoved?.Invoke(profileId, playerComponent);
+                if (playerComponent != null)
+                {
+                    destroyedComponent = true;
+                    playerComponent.Dispose();
+                }
+                AlivePlayersDictionary.Remove(profileId);
+                return true;
+            }
+            return false;
+        }
+
+        private void ClearNullPlayers()
+        {
+            foreach (KeyValuePair<string, PlayerComponent> kvp in AlivePlayersDictionary)
+            {
+                PlayerComponent component = kvp.Value;
+                if (component == null ||
+                    component.Player == null)
+                {
+                    _ids.Add(kvp.Key);
+                    if (component.Player != null)
+                    {
+                        Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
+                    }
+                }
+            }
+            if (_ids.Count > 0)
+            {
+                Logger.LogDebug($"Removing {_ids.Count} null players");
+                foreach (var id in _ids)
+                {
+                    TryRemove(id, out _);
+                }
+                _ids.Clear();
+            }
+        }
+
+        private readonly List<string> _ids = [];
 
         private readonly GameWorldComponent _sainGameWorld;
     }

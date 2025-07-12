@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SAIN.Classes.Coverfinder;
+
 using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
@@ -123,7 +123,7 @@ namespace SAIN.Components.CoverFinder
 
         public void Init(BotComponent bot)
         {
-            base.Init(bot.Person);
+            base.Init(bot.PlayerComponent);
             Bot = bot;
 
             ColliderFinder = new ColliderFinder(this);
@@ -141,7 +141,7 @@ namespace SAIN.Components.CoverFinder
             {
                 if (CoverPoints.Count > 0)
                 {
-                    DebugGizmos.Line(CoverPoints.PickRandom().Position, Bot.Transform.HeadPosition, Color.yellow, 0.035f, 0.1f);
+                    DebugGizmos.DrawLine(CoverPoints.PickRandom().Position, Bot.Transform.EyePosition, Color.yellow, 0.035f, 0.1f);
                 }
             }
         }
@@ -169,7 +169,7 @@ namespace SAIN.Components.CoverFinder
 
         private void updateTarget()
         {
-            Enemy targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy ?? Bot.Enemy;
+            Enemy targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy ?? Bot.GoalEnemy;
             if (targetEnemy == null)
             {
                 TargetData = null;
@@ -196,9 +196,9 @@ namespace SAIN.Components.CoverFinder
                 target = targetHit.position;
             }
             Vector3 botPosition = Bot.Position;
-            if (NavMesh.SamplePosition(botPosition, out var botHit, SAMPLE_POINT_ORIGIN_RANGE, -1))
+            if (Bot.Transform.NavData.PlayerNavMeshStatus == Classes.Transform.EPlayerNavMeshDistance.OnNavMesh)
             {
-                botPosition = botHit.position;
+                botPosition = Bot.Transform.NavData.NavMeshPosition;
             }
 
             if (TargetData == null || TargetData.TargetEnemy.IsDifferent(enemy))
@@ -287,10 +287,7 @@ namespace SAIN.Components.CoverFinder
 
                 CoverPoints.Clear();
 
-                if (Bot != null)
-                {
-                    Bot.Cover.CoverInUse = null;
-                }
+                Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
 
                 FallBackPoint = null;
                 ClearTarget();
@@ -388,7 +385,7 @@ namespace SAIN.Components.CoverFinder
         private bool shallLimitProcessing()
         {
             ProcessingLimited =
-                Bot.Enemy?.IsAI == true ||
+                Bot.GoalEnemy?.IsAI == true ||
                 limitProcessingFromDecision(Bot.Decision.CurrentCombatDecision);
 
             return ProcessingLimited;

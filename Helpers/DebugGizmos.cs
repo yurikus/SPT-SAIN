@@ -1,18 +1,17 @@
-﻿using BepInEx.Logging;
-using EFT;
-using SAIN.Editor;
+﻿using EFT;
 using SAIN.Editor.Util;
 using SAIN.Plugin;
+using SAIN.Preset;
+using SAIN.Preset.GlobalSettings;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine.AI;
 using Color = UnityEngine.Color;
 
 namespace SAIN.Helpers
 {
-    public sealed class GUIObject
+    public sealed class DebugLabel
     {
         public Vector3 WorldPos;
         public string Text;
@@ -22,101 +21,76 @@ namespace SAIN.Helpers
         public bool Enabled = true;
     }
 
+    public struct DebugGizmo
+    {
+        public GameObject GameObject;
+        public DebugLabel Label;
+        public float ExpireTime;
+    }
+
     public class DebugGizmos
     {
         static DebugGizmos()
         {
-            GameWorld.OnDispose += Dispose;
-            PresetHandler.OnEditorSettingsChanged += Update;
+            GameWorld.OnDispose += ClearGizmos;
+            PresetHandler.OnPresetUpdated += PresetUpdated;
         }
 
-        public static void Update(PresetEditorDefaults defaults)
-        {
-            if (!DrawGizmos)
-            {
-                ClearGizmos();
-            }
-        }
-
-        private static void Dispose()
-        {
-            ClearGizmos();
-            DebugLabels.Clear();
-        }
-
-        private static void ClearGizmos()
-        {
-            if (DrawnGizmos.Count > 0)
-            {
-                for (int i = 0; i < DrawnGizmos.Count; i++)
-                {
-                    if (DrawnGizmos[i] != null)
-                        Object.Destroy(DrawnGizmos[i]);
-                }
-                DrawnGizmos.Clear();
-            }
-        }
-
-        public static void OnGUIGame()
-        {
-            foreach (var obj in GameLabels)
-            {
-                if (!obj.Enabled) continue;
-                string text = obj.Text.IsNullOrEmpty() ? obj.StringBuilder.ToString() : obj.Text;
-                OnGUIDrawLabel(obj.WorldPos, text, obj.Style, obj.Scale);
-            }
-        }
-
-        public static void OnGUIDebug()
-        {
-            if (!SAINPlugin.DebugSettings.Logs.DrawDebugLabels)
-            {
-                DebugLabels.Clear();
-            }
-            else
-            {
-                foreach (var obj in DebugLabels)
-                {
-                    if (!obj.Enabled) continue;
-                    string text = obj.Text.IsNullOrEmpty() ? obj.StringBuilder.ToString() : obj.Text;
-                    OnGUIDrawLabel(obj.WorldPos, text, obj.Style, obj.Scale);
-                }
-            }
-        }
-
-        private static readonly List<GameObject> DrawnGizmos = new();
-
+        public static Color RandomColor => new(RandomFloat, RandomFloat, RandomFloat);
         public static bool DrawGizmos => SAINPlugin.DrawDebugGizmos;
 
-        private static GUIStyle DefaultStyle;
-
-        public static GUIObject CreateLabel(Vector3 worldPos, string text, GUIStyle guiStyle = null, float scale = 1f, bool debug = true)
+        public static void ManualUpdate()
         {
-            GUIObject obj = new() { WorldPos = worldPos, Text = text, Style = guiStyle, Scale = scale };
-            AddGUIObject(obj, debug);
+            float currentTime = Time.time;
+            for (int i = _gizmos.Count; i > 0; i--)
+            {
+                DebugGizmo gizmo = _gizmos[i];
+                float expireTime = gizmo.ExpireTime;
+                if (expireTime > 0 && expireTime < currentTime)
+                {
+                    if (gizmo.GameObject != null)
+                    {
+                        Object.Destroy(gizmo.GameObject);
+                        gizmo.GameObject = null;
+                    }
+                    _gizmos.RemoveAt(i);
+                }
+            }
+        }
+
+        public static void OnGUI()
+        {
+            if (DebugSettings.Instance.Logs.DrawDebugLabels)
+            {
+                foreach (DebugGizmo gizmo in _gizmos)
+                {
+                    DebugLabel label = gizmo.Label;
+                    if (label == null || !label.Enabled) continue;
+                    string text = label.Text.IsNullOrEmpty() ? label.StringBuilder.ToString() : label.Text;
+                    OnGUIDrawLabel(label.WorldPos, text, label.Style, label.Scale);
+                }
+            }
+        }
+
+        public static DebugLabel CreateLabel(Vector3 worldPos, string text, GUIStyle guiStyle = null, float scale = 1f)
+        {
+            DebugLabel obj = new() { WorldPos = worldPos, Text = text, Style = guiStyle, Scale = scale };
+            AddGUIObject(obj);
             return obj;
         }
 
-        public static void AddGUIObject(GUIObject obj, bool debug)
+        public static void DestroyLabel(DebugLabel obj)
         {
-            if (debug)
+            for (int i = _gizmos.Count; i > 0; i--)
             {
-                if (!DebugLabels.Contains(obj))
+                if (_gizmos[i].Label == obj)
                 {
-                    DebugLabels.Add(obj);
+                    if (_gizmos[i].GameObject != null)
+                        Object.Destroy(_gizmos[i].GameObject);
+                    _gizmos.RemoveAt(i);
+                    break;
                 }
-                return;
             }
-            if (!GameLabels.Contains(obj))
-            {
-                GameLabels.Add(obj);
-            }
-        }
-
-        public static void DestroyLabel(GUIObject obj)
-        {
-            DebugLabels.Remove(obj);
-            GameLabels.Remove(obj);
         }
 
         public static void OnGUIDrawLabel(Vector3 worldPos, string text, GUIStyle guiStyle = null, float scale = 1f)
@@ -133,15 +107,15 @@ namespace SAIN.Helpers
 
             if (guiStyle == null)
             {
-                if (DefaultStyle == null)
+                if (_defaultStyle == null)
                 {
-                    DefaultStyle = new GUIStyle(GUI.skin.box);
-                    DefaultStyle.alignment = TextAnchor.MiddleLeft;
-                    DefaultStyle.fontSize = 20;
-                    DefaultStyle.margin = new RectOffset(3, 3, 3, 3);
-                    ApplyToStyle.BackgroundAllStates(null, DefaultStyle);
+                    _defaultStyle = new GUIStyle(GUI.skin.box);
+                    _defaultStyle.alignment = TextAnchor.MiddleLeft;
+                    _defaultStyle.fontSize = 20;
+                    _defaultStyle.margin = new RectOffset(3, 3, 3, 3);
+                    ApplyToStyle.BackgroundAllStates(null, _defaultStyle);
                 }
-                guiStyle = DefaultStyle;
+                guiStyle = _defaultStyle;
             }
 
             int origFontSize = guiStyle.fontSize;
@@ -162,9 +136,6 @@ namespace SAIN.Helpers
             guiStyle.fontSize = origFontSize;
         }
 
-        private static readonly List<GUIObject> DebugLabels = new();
-        private static readonly List<GUIObject> GameLabels = new();
-
         private static float GetScreenScale()
         {
             if (_nextCheckScreenTime < Time.time && CameraClass.Instance.SSAA.isActiveAndEnabled)
@@ -175,41 +146,21 @@ namespace SAIN.Helpers
             return _screenScale;
         }
 
-        private static float _screenScale = 1.0f;
-        private static float _nextCheckScreenTime;
-
-        public static GameObject Sphere(Vector3 position, float size, Color color, float expiretime = -1f)
+        public static GameObject DrawSphere(Vector3 position, float size, Color color, float expiretime = -1f, string label = null)
         {
-            if (!DrawGizmos)
+            if (DrawGizmos)
             {
-                return null;
+                var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.GetComponent<Collider>().enabled = false;
+                UpdateSphere(sphere, position, size, color);
+                AddGizmo(sphere, expiretime, label);
+                return sphere;
             }
-            if (!SAINPlugin.DebugMode)
-            {
-                return null;
-            }
-
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.GetComponent<Renderer>().material.color = color;
-            sphere.GetComponent<Collider>().enabled = false;
-            sphere.transform.position = new Vector3(position.x, position.y, position.z); ;
-            sphere.transform.localScale = new Vector3(size, size, size);
-
-            AddGizmo(sphere, expiretime);
-
-            return sphere;
+            return null;
         }
 
         public static void UpdateSphere(GameObject Sphere, Vector3 position, float size, Color color)
         {
-            if (!DrawGizmos)
-            {
-                return;
-            }
-            if (!SAINPlugin.DebugMode)
-            {
-                return;
-            }
             if (Sphere != null)
             {
                 Sphere.GetComponent<Renderer>().material.color = color;
@@ -218,7 +169,7 @@ namespace SAIN.Helpers
             }
         }
 
-        public static GameObject Box(Vector3 position, float length, float height, Color color, float expiretime = -1f)
+        public static GameObject DrawBox(Vector3 position, float length, float height, Color color, float expiretime = -1f)
         {
             if (!DrawGizmos)
             {
@@ -240,80 +191,70 @@ namespace SAIN.Helpers
             return box;
         }
 
-        private static void AddGizmo(GameObject obj, float expireTime)
+        public static GameObject Ray(Vector3 startPoint, Vector3 direction, Color color, float length = 1f, float lineWidth = 0.1f, float expiretime = 1f, bool taperLine = false, string label = null)
         {
-            if (expireTime > 0)
+            Vector3 endPoint = startPoint + direction.normalized * length;
+            return DrawLine(startPoint, endPoint, color, lineWidth, expiretime, taperLine, label);
+        }
+
+        public static GameObject DrawLine(Vector3 startPoint, Vector3 endPoint, Color color, float lineWidth, float expiretime = -1, bool taperLine = false, string label = null)
+        {
+            if (DrawGizmos && SAINPlugin.DebugMode)
             {
-                TempCoroutine.DestroyAfterDelay(obj, expireTime);
+                GameObject gameObject = new();
+                SetGizmoColor(gameObject, color);
+                SetLineWidth(gameObject, lineWidth, taperLine);
+                SetLinePositions(gameObject, startPoint, endPoint);
+                AddGizmo(gameObject, expiretime, label);
+                return gameObject;
             }
-            else
+            return null;
+        }
+
+        public static void SetLinePositions(GameObject gameObject, params Vector3[] positions)
+        {
+            if (gameObject != null && positions != null)
             {
-                DrawnGizmos.Add(obj);
+                int count = positions.Length;
+                if (count > 0)
+                {
+                    LineRenderer lineRenderer = gameObject.GetOrAddComponent<LineRenderer>();
+                    if (lineRenderer != null)
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            lineRenderer.SetPosition(i, positions[i]);
+                        }
+                    }
+                }
             }
         }
 
-        public static GameObject Sphere(Vector3 position, float size, float expiretime = 1f)
+        public static void SetGizmoColor(GameObject gameObject, Color color)
         {
-            return Sphere(position, size, RandomColor, expiretime);
+            if (gameObject != null &&
+                gameObject.TryGetComponent<Renderer>(out var renderer) &&
+                renderer.material != null)
+            {
+                renderer.material.color = color;
+            }
         }
 
-        public static GameObject Sphere(Vector3 position, float expiretime = 1f)
+        public static void SetLineWidth(GameObject gameObject, float lineWidth, bool taperLine = false)
         {
-            return Sphere(position, 0.25f, RandomColor, expiretime);
-        }
-
-        public static GameObject Line(Vector3 startPoint, Vector3 endPoint, Color color, float lineWidth = 0.1f, float expiretime = -1f, bool taperLine = false)
-        {
-            if (!DrawGizmos)
-            {
-                return null;
-            }
-            if (!SAINPlugin.DebugMode)
-            {
-                return null;
-            }
-
-            var lineObject = new GameObject();
-            var lineRenderer = lineObject.AddComponent<LineRenderer>();
-
-            // Modify the color and width of the line
-            lineRenderer.material.color = color;
-            lineRenderer.startWidth = lineWidth;
-            lineRenderer.endWidth = taperLine ? lineWidth / 4f : lineWidth;
-
-            // Modify the start and end points of the line
-            lineRenderer.SetPosition(0, startPoint);
-            lineRenderer.SetPosition(1, endPoint);
-
-            AddGizmo(lineObject, expiretime);
-
-            return lineObject;
-        }
-        public static void UpdateLine(GameObject Line, Vector3 startPoint, Vector3 endPoint, float lineWidth, Color color)
-        {
-            if (!SAINPlugin.DebugMode)
-            {
-                return;
-            }
-            if (Line == null)
-            {
-                return;
-            }
-            var lineRenderer = Line.GetComponent<LineRenderer>();
+            const float MIN_LINE_WIDTH = 0.0025f;
+            const float MAX_LINE_WIDTH = 1;
+            const float LINE_TAPER_START_COEF = 1.25f;
+            const float LINE_TAPER_END_COEF = 0.15f;
+            LineRenderer lineRenderer = gameObject?.GetOrAddComponent<LineRenderer>();
             if (lineRenderer != null)
             {
-                // Modify the color and width of the line
-                lineRenderer.material.color = color;
-                lineRenderer.startWidth = lineWidth;
-                lineRenderer.endWidth = lineWidth;
-
-                // Modify the start and end points of the line
-                lineRenderer.SetPosition(0, startPoint);
-                lineRenderer.SetPosition(1, endPoint);
+                lineRenderer.startWidth = Mathf.Clamp(taperLine ? lineWidth * LINE_TAPER_START_COEF : lineWidth, MIN_LINE_WIDTH, MAX_LINE_WIDTH);
+                lineRenderer.endWidth = Mathf.Clamp(taperLine ? lineWidth * LINE_TAPER_END_COEF : lineWidth, MIN_LINE_WIDTH, MAX_LINE_WIDTH);
             }
         }
 
-        public static void UpdatePositionLine(Vector3 a, Vector3 b, GameObject gameObject)
+        public static void UpdateLinePosition(Vector3 a, Vector3 b, GameObject gameObject)
         {
             if (gameObject == null)
             {
@@ -324,393 +265,46 @@ namespace SAIN.Helpers
             lineRenderer?.SetPosition(1, b);
         }
 
-        public static GameObject Line(Vector3 startPoint, Vector3 endPoint, float lineWidth = 0.1f, float expiretime = 1f, bool taperLine = false)
+        private static void PresetUpdated(SAINPresetClass preset)
         {
-            return Line(startPoint, endPoint, RandomColor, lineWidth, expiretime, taperLine);
-        }
-
-        public static GameObject Ray(Vector3 startPoint, Vector3 direction, Color color, float length = 0.35f, float lineWidth = 0.1f, bool temporary = false, float expiretime = 1f, bool taperLine = false)
-        {
-            Vector3 endPoint = startPoint + direction.normalized * length;
-            return Line(startPoint, endPoint, color, lineWidth, expiretime, taperLine);
-        }
-
-        public static List<GameObject> DrawLinesBetweenPoints(float lineSize, float raisePoints, params Vector3[] points)
-        {
-            return DrawLinesBetweenPoints(lineSize, -1, raisePoints, points);
-        }
-
-        public static List<GameObject> DrawLinesBetweenPoints(params Vector3[] points)
-        {
-            return DrawLinesBetweenPoints(0.1f, -1, 0f, points);
-        }
-
-        private const float sphereMulti = 1.5f;
-        private const float maxSphere = 10f;
-        private const float minSphere = 0.15f;
-        private const float minMag = 0.01f;
-
-        public static void DrawLinesToPoint(List<GameObject> list, Vector3 origin, Color color, float lineSize, float expireTime, float raisePoints, params Vector3[] points)
-        {
-            if (!DrawGizmos)
+            if (!preset.GlobalSettings.General.Debug.Gizmos.DrawDebugGizmos)
             {
-                return;
+                ClearGizmos();
             }
-            for (int j = 0; j < points.Length; j++)
-            {
-                Vector3 pointB = points[j];
-                pointB.y += raisePoints;
+        }
 
-                if (origin != points[j])
+        private static void AddGizmo(GameObject obj, float expireTime, string label = null)
+        {
+            DebugGizmo gizmo = new() { GameObject = obj };
+            if (label != null)
+            {
+                gizmo.Label = CreateLabel(obj.transform.position, label);
+            }
+            if (expireTime > 0) gizmo.ExpireTime = Time.time + expireTime;
+            _gizmos.Add(gizmo);
+        }
+
+        private static void AddGUIObject(DebugLabel obj)
+        {
+            _gizmos.Add(new() { Label = obj });
+        }
+
+        private static void ClearGizmos()
+        {
+            for (int i = _gizmos.Count; i > 0; i--)
+            {
+                if (_gizmos[i].GameObject != null)
                 {
-                    Vector3 direction = origin - pointB;
-                    float magnitude = direction.magnitude;
-                    if (magnitude > minMag)
-                    {
-                        GameObject ray = Ray(pointB, direction, color, magnitude, lineSize, expireTime > 0, expireTime);
-                        list.Add(ray);
-                    }
+                    Object.Destroy(_gizmos[i].GameObject);
                 }
             }
-        }
-
-        public static List<GameObject> DrawLinesToPoint(Vector3 origin, Color color, float lineSize, float expireTime, float raisePoints, params Vector3[] points)
-        {
-            if (!DrawGizmos)
-            {
-                return null;
-            }
-            List<GameObject> list = new();
-            DrawLinesToPoint(list, origin, color, lineSize, expireTime, raisePoints, points);
-            return list;
-        }
-
-        public static void DrawSpheresAtPoints(List<GameObject> list, Color color, float size, float expireTime, float raisePoints, params Vector3[] points)
-        {
-            if (!DrawGizmos)
-            {
-                return;
-            }
-            for (int i = 0; i < points.Length; i++)
-            {
-                Vector3 pointA = points[i];
-                pointA.y += raisePoints;
-                GameObject sphere = Sphere(pointA, size, color, expireTime);
-                list.Add(sphere);
-            }
-        }
-
-        public static List<GameObject> DrawSpheresAtPoints(Color color, float size, float expireTime, float raisePoints, params Vector3[] points)
-        {
-            if (!DrawGizmos)
-            {
-                return null;
-            }
-            List<GameObject> list = new();
-            DrawSpheresAtPoints(list, color, size, expireTime, raisePoints, points);
-            return list;
-        }
-
-        public static List<GameObject> DrawLinesBetweenPoints(float lineSize, float expireTime, float raisePoints, params Vector3[] points)
-        {
-            if (!DrawGizmos)
-            {
-                return null;
-            }
-
-            List<GameObject> list = new();
-            for (int i = 0; i < points.Length; i++)
-            {
-                Vector3 pointA = points[i];
-                pointA.y += raisePoints;
-
-                Color color = RandomColor;
-
-                float sphereSize = Mathf.Clamp(lineSize * sphereMulti, minSphere, maxSphere);
-                GameObject sphere = Sphere(pointA, sphereSize, color, expireTime);
-                list.Add(sphere);
-
-                DrawLinesToPoint(list, pointA, color, lineSize, expireTime, raisePoints, points);
-            }
-            return list;
-        }
-
-        public static List<GameObject> DrawLinesBetweenPoints(float lineSize, float expireTime, float raisePoints, Color color, params Vector3[] points)
-        {
-            if (!DrawGizmos)
-            {
-                return null;
-            }
-
-            List<GameObject> list = new();
-            for (int i = 0; i < points.Length; i++)
-            {
-                Vector3 pointA = points[i];
-                pointA.y += raisePoints;
-
-                float sphereSize = Mathf.Clamp(lineSize * sphereMulti, minSphere, maxSphere);
-                GameObject sphere = Sphere(pointA, sphereSize, color, expireTime);
-                list.Add(sphere);
-
-                DrawLinesToPoint(list, pointA, color, lineSize, expireTime, raisePoints, points);
-            }
-            return list;
+            _gizmos.Clear();
         }
 
         private static float RandomFloat => Random.Range(0.2f, 1f);
-        public static Color RandomColor => new(RandomFloat, RandomFloat, RandomFloat);
-
-        public class DrawLists
-        {
-            private static ManualLogSource Logger;
-            private Color ColorA;
-            private Color ColorB;
-
-            public DrawLists(Color colorA, Color colorB, string LogName = "", bool randomColor = false)
-            {
-                LogName += "[Drawer]";
-
-                if (randomColor)
-                {
-                    ColorA = new Color(Random.value, Random.value, Random.value);
-                    ColorB = new Color(Random.value, Random.value, Random.value);
-                }
-                else
-                {
-                    ColorA = colorA;
-                    ColorB = colorB;
-                }
-
-                Logger = BepInEx.Logging.Logger.CreateLogSource(LogName);
-            }
-
-            public void DrawTempPath(NavMeshPath Path, bool active, Color colorActive, Color colorInActive, float lineSize = 0.05f, float expireTime = 0.5f, bool useDrawerSetColors = false)
-            {
-                if (!DrawGizmos)
-                {
-                    return;
-                }
-
-                for (int i = 0; i < Path.corners.Length - 1; i++)
-                {
-                    Vector3 corner1 = Path.corners[i] + Vector3.up;
-                    Vector3 corner2 = Path.corners[i + 1] + Vector3.up;
-
-                    Color color;
-                    if (useDrawerSetColors)
-                    {
-                        color = active ? ColorA : ColorB;
-                    }
-                    else
-                    {
-                        color = active ? colorActive : colorInActive;
-                    }
-
-                    Line(corner1, corner2, color, lineSize, expireTime);
-                }
-            }
-
-            public void Draw(List<Vector3> list, bool destroy, float size = 0.1f, bool rays = false, float rayLength = 0.35f)
-            {
-                if (!DrawGizmos)
-                {
-                    DestroyDebug();
-                    return;
-                }
-                if (destroy)
-                {
-                    DestroyDebug();
-                }
-                else if (list.Count > 0 && DebugObjects == null)
-                {
-                    Logger.LogWarning($"Drawing {list.Count} Vector3s");
-
-                    DebugObjects = Create(list, size, rays, rayLength);
-                }
-            }
-
-            public void Draw(Vector3[] array, bool destroy, float size = 0.1f, bool rays = false, float rayLength = 0.35f)
-            {
-                if (!DrawGizmos)
-                {
-                    DestroyDebug();
-                    return;
-                }
-                if (destroy)
-                {
-                    DestroyDebug();
-                }
-                else if (array.Length > 0 && DebugObjects == null)
-                {
-                    Logger.LogWarning($"Drawing {array.Length} Vector3s");
-
-                    DebugObjects = Create(array, size, rays, rayLength);
-                }
-            }
-
-            private GameObject[] Create(List<Vector3> list, float size = 0.1f, bool rays = false, float rayLength = 0.35f)
-            {
-                List<GameObject> debugObjects = new();
-                foreach (var point in list)
-                {
-                    if (rays)
-                    {
-                        size *= Random.Range(0.5f, 1.5f);
-                        rayLength *= Random.Range(0.5f, 1.5f);
-                        var ray = Ray(point, Vector3.up, ColorA, rayLength, size);
-                        debugObjects.Add(ray);
-                    }
-                    else
-                    {
-                        var sphere = Sphere(point, size, ColorA);
-                        debugObjects.Add(sphere);
-                    }
-                }
-
-                return debugObjects.ToArray();
-            }
-
-            private GameObject[] Create(Vector3[] array, float size = 0.1f, bool rays = false, float rayLength = 0.35f)
-            {
-                List<GameObject> debugObjects = new();
-                foreach (var point in array)
-                {
-                    if (rays)
-                    {
-                        size *= Random.Range(0.5f, 1.5f);
-                        rayLength *= Random.Range(0.5f, 1.5f);
-                        var ray = Ray(point, Vector3.up, ColorA, rayLength, size);
-                        debugObjects.Add(ray);
-                    }
-                    else
-                    {
-                        var sphere = Sphere(point, size, ColorA);
-                        debugObjects.Add(sphere);
-                    }
-                }
-
-                return debugObjects.ToArray();
-            }
-
-            private void DestroyDebug()
-            {
-                if (DebugObjects != null)
-                {
-                    foreach (var point in DebugObjects)
-                    {
-                        Object.Destroy(point);
-                    }
-
-                    DebugObjects = null;
-                }
-            }
-
-            private GameObject[] DebugObjects;
-        }
-
-        public class Components
-        {
-            /// <summary>
-            /// Creates a line between two game objects and adds a script to update the line's DrawPosition and color every frame.
-            /// </summary>
-            /// <param value="startObject">The starting game object.</param>
-            /// <param value="endObject">The ending game object.</param>
-            /// <param value="lineWidth">The width of the line.</param>
-            /// <param value="color">The color of the line.</param>
-            /// <returns>The game object containing the line renderer.</returns>
-            public static GameObject FollowLine(GameObject startObject, GameObject endObject, float lineWidth, Color color)
-            {
-                var lineObject = new GameObject();
-                var lineRenderer = lineObject.AddComponent<LineRenderer>();
-
-                // Modify the color and width of the line
-                lineRenderer.material.color = color;
-                lineRenderer.startWidth = lineWidth;
-                lineRenderer.endWidth = lineWidth;
-
-                // Modify the initial start and end points of the line
-                lineRenderer.SetPosition(0, startObject.transform.position);
-                lineRenderer.SetPosition(1, endObject.transform.position);
-
-                // AddColor a script to update the line's DrawPosition and color every frame
-                var followLineScript = lineObject.AddComponent<FollowLineScript>();
-                followLineScript.startObject = startObject;
-                followLineScript.endObject = endObject;
-                followLineScript.lineRenderer = lineRenderer;
-
-                return lineObject;
-            }
-
-            public class FollowLineScript : MonoBehaviour
-            {
-                public GameObject startObject;
-                public GameObject endObject;
-                public LineRenderer lineRenderer;
-                public float yOffset = 1f;
-
-                public void Update()
-                {
-                    lineRenderer.SetPosition(0, startObject.transform.position + new Vector3(0, yOffset, 0));
-                    lineRenderer.SetPosition(1, endObject.transform.position + new Vector3(0, yOffset, 0));
-                }
-
-                /// <summary>
-                /// Sets the color of the line renderer material.
-                /// </summary>
-                /// <param value="color">The color to set.</param>
-                public void SetColor(Color color)
-                {
-                    lineRenderer.material.color = color;
-                }
-            }
-        }
-
-        internal class TempCoroutine : MonoBehaviour
-        {
-            /// <summary>
-            /// Class to run coroutines on a MonoBehaviour.
-            /// </summary>
-            internal class TempCoroutineRunner : MonoBehaviour
-            { }
-
-            /// <summary>
-            /// Destroys the specified GameObject after a given delay.
-            /// </summary>
-            /// <param value="obj">The GameObject to be destroyed.</param>
-            /// <param value="delay">The delay before the GameObject is destroyed.</param>
-            public static void DestroyAfterDelay(GameObject obj, float delay)
-            {
-                if (obj != null)
-                {
-                    var runner = new GameObject("TempCoroutineRunner").AddComponent<TempCoroutineRunner>();
-                    runner?.StartCoroutine(RunDestroyAfterDelay(obj, delay));
-                }
-            }
-
-            /// <summary>
-            /// Runs a coroutine to destroy a GameObject after a delay.
-            /// </summary>
-            /// <param value="obj">The GameObject to destroy.</param>
-            /// <param value="delay">The delay before destroying the GameObject.</param>
-            /// <returns>The coroutine.</returns>
-            private static IEnumerator RunDestroyAfterDelay(GameObject obj, float delay)
-            {
-                yield return new WaitForSeconds(delay);
-                if (obj != null)
-                {
-                    TempCoroutineRunner runner = obj.GetComponentInParent<TempCoroutineRunner>();
-                    if (runner != null)
-                    {
-                        Destroy(runner.gameObject);
-                    }
-                    Destroy(obj);
-                }
-            }
-
-            public void OnDestroy()
-            {
-                StopAllCoroutines();
-            }
-        }
+        private static float _screenScale = 1.0f;
+        private static float _nextCheckScreenTime;
+        private static GUIStyle _defaultStyle;
+        private static readonly List<DebugGizmo> _gizmos = [];
     }
 }

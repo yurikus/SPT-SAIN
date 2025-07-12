@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Classes.Transform;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using System;
@@ -12,9 +13,8 @@ namespace SAIN.SAINComponent
 
         public Vector3 Position => PlayerComponent.Position;
         public Vector3 LookDirection => PlayerComponent.LookDirection;
-        public PersonTransformClass Transform => PlayerComponent.Transform;
+        public PlayerTransformClass Transform => PlayerComponent.Transform;
         public Player Player => PlayerComponent.Player;
-        public IPlayer IPlayer => PlayerComponent.IPlayer;
 
         public virtual void Dispose() { }
     }

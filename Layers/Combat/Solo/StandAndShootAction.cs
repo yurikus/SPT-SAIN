@@ -1,6 +1,10 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.Classes.Transform;
+using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -20,8 +24,10 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
-            Bot.Steering.SteerByPriority(Bot.Enemy);
+            if (!Shoot.ShootAnyVisibleEnemies(Bot.GoalEnemy))
+            {
+                Bot.Steering.SteerByPriority(Bot.GoalEnemy);
+            }
             if (!shallMoveShoot)
             {
                 Bot.Mover.Pose.SetPoseToCover();
@@ -33,27 +39,39 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Start()
         {
-            Toggle(true);
+            const float STAND_AND_SHOOT_HOLDLEAN_DURATION = 0.66f;
+            const float STAND_AND_SHOOT_SPRINTPAUSE_DURATION = 0.5f;
 
-            shallMoveShoot = moveShoot();
+            Toggle(true);
+            shallMoveShoot = moveShoot(Bot.GoalEnemy);
             if (!shallMoveShoot)
             {
-                Bot.Mover.StopMove();
-                BotOwner.Mover.SprintPause(0.5f);
+                Bot.Mover.Stop();
+                BotOwner.Mover.SprintPause(STAND_AND_SHOOT_SPRINTPAUSE_DURATION);
                 shallResume = Bot.Decision.CurrentCombatDecision == ECombatDecision.ShootDistantEnemy;
             }
-
-            Bot.Mover.Lean.HoldLean(0.75f);
+            Bot.Mover.Lean.HoldLean(STAND_AND_SHOOT_HOLDLEAN_DURATION);
         }
 
-        private bool moveShoot()
+        private bool moveShoot(Enemy enemy)
         {
             if (Bot.Player.IsInPronePose)
             {
                 return false;
             }
-            if (Bot.Enemy != null &&
-                Bot.Enemy.RealDistance < 50)
+            if (FindSwingMovePosition(Bot.Transform.NavData, enemy, out Vector3 movePosition))
+            {
+                return Bot.Mover.WalkToPoint(movePosition, false);
+            }
+            return false;
+        }
+
+        private static bool FindSwingMovePosition(PlayerNavData navData, Enemy enemy, out Vector3 movePosition)
+        {
+            movePosition = Vector3.zero;
+            if (enemy != null && 
+                navData.PlayerNavMeshStatus == EPlayerNavMeshDistance.OnNavMesh &&
+                enemy.RealDistance < 50)
             {
                 float angle = UnityEngine.Random.Range(70, 110);
                 if (EFTMath.RandomBool())
@@ -61,19 +79,22 @@ namespace SAIN.Layers.Combat.Solo
                     angle *= -1;
                 }
 
-                Vector3 directionToEnemy = Bot.Enemy.EnemyDirection.normalized;
+                Vector3 directionToEnemy = enemy.EnemyDirection.normalized;
                 Vector3 rotated = Vector.Rotate(directionToEnemy, 0, angle, 0);
                 rotated.y = 0;
                 rotated *= 6f;
-                if (NavMesh.SamplePosition(Bot.Position + rotated, out var hit, 5f, -1) &&
-                    NavMesh.SamplePosition(Bot.Position, out var hit2, 0.5f, -1))
+                rotated += Random.insideUnitSphere;
+                if (NavMesh.SamplePosition(navData.NavMeshPosition + rotated, out var hit, 3f, -1))
                 {
-                    Vector3 movePos = hit.position;
-                    if (NavMesh.Raycast(hit2.position, hit.position, out var rayHit, -1))
+                    movePosition = hit.position;
+                    if (NavMesh.Raycast(navData.NavMeshPosition, movePosition, out var rayHit, -1))
                     {
-                        movePos = rayHit.position;
+                        movePosition = rayHit.position;
                     }
-                    return Bot.Mover.GoToPoint(movePos, out _, -1, false, false);
+                    if ((movePosition - navData.NavMeshPosition).sqrMagnitude > 0.75f)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;

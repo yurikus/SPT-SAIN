@@ -1,7 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void Init()
         {
-            GameWorldComponent.Instance.PlayerTracker.AlivePlayersDictionary.OnPlayerComponentRemoved += RemoveEnemy;
+            GameWorldComponent.Instance.PlayerTracker.OnPlayerRemoved += RemoveEnemy;
             BotOwner.Memory.OnAddEnemy += enemyAdded;
             compareEnemyLists();
             base.Init();
@@ -35,21 +34,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible))
                 {
-                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.red, 0.1f, 0.02f);
+                    DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.red, 0.1f, 0.02f);
                     if (enemy.LastKnownPosition != null)
-                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
+                        DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
                 }
                 foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.InLineOfSight))
                 {
-                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.yellow, 0.075f, 0.02f);
+                    DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.yellow, 0.075f, 0.02f);
                     if (enemy.LastKnownPosition != null)
-                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
+                        DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
                 }
                 foreach (Enemy enemy in Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Known))
                 {
-                    DebugGizmos.Line(Bot.Transform.HeadPosition, enemy.EnemyPosition, Color.blue, 0.05f, 0.02f);
+                    DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.blue, 0.05f, 0.02f);
                     if (enemy.LastKnownPosition != null)
-                        DebugGizmos.Line(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
+                        DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
                 }
             }
 
@@ -58,7 +57,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void Dispose()
         {
-            GameWorldComponent.Instance.PlayerTracker.AlivePlayersDictionary.OnPlayerComponentRemoved -= RemoveEnemy;
+            GameWorldComponent.Instance.PlayerTracker.OnPlayerRemoved -= RemoveEnemy;
             BotMemoryClass memory = BotOwner?.Memory;
             if (memory != null)
             {
@@ -91,24 +90,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 //}
                 return null;
             }
-            if (mustBeActive && !enemy.EnemyPerson.Active)
+            if (mustBeActive && !Enemy.IsEnemyActive(enemy))
             {
                 return null;
             }
             return enemy;
         }
 
-        private void removeEnemy(PersonClass person)
-        {
-            RemoveEnemy(person.ProfileId);
-        }
+        public void RemoveEnemy(string id, PlayerComponent playerComp) => RemoveEnemy(id);
 
-        public void RemoveEnemy(string profileId)
+        public void RemoveEnemy(string playerComp)
         {
-            if (Enemies.TryGetValue(profileId, out Enemy enemy))
+            if (Enemies.TryGetValue(playerComp, out Enemy enemy))
             {
                 destroyEnemy(enemy);
-                Enemies.Remove(profileId);
+                Enemies.Remove(playerComp);
                 EnemiesArray.Remove(enemy);
 
                 //if (enemy.EnemyPlayer.IsYourPlayer)
@@ -126,11 +122,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             BaseClass.Events.EnemyRemoved(enemy.EnemyProfileId, enemy);
             enemy.Dispose();
             removeEnemyInfo(enemy);
-
-            if (enemy.EnemyPlayerComponent != null)
-                enemy.EnemyPlayerComponent.OnComponentDestroyed -= RemoveEnemy;
-            if (enemy.EnemyPerson != null)
-                enemy.EnemyPerson.ActivationClass.OnPersonDeadOrDespawned -= removeEnemy;
         }
 
         public Enemy CheckAddEnemy(IPlayer IPlayer)
@@ -253,8 +244,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             Enemy enemy = new(Bot, enemyPlayerComponent, enemyInfo);
             enemy.Init();
-            enemyPlayerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removeEnemy;
-            enemyPlayerComponent.OnComponentDestroyed += RemoveEnemy;
             Enemies.Add(enemy.EnemyProfileId, enemy);
             EnemiesArray.Add(enemy);
             BaseClass.Events.EnemyAdded(enemy);
@@ -326,10 +315,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return;
             }
 
-            if (enemy.EnemyIPlayer != null &&
-                BotOwner.EnemiesController.EnemyInfos.ContainsKey(enemy.EnemyIPlayer))
+            if (enemy.EnemyPlayer != null &&
+                BotOwner.EnemiesController.EnemyInfos.ContainsKey(enemy.EnemyPlayer))
             {
-                BotOwner.EnemiesController.Remove(enemy.EnemyIPlayer);
+                BotOwner.EnemiesController.Remove(enemy.EnemyPlayer);
                 return;
             }
 

@@ -515,7 +515,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallMoveToCover(out string reason)
         {
-            if (Bot.Cover.InCover)
+            if (Bot.Cover.HasCover)
             {
                 reason = "inCover";
                 return false;
@@ -549,7 +549,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         public bool shallHoldInCover(out string reason)
         {
-            if (Bot.Cover.InCover)
+            if (Bot.Cover.HasCover)
             {
                 reason = "inCover";
                 return true;
@@ -626,7 +626,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 reason = "holdingFromTime";
                 return true;
             }
-            else if (Bot.Cover.CheckLimbsForCover())
+            else if (Bot.Cover.CheckLimbsForCover(enemy))
             {
                 reason = "holdingHaveSomeCover";
                 return true;

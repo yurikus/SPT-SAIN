@@ -33,7 +33,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (Player.MovementContext.CanProne)
             {
-                var enemy = Bot.Enemy;
+                var enemy = Bot.GoalEnemy;
                 if (enemy != null)
                 {
                     float distance = (enemy.EnemyPosition - Bot.Position).sqrMagnitude;

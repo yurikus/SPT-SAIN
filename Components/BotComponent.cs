@@ -34,7 +34,7 @@ namespace SAIN.Components
 
     public class BotComponent : BotComponentBase
     {
-        public void ActivateIfBotActive(BotOwner botOwner, PersonClass Person)
+        public void ActivateIfBotActive(BotOwner botOwner)
         {
             if (botOwner.BotState == EBotState.Active)
             {
@@ -48,7 +48,7 @@ namespace SAIN.Components
             {
                 return;
             }
-            PersonClass person = botOwner.GetComponent<PlayerComponent>()?.Person;
+            var person = botOwner.GetComponent<PlayerComponent>();
             if (person == null)
             {
                 Logger.LogError("Person Null");
@@ -78,10 +78,8 @@ namespace SAIN.Components
         public bool BotInStandBy => BotActivation.BotInStandBy;
         public AILimitSetting CurrentAILimit => AILimit.CurrentAILimit;
 
-        public bool HasEnemy => EnemyController.GoalEnemy?.EnemyPerson.Active == true;
-        public bool HasLastEnemy => EnemyController.LastGoalEnemy?.EnemyPerson.Active == true;
-        public Enemy Enemy => HasEnemy ? EnemyController.GoalEnemy : null;
-        public Enemy LastEnemy => HasLastEnemy ? EnemyController.LastGoalEnemy : null;
+        public bool HasEnemy => Enemy.IsEnemyActive(EnemyController.GoalEnemy);
+        public Enemy GoalEnemy => HasEnemy ? EnemyController.GoalEnemy : null;
 
         public Vector3? CurrentTargetPosition => CurrentTarget.CurrentTargetPosition;
         public Vector3? CurrentTargetDirection => CurrentTarget.CurrentTargetDirection;
@@ -122,7 +120,7 @@ namespace SAIN.Components
         public SAINSteeringClass Steering { get; private set; }
         public AimClass Aim { get; private set; }
 
-        public bool IsDead => !Person.ActivationClass.IsAlive;
+        public bool IsDead => Player?.HealthController?.IsAlive != true;
         public bool GameEnding => BotActivation.GameEnding;
         public bool SAINLayersActive => BotActivation.SAINLayersActive;
 
@@ -165,7 +163,6 @@ namespace SAIN.Components
                     bool active = botOwner.BotState == EBotState.Active && player.HealthController.IsAlive;
                     if (active)
                     {
-                        Vision.BotLook.UpdateLook();
                         TickClassGroup(TickWhenActiveClasses, currentTime);
                     }
 
@@ -190,8 +187,8 @@ namespace SAIN.Components
         {
             var enemy = CurrentTarget.CurrentTargetEnemy;
             //DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.TargetLookDirection.normalized * 1.5f, Color.white, 0.06f, true, 0.02f);
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SmoothController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
-            DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, 0.02f);
+            DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SmoothController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
+            DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, 0.02f);
         }
 
         private static void TickClassGroup(List<IBotClass> List, float CurrentTime)
@@ -207,9 +204,9 @@ namespace SAIN.Components
             }
         }
 
-        public bool InitializeBot(PersonClass person)
+        public bool InitializeBot(PlayerComponent playerComponent)
         {
-            if (!base.Init(person))
+            if (!base.Init(playerComponent))
             {
                 return false;
             }
@@ -225,7 +222,7 @@ namespace SAIN.Components
             {
                 return false;
             }
-            if (!FinishInit())
+            if (!FinishInit(playerComponent))
             {
                 return false;
             }
@@ -338,7 +335,7 @@ namespace SAIN.Components
         {
             try
             {
-                NoBushESP.Init(Person.AIInfo.BotOwner, this);
+                NoBushESP.Init(PlayerComponent.BotOwner, this);
             }
             catch (Exception ex)
             {
@@ -360,11 +357,11 @@ namespace SAIN.Components
             return true;
         }
 
-        private bool FinishInit()
+        private bool FinishInit(PlayerComponent playerComponent)
         {
             try
             {
-                if (!VerifyBrain(Person))
+                if (!VerifyBrain(playerComponent))
                 {
                     Logger.LogError("Init SAIN ERROR, Disposing...");
                     return false;
@@ -405,9 +402,9 @@ namespace SAIN.Components
             return true;
         }
 
-        private bool VerifyBrain(PersonClass person)
+        private bool VerifyBrain(PlayerComponent playerComp)
         {
-            string assignedBrainName = person?.AIInfo?.BotOwner?.Brain?.BaseBrain?.ShortName();
+            string assignedBrainName = playerComp.BotOwner?.Brain?.BaseBrain?.ShortName();
 
             if (Info.Profile.IsPMC)
             {
@@ -463,8 +460,8 @@ namespace SAIN.Components
                     defaultMoveSpeed = Player.MovementContext.MaxSpeed;
                     defaultSprintSpeed = Player.MovementContext.SprintSpeed;
                 }
-                Player.Grounder.enabled = Enemy == null;
-                if (Enemy != null)
+                Player.Grounder.enabled = GoalEnemy == null;
+                if (GoalEnemy != null)
                 {
                     Player.MovementContext.SetCharacterMovementSpeed(350, true);
                     Player.MovementContext.SprintSpeed = 50f;

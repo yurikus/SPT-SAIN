@@ -122,7 +122,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private void tryCheckWeapon()
         {
-            if (Bot.Enemy == null)
+            if (Bot.GoalEnemy == null)
             {
                 if (CheckMagTimer < Time.time && NextCheckTimer < Time.time)
                 {

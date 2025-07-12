@@ -120,7 +120,7 @@ namespace SAIN.Components
                             GUI.Box(guiRect, content, guiStyle);
                         }
                         Color color = (bushPos - Position).magnitude < 0.75f ? Color.blue : Color.green;
-                        DebugGizmos.Sphere(bushPos, bush.bounds.size.magnitude, color, 1f);
+                        DebugGizmos.DrawSphere(bushPos, bush.bounds.size.magnitude, color, 1f);
                     }
                 }
             }

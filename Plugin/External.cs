@@ -121,7 +121,7 @@ namespace SAIN.Plugin
                 return float.MaxValue;
             }
 
-            Enemy enemy = component.Enemy;
+            Enemy enemy = component.GoalEnemy;
             if (enemy == null)
             {
                 return float.MaxValue;
@@ -138,7 +138,7 @@ namespace SAIN.Plugin
                 return false;
             }
 
-            Enemy enemy = component.Enemy;
+            Enemy enemy = component.GoalEnemy;
             if (enemy == null)
             {
                 return false;

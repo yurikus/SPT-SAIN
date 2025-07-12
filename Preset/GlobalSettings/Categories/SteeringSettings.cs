@@ -22,15 +22,15 @@ namespace SAIN.Preset.GlobalSettings
 
         [MinMax(0f, 1f, 1000f)]
         [Advanced]
-        public float RANDOMSWAY_RADIUS = 0.15f;
+        public float RANDOMSWAY_CIRCLE_RADIUS = 0.05f;
         
         [MinMax(0f, 10f, 10f)]
         [Advanced]
-        public float RANDOMSWAY_LOOPDURATION = 3.5f;
+        public float RANDOMSWAY_LOOP_DURATION = 5f;
         
         [MinMax(0f, 1f, 1000f)]
         [Advanced]
-        public float RANDOMSWAY_SCALE = 0.05f; 
+        public float RANDOMSWAY_CIRCLE_SCALE = 0.025f; 
         
         [MinMax(45f, 90f, 100f)]
         [Advanced]

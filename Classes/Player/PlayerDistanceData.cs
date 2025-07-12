@@ -16,6 +16,33 @@ namespace SAIN.Components.PlayerComponentSpace
         public DirectionData MainData;
         public BodyPartDirectionData[] BodyParts;
     }
+    
+    public struct DirectionCache
+    {
+        public DirectionCache(Vector3 start, Vector3 end)
+        {
+            Vector3 dir = end - start;
+            Direction = dir;
+            DirectionNormalized = dir.normalized;
+            float sqrMag = dir.sqrMagnitude;
+            SqrMagnitude = sqrMag;
+            Magnitude = Mathf.Sqrt(sqrMag);
+        }
+
+        public DirectionCache(Vector3 direction)
+        {
+            Direction = direction;
+            DirectionNormalized = direction.normalized;
+            float sqrMag = direction.sqrMagnitude;
+            SqrMagnitude = sqrMag;
+            Magnitude = Mathf.Sqrt(sqrMag);
+        }
+
+        public Vector3 Direction;
+        public Vector3 DirectionNormalized;
+        public float Magnitude;
+        public float SqrMagnitude;
+    }
 
     public struct DirectionData
     {
@@ -90,7 +117,7 @@ namespace SAIN.Components.PlayerComponentSpace
             PlayerDirectionData data = Data;
 
             // Prepare the owner's positions
-            PersonTransformClass Transform = Owner.Transform;
+            var Transform = Owner.Transform;
             data.OwnerPosition = Transform.Position;
             data.OwnerLookDirection = Transform.LookDirection;
             data.OwnerViewPosition = Transform.EyePosition;

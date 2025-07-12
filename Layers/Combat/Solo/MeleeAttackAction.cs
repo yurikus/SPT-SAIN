@@ -24,7 +24,7 @@ namespace SAIN.Layers.Combat.Solo
                 }
                 else if (shotEnemy.RealDistance > 20f)
                 {
-                    Bot.Mover.StopMove(0.1f);
+                    Bot.Mover.Stop();
                 }
                 return;
             }

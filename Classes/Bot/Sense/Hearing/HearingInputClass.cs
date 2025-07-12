@@ -63,7 +63,7 @@ namespace SAIN.SAINComponent.Classes
                 SoundEvent SoundEvent = new(SAINSoundType.BulletImpact, Source.Position, Source, 100, 1, 999);
                 AISoundData Sound = new(SoundEvent, Bot, PlayerComponent.GetDistanceToPlayer(Source.ProfileId), Enemy);
                 Vector3 BulletPosition = Bullet.CurrentPosition;
-                Vector3 MyHeadPosition = Bot.Person.Transform.HeadPosition;
+                Vector3 MyHeadPosition = Bot.Transform.HeadData.HeadPosition;
                 float Dist = (BulletPosition - MyHeadPosition).magnitude;
                 BaseClass.ReactToBulletFlyBy(Sound, Dist);
             }
@@ -263,78 +263,6 @@ namespace SAIN.SAINComponent.Classes
             base.Dispose();
         }
 
-        private void soundHeard(
-            SAINSoundType soundType,
-            Vector3 soundPosition,
-            PlayerComponent playerComponent,
-            float power,
-            float volume)
-        {
-            if (volume <= 0 || !canHearSounds())
-            {
-                return;
-            }
-            if (playerComponent.ProfileId == Bot.ProfileId)
-            {
-                return;
-            }
-            if (!soundListenerStarted(playerComponent))
-            {
-                return;
-            }
-            bool isGunshot = soundType.IsGunShot();
-            if (IgnoreHearing && !isGunshot)
-            {
-                return;
-            }
-            Enemy enemy = Bot.EnemyController.GetEnemy(playerComponent.ProfileId, true);
-            if (enemy == null)
-            {
-                if (BotOwner.BotsGroup.IsEnemy(playerComponent.IPlayer))
-                {
-                    enemy = Bot.EnemyController.CheckAddEnemy(playerComponent.IPlayer);
-                }
-                if (enemy == null)
-                {
-                    return;
-                }
-            }
-
-            if (!PlayerComponent.AIData.PlayerLocation.InBunker)
-            {
-                var weather = SAINWeatherClass.Instance;
-                if (weather != null)
-                {
-                    if (PlayerComponent.Player.AIData.EnvironmentId == 0)
-                    {
-                        power *= weather.RainSoundModifierOutdoor;
-                    }
-                    else
-                    {
-                        power *= weather.RainSoundModifierIndoor;
-                    }
-                }
-            }
-            float baseRange = power * volume;
-            if (!isGunshot &&
-                enemy.RealDistance > baseRange)
-            {
-                return;
-            }
-
-            var info = new SoundInfoData {
-                SourcePlayer = playerComponent,
-                IsAI = playerComponent.IsAI,
-                Position = soundPosition,
-                Power = power,
-                Volume = volume,
-                SoundType = soundType,
-                IsGunShot = isGunshot
-            };
-            BotSound sound = new(info, enemy, baseRange);
-            //BaseClass.ReactToHeardSound(sound);
-        }
-
         private void bulletImpacted(EftBulletClass bullet)
         {
             if (!canHearSounds())
@@ -406,7 +334,7 @@ namespace SAIN.SAINComponent.Classes
 
         private bool soundListenerStarted(PlayerComponent player)
         {
-            if (!player.Person.AIInfo.IsAI)
+            if (!player.IsAI)
             {
                 return true;
             }
@@ -428,7 +356,7 @@ namespace SAIN.SAINComponent.Classes
             // Only allow the bot to ignore hearing if it's not in combat
             if (value)
             {
-                if (Bot.Enemy?.IsVisible == true)
+                if (Bot.GoalEnemy?.IsVisible == true)
                 {
                     reason = "Enemy Visible";
                     return false;

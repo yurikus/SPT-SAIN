@@ -16,7 +16,6 @@ namespace SAIN.Layers.Combat.Solo
         private Enemy _searchTarget => Search?.SearchTarget;
         private bool _subscribed;
         private float _nextCheckWeaponTime;
-        private float _nextUpdateSearchTime;
         private bool _haveTalked = false;
         private bool _sprintEnabled = false;
         private float _sprintTimer = 0f;
@@ -25,7 +24,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Start()
         {
             subscribeToBotEvents();
-            setSearchTarget(Bot.Enemy);
+            setSearchTarget(Bot.GoalEnemy);
             Toggle(true);
         }
 
@@ -33,7 +32,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             clearSearchTarget();
             Toggle(false);
-            BotOwner.Mover?.MovementResume();
+            Bot.Mover.Stop();
             _haveTalked = false;
         }
 
@@ -73,11 +72,7 @@ namespace SAIN.Layers.Combat.Solo
 
                 steer();
 
-                if (_nextUpdateSearchTime < Time.time)
-                {
-                    _nextUpdateSearchTime = Time.time + 0.1f;
-                    Search.Search(_sprintEnabled, enemy);
-                }
+                Search.Search(_sprintEnabled, enemy);
 
                 if (!_sprintEnabled)
                 {
@@ -126,14 +121,14 @@ namespace SAIN.Layers.Combat.Solo
             Enemy searchTarget = _searchTarget;
             if (searchTarget != null &&
                 (!searchTarget.EnemyKnown ||
-                !searchTarget.Person.Active ||
+                !Enemy.IsEnemyActive(searchTarget) ||
                 !searchTarget.CheckValid()))
             {
                 clearSearchTarget();
             }
             if (_searchTarget == null)
             {
-                var activeEnemy = Bot.Enemy;
+                var activeEnemy = Bot.GoalEnemy;
                 if (activeEnemy == null) return;
                 setSearchTarget(activeEnemy);
             }
@@ -142,12 +137,12 @@ namespace SAIN.Layers.Combat.Solo
         private void setSearchTarget(Enemy enemy)
         {
             Search.ToggleSearch(true, enemy);
-            _nextUpdateSearchTime = 0f;
         }
 
         private void talk()
         {
-            if (Search.FinalDestination == null)
+            EnemyPlace targetPlace = Search.PathFinder.TargetPlace;
+            if (targetPlace == null)
             {
                 return;
             }
@@ -155,7 +150,7 @@ namespace SAIN.Layers.Combat.Solo
             // Scavs will speak out and be more vocal
             if (!_haveTalked &&
                 Bot.Info.Profile.IsScav &&
-                (BotOwner.Position - Search.FinalDestination.Value).sqrMagnitude < 50f * 50f)
+                targetPlace.DistanceToBot < 50f)
             {
                 _haveTalked = true;
                 if (EFTMath.RandomBool(40))
@@ -183,7 +178,7 @@ namespace SAIN.Layers.Combat.Solo
         private void checkShouldSprint()
         {
             //  || Search.CurrentState == ESearchMove.MoveToDangerPoint
-            if (Search.CurrentState == ESearchMove.MoveToEndPeek || Search.CurrentState == ESearchMove.Wait)
+            if (Search.CurrentState == ESearchMove.Wait)
             {
                 _sprintEnabled = false;
                 return;
@@ -253,7 +248,7 @@ namespace SAIN.Layers.Combat.Solo
         public SearchAction(BotOwner bot) : base(bot, "Search")
         {
         }
-        
+
         public override void BuildDebugText(StringBuilder stringBuilder)
         {
             stringBuilder.AppendLine($"Search Target {_searchTarget?.EnemyName}");

@@ -3,9 +3,10 @@
     public enum EBotMoveStatus
     {
         None,
+        ReadyToMove,
         Canceling,
         Paused,
-        Walking,
-        Running,
+        Moving,
+        DoorInteraction,
     }
 }

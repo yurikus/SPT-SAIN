@@ -103,13 +103,13 @@ namespace SAIN.SAINComponent.Classes
                 }
             }
 
-            if (Bot.PlayerComponent.Transform.VelocityMagnitudeNormal < _settings.HEAR_CHANCE_NOTMOVING_VELOCITY)
+            if (Bot.PlayerComponent.Transform.VelocityData.VelocityMagnitudeNormal < _settings.HEAR_CHANCE_NOTMOVING_VELOCITY)
             {
                 minimumChance += hasheadPhones ? _settings.HEAR_CHANCE_NOTMOVING_MINCHANCE_HEADPHONES : _settings.HEAR_CHANCE_NOTMOVING_MINCHANCE;
             }
 
             if (Bot.HasEnemy &&
-                Bot.Enemy.EnemyProfileId == sound.Sound.PlayerComponent.ProfileId)
+                Bot.GoalEnemy.EnemyProfileId == sound.Sound.PlayerComponent.ProfileId)
             {
                 minimumChance += hasheadPhones ? _settings.HEAR_CHANCE_CURRENTENEMY_MINCHANCE_HEADPHONES : _settings.HEAR_CHANCE_CURRENTENEMY_MINCHANCE;
             }
@@ -182,7 +182,7 @@ namespace SAIN.SAINComponent.Classes
                 return false;
 
             var enemyPlayer = sound.Sound.PlayerComponent;
-            if (Bot.Enemy?.EnemyProfileId == enemyPlayer.ProfileId)
+            if (Bot.GoalEnemy?.EnemyProfileId == enemyPlayer.ProfileId)
                 return false;
 
             var enemyBot = enemyPlayer.BotComponent;
@@ -197,7 +197,7 @@ namespace SAIN.SAINComponent.Classes
             }
             else
             {
-                if (enemyBot.Enemy?.EnemyProfileId == Bot.ProfileId)
+                if (enemyBot.GoalEnemy?.EnemyProfileId == Bot.ProfileId)
                 {
                     return false;
                 }

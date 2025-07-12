@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Classes.Transform;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using System;
@@ -11,25 +12,19 @@ namespace SAIN.Components
         public event Action OnDispose;
 
         public string ProfileId { get; private set; }
-        public PersonClass Person { get; private set; }
 
-        public PlayerComponent PlayerComponent => Person.PlayerComponent;
-        public BotOwner BotOwner => Person.AIInfo.BotOwner;
-        public Player Player => Person.Player;
-        public PersonTransformClass Transform => Person.Transform;
+        public PlayerComponent PlayerComponent { get; private set; }
+        public BotOwner BotOwner { get; private set; }
+        public Player Player { get; private set; }
+        public PlayerTransformClass Transform { get; private set; }
 
-        public Vector3 Position => Person.Transform.Position;
-        public Vector3 LookDirection => Person.Transform.LookDirection;
+        public Vector3 Position => Transform.Position;
+        public Vector3 LookDirection => Transform.LookDirection;
 
-        public virtual bool Init(PersonClass person)
+        public virtual bool Init(PlayerComponent PlayerComponent)
         {
-            if (person == null || person.Player == null)
-            {
-                return false;
-            }
-            Person = person;
-            ProfileId = person.ProfileId;
-            person.Player.ActiveHealthController.SetDamageCoeff(1f);
+            ProfileId = PlayerComponent.ProfileId;
+            PlayerComponent.Player.ActiveHealthController.SetDamageCoeff(1f);
             return true;
         }
 

@@ -21,13 +21,19 @@ namespace SAIN.Layers.Combat.Squad
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            if (!Bot.Mover.PathFollower.Running)
+            if (_enemy == null || !Enemy.IsEnemyActive(_enemy) || !_enemy.CheckValid())
             {
-                Shoot.ShootAnyVisibleEnemies(_enemy);
-                if (!Bot.Steering.SteerByPriority(_enemy, false))
-                {
-                    Bot.Steering.LookToLastKnownEnemyPosition(_enemy ?? Bot.Enemy);
-                }
+                if (_enemy != null) Bot.Search.ToggleSearch(false, _enemy);
+                _enemy = Bot.GoalEnemy;
+                if (_enemy != null) Bot.Search.ToggleSearch(true, _enemy);
+            }
+            if (!Bot.Mover.Running && 
+                !Bot.Steering.SteeringLocked &&
+                    !Shoot.ShootAnyVisibleEnemies(_enemy) &&
+                    !Bot.Steering.SteerByPriority(_enemy, false) &&
+                    !Bot.Steering.LookToLastKnownEnemyPosition(_enemy))
+            {
+                Bot.Steering.LookToMovingDirection();
             }
 
             if (_nextUpdatePosTime < Time.time)
@@ -67,18 +73,18 @@ namespace SAIN.Layers.Combat.Squad
             }
 
             if (moveDistance > 20f * 20f &&
-                Bot.Mover.RunToPoint(movePosition.Value, SAINComponent.Classes.Mover.ESprintUrgency.Middle, true))
+                Bot.Mover.RunToPoint(movePosition.Value, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.Middle, true))
             {
                 nextUpdateTime = 2f;
                 return;
             }
-            if (Bot.Mover.PathFollower.Running)
+            if (Bot.Mover.Running)
             {
                 nextUpdateTime = 2f;
                 return;
             }
             nextUpdateTime = 1f;
-            Bot.Mover.GoToPoint(movePosition.Value, out _);
+            Bot.Mover.WalkToPoint(movePosition.Value, false);
         }
 
         private Vector3? GetPosNearLead(Vector3 leadPos)
@@ -106,10 +112,10 @@ namespace SAIN.Layers.Combat.Squad
 
         public override void Start()
         {
-            _enemy = Bot.Enemy;
             Toggle(true);
             _nextUpdatePosTime = 0f;
             _LastLeadPos = Vector3.zero;
+            Bot.Search.ToggleSearch(true, Bot.GoalEnemy);
         }
 
         private Enemy _enemy;
@@ -117,8 +123,8 @@ namespace SAIN.Layers.Combat.Squad
         public override void Stop()
         {
             Toggle(false);
+            Bot.Search.ToggleSearch(false, null);
             _enemy = null;
-            Bot.Mover.PathFollower.Cancel(0.25f);
         }
     }
 }

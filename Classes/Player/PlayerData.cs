@@ -3,7 +3,7 @@
     public class OtherPlayerData(string id, PlayerComponent Component)
     {
         public readonly string ProfileId = id;
-        public readonly PlayerComponent PlayerComponent = Component;
+        public readonly PlayerComponent OtherPlayerComponent = Component;
         public PlayerDistanceData DistanceData { get; } = new PlayerDistanceData(Component);
 
         public bool IsInHearingRadius_Footsteps => DistanceData.Distance <= 100.0f;

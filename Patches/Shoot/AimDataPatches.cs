@@ -1,7 +1,7 @@
 ﻿using EFT;
 using HarmonyLib;
 using RootMotion.FinalIK;
-using SAIN.Classes.Coverfinder;
+
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
@@ -9,6 +9,7 @@ using SAIN.Preset.BotSettings.SAINSettings.Categories;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.SubComponents.CoverFinder;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Text;
@@ -17,6 +18,54 @@ using HitAffectClass = GClass583;
 
 namespace SAIN.Patches.Shoot.Aim
 {
+    internal class WeaponMoAModificationPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player.FirearmController), "method_54", null, null);
+        }
+
+        [PatchPostfix]
+        public static void Patch(Player ____player, ref float __result)
+        {
+            // this method was lost due to a VS crash, so I grabbed from a decompiled build
+            BotOwner botOwner;
+            if (____player == null)
+            {
+                botOwner = null;
+            }
+            else
+            {
+                IAIData aidata = ____player.AIData;
+                botOwner = aidata?.BotOwner;
+            }
+            BotOwner botOwner2 = botOwner;
+            if (botOwner2 != null)
+            {
+                __result = Mathf.Min(__result, 4f);
+                __result *= botOwner2.Settings.Current.CurrentScattering;
+                BotOwner botOwner3;
+                if (____player == null)
+                {
+                    botOwner3 = null;
+                }
+                else
+                {
+                    IAIData aidata2 = ____player.AIData;
+                    botOwner3 = aidata2?.BotOwner;
+                }
+                if (SAINEnableClass.GetSAIN(botOwner3, out BotComponent botComponent))
+                {
+                    Enemy lastShotEnemy = botComponent.Shoot.LastShotEnemy;
+                    if (lastShotEnemy != null)
+                    {
+                        __result /= lastShotEnemy.Aim.AimAndScatterMultiplier;
+                    }
+                }
+            }
+        }
+    }
+
     internal class PlayerHitReactionDisablePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -123,20 +172,22 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool PatchPrefix(BotAimingClass __instance)
         {
+            Vector3 realTargetPoint = __instance.RealTargetPoint;
+            __instance.EndTargetPoint = realTargetPoint;
+            return false;
+
             if (!SAINEnableClass.GetSAIN(__instance.botOwner_0, out var bot))
             {
                 return true;
             }
 
-            Vector3 realTargetPoint = __instance.botOwner_0.AimingManager.CurrentAiming.RealTargetPoint;
-
             if (bot.IsCheater)
             {
-                __instance.RealTargetPoint = realTargetPoint;
+                __instance.EndTargetPoint = realTargetPoint;
                 return false;
             }
 
-            Enemy enemy = bot.Shoot.LastShotEnemy ?? bot.Enemy ?? bot.LastEnemy;
+            Enemy enemy = bot.Shoot.LastShotEnemy ?? bot.GoalEnemy ?? bot.CurrentTarget.CurrentTargetEnemy;
             if (enemy == null)
             {
                 return true;
@@ -170,20 +221,20 @@ namespace SAIN.Patches.Shoot.Aim
             if (!enemy.IsAI &&
                 SAINPlugin.LoadedPreset.GlobalSettings.Look.NotLooking.NotLookingToggle)
             {
-                finalOffset += NotLookingOffset(enemy.EnemyPerson.IPlayer, __instance.botOwner_0);
+                finalOffset += NotLookingOffset(enemy.EnemyPlayer, __instance.botOwner_0);
             }
 
             Vector3 result = realTargetPoint + finalOffset;
 
             if (SAINPlugin.LoadedPreset.GlobalSettings.General.Debug.Gizmos.DebugDrawAimGizmos &&
-                enemy.EnemyPerson.IPlayer.IsYourPlayer == true)
+                enemy.EnemyPlayer.IsYourPlayer)
             {
                 Vector3 weaponRoot = __instance.botOwner_0.WeaponRoot.position;
-                DebugGizmos.Line(weaponRoot, result, Color.red, 0.02f, 0.25f, true);
-                DebugGizmos.Sphere(result, 0.025f, Color.red, 10f);
+                DebugGizmos.DrawLine(weaponRoot, result, Color.red, 0.02f, 0.25f, true);
+                DebugGizmos.DrawSphere(result, 0.025f, Color.red, 10f);
 
-                DebugGizmos.Line(weaponRoot, realTargetPoint, Color.white, 0.02f, 0.25f, true);
-                DebugGizmos.Sphere(realTargetPoint, 0.025f, Color.white , 10f);
+                DebugGizmos.DrawLine(weaponRoot, realTargetPoint, Color.white, 0.02f, 0.25f, true);
+                DebugGizmos.DrawSphere(realTargetPoint, 0.025f, Color.white, 10f);
             }
             //if (SAINPlugin.DebugSettings.Gizmos.DebugDrawRecoilGizmos &&
             //    enemy.EnemyPerson.IPlayer.IsYourPlayer == true &&
@@ -356,7 +407,7 @@ namespace SAIN.Patches.Shoot.Aim
 
         private static float CalcAttachmentMod(BotComponent bot, float aimTimeResult, StringBuilder stringBuilder)
         {
-            Enemy enemy = bot?.Enemy;
+            Enemy enemy = bot?.GoalEnemy;
             if (enemy != null)
             {
                 float modifier = enemy.Aim.AimAndScatterMultiplier;

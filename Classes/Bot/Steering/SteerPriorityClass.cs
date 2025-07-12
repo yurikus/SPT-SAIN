@@ -27,30 +27,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         // How old a sound can be, in seconds, for them to react by looking toward it.
         private readonly float Steer_HeardSound_Age = 3f;
 
-        public AimStatus AimStatus
-        {
-            get
-            {
-                if (BotOwner.AimingManager.CurrentAiming != null && BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
-                {
-                    var status = aimClass.aimStatus_0;
-
-                    if (status != AimStatus.NoTarget &&
-                        Bot.Enemy?.IsVisible == false &&
-                        Bot.LastEnemy?.IsVisible == false)
-                    {
-                        return AimStatus.NoTarget;
-                    }
-                    return status;
-                }
-                else
-                {
-                    return AimStatus.NoTarget;
-                }
-            }
-
-        }
-
         public SteerPriorityClass(SAINSteeringClass steering) : base(steering)
         {
         }
@@ -98,7 +74,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private ESteerPriority strickChecks(bool ignoreRunningPath)
         {
-            if (!ignoreRunningPath && Bot.Mover.PathFollower.Running)
+            if (!ignoreRunningPath && Bot.Mover.Running)
                 return ESteerPriority.RunningPath;
 
             if (Player.IsSprintEnabled)
@@ -133,7 +109,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private ESteerPriority senseSteering()
         {
-            EnemyPlace lastKnownPlace = Bot.Enemy?.KnownPlaces?.LastKnownPlace;
+            EnemyPlace lastKnownPlace = Bot.GoalEnemy?.KnownPlaces?.LastKnownPlace;
 
             if (lastKnownPlace != null && lastKnownPlace.TimeSincePositionUpdated < Steer_TimeSinceLocationKnown_Threshold)
                 return ESteerPriority.EnemyLastKnown;
@@ -169,7 +145,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             placeForCheck = BotOwner.BotsGroup.YoungestFastPlace(BotOwner, Steer_HeardSound_Dist, Steer_HeardSound_Age);
             if (placeForCheck != null)
             {
-                Enemy enemy = Bot.Enemy;
+                Enemy enemy = Bot.GoalEnemy;
                 if (enemy == null)
                 {
                     return true;
@@ -195,7 +171,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             Enemy enemy = Bot.Medical.HitByEnemy.EnemyWhoLastShotMe;
             if (enemy != null &&
                 enemy.CheckValid() &&
-                enemy.EnemyPerson.Active &&
                 !enemy.IsCurrentEnemy)
             {
                 EnemyWhoLastShotMe = enemy;
@@ -211,7 +186,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            return canSeeAndShoot(Bot.Enemy) || canSeeAndShoot(Bot.LastEnemy) || canSeeAndShoot(Bot.Shoot.LastShotEnemy);
+            return canSeeAndShoot(Bot.Shoot.LastShotEnemy) || canSeeAndShoot(Bot.GoalEnemy) || canSeeAndShoot(Bot.CurrentTarget.CurrentTargetEnemy);
         }
 
         private bool canSeeAndShoot(Enemy enemy)
@@ -221,7 +196,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool enemyVisible()
         {
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
 
             if (enemy != null)
             {

@@ -6,6 +6,8 @@ using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
+using SAIN.Models.Structs;
+using SAIN.Preset.GlobalSettings;
 using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
@@ -217,20 +219,6 @@ namespace SAIN.Patches.Generic
             {
                 Helpers.SetItemEquiped(__instance, throwWeap);
             }
-        }
-    }
-
-    public class StopRefillMagsPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotReload), nameof(BotReload.method_1));
-        }
-
-        [PatchPrefix]
-        public static bool Patch(BotOwner ___botOwner_0)
-        {
-            return SAINPlugin.IsBotExluded(___botOwner_0);
         }
     }
 
@@ -480,78 +468,75 @@ namespace SAIN.Patches.Generic
         }
     }
 
-    public class AllowRequestPatch : ModulePatch
+    /// <summary>
+    /// This function is called when a voice line or gesture is activated.
+    /// We dont want bot voicelines or gestures triggering behavior here in other ai.
+    /// </summary>
+    public class BlockVoiceRequestsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.method_2));
+            return AccessTools.Method(typeof(BotReceiver), nameof(BotReceiver.method_5));
         }
 
         [PatchPrefix]
-        public static bool Patch(BotOwner ____owner)
+        public static bool Patch(BotReceiver __instance, IPlayer player)
         {
-            BotRequest curRequest = ____owner.BotRequestController.CurRequest;
-            if (curRequest == null)
-            {
-                return false;
-            }
-            if (!SAINEnableClass.GetSAIN(____owner, out BotComponent sain))
-            {
-                return true;
-            }
-            if (sain.HasEnemy && curRequest.Requester?.IsAI == true)
-            {
-                curRequest.Dispose();
-                return false;
-            }
+            if (!SAINEnableClass.IsBotInCombat(__instance.botOwner_0)) return true;
+            if (player?.IsAI == true) return false;
             return true;
         }
     }
 
-    public class FindRequestForMePatch : ModulePatch
+    public class BlockGrenadeThrowRequestsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotGroupRequestController), nameof(BotGroupRequestController.FindForMe));
+            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.TryActivateThrowGrenadeRequestToPlace));
         }
 
         [PatchPrefix]
-        public static bool Patch(BotOwner executer, List<BotRequest> ____listOfRequests)
+        public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
         {
-            // Copied original code in FindForMe, but add check to see if requester is AI or not if this bot currently has an active enemy.
-            // START NEW //
-            if (!SAINEnableClass.GetSAIN(executer, out BotComponent sain))
-            {
-                return true;
-            }
-            if (!sain.HasEnemy)
-            {
-                return true;
-            }
-            // END NEW //
-
-            BotRequest botRequest = null;
-            foreach (BotRequest botRequest2 in ____listOfRequests)
-            {
-                // START NEW //
-                IPlayer requestor = botRequest2.Requester;
-                if (requestor != null && requestor.IsAI)
-                {
-                    continue;
-                }
-                // END NEW //
-                if ((botRequest2.CanExecuteByMyself || (Player)botRequest2.Requester != executer.GetPlayer) && (!executer.Boss.IamBoss || executer.Boss.AllowRequestSelf || executer.GetPlayer.Id != botRequest2.Requester.Id) && botRequest2.CanStartExecute(executer))
-                {
-                    botRequest = botRequest2;
-                    break;
-                }
-            }
-            if (botRequest != null)
-            {
-                botRequest.Take(executer);
-                ____listOfRequests.Remove(botRequest);
-            }
+            if (!SAINEnableClass.IsBotInCombat(__instance._owner)) return true;
+            __result = false;
             return false;
+        }
+    }
+
+    public class BlockGrenadeThrowRequestsPatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.TryActivateThrowGrenadeRequest));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
+        {
+            if (!SAINEnableClass.IsBotInCombat(__instance._owner)) return true;
+            __result = false;
+            return false;
+        }
+    }
+
+    public class BlockRequestPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(AIDataRequestController), nameof(AIDataRequestController.TryAdd));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotRequest request, AIDataRequestController __instance, ref bool __result)
+        {
+            if (!SAINEnableClass.IsBotInCombat(__instance._aiData?.player_0)) return true;
+            if (request.Requester?.IsAI == true)
+            {
+                __result = false;
+                return false;
+            }
+            return true;
         }
     }
 }

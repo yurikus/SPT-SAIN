@@ -96,7 +96,7 @@ namespace SAIN.SAINComponent.Classes.Talk
 
                 if (TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Roger || TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Negative)
                 {
-                    if (Bot.Squad.VisibleMembers != null && Bot.Squad.LeaderComponent != null && Bot.Squad.VisibleMembers.Contains(Bot.Squad.LeaderComponent) && Bot.Enemy?.IsVisible == false)
+                    if (Bot.Squad.VisibleMembers != null && Bot.Squad.LeaderComponent != null && Bot.Squad.VisibleMembers.Contains(Bot.Squad.LeaderComponent) && Bot.GoalEnemy?.IsVisible == false)
                     {
                         if (TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Roger)
                         {
@@ -273,9 +273,9 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 etagStatus |= ETagStatus.Combat;
             }
-            else if (Bot.Enemy != null)
+            else if (Bot.GoalEnemy != null)
             {
-                if (Bot.Enemy.Seen && Bot.Enemy.TimeSinceSeen < 30f)
+                if (Bot.GoalEnemy.Seen && Bot.GoalEnemy.TimeSinceSeen < 30f)
                 {
                     etagStatus |= ETagStatus.Combat;
                 }
@@ -284,7 +284,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                     etagStatus |= ETagStatus.Aware;
                 }
 
-                switch (Bot.Enemy.EnemyIPlayer.Side)
+                switch (Bot.GoalEnemy.EnemyPlayer.Side)
                 {
                     case EPlayerSide.Usec:
                         etagStatus |= ETagStatus.Usec;

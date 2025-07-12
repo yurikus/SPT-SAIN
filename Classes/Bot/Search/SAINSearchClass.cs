@@ -19,7 +19,6 @@ namespace SAIN.SAINComponent.Classes.Search
         public ESearchMove CurrentState { get; private set; }
         public ESearchMove LastState { get; private set; }
 
-        public Vector3? FinalDestination => PathFinder.FinalDestination;
         public BotPeekPlan? PeekPoints => PathFinder.PeekPoints;
 
         public SearchDeciderClass SearchDecider { get; private set; }
@@ -67,7 +66,6 @@ namespace SAIN.SAINComponent.Classes.Search
         {
             PathFinder.UpdateSearchDestination(enemy);
             SwitchSearchModes(shallSprint, enemy);
-            PeekPoints?.DrawDebug();
         }
 
         private bool WaitAtPoint()
@@ -78,25 +76,25 @@ namespace SAIN.SAINComponent.Classes.Search
                 baseTime *= Bot.Info.PersonalitySettings.Search.SearchWaitMultiplier;
                 float waitTime = baseTime * Random.Range(0.25f, 1.25f);
                 _waitAtPointTimer = Time.time + waitTime;
-                Bot.Mover.PathFollower.Pause(waitTime);
+                Bot.Mover.ActivePath?.Pause(waitTime);
             }
             if (_waitAtPointTimer < Time.time)
             {
-                Bot.Mover.PathFollower.Unpause();
+                Bot.Mover.ActivePath?.UnPause();
                 _waitAtPointTimer = -1;
                 return false;
             }
             return true;
         }
 
-        private bool MoveToPoint(Vector3 destination, bool shallSprint)
+        private bool MoveToEnemy(Enemy enemy, bool shallSprint)
         {
             if (shallSprint &&
-                Bot.Mover.RunToPoint(destination, Mover.ESprintUrgency.Middle, true))
+                Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, Mover.ESprintUrgency.Middle, true))
             {
                 return true;
             }
-            if (Bot.Mover.GoToPoint(destination, out _))
+            if (Bot.Mover.WalkToPointByWay(enemy.Path.PathToEnemy))
             {
                 return true;
             }
@@ -105,7 +103,7 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private void HandleLight(bool stealthy)
         {
-            if (_Running || Bot.Mover.PathFollower.Running)
+            if (_Running)
             {
                 return;
             }
@@ -114,17 +112,18 @@ namespace SAIN.SAINComponent.Classes.Search
                 Bot.BotLight.ToggleLight(false);
                 return;
             }
-            if (Bot.Mover.PathFollower.Moving)
+            if (Bot.Mover.Moving)
             {
-                Bot.BotLight.HandleLightForSearch(Bot.Mover.PathFollower.MoveData.CurrentCornerDistanceSqr);
+                Bot.BotLight.HandleLightForSearch(Bot.Mover.ActivePath.CurrentCornerDistanceSqr);
             }
         }
 
         private void SwitchSearchModes(bool shallSprint, Enemy enemy)
         {
-            if (FinalDestination == null)
+            EnemyPlace targetPlace = PathFinder.TargetPlace;
+            if (targetPlace == null)
             {
-                //Logger.LogWarning($"{BotOwner.name}'s Final Destination is null, cannot search!");
+                Logger.LogWarning($"{BotOwner.name}'s targetPlace is null, cannot search!");
                 return;
             }
 
@@ -138,49 +137,49 @@ namespace SAIN.SAINComponent.Classes.Search
             GetSpeedandPose(out float speed, out float pose, shallSprint, shallBeStealthy);
             HandleLight(shallBeStealthy);
 
-            CheckShallWaitandReload();
-            if (ShallSwapToSprint(shallSprint, speed, pose))
+            if (CheckShallWaitandReload())
             {
+                shallSprint = false;
+            }
+            if (shallSprint && 
+                Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, Mover.ESprintUrgency.Middle, true))
+            {
+                LastState = CurrentState;
+                CurrentState = ESearchMove.DirectMove;
+                SetSpeedPose(1f, 1f);
                 return;
             }
 
             // if a bot is looking towards something they heard or got shot, pause their search movement temporarily
-            switch (Bot.Steering.CurrentSteerPriority)
-            {
-                case ESteerPriority.LastHit:
-                case ESteerPriority.HeardThreat:
-                    Bot.Mover.PathFollower.Pause(0.33f);
-                    break;
-
-                default:
-                    if (CurrentState != ESearchMove.Wait)
-                        Bot.Mover.PathFollower.Unpause();
-                    break;
-            }
+            //switch (Bot.Steering.CurrentSteerPriority)
+            //{
+            //    case ESteerPriority.LastHit:
+            //    case ESteerPriority.HeardThreat:
+            //        Bot.Mover.PathFollower.Pause(0.33f);
+            //        break;
+            //
+            //    default:
+            //        if (CurrentState != ESearchMove.Wait)
+            //            Bot.Mover.PathFollower.Unpause();
+            //        break;
+            //}
 
             ESearchMove previousState = CurrentState;
-            PeekPosition? peekPosition;
             switch (CurrentState)
             {
                 case ESearchMove.None:
-                    if (ShallStartPeek(shallSprint))
-                    {
-                        CurrentState = ESearchMove.MoveToStartPeek;
-                        break;
-                    }
-
-                    if (MoveToPoint(FinalDestination.Value, shallSprint))
+                    if (MoveToEnemy(enemy, shallSprint))
                     {
                         CurrentState = ESearchMove.DirectMove;
                         break;
                     }
-                    //Logger.LogWarning($"{BotOwner.name}'s cannot peek and cannot direct move!");
+                    Logger.LogWarning($"{BotOwner.name}'s cannot peek and cannot direct move!");
                     break;
 
                 case ESearchMove.DirectMove:
 
                     SetSpeedPose(speed, pose);
-                    MoveToPoint(FinalDestination.Value, shallSprint);
+                    MoveToEnemy(enemy, shallSprint);
                     break;
 
                 case ESearchMove.Advance:
@@ -198,53 +197,7 @@ namespace SAIN.SAINComponent.Classes.Search
                     }
 
                     SetSpeedPose(speed, pose);
-                    MoveToPoint(FinalDestination.Value, shallSprint);
-                    break;
-
-                case ESearchMove.MoveToStartPeek:
-
-                    peekPosition = PeekPoints?.PeekStart;
-                    if (peekPosition != null &&
-                        !BotIsAtPoint(peekPosition.Value.Point))
-                    {
-                        SetSpeedPose(speed, pose);
-                        if (MoveToPoint(peekPosition.Value.Point, shallSprint))
-                        {
-                            break;
-                        }
-                    }
-                    CurrentState = ESearchMove.MoveToEndPeek;
-                    break;
-
-                case ESearchMove.MoveToEndPeek:
-
-                    peekPosition = PeekPoints?.PeekEnd;
-                    if (peekPosition != null &&
-                        !BotIsAtPoint(peekPosition.Value.Point))
-                    {
-                        SetSpeedPose(speed, pose);
-                        if (MoveToPoint(peekPosition.Value.Point, shallSprint))
-                        {
-                            break;
-                        }
-                    }
-                    CurrentState = ESearchMove.Wait;
-                    NextState = ESearchMove.MoveToDangerPoint;
-                    break;
-
-                case ESearchMove.MoveToDangerPoint:
-
-                    Vector3? danger = PeekPoints?.DangerPoint;
-                    if (danger != null &&
-                        !BotIsAtPoint(danger.Value))
-                    {
-                        SetSpeedPose(speed, pose);
-                        if (MoveToPoint(danger.Value, shallSprint))
-                        {
-                            break;
-                        }
-                    }
-                    CurrentState = ESearchMove.Advance;
+                    MoveToEnemy(enemy, shallSprint);
                     break;
 
                 case ESearchMove.Wait:
@@ -264,34 +217,6 @@ namespace SAIN.SAINComponent.Classes.Search
             {
                 LastState = previousState;
             }
-        }
-
-        private bool ShallSwapToSprint(bool shallSprint, float speed, float pose)
-        {
-            if (!shallSprint)
-            {
-                return false;
-            }
-
-            switch (CurrentState)
-            {
-                case ESearchMove.DirectMove:
-                case ESearchMove.None:
-                    return false;
-
-                default:
-                    break;
-            }
-
-            if (!MoveToPoint(FinalDestination.Value, true))
-            {
-                return false;
-            }
-
-            LastState = CurrentState;
-            CurrentState = ESearchMove.DirectMove;
-            SetSpeedPose(speed, pose);
-            return true;
         }
 
         private bool CheckEndPeek()
@@ -322,7 +247,7 @@ namespace SAIN.SAINComponent.Classes.Search
             speed = 1f;
             pose = 1f;
             // are we sprinting?
-            if (sprinting || Player.IsSprintEnabled || _Running || Bot.Mover.PathFollower.Running)
+            if (sprinting || Player.IsSprintEnabled || _Running || Bot.Mover.Running)
             {
                 return;
             }
@@ -370,43 +295,20 @@ namespace SAIN.SAINComponent.Classes.Search
             return true;
         }
 
-        private void CheckShallWaitandReload()
+        private bool CheckShallWaitandReload()
         {
             if (BotOwner.WeaponManager?.Reload?.Reloading == true &&
                 CurrentState != ESearchMove.Wait)
             {
                 NextState = CurrentState;
                 CurrentState = ESearchMove.Wait;
-            }
-        }
-
-        private bool ShallStartPeek(bool shallSprint)
-        {
-            if (shallSprint)
-            {
-                return false;
-            }
-            if (PeekPoints != null && MoveToPoint(PeekPoints.Value.PeekStart.Point, shallSprint))
-            {
                 return true;
             }
             return false;
         }
 
-        private bool ShallDirectMove(bool shallSprint)
+        private bool ShallStartPeek(bool shallSprint)
         {
-            if (shallSprint)
-            {
-                return true;
-            }
-            if (PeekPoints == null)
-            {
-                return true;
-            }
-            if (MoveToPoint(FinalDestination.Value, shallSprint))
-            {
-                return true;
-            }
             return false;
         }
 
@@ -439,7 +341,7 @@ namespace SAIN.SAINComponent.Classes.Search
             return (point - Bot.Position).magnitude;
         }
 
-        private bool _Running => Bot.Mover.PathFollower.Running;
+        private bool _Running => Bot.Mover.Running;
         private float _waitAtPointTimer = -1;
         private float _advanceTime;
         private PersonalitySearchSettings _searchSettings => Bot.Info.PersonalitySettings.Search;

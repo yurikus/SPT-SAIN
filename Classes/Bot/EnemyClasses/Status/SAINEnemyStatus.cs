@@ -170,9 +170,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     _nextCheckEnemyLookTime = Time.time + 0.2f;
                     Vector3 directionToBot = (Bot.Position - EnemyCurrentPosition).normalized;
-                    Vector3 enemyLookDirection = EnemyPerson.Transform.LookDirection.normalized;
+                    Vector3 enemyLookDirection = EnemyTransform.LookDirection;
                     float dot = Vector3.Dot(directionToBot, enemyLookDirection);
-                    _enemyLookAtMe = dot >= 0.9f;
+                    _enemyLookAtMe = dot >= 0.8f;
                 }
                 return _enemyLookAtMe;
             }
@@ -316,7 +316,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float TimeFirstShot { get; private set; }
         public Vector3? LastShotPosition { get; private set; }
 
-        public SAINEnemyStatus(Enemy enemy) : base(enemy)
+        public SAINEnemyStatus(EnemyData enemy) : base(enemy)
         {
         }
 

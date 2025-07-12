@@ -76,8 +76,6 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             HitCount = hits;
         }
 
-        private static float _nextLogTime;
-
         private static readonly List<LayerMask> _layersToCheck = new()
         {
             //LayerMaskClass.HighPolyCollider,
@@ -164,7 +162,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                     }
                     if (!debugColliders.ContainsKey(collider))
                     {
-                        var marker = DebugGizmos.Sphere(collider.transform.position, 0f);
+                        var marker = DebugGizmos.DrawSphere(collider.transform.position, 0.1f, Color.white, 1f);
                         if (marker != null)
                         {
                             debugColliders.Add(collider, marker);
@@ -188,7 +186,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
         }
 
-        private static Dictionary<Collider, GUIObject> debugGUIObjects = new();
+        private static Dictionary<Collider, DebugLabel> debugGUIObjects = new();
         private static Dictionary<Collider, GameObject> debugColliders = new();
 
         public int ColliderArrayBotDistComparer(Collider A, Collider B)

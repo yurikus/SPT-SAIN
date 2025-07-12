@@ -56,8 +56,7 @@ namespace SAIN.Components.Extract
 
         public void OnGUI()
         {
-            DebugGizmos.OnGUIGame();
-            DebugGizmos.OnGUIDebug();
+            DebugGizmos.OnGUI();
 
             if (!DebugMode || !SAINPlugin.DebugSettings.Logs.DrawDebugLabels)
             {
@@ -95,13 +94,13 @@ namespace SAIN.Components.Extract
 
             foreach (Vector3 pathEndPoint in finder.PathEndpoints)
             {
-                DebugGizmos.Sphere(pathEndPoint, 1f, Color.blue, CheckExtractDelay);
+                DebugGizmos.DrawSphere(pathEndPoint, 1f, Color.blue, CheckExtractDelay);
             }
 
             if (finder.ExtractPosition.HasValue)
             {
                 Color color = finder.ValidPathFound ? Color.green : Color.red;
-                DebugGizmos.Sphere(finder.ExtractPosition.Value, 1f, color, CheckExtractDelay);
+                DebugGizmos.DrawSphere(finder.ExtractPosition.Value, 1f, color, CheckExtractDelay);
             }
         }
 

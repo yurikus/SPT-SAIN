@@ -26,7 +26,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return false;
             }
 
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             if (enemy == null ||
                 !enemy.Seen ||
                 enemy.TimeSinceSeen > 30f)
@@ -67,7 +67,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     }
                     else
                     {
-                        TryShoot(Bot.Enemy);
+                        TryShoot(Bot.GoalEnemy);
                     }
                 }
                 return;
@@ -80,7 +80,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            Vector3? lastKnownPos = Bot.Enemy.KnownPlaces.LastKnownPosition;
+            Vector3? lastKnownPos = Bot.GoalEnemy.KnownPlaces.LastKnownPosition;
             if (lastKnownPos == null)
             {
                 ResetBlindFire();
@@ -88,7 +88,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (!Bot.Steering.FindLastKnownTarget(Bot.Enemy, out Vector3 targetPos) || (lastKnownPos.Value - targetPos).sqrMagnitude > 10f)
+            if (!Bot.Steering.FindLastKnownTarget(Bot.GoalEnemy, out Vector3 targetPos) || (lastKnownPos.Value - targetPos).sqrMagnitude > 10f)
             {
                 ResetBlindFire();
                 _changeBlindFireTime = Time.time + 0.5f;
@@ -118,7 +118,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Vector3 blindFireDirection = Vector.Rotate(targetPos - start, Vector.RandomRange(3), Vector.RandomRange(3), Vector.RandomRange(3));
                 BlindFireTargetPos = blindFireDirection + start;
             }
-            TryShoot(Bot.Enemy);
+            TryShoot(Bot.GoalEnemy);
         }
 
         private void TryShoot(Enemy enemy)
@@ -162,13 +162,13 @@ namespace SAIN.SAINComponent.Classes.Mover
         private int checkBlindFire(Vector3 targetPos)
         {
             LayerMask mask = LayerMaskClass.HighPolyWithTerrainMask;
-            Vector3 firePort = Bot.Transform.WeaponFirePort;
+            Vector3 firePort = Bot.Transform.WeaponData.FirePort;
             Vector3 direction = targetPos - firePort;
 
             if (Physics.Raycast(firePort, direction, 5f, mask))
             {
                 // Overhead blindfire
-                firePort = Bot.Transform.HeadPosition + Vector3.up * 0.15f;
+                firePort = Bot.Transform.HeadData.HeadPosition + Vector3.up * 0.15f;
                 if (!Vector.Raycast(firePort, targetPos, mask))
                 {
                     return 1;

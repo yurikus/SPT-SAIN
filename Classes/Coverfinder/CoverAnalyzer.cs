@@ -1,6 +1,5 @@
 ﻿using Comfort.Common;
 using EFT;
-using SAIN.Classes.Coverfinder;
 using SAIN.Components;
 using SAIN.Components.CoverFinder;
 using SAIN.Helpers;
@@ -85,7 +84,8 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 return false;
             }
 
-            if (coverPoint.StraightDistanceStatus == CoverStatus.InCover)
+            if (coverPoint.StraightDistanceStatus == CoverStatus.InCover && 
+                CheckPath(coverPosition, coverPoint.PathData, targetData, false))
             {
                 coverPoint.Position = coverPosition;
                 reason = "inCover";
@@ -110,7 +110,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 return false;
             }
 
-            if (!CheckPath(coverPosition, coverPoint.PathData, targetData))
+            if (!CheckPath(coverPosition, coverPoint.PathData, targetData, true))
             {
                 reason = "badPath";
                 return false;
@@ -229,25 +229,29 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             return false;
         }
 
-        private bool CheckPath(Vector3 position, PathData pathData, TargetData targetData)
+        private bool CheckPath(Vector3 position, PathData pathData, TargetData targetData, bool checkEnemy = true)
         {
             var path = pathData.Path;
             path.ClearCorners();
-            NavMesh.CalculatePath(OriginPoint, position, -1, path);
-
-            if (path.status != NavMeshPathStatus.PathComplete)
+            if (!NavMesh.CalculatePath(OriginPoint, position, -1, path))
             {
+                pathData.PathLength = float.MaxValue;
                 return false;
             }
-
+            if (path.status != NavMeshPathStatus.PathComplete)
+            {
+                pathData.PathLength = float.MaxValue;
+                return false;
+            }
             float pathLength = path.CalculatePathLength();
             if (pathLength > SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.MaxCoverPathLength)
             {
+                pathData.PathLength = float.MaxValue;
                 return false;
             }
             pathData.PathLength = pathLength;
 
-            if (!checkPathToEnemy(path, targetData))
+            if (checkEnemy && !checkPathToEnemy(path, targetData))
             {
                 return false;
             }
@@ -432,12 +436,12 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             {
                 if (hitObject)
                 {
-                    DebugGizmos.Line(point, hit.point, Color.white, 0.1f, 10f);
+                    DebugGizmos.DrawLine(point, hit.point, Color.white, 0.1f, 10f);
                 }
                 else
                 {
                     Vector3 testPoint = direction.normalized * distance + point;
-                    DebugGizmos.Line(point, testPoint, Color.red, 0.1f, 10f);
+                    DebugGizmos.DrawLine(point, testPoint, Color.red, 0.1f, 10f);
                 }
             }
             return hitObject;

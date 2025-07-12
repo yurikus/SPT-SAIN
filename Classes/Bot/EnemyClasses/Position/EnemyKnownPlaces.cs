@@ -95,14 +95,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public List<EnemyPlace> AllEnemyPlaces { get; } = new List<EnemyPlace>();
 
-        public EnemyKnownPlaces(Enemy enemy) : base(enemy)
+        public EnemyKnownPlaces(EnemyData enemy) : base(enemy)
         {
             _placeData = new PlaceData
             {
-                Enemy = enemy,
-                Owner = enemy.Bot,
-                IsAI = enemy.IsAI,
-                OwnerID = enemy.Bot.ProfileId
+                Enemy = enemy.Enemy,
+                Owner = enemy.Enemy.Bot,
+                IsAI = enemy.Enemy.IsAI,
+                OwnerID = enemy.Enemy.Bot.ProfileId
             };
         }
 
@@ -206,7 +206,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private void updateDebugString(EnemyPlace place, GUIObject obj)
+        private void updateDebugString(EnemyPlace place, DebugLabel obj)
         {
             obj.WorldPos = place.Position;
 
@@ -387,7 +387,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private float _nextTalkClearTime;
         private float _nextCheckSearchTime;
         private float _nextSortPlacesTime;
-        private GUIObject debugLastKnown;
-        private readonly Dictionary<EnemyPlace, GUIObject> _guiObjects = new();
+        private DebugLabel debugLastKnown;
+        private readonly Dictionary<EnemyPlace, DebugLabel> _guiObjects = new();
     }
 }

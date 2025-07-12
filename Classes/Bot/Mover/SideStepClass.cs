@@ -26,7 +26,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            var enemy = Bot.Enemy;
+            var enemy = Bot.GoalEnemy;
             var CurrentDecision = Bot.Decision.CurrentCombatDecision;
             if (enemy == null || CurrentDecision != ECombatDecision.HoldInCover)
             {

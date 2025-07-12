@@ -15,14 +15,14 @@ namespace SAIN.SAINComponent.Classes.Mover
         private const float LEAN_RAYCAST_OFFSET_DIST = 0.66f;
         private const float LEAN_MAX_RAYCAST_DIST = 16f;
         private const float RESET_LEAN_AFTER_TIME = 1f;
-        private const float MAX_CORNER_DISTANCE_LEAN = 30f;
+        private const float MAX_CORNER_DISTANCE_LEAN = 15f;
         private const float MAX_CORNER_DISTANCE_LEAN_SQR = MAX_CORNER_DISTANCE_LEAN * MAX_CORNER_DISTANCE_LEAN;
 
         public LeanSetting LeanDirection { get; private set; }
         public LeanSetting LastLeanDirection { get; private set; }
         public bool CanLeanByState { get; private set; }
         public bool IsRaycastLeaning { get; private set; }
-        public SmoothDampenedFloat LeanAngleValue { get; } = new(0.2f);
+        public SmoothDampenedFloat LeanAngleValue { get; } = new(0.5f);
 
         public LeanClass(BotComponent sain) : base(sain)
         {
@@ -109,7 +109,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            if (Bot.Mover.PathFollower.Running)
+            if (Bot.Mover.Running)
             {
                 return false;
             }
@@ -292,7 +292,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private bool CheckOffSetRay(Vector3 targetPos, float angle, float dist, out Vector3 Point)
         {
             Vector3 startPos = BotOwner.Position;
-            startPos.y = Bot.Transform.HeadPosition.y;
+            startPos.y = Bot.Transform.EyePosition.y;
 
             if (dist > 0f)
             {

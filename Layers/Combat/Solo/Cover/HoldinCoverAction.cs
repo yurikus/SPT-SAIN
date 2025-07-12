@@ -1,9 +1,9 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Classes.Coverfinder;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
 using UnityEngine;
 
@@ -24,7 +24,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
         {
             this.StartProfilingSample("Update");
             checkPositionAdjustments();
-            Enemy Enemy = Bot.Enemy;
+            Enemy Enemy = Bot.GoalEnemy;
             if (!Shoot.ShootAnyVisibleEnemies(Enemy) && !Bot.Suppression.TrySuppressEnemy(Enemy))
             {
                 Bot.Steering.SteerByPriority(Enemy);
@@ -37,38 +37,15 @@ namespace SAIN.Layers.Combat.Solo.Cover
             CoverPoint coverInUse = CoverInUse;
             if (coverInUse == null)
             {
-                Bot.Mover.DogFight.DogFightMove(true, Bot.Enemy);
+                Bot.Mover.DogFight.DogFightMove(true, Bot.GoalEnemy);
             }
             else
             {
-                adjustMyPosition();
-                Bot.Cover.DuckInCover(Bot.Enemy);
+                Bot.Cover.DuckInCover(Bot.GoalEnemy);
                 checkSetProne();
                 checkSetLean();
             }
         }
-
-        private void adjustMyPosition()
-        {
-            if (_nextCheckPosTime < Time.time)
-            {
-                _nextCheckPosTime = Time.time + 1f;
-                Vector3 coverPos = CoverInUse.Position;
-                if (!Bot.Player.IsInPronePose
-                    && (coverPos - _position).sqrMagnitude > 0.5f * 0.5f)
-                {
-                    _position = coverPos;
-                    Bot.Mover.GoToPoint(coverPos, out _);
-                }
-                else
-                {
-                    Bot.Mover.StopMove();
-                }
-            }
-        }
-
-        private float _nextCheckPosTime;
-        private Vector3 _position;
 
         private void checkSetProne()
         {
@@ -76,10 +53,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 return;
             }
-            if (Bot.Enemy != null
+            if (Bot.GoalEnemy != null
                 && Bot.Player.MovementContext.CanProne
                 && Bot.Player.PoseLevel <= 0.1
-                && Bot.Enemy.IsVisible
+                && Bot.GoalEnemy.IsVisible
                 && BotOwner.WeaponManager.Reload.Reloading)
             {
                 Bot.Mover.Prone.SetProne(true);
@@ -123,7 +100,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                     break;
 
                 default:
-                    newLean = Bot.Mover.Lean.FindLeanFromBlindCornerAngle(Bot.Enemy);
+                    newLean = Bot.Mover.Lean.FindLeanFromBlindCornerAngle(Bot.GoalEnemy);
                     if (newLean == LeanSetting.None)
                     {
                         newLean = EFTMath.RandomBool() ? LeanSetting.Left : LeanSetting.Right;
@@ -144,8 +121,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         private bool checkLeanIntoObject(LeanSetting lean)
         {
-            Vector3 headPos = Bot.Transform.HeadPosition;
-            Vector3 rayEnd = lean == LeanSetting.Right ? Bot.Transform.DirectionData.Right() : Bot.Transform.DirectionData.Left();
+            Vector3 headPos = Bot.Transform.EyePosition;
+            Vector3 rayEnd = lean == LeanSetting.Right ? Bot.Transform.Right() : Bot.Transform.Left();
             switch (lean)
             {
                 case LeanSetting.Right:
@@ -163,7 +140,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 return false;
             }
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             if (enemy == null || !enemy.Seen)
             {
                 return false;
@@ -182,24 +159,17 @@ namespace SAIN.Layers.Combat.Solo.Cover
         private LeanSetting CurrentLean;
         private float ChangeLeanTimer;
 
-        private CoverPoint CoverInUse;
+        private CoverPoint CoverInUse => Bot.Cover.CoverInUse;
 
         public override void Start()
         {
             Toggle(true);
             ChangeLeanTimer = Time.time + 2f;
-            CoverInUse = Bot.Cover.CoverInUse;
-            if (CoverInUse != null)
-            {
-                _position = CoverInUse.Position;
-            }
         }
 
         public override void Stop()
         {
             Toggle(false);
-            Bot.Cover.CheckResetCoverInUse();
-            Bot.Mover.Prone.SetProne(false);
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)
@@ -228,7 +198,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 stringBuilder.AppendLine("Cover In Use");
                 stringBuilder.AppendLabeledValue("Status", $"{CoverInUse.StraightDistanceStatus}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Height / Value", $"{CoverInUse.CoverHeight} {CoverInUse.HardData.Value}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Path Length", $"{CoverInUse.PathLength}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Path Length", $"{CoverInUse.PathData.PathLength}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Straight Distance", $"{(CoverInUse.Position - Bot.Position).magnitude}", Color.white, Color.yellow, true);
             }
         }

@@ -75,26 +75,27 @@ namespace SAIN
 
             new Patches.Components.WorldTickPatch(),
             new Patches.Components.PlayerLateUpdatePatch(),
-            //new Patches.Components.DisableBotUpdateByUnityPatch(),
             new Patches.Components.AddBotComponentPatch(),
             new Patches.Components.ActivateBotComponentPatch(),
             new Patches.Components.AddGameWorldPatch(),
             new Patches.Components.GetBotController(),
 
-            //new Patches.Generic.StopRefillMagsPatch(),
-            //new Patches.Generic.GetAmmoForRefillPatch(),
-            //new Patches.Generic.RefillMagazinePatch(),
             new Patches.Generic.SetEnvironmentPatch(),
+
             new Patches.Generic.SetPanicPointPatch(),
             new Patches.Generic.AddPointToSearchPatch(),
             new Patches.Generic.TurnDamnLightOffPatch(),
             new Patches.Generic.GrenadeThrownActionPatch(),
             new Patches.Generic.GrenadeExplosionActionPatch(),
+
             new Patches.Generic.ShallKnowEnemyPatch(),
             new Patches.Generic.ShallKnowEnemyLatePatch(),
             new Patches.Generic.HaveSeenEnemyPatch(),
-            new Patches.Generic.AllowRequestPatch(),
-            new Patches.Generic.FindRequestForMePatch(),
+
+            new Patches.Generic.BlockVoiceRequestsPatch(),
+            new Patches.Generic.BlockGrenadeThrowRequestsPatch(),
+            //new Patches.Generic.BlockGrenadeThrowRequestsPatch2(),
+            new Patches.Generic.BlockRequestPatch(),
 
             new Patches.Generic.SetInHands.SetInHands_Empty(),
             new Patches.Generic.SetInHands.SetInHands_Food_Patch(),
@@ -186,6 +187,7 @@ namespace SAIN
             new Patches.Shoot.Aim.DoHitAffectPatch(),
             new Patches.Shoot.Aim.HitAffectApplyPatch(),
             new Patches.Shoot.Aim.PlayerHitReactionDisablePatch(),
+            new Patches.Shoot.Aim.WeaponMoAModificationPatch(),
 
             new Patches.Shoot.Aim.SetAimStatusPatch(),
             new Patches.Shoot.Aim.AimOffsetPatch(),
@@ -216,8 +218,9 @@ namespace SAIN
 
         public void Update()
         {
-            ModDetection.Update();
-            SAINEditor.Update();
+            ModDetection.ManualUpdate();
+            SAINEditor.ManualUpdate();
+            DebugGizmos.ManualUpdate();
         }
 
         public void Start() => SAINEditor.Init();

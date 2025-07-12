@@ -31,7 +31,7 @@ namespace SAIN.SAINComponent.Classes
         public override void ManualUpdate()
         {
             UpdateVisionDistance();
-            FlashLightDazzle.CheckIfDazzleApplied(Bot.Enemy);
+            FlashLightDazzle.CheckIfDazzleApplied(Bot.GoalEnemy);
             base.ManualUpdate();
         }
 

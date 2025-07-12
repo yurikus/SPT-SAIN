@@ -12,6 +12,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
     public class Recoil : BotBase
     {
         public Vector3 CurrentRecoilOffset { get; private set; } = Vector3.zero;
+        public Vector3 CurrentRecoilOffsetDirection { get; private set; } = Vector3.zero;
 
         public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
         private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
@@ -89,18 +90,13 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             float recoilNum = calcRecoilNum(recoilTotal) + addRecoil;
             float calcdRecoil = recoilNum * recoilMod;
 
-            float randomvertRecoil = Random.Range(calcdRecoil / 2f, calcdRecoil) * randomSign();
+            float randomvertRecoil = Random.Range(calcdRecoil / 2f, calcdRecoil);// * randomSign();
             float randomHorizRecoil = Random.Range(calcdRecoil / 2f, calcdRecoil) * randomSign();
 
-            Vector3 dir = Bot.Transform.WeaponPointDirection;
+            Vector3 dir = Bot.Transform.LookDirection;
             Vector3 result = Vector.Rotate(dir, randomHorizRecoil, randomvertRecoil, 0f);
             result -= dir;
             CurrentRecoilOffset += result;
-
-            if (SAINPlugin.DebugSettings.Gizmos.DebugDrawRecoilGizmos)
-            {
-                DebugGizmos.Ray(Bot.Transform.WeaponFirePort, dir * BotOwner.AimingManager.CurrentAiming.LastDist2Target, Color.red, BotOwner.AimingManager.CurrentAiming.LastDist2Target, 0.02f, true, 10f);
-            }
 
             if (_debugRecoilLogs)
                 Logger.LogDebug($"Recoil! New Recoil: [{result.magnitude}] " +
@@ -150,7 +146,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 recoilMod *= 0.9f;
             }
-            if (Bot.Transform.VelocityMagnitudeNormal < 0.1f)
+            if (Bot.Transform.VelocityData.VelocityMagnitudeNormal < 0.1f)
             {
                 recoilMod *= 0.85f;
             }

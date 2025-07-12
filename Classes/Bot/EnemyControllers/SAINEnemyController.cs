@@ -71,17 +71,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     {
                         if (debugLastHeardPosition == null)
                         {
-                            debugLastHeardPosition = DebugGizmos.Line(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, Color.yellow, 0.01f, Time.deltaTime, true);
+                            debugLastHeardPosition = DebugGizmos.DrawLine(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, Color.yellow, 0.01f, Time.deltaTime, true);
                         }
-                        DebugGizmos.UpdatePositionLine(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, debugLastHeardPosition);
+                        DebugGizmos.UpdateLinePosition(enemy.KnownPlaces.LastHeardPosition.Value, Bot.Position, debugLastHeardPosition);
                     }
                     if (enemy.KnownPlaces.LastSeenPosition != null)
                     {
                         if (debugLastSeenPosition == null)
                         {
-                            debugLastSeenPosition = DebugGizmos.Line(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, Color.red, 0.01f, Time.deltaTime, true);
+                            debugLastSeenPosition = DebugGizmos.DrawLine(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, Color.red, 0.01f, Time.deltaTime, true);
                         }
-                        DebugGizmos.UpdatePositionLine(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, debugLastSeenPosition);
+                        DebugGizmos.UpdateLinePosition(enemy.KnownPlaces.LastSeenPosition.Value, Bot.Position, debugLastSeenPosition);
                     }
                 }
                 else if (debugLastHeardPosition != null || debugLastSeenPosition != null)

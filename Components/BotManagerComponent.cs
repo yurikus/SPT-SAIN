@@ -150,9 +150,9 @@ namespace SAIN.Components
                 List<PlayerComponent> RelevantPlayers = [];
                 foreach (var otherPlayer in playerComponent.OtherPlayersData.DataDictionary.Values)
                 {
-                    if (otherPlayer.DistanceData.Distance < 125f && otherPlayer.PlayerComponent.IsSAINBot)
+                    if (otherPlayer.DistanceData.Distance < 125f && otherPlayer.OtherPlayerComponent.IsSAINBot)
                     {
-                        RelevantPlayers.Add(otherPlayer.PlayerComponent);
+                        RelevantPlayers.Add(otherPlayer.OtherPlayerComponent);
                     }
                 }
                 ActiveGrenades.Add(grenade, RelevantPlayers);
@@ -208,7 +208,7 @@ namespace SAIN.Components
     {
         public static BotManagerComponent Instance { get; private set; }
 
-        public BotDictionary Bots => BotSpawnController.Bots;
+        public Dictionary<string, BotComponent> Bots => BotSpawnController.Bots;
         public GameWorld GameWorld => SAINGameWorld.GameWorld;
         public IBotGame BotGame => Singleton<IBotGame>.Instance;
 
@@ -276,7 +276,7 @@ namespace SAIN.Components
 
         public void ManualUpdate(float currentTime, float deltaTime)
         {
-            BotSpawnController.Update(currentTime, deltaTime);
+            BotSpawnController.ManualUpdate(currentTime, deltaTime);
             BotExtractManager.Update(currentTime, deltaTime);
             TimeVision.Update(currentTime, deltaTime);
             WeatherVision.Update(currentTime, deltaTime);

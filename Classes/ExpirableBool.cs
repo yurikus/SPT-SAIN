@@ -24,7 +24,7 @@ namespace SAIN.SAINComponent.Classes
             }
             set
             {
-                if (value == true)
+                if (value)
                 {
                     TimeSet = Time.time;
                     _resetTime = TimeSet + _expireTime * Random.Range(_randomMin, _randomMax);

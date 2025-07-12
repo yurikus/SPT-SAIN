@@ -48,7 +48,7 @@ namespace SAIN.Layers.Combat.Solo
 
         private bool checkHasEnemy()
         {
-            _enemy = Bot.Enemy;
+            _enemy = Bot.GoalEnemy;
             return _enemy != null;
         }
 
@@ -56,16 +56,21 @@ namespace SAIN.Layers.Combat.Solo
         {
             checkJumpEnemyInSight();
 
-            Shoot.ShootAnyVisibleEnemies(_enemy);
-            Bot.Mover.Sprint(false);
+            if (Bot.Mover.Moving)
+            {
+                Bot.Mover.ActivePath.WantToSprint = false;
+            }
             Bot.Mover.DogFight.DogFightMove(true, _enemy);
 
-            if (_enemy.IsVisible && _enemy.CanShoot)
+            if (Shoot.ShootAnyVisibleEnemies(_enemy))
             {
-                Bot.Steering.SteerByPriority(_enemy);
+                Bot.Steering.SteerByPriority(_enemy, false);
                 return;
             }
-            Bot.Steering.LookToEnemy(_enemy);
+            if (Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.EnemyLists.KnownEnemies))
+            {
+                Bot.Steering.SteerByPriority(_enemy, false);
+            }
         }
 
         private void checkJump()
@@ -77,9 +82,9 @@ namespace SAIN.Layers.Combat.Solo
             if (_shallTryJump && TryJumpTimer < Time.time && Bot.Player.IsSprintEnabled)
             {
                 //&& Bot.Enemy.Path.PathDistance > 3f
-                var corner = _enemy.Path.EnemyCorners.GroundPosition(ECornerType.Last);
-                if (corner != null &&
-                    (corner.Value - Bot.Position).sqrMagnitude < 1f)
+                NavMeshPath enemyPath = _enemy.Path.PathToEnemy;
+                if (enemyPath.corners.Length > 2 && 
+                    (enemyPath.corners[enemyPath.corners.Length - 2] - Bot.Position).sqrMagnitude < 1f)
                 {
                     TryJumpTimer = Time.time + 3f;
                     Bot.Mover.TryJump();
@@ -117,7 +122,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             if (_updateMoveTime < Time.time)
             {
-                if (Bot.Mover.PathFollower.Moving && Bot.Mover.PathFollower.MoveData.Canceling)
+                if (Bot.Mover.Moving && Bot.Mover.ActivePath.Canceling)
                 {
                      _updateMoveTime = Time.time + 0.1f;
                     return;
@@ -144,7 +149,7 @@ namespace SAIN.Layers.Combat.Solo
                 return false;
             }
 
-            var sprintController = Bot.Mover.PathFollower;
+            var sprintController = Bot.Mover;
             float pathDistance = enemy.Path.PathLength;
             if (pathDistance <= 1f && sprintController.Moving)
             {
@@ -155,7 +160,7 @@ namespace SAIN.Layers.Combat.Solo
                 return true;
             }
             _lastMovePos = lastKnown.Value;
-            if (pathDistance > BotOwner.Settings.FileSettings.Move.RUN_TO_COVER_MIN && sprintController.RunToPointByWay(enemy.Path.PathToEnemy, SAINComponent.Classes.Mover.ESprintUrgency.High, true))
+            if (pathDistance > BotOwner.Settings.FileSettings.Move.RUN_TO_COVER_MIN && sprintController.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true))
             {
                 return true;
             }
@@ -163,7 +168,7 @@ namespace SAIN.Layers.Combat.Solo
             {
                 return true;
             }
-            if (Bot.Mover.GoToEnemy(enemy, -1, false, true))
+            if (Bot.Mover.WalkToPointByWay(enemy.Path.PathToEnemy))
             {
                 return true;
             }

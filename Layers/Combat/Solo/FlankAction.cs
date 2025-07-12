@@ -22,7 +22,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             if (enemy != null)
             {
             }
@@ -31,7 +31,7 @@ namespace SAIN.Layers.Combat.Solo
 
         private FlankRoute FindFlankRoute()
         {
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             if (enemy == null)
             {
                 return null;
@@ -39,7 +39,7 @@ namespace SAIN.Layers.Combat.Solo
 
             FlankRoute flankRoute = null;
 
-            Vector3 enemyPosition = Bot.Enemy.EnemyPosition;
+            Vector3 enemyPosition = Bot.GoalEnemy.EnemyPosition;
             Vector3 botPosition = Bot.Position;
 
             Vector3? middleNode = FindMiddlePoint(enemy.Path.PathToEnemy, enemy.Path.PathLength, out int index);

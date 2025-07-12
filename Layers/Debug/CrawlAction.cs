@@ -29,7 +29,7 @@ namespace SAIN.Layers.Combat.Run
 
             if (nextRandomRunTime < Time.time &&
                 FindRandomPlace(out var path) &&
-                Bot.Mover.GoToPoint(_runDestination, out _, -1f, true))
+                Bot.Mover.RunToPoint(_runDestination, false, -1f))
             {
                 nextRandomRunTime = Time.time + 20f;
             }

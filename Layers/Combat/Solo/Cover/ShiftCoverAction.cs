@@ -1,6 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Classes.Coverfinder;
+using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -21,8 +21,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
-            Bot.Steering.SteerByPriority(Bot.Enemy);
+            Shoot.ShootAnyVisibleEnemies(Bot.GoalEnemy);
+            Bot.Steering.SteerByPriority(Bot.GoalEnemy);
             if (NewPoint == null
                 && FindPointToGo())
             {
@@ -37,7 +37,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 Bot.Mover.SetTargetMoveSpeed(GetSpeed());
                 Bot.Mover.SetTargetPose(GetPose());
-                Bot.Mover.GoToPoint(NewPoint.Position, out _);
+                Bot.Mover.GoToCoverPoint(NewPoint, false);
             }
             else
             {
@@ -87,9 +87,9 @@ namespace SAIN.Layers.Combat.Solo.Cover
                             for (int j = 0; j < UsedPoints.Count; j++)
                             {
                                 if ((UsedPoints[j].Position - shiftCoverTarget.Position).sqrMagnitude > 5f
-                                    && Bot.Mover.GoToPoint(shiftCoverTarget.Position, out _))
+                                    && Bot.Mover.GoToCoverPoint(shiftCoverTarget, false))
                                 {
-                                    Bot.Cover.CoverInUse = shiftCoverTarget;
+                                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                                     NewPoint = shiftCoverTarget;
                                     return true;
                                 }
@@ -117,7 +117,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
         public override void Stop()
         {
             Toggle(false);
-            Bot.Cover.CheckResetCoverInUse();
             NewPoint = null;
             UsedPoints.Clear();
         }
@@ -142,7 +141,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 stringBuilder.AppendLine("Cover In Use");
                 stringBuilder.AppendLabeledValue("Status", $"{NewPoint.StraightDistanceStatus}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Height / Value", $"{NewPoint.CoverHeight} {NewPoint.HardData.Value}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Path Length", $"{NewPoint.PathLength}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Path Length", $"{NewPoint.PathData.PathLength}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Straight Distance", $"{(NewPoint.Position - Bot.Position).magnitude}", Color.white, Color.yellow, true);
             }
         }

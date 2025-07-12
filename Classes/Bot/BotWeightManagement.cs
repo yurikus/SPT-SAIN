@@ -19,8 +19,8 @@ namespace SAIN.SAINComponent.Classes
             if (GlobalSettingsClass.Instance.General.BotWeightEffects)
             {
                 getSlots();
-                Traverse.Create(Person.Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);
-                Bot.Person.Player.Physical.EncumberDisabled = false;
+                Traverse.Create(Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);
+                Player.Physical.EncumberDisabled = false;
             }
             base.Init();
         }

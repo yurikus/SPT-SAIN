@@ -33,6 +33,10 @@ namespace SAIN.SAINComponent.Classes.Info
 
         private const float GEAR_UPDATE_FREQ = 2f;
 
+        /// <summary>
+        /// Having this in a coroutine makes it easier to profile performance. Thats the only reason its like that.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator GearUpdateLoop()
         {
             WaitForSeconds wait = new(GEAR_UPDATE_FREQ);
@@ -95,16 +99,16 @@ namespace SAIN.SAINComponent.Classes.Info
 
                 BodyArmorClass = Mathf.Max(vestAC, bodyAC);
 
-                //if (SAINPlugin.DebugMode)
-                //{
-                //    Logger.LogInfo(
-                //        $" Found GearInfo: " +
-                //        $" Body Armor Class: [{BodyArmorClass}]" +
-                //        $" Helmet Armor Class [{HelmetArmorClass}]" +
-                //        $" Has Heavy Helmet? [{HasHeavyHelmet}]" +
-                //        $" Has EarPiece? [{HasEarPiece}]" +
-                //        $" Has Face Shield? [{HasFaceShield}]");
-                //}
+                if (SAINPlugin.DebugMode)
+                {
+                    Logger.LogInfo(
+                        $" Found GearInfo: " +
+                        $" Body Armor Class: [{BodyArmorClass}]" +
+                        $" Helmet Armor Class [{HelmetArmorClass}]" +
+                        $" Has Heavy Helmet? [{HasHeavyHelmet}]" +
+                        $" Has EarPiece? [{HasEarPiece}]" +
+                        $" Has Face Shield? [{HasFaceShield}]");
+                }
 
                 yield return wait;
             }

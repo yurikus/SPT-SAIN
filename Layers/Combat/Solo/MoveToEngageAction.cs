@@ -21,7 +21,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             if (enemy == null)
             {
                 Bot.Steering.SteerByPriority();
@@ -82,7 +82,10 @@ namespace SAIN.Layers.Combat.Solo
                 return;
             }
 
-            Bot.Mover.Sprint(false);
+            if (Bot.Mover.Moving)
+            {
+                Bot.Mover.ActivePath.WantToSprint = true;
+            }
 
             if (RecalcPathTimer < Time.time)
             {

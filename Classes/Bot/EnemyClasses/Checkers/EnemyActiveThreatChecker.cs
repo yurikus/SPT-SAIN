@@ -7,7 +7,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
     {
         public bool ActiveThreat { get; private set; }
 
-        public EnemyActiveThreatChecker(Enemy enemy) : base(enemy)
+        public EnemyActiveThreatChecker(EnemyData enemy) : base(enemy)
         {
         }
 

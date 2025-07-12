@@ -80,6 +80,7 @@ namespace SAIN.Patches.Movement
     public class SetDoorCollisionPatch : ModulePatch
     {
         private const float NO_COLLISION_INTERVAL = 3.0f;
+        private const float BOT_DISTANCE_TO_DISABLE_COLLISION = 20f;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -93,6 +94,8 @@ namespace SAIN.Patches.Movement
             {
                 case EDoorState.Open:
                 case EDoorState.Shut:
+                case EDoorState.Breaching:
+                case EDoorState.Interacting:
                     break;
 
                 default:
@@ -102,7 +105,7 @@ namespace SAIN.Patches.Movement
             {
                 for (int i = 0; i < _preAllocArray.Length; i++)
                     _preAllocArray[i] = null;
-                Physics.OverlapSphereNonAlloc(__instance.transform.position, 20, _preAllocArray, LayerMaskClass.PlayerMask);
+                Physics.OverlapSphereNonAlloc(__instance.transform.position, BOT_DISTANCE_TO_DISABLE_COLLISION, _preAllocArray, LayerMaskClass.PlayerMask);
                 foreach (var collider in _preAllocArray)
                 {
                     if (collider != null)
@@ -316,12 +319,14 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(GClass485 __instance, BotOwner ___botOwner_0, Vector3 pos, bool slowAtTheEnd, bool getUpWithCheck)
+        public static bool PatchPrefix(GClass485 __instance, BotOwner ___botOwner_0, Vector3 pos, bool slowAtTheEnd, bool getUpWithCheck, ref bool __result)
         {
             if (!SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 return true;
             }
+            __result = false;
+            return false;
             if (___botOwner_0.BotLay.IsLay &&
                 getUpWithCheck)
             {
@@ -381,10 +386,14 @@ namespace SAIN.Patches.Movement
             BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>.Instance.Inertia;
             Vector3 b2 = new Vector3(inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, 0f);
             __instance.BaseInertiaLimits = inertia.InertiaLimits + b2;
-            __instance.WalkOverweightLimits = stamina.WalkOverweightLimits * d + b;
-            __instance.BaseOverweightLimits = stamina.BaseOverweightLimits * d + b;
-            __instance.SprintOverweightLimits = stamina.SprintOverweightLimits * d + b;
-            __instance.WalkSpeedOverweightLimits = stamina.WalkSpeedOverweightLimits * d + b;
+            //__instance.WalkOverweightLimits = stamina.WalkOverweightLimits * d + b;
+            //__instance.BaseOverweightLimits = stamina.BaseOverweightLimits * d + b;
+            //__instance.SprintOverweightLimits = stamina.SprintOverweightLimits * d + b;
+            //__instance.WalkSpeedOverweightLimits = stamina.WalkSpeedOverweightLimits * d + b;
+            __instance.WalkOverweightLimits.Set(9000f, 10000f);
+            __instance.BaseOverweightLimits.Set(9000f, 10000f);
+            __instance.SprintOverweightLimits.Set(9000f, 10000f);
+            __instance.WalkSpeedOverweightLimits.Set(9000f, 10000f);
             // End of CopyPaste
 
             return false;
@@ -402,16 +411,15 @@ namespace SAIN.Patches.Movement
         public static bool PatchPrefix(ref BotOwner ____owner, ref bool __result)
         {
             var settings = GlobalSettingsClass.Instance.General.Doors;
-            if (settings.DisableAllDoors)
+            if (settings.DisableAllDoors && !ModDetection.ProjectFikaLoaded)
             {
                 __result = false;
                 return false;
             }
-            if (settings.NewDoorOpening &&
-                SAINEnableClass.GetSAIN(____owner, out var botComponent) &&
+            if (SAINEnableClass.GetSAIN(____owner, out var botComponent) &&
                 botComponent.SAINLayersActive)
             {
-                __result = botComponent.DoorOpener.FindDoorsToOpen();
+                __result = false;
                 return false;
             }
             return true;

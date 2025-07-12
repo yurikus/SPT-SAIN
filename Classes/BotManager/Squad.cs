@@ -136,7 +136,7 @@ namespace SAIN.BotController.Classes
         {
             foreach (var member in Members)
             {
-                Enemy enemy = member.Value?.Enemy;
+                Enemy enemy = member.Value?.GoalEnemy;
                 if (enemy?.EnemyPlayer != null
                     && enemy.EnemyPlayer.ProfileId == profileId
                     && enemy.Status.EnemyIsSuppressed)
@@ -635,7 +635,7 @@ namespace SAIN.BotController.Classes
             if (bot?.Player != null && bot.BotOwner != null)
             {
                 // Make sure this profile ID doesn't already exist for whatever reason
-                if (!Members.ContainsKey(bot.Person.ProfileId))
+                if (!Members.ContainsKey(bot.ProfileId))
                 {
                     // If this is the first member, add their side to the start of their ID for easier identifcation during debug
                     if (Members.Count == 0)

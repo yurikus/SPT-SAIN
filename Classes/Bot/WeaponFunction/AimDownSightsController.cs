@@ -114,7 +114,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             float sqrMagToTarget = (targetPosition - Bot.Position).sqrMagnitude;
 
-            if (Bot.Player.IsSprintEnabled || Bot.Mover.PathFollower.Running)
+            if (Bot.Player.IsSprintEnabled || Bot.Mover.Running)
             {
                 return EAimDownSightsStatus.Sprinting;
             }

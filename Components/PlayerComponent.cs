@@ -3,6 +3,7 @@ using EFT.Ballistics;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using SAIN.Classes;
+using SAIN.Classes.Transform;
 using SAIN.Components.BotController;
 using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Components.PlayerComponentSpace.Classes;
@@ -26,30 +27,50 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public event Action<PlayerComponent, EftBulletClass> OnBulletFlyBy;
 
+        public event Action<PlayerComponent> OnComponentDestroyed;
+
         public string ProfileId { get; private set; }
         public FlashLightClass Flashlight { get; private set; }
-        public PersonClass Person { get; private set; }
         public SAINAIData AIData { get; private set; }
         public SAINEquipmentClass Equipment { get; private set; }
+        public PlayerTransformClass Transform { get; } = new PlayerTransformClass();
 
-        public bool IsActive => Person.Active;
-        public Vector3 Position => Person.Transform.Position;
-        public Vector3 LookDirection => Person.Transform.LookDirection;
-        public Vector3 LookSensorPosition => Transform.EyePosition;
+        public bool IsActive => ActivationClass.PlayerActive;
+        public Vector3 Position => Transform.Position;
+        public Vector3 LookDirection => Transform.LookDirection;
 
-        public PersonTransformClass Transform => Person.Transform;
-        public Player Player => Person.Player;
-        public IPlayer IPlayer => Person.IPlayer;
-        public string Name => Person.Name;
-        public BotOwner BotOwner => Person.AIInfo.BotOwner;
-        public BotComponent BotComponent => Person.AIInfo.BotComponent;
-        public bool IsAI => Person.AIInfo.IsAI;
-        public bool IsSAINBot => Person.AIInfo.IsSAINBot;
+        public void InitializeBotOwner(BotOwner botOwner)
+        {
+            if (botOwner == null)
+            {
+                Logger.LogWarning($"{Name} : Null BotOwner, cannot Initialize!");
+                return;
+            }
+            BotOwner = botOwner;
+            IsAI = true;
+            Name = botOwner.name;
+        }
 
-        public event Action<string> OnComponentDestroyed;
+        public void InitializeBotComponent(BotComponent bot)
+        {
+            if (bot == null)
+            {
+                Logger.LogWarning($"{Name} : Null BotComponent, cannot Initialize!");
+                return;
+            }
+            BotComponent = bot;
+            IsSAINBot = true;
+        }
+
+        public string Name { get; private set; }
+        public PersonActiveClass ActivationClass { get; private set; }
+        public bool IsAI { get; private set; }
+        public bool IsSAINBot { get; private set; }
+        public BotOwner BotOwner { get; private set; }
+        public BotComponent BotComponent { get; private set; }
+        public Player Player { get; private set; }
 
         public PlayerMovementSmoothingClass SmoothController { get; private set; } = new();
-
         public PlayerTickData PlayerTickData { get; private set; }
         public OtherPlayersData OtherPlayersData { get; private set; }
         public BodyPartsClass BodyParts { get; private set; }
@@ -184,36 +205,30 @@ namespace SAIN.Components.PlayerComponentSpace
             return float.MaxValue;
         }
 
-
         public void ManualUpdate(float currentTime, float deltaTime)
         {
-            Person.Update();
-
-            if (!Person.ActivationClass.PlayerActive)
+            ActivationClass.CheckActive(this);
+            if (Player != null && Player.HealthController?.IsAlive == true)
             {
-                return;
-            }
-
-            if (IsAI)
-            {
-                BotOwner botOwner = Person.AIInfo.BotOwner;
-                if (botOwner != null)
+                bool isAI = BotOwner != null;
+                Transform.ManualUpdate(Player, isAI);
+                if (isAI)
                 {
-                    SmoothController.ManualUpdate(currentTime, deltaTime, Player, botOwner, Person.AIInfo.BotComponent);
+                    SmoothController.ManualUpdate(currentTime, deltaTime, Player, BotOwner, BotComponent);
                 }
-            }
-
-            if (!IsAI || Person.ActivationClass.BotActive)
-            {
-                drawTransformGizmos();
-                Flashlight.Update();
-                Equipment.Update();
+                if (!isAI ||
+                    (BotOwner.BotState == EBotState.Active && BotOwner.StandBy.StandByType == BotStandByType.active))
+                {
+                    drawTransformGizmos();
+                    Flashlight.Update();
+                    Equipment.Update();
+                }
             }
         }
 
         public void ManualLateUpdate()
         {
-            Person?.LateUpdate();
+            //ActivationClass.CheckActive();
         }
 
         public PlayerTickData GetPreparedTickData()
@@ -247,7 +262,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 if (WeaponInfo != null)
                 {
                     OnShoot?.Invoke(WeaponInfo, Force);
-                    PlayAISound(WeaponInfo.SoundType, Transform.WeaponFirePort, WeaponInfo.CalculatedAudibleRange, 1);
+                    PlayAISound(WeaponInfo.SoundType, Transform.WeaponData.FirePort, WeaponInfo.CalculatedAudibleRange, 1);
                     if (Player.IsYourPlayer)
                     {
                         //Logger.LogDebug($"Shoot");
@@ -269,16 +284,6 @@ namespace SAIN.Components.PlayerComponentSpace
             _gearCoroutine ??= StartCoroutine(Equipment.GearInfo.GearUpdateLoop());
         }
 
-        private void StopCoroutines()
-        {
-            if (_gearCoroutine != null)
-            {
-                StopCoroutine(_gearCoroutine);
-                _gearCoroutine = null;
-            }
-            StopAllCoroutines();
-        }
-
         public bool Init(IPlayer iPlayer)
         {
             ProfileId = iPlayer.ProfileId;
@@ -286,7 +291,8 @@ namespace SAIN.Components.PlayerComponentSpace
             try
             {
                 PlayerData playerData = new(this, iPlayer as Player, iPlayer);
-                Person = new PersonClass(playerData);
+                ActivationClass = new PersonActiveClass(this);
+                Name = playerData.Player.name;
 
                 OtherPlayersData = new OtherPlayersData(this);
                 PlayerTickData = new PlayerTickData(this);
@@ -294,8 +300,8 @@ namespace SAIN.Components.PlayerComponentSpace
                 Flashlight = new FlashLightClass(this);
                 Equipment = new SAINEquipmentClass(this);
                 AIData = new SAINAIData(Equipment.GearInfo, this);
-                Person.ActivationClass.OnPlayerActiveChanged += handleCoroutines;
-                handleCoroutines(true);
+                ActivationClass.OnPlayerActiveChanged += HandleCoroutines;
+                HandleCoroutines(true);
             }
             catch (Exception ex)
             {
@@ -308,12 +314,17 @@ namespace SAIN.Components.PlayerComponentSpace
             return true;
         }
 
-        private void handleCoroutines(bool active)
+        private void HandleCoroutines(bool active)
         {
             if (active)
+            {
                 StartCoroutines();
+            }
             else
-                StopCoroutines();
+            {
+                StopAllCoroutines();
+                _gearCoroutine = null;
+            }
         }
 
         private IEnumerator DelayInit()
@@ -326,31 +337,19 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        public void InitBotOwner(BotOwner botOwner)
-        {
-            Person.ActivationClass.OnPlayerActiveChanged -= handleCoroutines;
-            Person.ActivationClass.OnBotActiveChanged += handleCoroutines;
-            Person.InitBot(botOwner);
-        }
-
-        public void InitBotComponent(BotComponent bot)
-        {
-            Person.InitBot(bot);
-        }
-
         private void OnDisable()
         {
-            Person.ActivationClass.Disable();
-            StopCoroutines();
+            ActivationClass.Disable();
+            StopAllCoroutines();
         }
 
         public void Dispose()
         {
-            Logger.LogDebug($"Destroying Playing Component for [Name: {Person?.Name} : Nickname: {Person?.Nickname}, ProfileID: {Person?.ProfileId}, at time: {Time.time}]");
-            OnComponentDestroyed?.Invoke(ProfileId);
-            StopCoroutines();
-            Person.ActivationClass.OnBotActiveChanged -= handleCoroutines;
-            Person.ActivationClass.OnPlayerActiveChanged -= handleCoroutines;
+            Logger.LogDebug($"Destroying Playing Component for [Name: {Name} : Nickname: {Player?.Profile?.Nickname}, ProfileID: {ProfileId}, at time: {Time.time}]");
+            OnComponentDestroyed?.Invoke(this);
+            StopAllCoroutines();
+            ActivationClass.Disable();
+            ActivationClass.OnPlayerActiveChanged -= HandleCoroutines;
             Equipment?.Dispose();
             OtherPlayersData?.Dispose();
             Destroy(this);
@@ -383,7 +382,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 {
                     target = hit2.position;
                 }
-                DebugGizmos.Line(origin, target, 0.05f, 0.25f, true);
+                DebugGizmos.DrawLine(origin, target, Color.white, 0.05f, 0.25f, true);
             }
         }
 
@@ -479,7 +478,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
                 if (_hitLabel.Enabled)
                 {
-                    DebugGizmos.Sphere(_hitLabel.WorldPos, 0.025f, 0.05f);
+                    DebugGizmos.DrawSphere(_hitLabel.WorldPos, 0.025f, Color.white, 0.05f);
                 }
             }
         }
@@ -524,7 +523,7 @@ namespace SAIN.Components.PlayerComponentSpace
             }
             foreach (var visibleVert in visibleNodes)
             {
-                DebugGizmos.Ray(visibleVert, Vector3.up, Color.green, 1.5f, 0.025f, true, 0.25f);
+                DebugGizmos.Ray(visibleVert, Vector3.up, Color.green, 1.5f, 0.025f, 0.25f);
             }
         }
 
@@ -605,22 +604,25 @@ namespace SAIN.Components.PlayerComponentSpace
                 SAINPlugin.DrawDebugGizmos &&
                 SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
             {
-                DebugGizmos.Sphere(Transform.EyePosition, 0.05f, Color.white, 0.1f);
-                DebugGizmos.Ray(Transform.EyePosition, Transform.HeadLookDirection, Color.white, Transform.HeadLookDirection.magnitude, 0.025f, true, 0.1f);
+                DebugGizmos.DrawSphere(Transform.EyePosition, 0.05f, Color.white, 0.1f, "Eye");
+                DebugGizmos.Ray(Transform.EyePosition, Transform.LookDirection, Color.white, 1f, 0.025f, 0.1f);
 
-                DebugGizmos.Sphere(Transform.HeadPosition, 0.075f, Color.yellow, 0.1f);
-                DebugGizmos.Ray(Transform.HeadPosition, Transform.LookDirection, Color.yellow, Transform.LookDirection.magnitude, 0.025f, true, 0.1f);
+                DebugGizmos.DrawSphere(Transform.WeaponData.WeaponRoot, 0.075f, Color.magenta, 0.1f, "WeaponRoot");
+                DebugGizmos.Ray(Transform.WeaponData.WeaponRoot, Transform.LookDirection, Color.magenta, 1f, 0.025f, 0.1f);
 
-                DebugGizmos.Sphere(Transform.WeaponFirePort, 0.075f, Color.green, 0.1f);
-                DebugGizmos.Ray(Transform.WeaponFirePort, Transform.WeaponPointDirection, Color.green, Transform.WeaponPointDirection.magnitude, 0.05f, true, 0.1f);
+                DebugGizmos.DrawSphere(Transform.HeadData.HeadPosition, 0.075f, Color.yellow, 0.1f, "Head");
+                DebugGizmos.Ray(Transform.HeadData.HeadPosition, Transform.HeadData.HeadLookDirection, Color.yellow, 1f, 0.025f, 0.1f);
 
-                DebugGizmos.Sphere(Transform.BodyPosition, 0.1f, Color.blue, 0.1f);
-                DebugGizmos.Ray(Transform.BodyPosition, Transform.LookDirection, Color.blue, Transform.LookDirection.magnitude, 0.05f, true, 0.1f);
+                DebugGizmos.DrawSphere(Transform.WeaponData.FirePort, 0.075f, Color.green, 0.1f, "FirePort");
+                DebugGizmos.Ray(Transform.WeaponData.FirePort, Transform.WeaponData.PointDirection, Color.green, 1f, 0.05f, 0.1f);
+
+                DebugGizmos.DrawSphere(Transform.BodyPosition, 0.1f, Color.blue, 0.1f, "Body");
+                DebugGizmos.Ray(Transform.BodyPosition, Transform.LookDirection, Color.blue, 1f, 0.05f, 0.1f);
             }
         }
 
         private readonly List<int> _aggroIndexes = new();
-        private GUIObject _hitLabel;
+        private DebugLabel _hitLabel;
         private Coroutine _gearCoroutine;
         private Item _currentItem = null;
         private Weapon _currentWeapon = null;

@@ -1,6 +1,7 @@
-﻿using SAIN.Classes.Coverfinder;
+﻿
 using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Helpers;
+using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -85,7 +86,7 @@ namespace SAIN.Components.CoverFinder
                 Vector3 staticDirNormal = StaticDirections[i];
                 Vector3 direction = staticDirNormal * magnitude;
                 Vector3 rawPosition = direction + colliderPosition;
-                DebugGizmos.Sphere(rawPosition, 0.1f, Color.white);
+                DebugGizmos.DrawSphere(rawPosition, 0.1f, Color.white);
                 Ray ray = new() {
                     direction = -direction,
                     origin = rawPosition + heightOffset
@@ -94,8 +95,6 @@ namespace SAIN.Components.CoverFinder
                     Hits.Add(hit);
             }
         }
-
-        private bool _generated;
 
         public void Generate()
         {
@@ -110,7 +109,7 @@ namespace SAIN.Components.CoverFinder
                 Logger.LogDebug($"Extent Found [{extent}]");
                 if (extent > 0.2f)
                 {
-                    DebugGizmos.Ray(ColliderPosition, Vector3.up, Color.white, magnitude, 0.1f, false);
+                    //DebugGizmos.Ray(ColliderPosition, Vector3.up, Color.white, magnitude, 0.1f, false);
 
                     List<NavMeshHit> navHits = [];
                     for (int i = 0; i < hits.Count; i++)
@@ -140,13 +139,12 @@ namespace SAIN.Components.CoverFinder
                         if (pointGood)
                         {
                             CoverPoints.Add(new(Collider, ColliderPosition, navHits[i].position));
-                            DebugGizmos.Sphere(navHits[i].position, 0.25f, Color.red);
-                            DebugGizmos.Line(navHits[i].position, ColliderPosition, Color.yellow, 0.02f);
+                            DebugGizmos.DrawSphere(navHits[i].position, 0.25f, Color.red);
+                            DebugGizmos.DrawLine(navHits[i].position, ColliderPosition, Color.yellow, 0.02f);
                         }
                     }
                 }
             }
-            _generated = true;
             Logger.LogDebug($"Generated Points [{CoverPoints.Count}]");
         }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings
 {
-    public class DebugOverlaySettings : SAINSettingsBase<DebugOverlaySettings>, ISAINSettings
+    public class DebugOverlaySettings : SAINSettingsBase<DebugOverlaySettings>
     {
         public bool Overlay_Info = true;
         public bool Overlay_Info_Expanded = false;
@@ -18,13 +18,16 @@ namespace SAIN.Preset.GlobalSettings
         public bool OverLay_AlwaysShowMainPlayerInfo = false;
     }
 
-    public class DebugGizmoSettings : SAINSettingsBase<DebugGizmoSettings>, ISAINSettings
+    public class DebugGizmoSettings : SAINSettingsBase<DebugGizmoSettings>
     {
         [Name("Draw Debug Gizmos")]
         public bool DrawDebugGizmos;
 
         [Name("Draw Transform Gizmos")]
         public bool DrawTransformGizmos;
+
+        [Name("Draw Player Navmesh Sampling Gizmos")]
+        public bool DrawNavMeshSamplingGizmos;
 
         [Name("Draw Line of Sight Checks")]
         public bool DrawLineOfSightGizmos;
@@ -66,7 +69,7 @@ namespace SAIN.Preset.GlobalSettings
         public bool DebugMovementPlan = false;
     }
 
-    public class DebugLogSettings : SAINSettingsBase<DebugLogSettings>, ISAINSettings
+    public class DebugLogSettings : SAINSettingsBase<DebugLogSettings>
     {
         [Name("Global Debug Mode")]
         public bool GlobalDebugMode;
@@ -110,6 +113,13 @@ namespace SAIN.Preset.GlobalSettings
 
     public class DebugSettings : SAINSettingsBase<DebugSettings>, ISAINSettings
     {
+        public DebugSettings()
+        {
+            Instance = this;
+        }
+
+        public static DebugSettings Instance { get; private set; }
+
         public DebugLogSettings Logs = new();
         public DebugGizmoSettings Gizmos = new();
         public DebugOverlaySettings Overlay = new();

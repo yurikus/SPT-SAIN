@@ -186,7 +186,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     Decision = ESelfDecision.FirstAid;
                     return true;
                 }
-                if (Bot.Medical.Surgery.AreaClearForSurgery)
+                if (Bot.Medical.Surgery.CheckCanStartUsingKit())
                 {
                     Decision = ESelfDecision.Surgery;
                     return true;
@@ -272,7 +272,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 Decision = ESelfDecision.None;
                 return false;
             }
-            if (Bot.Medical.Surgery.AreaClearForSurgery &&
+            var medical = Bot.Medical;
+            medical.Surgery.CheckAreaClearForSurgery();
+            if (medical.Surgery.AreaClearForSurgery &&
                 !checkDecisionTooLong())
             {
                 Decision = ESelfDecision.Surgery;

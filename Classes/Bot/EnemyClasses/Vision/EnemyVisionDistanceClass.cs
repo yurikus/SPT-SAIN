@@ -6,7 +6,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyVisionDistanceClass : EnemyBase
     {
-        public EnemyVisionDistanceClass(Enemy enemy) : base(enemy)
+        public EnemyVisionDistanceClass(EnemyData enemy) : base(enemy)
         {
         }
 

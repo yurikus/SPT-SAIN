@@ -123,12 +123,11 @@ namespace SAIN.SAINComponent.Classes.Mover
         private bool FindCrouchFromCover(out float targetPose, bool useCollider = false)
         {
             targetPose = 1f;
-            if ((Bot.AILimit.CurrentAILimit == AILimitSetting.None || Bot.Enemy?.IsAI == false))
+            if ((Bot.AILimit.CurrentAILimit == AILimitSetting.None || Bot.GoalEnemy?.IsAI == false))
             {
-                Enemy enemy = Bot.Enemy;
-                if (enemy?.LastKnownPosition != null)
+                Enemy enemy = Bot.CurrentTarget.CurrentTargetEnemy;
+                if (enemy.FindLookPoint(out Vector3 position, out _))
                 {
-                    Vector3 position = enemy.LastKnownPosition.Value + Vector3.up;
                     if (useCollider)
                     {
                         targetPose = FindCrouchHeightColliderSphereCast(position);
@@ -155,7 +154,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             float targetHeight = StartHeight;
             for (int i = 0; i <= max; i++)
             {
-                DebugGizmos.Ray(start, direction, Color.red, rayLength, 0.05f, true, 0.5f, true);
+                DebugGizmos.Ray(start, direction, Color.red, rayLength, 0.05f, 0.5f, true);
                 if (Physics.Raycast(start, direction, rayLength, Mask))
                 {
                     return FindCrouchHeight(targetHeight);

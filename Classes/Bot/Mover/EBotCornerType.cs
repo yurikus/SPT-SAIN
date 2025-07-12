@@ -4,7 +4,7 @@
     {
         BotStart,
         PathStart,
-        PathTurn,
+        PathPoint,
         PathShortTurn,
         PathEndApproach,
         PathEnd,

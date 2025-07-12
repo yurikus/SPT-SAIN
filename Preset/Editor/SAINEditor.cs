@@ -51,7 +51,7 @@ namespace SAIN.Editor
             }
         }
 
-        public static void Update()
+        public static void ManualUpdate()
         {
             if (DisplayingWindow)
             {

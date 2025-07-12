@@ -26,37 +26,48 @@ namespace SAIN.Layers.Combat.Solo
             switch (_lastDecision)
             {
                 case ECombatDecision.MoveToEngage:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(MoveToEngageAction), $"{_lastDecision}");
 
                 case ECombatDecision.MeleeAttack:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(MeleeAttackAction), $"{_lastDecision}");
 
                 case ECombatDecision.FightZombies:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(FightZombiesAction), $"{_lastDecision}");
 
                 case ECombatDecision.RushEnemy:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(RushEnemyAction), $"{_lastDecision}");
 
                 case ECombatDecision.ThrowGrenade:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(ThrowGrenadeAction), $"{_lastDecision}");
 
                 case ECombatDecision.ShiftCover:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(ShiftCoverAction), $"{_lastDecision}");
 
                 case ECombatDecision.RunToCover:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.RunningTo);
                     return new Action(typeof(RunToCoverAction), $"{_lastDecision}");
 
                 case ECombatDecision.Retreat:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.RunningTo);
                     return new Action(typeof(RunToCoverAction), $"{_lastDecision} + {_lastSelfDecision}");
 
                 case ECombatDecision.MoveToCover:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.WalkingTo);
                     return new Action(typeof(WalkToCoverAction), $"{_lastDecision}");
 
                 case ECombatDecision.DogFight:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(DogFightAction), $"{_lastDecision}");
 
                 case ECombatDecision.ShootDistantEnemy:
                 case ECombatDecision.StandAndShoot:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(StandAndShootAction), $"{_lastDecision}");
 
                 case ECombatDecision.HoldInCover:
@@ -68,12 +79,15 @@ namespace SAIN.Layers.Combat.Solo
                     return new Action(typeof(HoldinCoverAction), label);
 
                 case ECombatDecision.Search:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(SearchAction), $"{_lastDecision}");
 
                 case ECombatDecision.Freeze:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(FreezeAction), $"{_lastDecision}");
 
                 default:
+                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(StandAndShootAction), $"DEFAULT! {_lastDecision}");
             }
         }
@@ -100,7 +114,7 @@ namespace SAIN.Layers.Combat.Solo
             // this is dumb im sorry
             if (!_doSurgeryAction
                 && _currentSelfDecision == ESelfDecision.Surgery
-                && Bot.Cover.BotIsAtCoverInUse())
+                && Bot.Cover.CoverInUse != null)
             {
                 _doSurgeryAction = true;
                 return true;

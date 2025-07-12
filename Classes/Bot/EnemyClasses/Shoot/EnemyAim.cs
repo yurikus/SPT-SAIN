@@ -11,7 +11,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float CALC_SCATTER_FREQ = 0.025f;
         private const float CALC_SCATTER_FREQ_AI = 0.1f;
 
-        public EnemyAim(Enemy enemy) : base(enemy)
+        public EnemyAim(EnemyData enemy) : base(enemy)
         {
         }
 
@@ -28,7 +28,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private float _modifier;
+        private float _modifier = 1;
         private float _getModTime;
 
         private float InjuryFactor => Bot.Info.WeaponInfo.Recoil.ArmInjuryModifier;
@@ -137,7 +137,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     return AimSettings.EnemySprintingScatterMulti;
                 }
-                return Mathf.Lerp(AimSettings.EnemyVelocityMaxDebuff, AimSettings.EnemyVelocityMaxBuff, 1f - Enemy.EnemyTransform.VelocityMagnitudeNormal);
+                return Mathf.Lerp(AimSettings.EnemyVelocityMaxDebuff, AimSettings.EnemyVelocityMaxBuff, 1f - Enemy.EnemyTransform.VelocityData.VelocityMagnitudeNormal);
             }
         }
 

@@ -47,7 +47,7 @@ namespace SAIN.SAINComponent.Classes.Sense
         {
             float dist = enemy.RealDistance;
             if (dist < 80f &&
-                FlashlightVisionCheck(enemy.EnemyIPlayer))
+                FlashlightVisionCheck(enemy.EnemyPlayer))
             {
                 Vector3 botPos = BotOwner.MyHead.position;
                 Vector3 weaponRoot = enemy.EnemyPlayer.WeaponRoot.position;
@@ -69,7 +69,7 @@ namespace SAIN.SAINComponent.Classes.Sense
         private bool EnemyWithLaser(Enemy enemy)
         {
             float dist = enemy.RealDistance;
-            if (dist < 100f && LaserVisionCheck(enemy.EnemyIPlayer))
+            if (dist < 100f && LaserVisionCheck(enemy.EnemyPlayer))
             {
                 Vector3 botPos = BotOwner.MyHead.position;
                 Vector3 weaponRoot = enemy.EnemyPlayer.WeaponRoot.position;

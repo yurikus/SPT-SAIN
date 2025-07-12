@@ -16,7 +16,6 @@ namespace SAIN.SAINComponent
     public abstract class BotBase(BotComponent bot) : IBotClass
     {
         public BotComponent Bot { get; } = bot;
-        public PersonClass Person => Bot.Person;
         public PlayerComponent PlayerComponent => Bot.PlayerComponent;
         public BotOwner BotOwner => Bot.BotOwner;
         public Player Player => Bot.Player;

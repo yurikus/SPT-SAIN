@@ -106,7 +106,7 @@ namespace SAIN.Components
                 {
                     EnemyPlace Place = PlacesToCheck[i];
                     PlacePositions[i] = Place.Position;
-                    BotPositions[i] = Place.PlaceData.Owner.Transform.HeadPosition;
+                    BotPositions[i] = Place.PlaceData.Owner.Transform.EyePosition;
                     EnemyPositions[i] = Place.PlaceData.Enemy.EnemyTransform.Position;
                 }
 

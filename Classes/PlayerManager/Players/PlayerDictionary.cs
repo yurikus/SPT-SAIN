@@ -56,13 +56,12 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 PlayerComponent component = kvp.Value;
                 if (component == null ||
-                    component.IPlayer == null ||
                     component.Player == null)
                 {
                     _ids.Add(kvp.Key);
-                    if (component.IPlayer != null)
+                    if (component.Player != null)
                     {
-                        Logger.LogDebug($"Removing {component.IPlayer.Profile?.Nickname} from player dictionary");
+                        Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
                     }
                 }
             }

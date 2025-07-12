@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Classes.Transform;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Models.Enums;
 using System.Collections.Generic;
@@ -8,21 +9,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class EnemyCornerDictionary : Dictionary<ECornerType, EnemyCorner>
     {
-        public EnemyCornerDictionary(PersonTransformClass transform, BifacialTransform weaponRoot)
+        public EnemyCornerDictionary(PlayerTransformClass transform, BifacialTransform weaponRoot)
         {
-            _transform = transform;
-            _weaponRoot = weaponRoot;
         }
-
-        private BifacialTransform _weaponRoot;
 
         public Vector3? GroundPosition(ECornerType type)
         {
             var corner = GetCorner(type);
             return corner?.GroundPosition;
         }
-
-        private PersonTransformClass _transform;
 
         public EnemyCorner GetCorner(ECornerType cornerType)
         {

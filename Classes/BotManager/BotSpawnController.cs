@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.LowLevel;
 
 namespace SAIN.Components.BotController
 {
@@ -17,13 +18,22 @@ namespace SAIN.Components.BotController
         public BotSpawnController(BotManagerComponent botController) : base(botController)
         {
             Instance = this;
+            GameWorldComponent.Instance.PlayerTracker.OnPlayerRemoved += PlayerRemoved;
         }
 
-        public static BotSpawnController Instance;
+        private void PlayerRemoved(string id, PlayerComponent player)
+        {
+            if (player.BotOwner != null)
+            {
+                RemoveBot(player.BotOwner);
+            }
+        }
 
-        public BotDictionary BotDictionary = new();
+        public static BotSpawnController Instance { get; private set; }
 
-        public static readonly List<WildSpawnType> StrictExclusionList = new()
+        public Dictionary<string, BotComponent> BotDictionary { get; } = [];
+
+        public static List<WildSpawnType> StrictExclusionList { get; } = new()
         {
             WildSpawnType.bossZryachiy,
             WildSpawnType.followerZryachiy,
@@ -38,7 +48,7 @@ namespace SAIN.Components.BotController
             WildSpawnType.infectedTagilla
         };
 
-        public void Update(float currentTime, float deltaTime)
+        public void ManualUpdate(float currentTime, float deltaTime)
         {
             if (Subscribed &&
                 GameEnding)
@@ -74,9 +84,10 @@ namespace SAIN.Components.BotController
             BotComponent botComponent = null;
             try
             {
+                CheckExisting(botOwner);
                 //Logger.LogDebug($"Checking {botOwner.name}...");
-                playerComponent = getPlayerComp(botOwner);
-                checkExisting(botOwner);
+                playerComponent = botOwner.gameObject.GetComponent<PlayerComponent>();
+                playerComponent.InitializeBotOwner(botOwner);
 
                 //Logger.LogDebug($"Checking if {botOwner.name} excluded...");
                 if (SAINPlugin.IsBotExluded(botOwner))
@@ -108,7 +119,7 @@ namespace SAIN.Components.BotController
             }
             // When this botowner gets set to active is when we should initialize sain.
             botComponent.OnBotActivated += OnBotActivated;
-            botComponent.ActivateIfBotActive(botOwner, playerComponent.Person);
+            botComponent.ActivateIfBotActive(botOwner);
         }
 
         private void OnBotActivated(BotComponent bot)
@@ -116,75 +127,19 @@ namespace SAIN.Components.BotController
             bot.OnBotActivated -= OnBotActivated;
             SAINBots.Add(bot);
             BotDictionary.Add(bot.ProfileId, bot);
-            bot.PlayerComponent.InitBotComponent(bot);
-            bot.BotOwner.LeaveData.OnLeave += removeBot;
-            bot.PlayerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
+            bot.PlayerComponent.InitializeBotComponent(bot);
+            bot.BotOwner.LeaveData.OnLeave += RemoveBot;
             OnBotAdded?.Invoke(bot);
         }
 
         public HashSet<BotOwner> VanillaBots { get; } = [];
         public HashSet<BotComponent> SAINBots { get; } = [];
 
-        private void addBot(BotOwner botOwner)
-        {
-            PlayerComponent playerComponent = null;
-            BotComponent botComponent = null;
-            try
-            {
-                //Logger.LogDebug($"Checking {botOwner.name}...");
-                playerComponent = getPlayerComp(botOwner);
-                checkExisting(botOwner);
-
-                //Logger.LogDebug($"Checking if {botOwner.name} excluded...");
-                if (SAINPlugin.IsBotExluded(botOwner))
-                {
-                    //Logger.LogDebug($"{botOwner.name} is excluded");
-                    botOwner.gameObject.AddComponent<SAINNoBushESP>().Init(botOwner);
-                    VanillaBots.Add(botOwner);
-                    return;
-                }
-
-                //Logger.LogDebug($"Adding SAIN to {botOwner.name}...");
-                botComponent = botOwner.gameObject.AddComponent<BotComponent>();
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-                return;
-            }
-
-            if (botComponent == null)
-            {
-                Logger.LogError($"Bot Component Null!");
-                return;
-            }
-            if (playerComponent == null)
-            {
-                botComponent.Dispose();
-                Logger.LogError($"Player Component Null!");
-                return;
-            }
-
-            if (botComponent.InitializeBot(playerComponent.Person))
-            {
-                BotDictionary.Add(botOwner.ProfileId, botComponent);
-                playerComponent.InitBotComponent(botComponent);
-                botOwner.LeaveData.OnLeave += removeBot;
-                playerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
-                OnBotAdded?.Invoke(botComponent);
-            }
-            else
-            {
-                Logger.LogDebug($"Failed to Init Bot [{botOwner.name}]");
-                botComponent.Dispose();
-            }
-        }
-
         public void Subscribe(BotSpawner botSpawner)
         {
             if (!Subscribed)
             {
-                botSpawner.OnBotRemoved += removeBot;
+                botSpawner.OnBotRemoved += RemoveBot;
                 Subscribed = true;
             }
         }
@@ -194,7 +149,7 @@ namespace SAIN.Components.BotController
             if (Subscribed &&
                 BotController?.BotSpawner != null)
             {
-                BotController.BotSpawner.OnBotRemoved -= removeBot;
+                BotController.BotSpawner.OnBotRemoved -= RemoveBot;
                 Subscribed = false;
             }
         }
@@ -216,20 +171,7 @@ namespace SAIN.Components.BotController
             return null;
         }
 
-        private PlayerComponent getPlayerComp(BotOwner botOwner)
-        {
-            PlayerComponent playerComponent = botOwner.gameObject.GetComponent<PlayerComponent>();
-            playerComponent.InitBotOwner(botOwner);
-            return playerComponent;
-        }
-
-        private void removePerson(PersonClass person)
-        {
-            person.ActivationClass.OnPersonDeadOrDespawned -= removePerson;
-            removeBot(person.AIInfo.BotOwner);
-        }
-
-        private void checkExisting(BotOwner botOwner)
+        private void CheckExisting(BotOwner botOwner)
         {
             string ProfileId = botOwner.ProfileId;
             if (BotDictionary.ContainsKey(ProfileId))
@@ -252,23 +194,7 @@ namespace SAIN.Components.BotController
             }
         }
 
-        private void initBotComp(BotOwner botOwner, PlayerComponent playerComponent)
-        {
-            BotComponent botComponent = botOwner.gameObject.AddComponent<BotComponent>();
-            if (botComponent.Init(playerComponent.Person))
-            {
-                BotDictionary.Add(botOwner.ProfileId, botComponent);
-                playerComponent.InitBotComponent(botComponent);
-                botOwner.LeaveData.OnLeave += removeBot;
-                playerComponent.Person.ActivationClass.OnPersonDeadOrDespawned += removePerson;
-            }
-            else
-            {
-                botComponent?.Dispose();
-            }
-        }
-
-        public void removeBot(BotOwner botOwner)
+        public void RemoveBot(BotOwner botOwner)
         {
             try
             {

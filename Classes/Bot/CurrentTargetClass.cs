@@ -89,7 +89,7 @@ namespace SAIN.SAINComponent.Classes
 
         private Vector3? getVisibleEnemyPos(out Enemy targetEnemy)
         {
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             if (enemy != null && enemy.IsVisible)
             {
                 targetEnemy = enemy;

@@ -48,11 +48,11 @@ namespace SAIN.SAINComponent.Classes.Memory
         {
             try
             {
-                BotOwner.Memory.SetUnderFire(enemy.EnemyIPlayer);
+                BotOwner.Memory.SetUnderFire(enemy.EnemyPlayer);
             }
             catch { }
 
-            LastUnderFireSource = enemy.EnemyIPlayer;
+            LastUnderFireSource = enemy.EnemyPlayer;
             UnderFireFromPosition = position;
             LastUnderFireEnemy = enemy;
         }

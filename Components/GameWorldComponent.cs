@@ -42,7 +42,7 @@ namespace SAIN.Components
                 PlayerComponent = null;
                 return false;
             }
-            PlayerComponent = PlayerTracker.AlivePlayersDictionary.GetPlayerComponent(Player);
+            PlayerComponent = PlayerTracker.GetPlayerComponent(Player);
             return PlayerComponent != null;
         }
 
@@ -98,7 +98,7 @@ namespace SAIN.Components
             List<OtherPlayerData> PlayersToCheck = [];
             PlayersToCheck.AddRange(from Data in OtherPlayerData
                                     let OtherPlayerDirNormal = Data.Value.DistanceData.DirectionNormal
-                                    let PlayerComponent = Data.Value.PlayerComponent
+                                    let PlayerComponent = Data.Value.OtherPlayerComponent
                                     where PlayerComponent?.IsAI == true && PlayerComponent.IsActive && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
                                     select Data.Value);
 
@@ -115,7 +115,7 @@ namespace SAIN.Components
                     for (int i = PlayersToCheck.Count - 1; i >= 0; i--)
                     {
                         OtherPlayerData Data = PlayersToCheck[i];
-                        if (Data?.PlayerComponent?.IsActive == false)
+                        if (Data?.OtherPlayerComponent?.IsActive == false)
                         {
                             PlayersToCheck.RemoveAt(i);
                             continue;
@@ -124,7 +124,7 @@ namespace SAIN.Components
                         float BulletDistSqr = (PlayerPosition - BulletPosition).sqrMagnitude;
                         if (BulletDistSqr < MaxFlyByDistSqr)
                         {
-                            Data.PlayerComponent.RegisterFlyBy(Player, Bullet);
+                            Data.OtherPlayerComponent.RegisterFlyBy(Player, Bullet);
                             PlayersToCheck.RemoveAt(i);
                             continue;
                         }
@@ -216,10 +216,10 @@ namespace SAIN.Components
             {
                 foreach (OtherPlayerData OtherPlayerData in Player.OtherPlayersData.DataHashSet)
                 {
-                    PlayerComponent OtherPlayer = OtherPlayerData?.PlayerComponent;
+                    PlayerComponent OtherPlayer = OtherPlayerData?.OtherPlayerComponent;
                     if (OtherPlayer != null && OtherPlayer.IsActive && OtherPlayer.IsSAINBot)
                     {
-                        BotComponent Bot = OtherPlayer.Person.AIInfo.BotComponent;
+                        BotComponent Bot = OtherPlayer.BotComponent;
                         if (Bot != null && Bot.BotOwner?.BotState == EBotState.Active)
                         {
                             bool InFootstepRadius = OtherPlayerData.IsInHearingRadius_Footsteps;
@@ -232,7 +232,7 @@ namespace SAIN.Components
                                     continue;
                                 if (!isGunshot && !InFootstepRadius)
                                     continue;
-                                OtherPlayer.Person.AIInfo.BotComponent?.Hearing.SoundInput.CheckAddSoundToCache(soundEvent, Distance);
+                                OtherPlayer.BotComponent?.Hearing.SoundInput.CheckAddSoundToCache(soundEvent, Distance);
                             }
                         }
                     }

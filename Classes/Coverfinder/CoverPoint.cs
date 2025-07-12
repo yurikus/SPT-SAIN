@@ -3,13 +3,11 @@ using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace SAIN.Classes.Coverfinder
+namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
     public class CoverPointClass
     {
@@ -24,7 +22,7 @@ namespace SAIN.Classes.Coverfinder
             _count++;
 
             _position = coverPosition;
-            Vector3 dir = colliderPos - coverPosition;
+            Vector3 dir = ColliderPosition - coverPosition;
             dir.y = 0;
             ProtectionDirection = dir.normalized;
             TimeLastUpdated = Time.time;
@@ -37,8 +35,6 @@ namespace SAIN.Classes.Coverfinder
         public int Id { get; }
         public float Height { get; }
         public float Value { get; }
-
-        public Dictionary<BotComponent, CoverPointBotDataClass> BotData { get; } = [];
 
         public bool IsInUse { get; set; }
         public Vector3 ProtectionDirection { get; private set; }
@@ -70,16 +66,6 @@ namespace SAIN.Classes.Coverfinder
         private Vector3 _position;
 
         private static int _count = 0;
-
-        public CoverPointBotDataClass GetBotData(BotComponent bot) => BotData.ContainsKey(bot) ? BotData[bot] : null;
-
-        public CoverPointBotDataClass CreateBotData(BotComponent bot, PathData pathData)
-        {
-            if (BotData.ContainsKey(bot)) BotData.Remove(bot);
-            CoverPointBotDataClass result = new(bot, this, pathData);
-            BotData.Add(bot, result);
-            return result;
-        }
     }
 
     public class CoverPointBotDataClass
@@ -115,17 +101,6 @@ namespace SAIN.Classes.Coverfinder
         public void SetInUse(bool inInUse)
         {
             CoverPoint.IsInUse = inInUse;
-        }
-
-        public float PathLength {
-            get
-            {
-                return PathData.PathLength;
-            }
-            set
-            {
-                PathData.PathLength = value;
-            }
         }
 
         public bool Spotted {
@@ -169,7 +144,7 @@ namespace SAIN.Classes.Coverfinder
         public CoverStatus PathDistanceStatus {
             get
             {
-                float pathLength = PathLength;
+                float pathLength = PathData.PathLength;
                 if (_pathLengthStatus == CoverStatus.InCover && pathLength <= DIST_COVER_INCOVER_STAY)
                 {
                     return _pathLengthStatus;
@@ -186,7 +161,7 @@ namespace SAIN.Classes.Coverfinder
         public Collider Collider => CoverPoint.Collider;
         public float LastHitInCoverTime { get; private set; }
         public int RoundedPathLength => PathData.RoundedPathLength;
-        public bool BotInThisCover => StraightDistanceStatus == CoverStatus.InCover || PathDistanceStatus == CoverStatus.InCover;
+        public bool BotInThisCover => (StraightDistanceStatus == CoverStatus.InCover || PathDistanceStatus == CoverStatus.InCover);
 
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart partHit, Enemy currentEnemy)
         {
@@ -219,8 +194,8 @@ namespace SAIN.Classes.Coverfinder
                     hits.Legs += hitCount;
 
                 // Did the player who shot me shoot me from a direction that this cover doesn't protect from?
-                if (Vector3.Dot(thirdParty.EnemyDirectionNormal, CoverPoint.ProtectionDirection) < 0.25f)
-                    hits.ThirdParty += hitCount;
+                //if (Vector3.Dot(thirdParty.EnemyDirectionNormal, CoverData.ProtectionDirection) < 0.25f)
+                //    hits.ThirdParty += hitCount;
 
                 return;
             }
@@ -367,17 +342,6 @@ namespace SAIN.Classes.Coverfinder
             }
         }
 
-        public float PathLength {
-            get
-            {
-                return PathData.PathLength;
-            }
-            set
-            {
-                PathData.PathLength = value;
-            }
-        }
-
         public bool Spotted {
             get
             {
@@ -418,7 +382,7 @@ namespace SAIN.Classes.Coverfinder
         public CoverStatus PathDistanceStatus {
             get
             {
-                float pathLength = PathLength;
+                float pathLength = PathData.PathLength;
                 if (CoverData.PathLengthStatus == CoverStatus.InCover &&
                     pathLength <= DIST_COVER_INCOVER_STAY)
                 {

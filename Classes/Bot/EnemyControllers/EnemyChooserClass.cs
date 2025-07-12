@@ -86,26 +86,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             Enemy activeEnemy = findActiveEnemy();
             if (activeEnemy != null &&
-                (!activeEnemy.CheckValid() || !activeEnemy.EnemyPerson.Active))
+                (!activeEnemy.CheckValid() || !Enemy.IsEnemyActive(activeEnemy)))
             {
                 //Logger.LogWarning($"Tried to assign inactive or invalid player.");
                 activeEnemy = null;
             }
-
-            // TODO: remove this
-            if (activeEnemy == null)
-            {
-                foreach (var enemy in Bot.EnemyController.EnemiesArray)
-                {
-                    if (enemy?.EnemyKnown == true && enemy.WasValid && enemy.EnemyPerson.Active)
-                    {
-                        //Logger.LogWarning("enemy known but no enemy");
-                        activeEnemy = enemy;
-                        break;
-                    }
-                }
-            }
-            //
 
             setActiveEnemy(activeEnemy);
             //if (activeEnemy != null && BotOwner.Memory.IsPeace)
@@ -117,7 +102,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private Enemy findActiveEnemy()
         {
             Enemy dogFightTarget = Bot.Decision.DogFightDecision.DogFightTarget;
-            if (dogFightTarget?.CheckValid() == true && dogFightTarget.EnemyPerson.Active)
+            if (dogFightTarget?.CheckValid() == true && Enemy.IsEnemyActive(dogFightTarget))
             {
                 return dogFightTarget;
             }
@@ -137,7 +122,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     Enemy visibleEnemy = BaseClass.EnemyLists.First(EEnemyListType.Visible);
                     if (visibleEnemy?.CheckValid() == true &&
-                        visibleEnemy.EnemyPerson.Active)
+                        Enemy.IsEnemyActive(visibleEnemy))
                     {
                         return visibleEnemy;
                     }
@@ -175,7 +160,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     return;
                 }
                 if (activeEnemy.CheckValid() &&
-                    activeEnemy.EnemyPerson.Active &&
+                    Enemy.IsEnemyActive(activeEnemy) &&
                     (activeEnemy.Status.ShotAtMeRecently || activeEnemy.IsVisible))
                 {
                     enemy = activeEnemy;
@@ -200,7 +185,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return;
             }
 
-            if (activeEnemy.CheckValid() && activeEnemy.EnemyPerson.Active)
+            if (activeEnemy.CheckValid() && Enemy.IsEnemyActive(activeEnemy))
             {
                 enemy = activeEnemy;
             }
@@ -212,7 +197,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void setActiveEnemy(Enemy enemy)
         {
-            if (enemy == null || (enemy.CheckValid() && enemy.EnemyPerson.Active))
+            if (enemy == null && enemy.CheckValid() && Enemy.IsEnemyActive(enemy))
             {
                 GoalEnemy = enemy;
                 setGoalEnemy(enemy?.EnemyInfo);
@@ -221,8 +206,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void setLastEnemy(Enemy activeEnemy)
         {
-            bool nullActiveEnemy = activeEnemy?.EnemyPerson?.Active == true;
-            bool nullLastEnemy = LastGoalEnemy?.EnemyPerson?.Active == true;
+            bool nullActiveEnemy = activeEnemy?.EnemyPlayerComponent.IsActive != true;
+            bool nullLastEnemy = LastGoalEnemy?.EnemyPlayerComponent.IsActive != true;
 
             if (!nullLastEnemy && nullActiveEnemy)
             {
@@ -236,7 +221,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (!AreEnemiesSame(activeEnemy, LastGoalEnemy))
             {
                 LastGoalEnemy = activeEnemy;
-                return;
             }
         }
 
@@ -258,7 +242,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool AreEnemiesSame(Enemy a, Enemy b)
         {
-            return AreEnemiesSame(a?.EnemyIPlayer, b?.EnemyIPlayer);
+            return AreEnemiesSame(a?.EnemyPlayer, b?.EnemyPlayer);
         }
 
         public bool AreEnemiesSame(IPlayer a, IPlayer b)

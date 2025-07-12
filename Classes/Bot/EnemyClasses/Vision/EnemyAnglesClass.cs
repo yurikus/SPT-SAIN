@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class EnemyAnglesClass : EnemyBase, IBotEnemyClass
+    public class EnemyAnglesClass
     {
         private const float CALC_ANGLE_FREQ = 1f / 15f;
         private const float CALC_ANGLE_FREQ_AI = 1f / 4f;
@@ -19,17 +19,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float AngleToEnemyVertical { get; private set; }
         public float AngleToEnemyVerticalSigned { get; private set; }
 
-        public EnemyAnglesClass(Enemy enemy) : base(enemy) { }
-
-        public override void ManualUpdate()
-        {
-            CalcAngles();
-            base.ManualUpdate();
-        }
-
-        public void OnEnemyKnownChanged(bool known, Enemy enemy) { }
-
-        private void CalcAngles()
+        public void CalcAngles(Enemy Enemy)
         {
             if (_calcAngleTime < Time.time)
             {
@@ -46,7 +36,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 MaxVisionAngle = Enemy.Bot.Info.FileSettings.Core.VisibleAngle / 2f;
 
-                Vector3 lookDir = Bot.LookDirection;
+                Vector3 lookDir = Enemy.Bot.LookDirection;
                 Vector3 enemyDirNormal = Enemy.EnemyDirectionNormal;
 
                 AngleToEnemy = Vector3.Angle(enemyDirNormal, lookDir);

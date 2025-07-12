@@ -8,45 +8,6 @@ using UnityEngine;
 
 namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
 {
-    public struct CalcDistanceAndNormalJob : IJobFor
-    {
-        [ReadOnly] public NativeArray<Vector3> directions;
-
-        [WriteOnly] public NativeArray<float> distances;
-        [WriteOnly] public NativeArray<Vector3> normals;
-
-        public void Execute(int index)
-        {
-            Vector3 direction = directions[index];
-            distances[index] = direction.magnitude;
-            normals[index] = direction.normalized;
-        }
-
-        public void Dispose()
-        {
-            if (directions.IsCreated) directions.Dispose();
-            if (distances.IsCreated) distances.Dispose();
-            if (normals.IsCreated) normals.Dispose();
-        }
-    }
-
-    public struct CalcDistanceJob : IJobFor
-    {
-        [ReadOnly] public NativeArray<Vector3> directions;
-        [WriteOnly] public NativeArray<float> distances;
-
-        public void Execute(int index)
-        {
-            Vector3 direction = directions[index];
-            distances[index] = direction.magnitude;
-        }
-
-        public void Dispose()
-        {
-            if (directions.IsCreated) directions.Dispose();
-            if (distances.IsCreated) distances.Dispose();
-        }
-    }
     public struct DirCalcData
     {
         public DirCalcData(Vector3 inPoint)
@@ -93,41 +54,6 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         {
             Input.Dispose();
             Output.Dispose();
-        }
-    }
-
-    public struct CalcDistanceThreePointsJob : IJobFor
-    {
-        [ReadOnly] public NativeArray<DirCalcData> Input;
-        [ReadOnly] public Vector3 Point1;
-        [ReadOnly] public Vector3 Point2;
-
-        [WriteOnly] public NativeArray<DirCalcData> Point1DataOutput;
-        [WriteOnly] public NativeArray<DirCalcData> Point2DataOutput;
-
-        public void Execute(int index)
-        {
-            DirCalcData Data1 = Input[index];
-            Calc(ref Data1, Point1);
-            Point1DataOutput[index] = Data1;
-
-            DirCalcData Data2 = Input[index];
-            Calc(ref Data2, Point2);
-            Point2DataOutput[index] = Data2;
-        }
-
-        private static void Calc(ref DirCalcData data, Vector3 point)
-        {
-            data.Dir = data.Point - point;
-            data.DirNormal = data.Dir.normalized;
-            data.Magnitude = data.Dir.magnitude;
-        }
-
-        public void Dispose()
-        {
-            Input.Dispose();
-            Point1DataOutput.Dispose();
-            Point2DataOutput.Dispose();
         }
     }
 
@@ -189,7 +115,7 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
                 OtherPlayerData otherPlayer = OtherPlayers[j];
                 if (otherPlayer != null)
                 {
-                    OtherPlayerDirectionData.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(Owner, otherPlayer.PlayerComponent));
+                    OtherPlayerDirectionData.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(Owner, otherPlayer.OtherPlayerComponent));
                     OtherPlayerData.Add(otherPlayer);
                 }
             }

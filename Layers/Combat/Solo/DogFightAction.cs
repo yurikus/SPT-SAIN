@@ -25,15 +25,12 @@ namespace SAIN.Layers.Combat.Solo
         public override void Start()
         {
             Toggle(true);
-            Bot.Mover.Sprint(false);
-            BotOwner.Mover.SprintPause(0.5f);
         }
 
         public override void Stop()
         {
             Toggle(false);
             Bot.Mover.DogFight.ResetDogFightStatus();
-            BotOwner.MovementResume();
         }
 
         public void Toggle(bool value)

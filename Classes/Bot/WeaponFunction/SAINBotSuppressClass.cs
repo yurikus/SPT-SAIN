@@ -44,7 +44,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 {
                     ResetSuppressing();
                 }
-                else if (!Bot.HasEnemy || Bot.Enemy != EnemyBeingSuppressed)
+                else if (!Bot.HasEnemy || Bot.GoalEnemy != EnemyBeingSuppressed)
                 {
                     ResetSuppressing();
                 }

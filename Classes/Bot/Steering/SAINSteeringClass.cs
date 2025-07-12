@@ -2,6 +2,7 @@
 using SAIN.Components;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover
@@ -23,13 +24,22 @@ namespace SAIN.SAINComponent.Classes.Mover
         public Vector3 WeaponRootOffset {
             get
             {
-                // Lower the position slightly to avoid having bots accidently aim for your head
-                return new Vector3(0, BotOwner.WeaponRoot.position.y - Bot.Position.y - 0.1f, 0);
+                return new Vector3(0, BotOwner.WeaponRoot.position.y - Bot.Position.y, 0);
             }
+        }
+
+        public bool ExecuteMoverSteering(BotPathData pathData)
+        {
+            throw new NotImplementedException();
         }
 
         public bool SteerByPriority(Enemy enemy = null, bool lookRandom = true, bool ignoreRunningPath = false)
         {
+            if (SteeringLocked)
+            {
+                Logger.LogInfo("Steering Locked");
+                return false;
+            }
             enemy ??= Bot.CurrentTarget.CurrentTargetEnemy;
 
             switch (_steerPriorityClass.GetCurrentSteerPriority(lookRandom, ignoreRunningPath))
@@ -94,10 +104,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool LookToMovingDirection(bool sprint = false)
         {
-            var pathFollower = Bot.Mover.PathFollower;
+            var pathFollower = Bot.Mover;
             if (pathFollower.Moving)
             {
-                LookToPoint(pathFollower.MoveData.CurrentCorner.Position);
+                LookToPoint(pathFollower.ActivePath.GetCurrentCorner().Position);
                 return true;
             }
             if (BotOwner?.Mover?.HasPathAndNoComplete == true)
@@ -113,24 +123,28 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             return false;
         }
-
+        
+        /// <summary>
+        /// Look Directly at point
+        /// </summary>
         public void LookToPoint(Vector3 point)
         {
             Vector3 direction = point - BotOwner.WeaponRoot.position;
-            if (direction.sqrMagnitude < 1f)
-            {
-                direction = direction.normalized;
-            }
             LookToDirection(direction, false);
+        }
+
+        /// <summary>
+        /// Adds the bots current height to the input position
+        /// </summary>
+        public void LookToFloorPoint(Vector3 point)
+        {
+            LookToPoint(point + WeaponRootOffset);
         }
 
         public void LookToDirection(Vector3 direction, bool flat = false)
         {
-            if (flat)
-            {
-                direction.y = 0;
-            }
-            BotOwner.Steering.LookToDirection(direction, float.MaxValue);
+            if (flat) direction.y = 0;
+            BotOwner.Steering.LookToDirection(direction.normalized, float.MaxValue);
         }
 
         public void LookToEnemy(Enemy enemy)
@@ -222,6 +236,26 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             LookToRandomPosition();
         }
+
+        internal bool IsLookingAtPoint(Vector3 point, out float dotResult, float dotProductThreshold = 0.66f)
+        {
+            Vector3 lookDirection = Bot.PlayerComponent.SmoothController.CurrentControlLookDirection;
+            Vector3 pointDirection = point - Bot.Transform.WeaponData.WeaponRoot;
+            dotResult = Vector3.Dot(lookDirection, pointDirection.normalized);
+            return dotResult >= dotProductThreshold;
+        }
+
+        internal void Lock()
+        {
+            SteeringLocked = true;
+        }
+
+        internal void Unlock()
+        {
+            SteeringLocked = false;
+        }
+
+        public bool SteeringLocked { get; private set; }
 
         public HeardSoundSteeringClass HeardSoundSteering { get; }
         private readonly RandomLookClass _randomLook;

@@ -20,7 +20,7 @@ namespace SAIN.Patches.Generic.Fixes
         {
             if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent bot) && bot.SAINLayersActive)
             {
-                Enemy enemy = bot.Enemy;
+                Enemy enemy = bot.GoalEnemy;
                 if (enemy == null)
                 {
                     return false;
@@ -56,12 +56,12 @@ namespace SAIN.Patches.Generic.Fixes
                     bot.Steering.LookToMovingDirection(true);
                 }
 
-                bot.Mover.Sprint(__instance.Running && goalEnemy.Distance > __instance.Single_1);
+                bot.Mover.ActivePath.WantToSprint = __instance.Running && goalEnemy.Distance > __instance.Single_1;
                 if (__instance._nextTryHitTime < Time.time)
                 {
                     __instance.method_0((flag && __instance.method_2(goalEnemy)) ? 10f : __instance.TRY_HIT_PERIOD_FALSE);
                 }
-                if (bot.Mover.PathFollower.Running)
+                if (bot.Mover.Running)
                 {
                     if (__instance._runPathCheck < Time.time)
                     {
@@ -82,29 +82,28 @@ namespace SAIN.Patches.Generic.Fixes
                         }
                         if (goalEnemy.Distance < __instance.botOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
                         {
-                            bot.Mover.PathFollower.Cancel(0.1f);
+                            bot.Mover.ActivePath.Cancel(0.1f);
                         }
                         else
                         {
-                            bot.Mover.PathFollower.RunToPointByWay(way, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
+                            bot.Mover.RunToPointByWay(way, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
                         }
                     }
                 }
                 else
                 {
-                    Vector3[] way2;
-                    if (!__instance.CanRunToEnemyToHit(goalEnemy, out way2))
+                    if (!__instance.CanRunToEnemyToHit(goalEnemy, out Vector3[] way2))
                     {
                         __instance.ShallEndRun = true;
                         return false;
                     }
                     if (goalEnemy.Distance < __instance.botOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
                     {
-                        bot.Mover.PathFollower.Cancel(0.1f);
+                        bot.Mover.ActivePath?.Cancel(0.1f);
                     }
                     else
                     {
-                        bot.Mover.PathFollower.RunToPointByWay(way2, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
+                        bot.Mover.RunToPointByWay(way2, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
                     }
                 }
                 return false;

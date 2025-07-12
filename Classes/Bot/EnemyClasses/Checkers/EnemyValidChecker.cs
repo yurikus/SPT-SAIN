@@ -21,7 +21,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         public bool WasValid { get; private set; } = true;
 
-        public EnemyValidChecker(Enemy enemy) : base(enemy)
+        public EnemyValidChecker(EnemyData enemy) : base(enemy)
         {
             CanEverTick = false;
         }
@@ -34,25 +34,14 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
                 //Logger.LogError($"Enemy {Enemy.EnemyName} PlayerComponent is Null");
                 return false;
             }
-            var person = component.Person;
-            if (person == null)
-            {
-                //Logger.LogDebug("Enemy Person is Null");
-                return false;
-            }
-            if (!person.ActivationClass.IsAlive)
-            {
-                //Logger.LogDebug("Enemy Player Is Dead");
-                return false;
-            }
-            if (person.Player?.HealthController?.IsAlive != true)
+            if (component.Player?.HealthController?.IsAlive != true)
             {
                 //Logger.LogDebug("Enemy Player Is Dead");
                 return false;
             }
             // Checks specific to bots
-            BotOwner botOwner = EnemyPlayer?.AIData?.BotOwner;
-            if (EnemyPerson?.AIInfo.IsAI == true && botOwner == null)
+            BotOwner botOwner = component.BotOwner;
+            if (component?.IsAI == true && botOwner == null)
             {
                 //Logger.LogDebug("Enemy is AI, but BotOwner is null. Removing...");
                 return false;

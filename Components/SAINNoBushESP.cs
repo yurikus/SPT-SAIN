@@ -88,7 +88,7 @@ namespace SAIN.Components
 
         public bool NoBushESPCheck()
         {
-            Enemy sainEnemy = SAIN?.Enemy;
+            Enemy sainEnemy = SAIN?.GoalEnemy;
             var enemy = sainEnemy?.EnemyInfo ?? BotOwner?.Memory?.GoalEnemy;
             if (enemy != null && (enemy.IsVisible || enemy.CanShoot))
             {
@@ -185,7 +185,6 @@ namespace SAIN.Components
                     if (vision != null)
                     {
                         bool forceOff = true;
-                        vision.UpdateCanShootState(forceOff);
                         vision.UpdateVisibleState(forceOff);
                     }
                 }

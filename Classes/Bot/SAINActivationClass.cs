@@ -63,7 +63,9 @@ namespace SAIN.SAINComponent.Classes
 
             if (!GameEnding &&
                 !BotActive &&
-                Bot.Person.ActivationClass.BotActive)
+                BotOwner != null && 
+                BotOwner.BotState == EBotState.Active && 
+                BotOwner.StandBy.StandByType == BotStandByType.active)
             {
                 Logger.LogWarning($"Bot not active but should be!");
                 SetActive(true);
@@ -72,8 +74,8 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckStandBy()
         {
-            bool standby = BotOwner?.StandBy?.StandByType != BotStandByType.active;
-            if (standby && BotActive)
+            bool standby = BotActive && BotOwner?.StandBy?.StandByType != BotStandByType.active;
+            if (standby)
             {
                 if (Bot.HasEnemy)
                 {
@@ -121,14 +123,12 @@ namespace SAIN.SAINComponent.Classes
         public override void Init()
         {
             SetActive(true);
-            Bot.Person.ActivationClass.OnBotActiveChanged += SetActive;
             base.Init();
         }
 
         public override void Dispose()
         {
             SetActive(false);
-            Bot.Person.ActivationClass.OnBotActiveChanged -= SetActive;
             base.Dispose();
         }
 

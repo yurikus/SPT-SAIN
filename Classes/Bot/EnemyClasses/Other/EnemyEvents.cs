@@ -25,14 +25,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public event Action<Enemy, EEnemyAction> OnVulnerableStateChanged;
         public event Action<Enemy, ETagStatus> OnHealthStatusChanged;
 
-        public EnemyEvents(Enemy enemy) : base(enemy)
+        public EnemyEvents(EnemyData enemy) : base(enemy)
         {
-            OnEnemyLineOfSightChanged = new EnemyToggleEventTimeTracked(enemy, false);
-            OnEnemyKnownChanged = new EnemyToggleEventTimeTracked(enemy, false);
-            OnActiveThreatChanged = new EnemyToggleEventTimeTracked(enemy, false);
-            OnVisionChange = new EnemyToggleEventTimeTracked(enemy, false);
-            OnSearch = new EnemyToggleEventTimeTracked(enemy, false);
-            OnEnemyCanShootChanged = new EnemyToggleEventTimeTracked(enemy, false);
+            OnEnemyLineOfSightChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
+            OnEnemyKnownChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
+            OnActiveThreatChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
+            OnVisionChange = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
+            OnSearch = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
+            OnEnemyCanShootChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
             CanEverTick = false;
         }
 

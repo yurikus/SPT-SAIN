@@ -21,10 +21,10 @@ namespace SAIN.Layers
                 var info = bot.Info;
                 if (debug.Overlay_Info)
                 {
-                    stringBuilder.AppendLine($"Name: [{bot.Person.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
+                    stringBuilder.AppendLine($"Name: [{bot.PlayerComponent.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
                     stringBuilder.AppendLabeledValue("In Combat", $"{bot.IsInCombat}", Color.white, Color.yellow);
                     stringBuilder.AppendLabeledValue("Target Enemy", $"{bot.CurrentTarget?.CurrentTargetEnemy?.EnemyName}", Color.white, Color.yellow);
-                    stringBuilder.AppendLabeledValue("Goal Enemy", $"{bot.Enemy?.EnemyName}", Color.white, Color.yellow);
+                    stringBuilder.AppendLabeledValue("Goal Enemy", $"{bot.GoalEnemy?.EnemyName}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("Active", $"{bot.BotActive}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("Standby", $"{bot.BotInStandBy}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("SAIN Layers Active", $"{bot.SAINLayersActive}", Color.white, Color.yellow);
@@ -143,14 +143,21 @@ namespace SAIN.Layers
 
         public static void AddMoveData(BotComponent bot, StringBuilder stringBuilder)
         {
-            var moveData = bot.Mover.PathFollower.MoveData;
+            var moveData = bot.Mover.ActivePath;
+            if (moveData == null) return;
             stringBuilder.AppendLabeledValue("Move Status", $"{moveData.CurrentMoveStatus}", Color.white, Color.yellow);
-            stringBuilder.AppendLabeledValue("Move Sprint Status", $"{moveData.CurrentSprintStatus}", Color.white, Color.yellow);
-            stringBuilder.AppendLabeledValue("Move Active", $"{moveData.Active}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Moving", $"{moveData.Moving}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Crawling", $"{moveData.Crawling}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Running", $"{moveData.Running}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Want To Sprint", $"{moveData.WantToSprint}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Shall Sprint Now", $"{moveData.ShallSprintNow}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Sprint Status", $"{moveData.CurrentSprintStatus}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move Paused", $"{moveData.PauseTime > Time.time}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Move Canceling", $"{moveData.Canceling}", Color.white, Color.yellow);
-            stringBuilder.AppendLabeledValue("Move CornerCount", $"{moveData.CornerCount}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move CornerCount", $"{moveData.PathCorners.Count}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Move CurrentIndex", $"{moveData.CurrentIndex}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Move Corner Distance", $"{moveData.CurrentCornerDistanceSqr.Sqrt()}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Time Since Start Corner", $"{Time.time - moveData.GetCurrentCorner().TimeStarted}", Color.white, Color.yellow);
         }
 
         private static Enemy getEnemy2Show(BotComponent bot)
@@ -178,7 +185,7 @@ namespace SAIN.Layers
                 }
             }
 
-            Enemy infoToShow = mainPlayer ?? closestHuman ?? bot.Enemy;
+            Enemy infoToShow = mainPlayer ?? closestHuman ?? bot.GoalEnemy;
             return infoToShow;
         }
 
@@ -221,7 +228,7 @@ namespace SAIN.Layers
             stringBuilder.AppendLine($"EnemyData: " +
                 $"Name [{enemy.EnemyPlayer?.Profile.Nickname}] " +
                 $"RealDistance [{enemy.RealDistance}] " +
-                $"Power [{enemy.EnemyIPlayer?.AIData?.PowerOfEquipment}]");
+                $"Power [{enemy.EnemyPlayer?.AIData?.PowerOfEquipment}]");
 
             stringBuilder.AppendLine($"Visible [{enemy.IsVisible}] Seen [{enemy.Seen}]");
 
@@ -244,25 +251,23 @@ namespace SAIN.Layers
             }
             stringBuilder.AppendLine();
 
-            stringBuilder.AppendLabeledValue("Can Shoot", $"{enemy.Vision.VisionChecker.EnemyParts.CanShoot}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("Can Shoot", $"{enemy.CanShoot}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("In Line of Sight", $"{enemy.InLineOfSight}", Color.white, Color.yellow, true);
             if (_expandedEnemyInfo)
             {
-                var parts = enemy.Vision.VisionChecker.EnemyParts.Parts.Values;
+                var parts = enemy.Vision.EnemyParts.Parts.Values;
+                int losCount = 0;
                 int visCount = 0;
+                int shootCount = 0;
                 int partCount = 0;
-                int notChecked = 0;
                 foreach (var part in parts)
                 {
-                    if (part.TimeSinceLastVisionCheck > 2f)
-                    {
-                        notChecked++;
-                        continue;
-                    }
                     partCount++;
-                    if (part.LineOfSight) visCount++;
+                    if (part.LineOfSight) losCount++;
+                    if (part.CanBeSeen) visCount++;
+                    if (part.CanShoot) shootCount++;
                 }
-                stringBuilder.AppendLabeledValue("Body Parts", $"In LOS: {visCount} : Checked: {partCount} : Not Checked: {notChecked}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Body Part Vision", $"[{partCount},{losCount},{visCount},{shootCount}]", Color.white, Color.yellow, true);
             }
             stringBuilder.AppendLine();
 

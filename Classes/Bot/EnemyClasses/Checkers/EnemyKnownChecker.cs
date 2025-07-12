@@ -2,7 +2,7 @@
 
 namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 {
-    public class EnemyKnownChecker(Enemy enemy) : EnemyBase(enemy), IBotClass
+    public class EnemyKnownChecker(EnemyData enemy) : EnemyBase(enemy), IBotClass
     {
         public override void Init()
         {

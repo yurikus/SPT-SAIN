@@ -58,31 +58,12 @@ namespace SAIN.SAINComponent.Classes
                 EstimatedPosition = Dispersion.CalcRandomizedPosition(sound, 1f);
                 ReactToBulletFlyBy(sound, FlyByDistance, EstimatedPosition, underFire);
                 OnEnemySoundHeard?.Invoke(sound, sound.Enemy);
-                //if (sound.HeardPlayer.IsYourPlayer)
-                //    Logger.LogDebug($"Bullet FlyBy. SoundType: [{sound.Sound.SoundType}] Delay: [{Time.time - sound.Sound.TimeCreated}] Distance: [{sound.PlayerDistance}] Player: [{sound.Sound.PlayerComponent?.Player?.Profile?.Nickname}]");
             }
         }
 
         public void ReactToHeardSound(AISoundData sound)
         {
             Vector3 EstimatedPosition;
-            //bool Heard = Analysis.CheckIfSoundHeard(sound);
-            //if (sound.IsGunShot &&
-            //    BulletAnalysis.DoIFeelBullet(sound) &&
-            //    BulletAnalysis.DidShotFlyByMe(sound, out Vector3 ProjectionPoint, out float ProjectionPointDistance))
-            //{
-            //    bool underFire = ProjectionPointDistance <= SAINPlugin.LoadedPreset.GlobalSettings.Mind.MaxUnderFireDistance;
-            //    if (!SoundInput.IgnoreHearing || underFire)
-            //    {
-            //        float unheardDispersionModifier = Heard ? 1f : GlobalSettingsClass.Instance.Hearing.HEAR_DISPERSION_BULLET_FELT_MOD;
-            //        EstimatedPosition = Dispersion.CalcRandomizedPosition(sound, unheardDispersionModifier);
-            //        ReactToBulletFlyBy(sound, ProjectionPointDistance, EstimatedPosition, underFire);
-            //        OnEnemySoundHeard?.Invoke(sound, sound.Enemy);
-            //        if (sound.HeardPlayer.IsYourPlayer)
-            //            Logger.LogDebug($"Bullet FlyBy. SoundType: [{sound.Sound.SoundType}] Delay: [{Time.time - sound.Sound.TimeCreated}] Distance: [{sound.PlayerDistance}] Player: [{sound.Sound.PlayerComponent?.Player?.Profile?.Nickname}]");
-            //        return;
-            //    }
-            //}
             if (Analysis.CheckIfSoundHeard(sound))
             {
                 if (sound.IsGunShot && !ShallChaseGunshot(sound.PlayerDistance))
@@ -93,8 +74,6 @@ namespace SAIN.SAINComponent.Classes
                 Bot.Squad.SquadInfo?.AddPointToSearch(sound.Enemy, EstimatedPosition, sound, Bot);
                 CheckCalcGoal();
                 OnEnemySoundHeard?.Invoke(sound, sound.Enemy);
-                //if (sound.HeardPlayer.IsYourPlayer)
-                //    Logger.LogDebug($"Enemy Heard. SoundType: [{sound.Sound.SoundType}] Delay: [{Time.time - sound.Sound.TimeCreated}] Distance: [{sound.PlayerDistance}] Player: [{sound.Sound.PlayerComponent?.Player?.Profile?.Nickname}]");
             }
         }
 
@@ -129,7 +108,7 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckCalcGoal()
         {
-            if (BotOwner.Memory.GoalEnemy == null || Bot.Enemy?.IsVisible != true)
+            if (BotOwner.Memory.GoalEnemy == null || Bot.GoalEnemy?.IsVisible != true)
             {
                 try
                 {

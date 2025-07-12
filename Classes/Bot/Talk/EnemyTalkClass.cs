@@ -66,7 +66,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                     _nextCheckTime = time + 1f;
                     return;
                 }
-                if (Bot?.Enemy != null)
+                if (Bot?.GoalEnemy != null)
                 {
                     if (ShallFakeDeath())
                     {
@@ -153,11 +153,11 @@ namespace SAIN.SAINComponent.Classes.Talk
         {
             if (CanFakeDeath
                 && EFTMath.RandomBool(FakeDeathChance)
-                && Bot.Enemy != null
+                && Bot.GoalEnemy != null
                 && !Bot.Squad.BotInGroup
                 && _fakeDeathTimer < Time.time
                 && (Bot.Memory.Health.HealthStatus == ETagStatus.Dying || Bot.Memory.Health.HealthStatus == ETagStatus.BadlyInjured)
-                && (Bot.Enemy.EnemyPosition - BotOwner.Position).sqrMagnitude < 70f * 70f)
+                && (Bot.GoalEnemy.EnemyPosition - BotOwner.Position).sqrMagnitude < 70f * 70f)
             {
                 _fakeDeathTimer = Time.time + 30f;
                 Bot.Talk.Say(EPhraseTrigger.OnDeath);
@@ -171,7 +171,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             if (CanFakeDeath
                 && EFTMath.RandomBool(FakeDeathChance)
                 && !isSmoke
-                && Bot.Enemy != null
+                && Bot.GoalEnemy != null
                 && _fakeDeathTimer < Time.time
                 && playerProfileID != Bot.ProfileId
                 && (grenadeExplosionPosition - Bot.Position).sqrMagnitude < 25f * 25f)
@@ -237,7 +237,7 @@ namespace SAIN.SAINComponent.Classes.Talk
         private bool TauntEnemy()
         {
             bool tauntEnemy = false;
-            var enemy = Bot.Enemy;
+            var enemy = Bot.GoalEnemy;
 
             if (!canTauntEnemy(enemy))
             {
@@ -364,7 +364,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 _nextGestureTime = Time.time + 6f;
                 Player.HandsController.ShowGesture(EInteraction.FriendlyGesture);
-                Bot.Steering.LookToPoint(sourcePlayer.Position + Vector3.up * 1.4f);
+                //Bot.Steering.LookToPoint(sourcePlayer.Position + Vector3.up * 1.4f);
             }
             Bot.Talk.Say(trigger, mask, false);
         }

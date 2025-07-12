@@ -48,7 +48,7 @@ namespace SAIN.Components.PlayerComponentSpace
             places.Clear();
             for (int i = 0; i < iterationMax; i++)
             {
-                Vector3 start = Transform.HeadPosition;
+                Vector3 start = Transform.EyePosition;
                 Vector3 randomDirection = UnityEngine.Random.onUnitSphere;
                 randomDirection.y = UnityEngine.Random.Range(-yVal, yVal);
                 float distance = UnityEngine.Random.Range(minPointDist, maxPointDist);
@@ -61,8 +61,7 @@ namespace SAIN.Components.PlayerComponentSpace
                         && (rayHit2.point - start).sqrMagnitude > minPointDist * minPointDist
                         && NavMesh.SamplePosition(rayHit2.point, out var navHit2, navSampleRange, -1))
                     {
-                        DebugGizmos.Sphere(navHit2.position, 0.1f, Color.blue, 3f);
-                        DebugGizmos.Line(navHit2.position, start, 0.025f, Time.deltaTime, true);
+                        DebugGizmos.DrawSphere(navHit2.position, 0.1f, Color.blue, 3f);
                         places.Add(navHit2.position);
                         successCount++;
                     }

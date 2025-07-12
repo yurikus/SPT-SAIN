@@ -13,7 +13,7 @@ namespace SAIN
             ModsCheckTimer = Time.time + 5f;
         }
 
-        public static void Update()
+        public static void ManualUpdate()
         {
             if (!ModsChecked && ModsCheckTimer < Time.time && ModsCheckTimer > 0)
             {

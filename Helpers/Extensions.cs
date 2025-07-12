@@ -28,48 +28,14 @@ namespace SAIN.Helpers
             }
         }
 
-        public static float CalcPathLength([NotNull] this List<BotCornerDetails> path)
+        public static float CalcPathLength([NotNull] this List<BotPathCorner> path)
         {
             float result = 0;
             for (int i = 0; i < path.Count; i++)
             {
-                result += path[i].Length;
+                result += path[i].DirectionFromPrevious.Magnitude;
             }
             return result;
-        }
-
-        /// <summary>
-        /// Adds a new corner to an existing path, update point types to input paramater types
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="corner"></param>
-        /// <param name="nextCorner"></param>
-        /// <param name="secondToLastType"></param>
-        /// <param name="lastCornerType"></param>
-        /// <param name="Type"></param>
-        public static void AddCornerToPath([NotNull] this List<BotCornerDetails> path, Vector3 corner, Vector3? nextCorner, EBotCornerType secondToLastType, EBotCornerType lastCornerType, EBotCornerType Type)
-        {
-            int count = path.Count;
-
-            // Update what used to be the second to last corner
-            BotCornerDetails secondTolastCorner = path[count - 2];
-            secondTolastCorner.Type = secondToLastType;
-            path[count - 2] = secondTolastCorner;
-
-            // Update what used to be the last corner in the path
-            BotCornerDetails lastCorner = path[count - 1];
-            lastCorner.Type = lastCornerType;
-            lastCorner.SetDirection(corner - lastCorner.Position);
-            path[count - 1] = lastCorner;
-
-            if (nextCorner != null)
-            {
-                path.Add(BotCornerDetails.Create(corner, nextCorner.Value, Type, count));
-            }
-            else
-            {
-                path.Add(BotCornerDetails.Create(corner, Type, count));
-            }
         }
 
         public static bool IsSame([NotNull] this Enemy enemy, [NotNull] Enemy other)

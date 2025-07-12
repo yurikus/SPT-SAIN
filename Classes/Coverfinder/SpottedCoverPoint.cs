@@ -1,5 +1,4 @@
-﻿using SAIN.Classes.Coverfinder;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {

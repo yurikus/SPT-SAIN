@@ -10,11 +10,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
     {
         public Dictionary<ERaycastCheck, RaycastResult> RaycastResults { get; private set; } = [];
         public float TimeSeen { get; private set; }
-        public bool IsVisible { get; private set; }
-        public float TimeSinceLastVisionCheck => Mathf.Max(RaycastResults[ERaycastCheck.LineofSight].TimeSinceChecked, RaycastResults[ERaycastCheck.Vision].TimeSinceChecked);
-        public float TimeSinceLastVisionSuccess => Mathf.Max(RaycastResults[ERaycastCheck.LineofSight].TimeSinceSuccess, RaycastResults[ERaycastCheck.Vision].TimeSinceSuccess);
-        public bool LineOfSight => RaycastResults[ERaycastCheck.LineofSight].InSight;
-        public bool CanShoot => RaycastResults[ERaycastCheck.Shoot].InSight;
+
+        public bool CanBeSeen { get; private set; }
+        public bool LineOfSight { get; private set; }
+        public bool CanShoot { get; private set; }
 
         private readonly Dictionary<EBodyPartColliderType, BodyPartCollider> _colliderDictionary = [];
 
@@ -38,20 +37,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             RaycastResults.Add(ERaycastCheck.Vision, new RaycastResult());
         }
 
-        public void Update(Enemy enemy)
+        public void Update(float currentTime)
         {
-            IsVisible = enemy.Vision.Angles.CanBeSeen && TimeSinceLastVisionSuccess < 0.25f;
-
-            if (!IsVisible)
+            const float SUCCESS_PERIOD = 0.25f;
+            float lineOfSightSuccessTime = RaycastResults[ERaycastCheck.LineofSight].TimeLastSuccess;
+            LineOfSight = currentTime - lineOfSightSuccessTime <= SUCCESS_PERIOD;
+            float shootSuccessTime = RaycastResults[ERaycastCheck.Shoot].TimeLastSuccess;
+            CanShoot = currentTime - shootSuccessTime <= SUCCESS_PERIOD;
+            if (!LineOfSight)
             {
-                TimeSeen = 0f;
+                CanBeSeen = false;
+                TimeSeen = -1f;
                 return;
             }
-
-            if (TimeSeen <= 0f)
+            float visionSuccessTime = RaycastResults[ERaycastCheck.Vision].TimeLastSuccess;
+            CanBeSeen = currentTime - visionSuccessTime <= SUCCESS_PERIOD;
+            if (!CanBeSeen)
             {
-                TimeSeen = Time.time;
+                TimeSeen = -1f;
+                return;
             }
+            if (TimeSeen <= 0f) TimeSeen = Time.time;
         }
 
         public void SetLineOfSight(Vector3 castPoint, EBodyPartColliderType colliderType, RaycastHit raycastHit, ERaycastCheck type, float time)

@@ -73,7 +73,7 @@ namespace SAIN.SAINComponent.Classes
             _shooting = false;
             BotOwner.ShootData?.EndShoot();
         }
-        
+
         public Enemy GetEnemyToShoot(Enemy priorityEnemy = null)
         {
             if (AimAndShootAtEnemy(priorityEnemy, Bot))
@@ -81,7 +81,7 @@ namespace SAIN.SAINComponent.Classes
                 UpdateADS(priorityEnemy);
                 return priorityEnemy;
             }
-            Enemy targetEnemy = CheckEnemiesForShootableTargets(priorityEnemy.Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible));
+            Enemy targetEnemy = CheckEnemiesForShootableTargets(Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible));
             if (targetEnemy != null)
             {
                 UpdateADS(targetEnemy);
@@ -138,7 +138,7 @@ namespace SAIN.SAINComponent.Classes
             if (!bot.Aim.CanAim)
                 return false;
 
-            Vector3? target = GetShootTargetPosition(Enemy, bot);
+            Vector3? target = GetAimTarget(Enemy, bot);
             if (target != null &&
                 Enemy != null)
             {
@@ -155,11 +155,16 @@ namespace SAIN.SAINComponent.Classes
 
         private void ShootWhenAimComplete(Enemy Enemy, BotComponent bot, bool AimComplete)
         {
-            if (AimComplete && bot.BotOwner.ShootData.Shoot())
+            if (AimComplete)
             {
-                LastShotEnemy = Enemy;
-                Enemy.EnemyInfo?.SetLastShootTime();
-                _shooting = true;
+                var shootData = bot.BotOwner.ShootData;
+                if (!shootData.Shooting)
+                {
+                    LastShotEnemy = Enemy;
+                    _shooting = true;
+                    bot.BotOwner.ShootData.Shoot();
+                    Enemy.EnemyInfo?.SetLastShootTime();
+                }
             }
         }
 
@@ -255,11 +260,6 @@ namespace SAIN.SAINComponent.Classes
         }
 
         private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f) => info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;
-
-        private static Vector3? GetShootTargetPosition(Enemy enemy, BotComponent bot)
-        {
-            return GetAimTarget(enemy, bot) ?? GetAimTarget(bot.LastEnemy, bot);
-        }
 
         private static Vector3? GetAimTarget(Enemy enemy, BotComponent bot)
         {

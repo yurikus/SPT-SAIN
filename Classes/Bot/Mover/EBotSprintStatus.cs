@@ -7,7 +7,6 @@
         Turning,
         ShortCorner,
         NoStamina,
-        InteractingWithDoor,
         ArrivingAtDestination,
         CantSprint,
         LookAtEnemyNoSprint,

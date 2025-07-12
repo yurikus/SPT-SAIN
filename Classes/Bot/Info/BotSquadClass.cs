@@ -22,7 +22,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         private void getSquad()
         {
-            SquadInfo = BotManagerComponent.Instance.BotSquads.GetSquad(Bot.Person.AIInfo.BotOwner);
+            SquadInfo = BotManagerComponent.Instance.BotSquads.GetSquad(Bot.BotOwner);
         }
 
         public Squad SquadInfo { get; private set; }

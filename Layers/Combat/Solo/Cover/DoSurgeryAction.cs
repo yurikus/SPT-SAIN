@@ -1,16 +1,13 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.Components;
 using System.Text;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover
 {
-    internal class DoSurgeryAction : CombatAction, ISAINAction
+    internal class DoSurgeryAction(BotOwner botOwner) : CombatAction(botOwner, "Surgery"), ISAINAction
     {
-        public DoSurgeryAction(BotOwner bot) : base(bot, "Surgery")
-        {
-        }
-
         public void Toggle(bool value)
         {
             ToggleAction(value);
@@ -26,72 +23,45 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         private void checkDoSurgery()
         {
-            if (Bot.Medical.Surgery.AreaClearForSurgery)
+            BotComponent bot = Bot;
+            var sainSurgery = bot.Medical.Surgery;
+            if (sainSurgery.AreaClearForSurgery)
             {
-                Bot.Mover.PauseMovement(30);
-                Bot.Mover.PathFollower.Cancel();
-                Bot.Mover.SetTargetMoveSpeed(0f);
-                Bot.Cover.DuckInCover(Bot.Enemy);
-                tryStartSurgery();
+                bot.Mover.ActivePath?.Cancel(0.1f);
+                bot.Mover.SetTargetMoveSpeed(0f);
+                bot.Cover.DuckInCover(bot.GoalEnemy);
+                var eftSurgery = bot.BotOwner.Medecine.SurgicalKit;
+                if (_startSurgeryTime < Time.time
+                    && !eftSurgery.Using
+                    && eftSurgery.ShallStartUse())
+                {
+                    sainSurgery.SurgeryStarted = true;
+                    eftSurgery.ApplyToCurrentPart(new System.Action(onSurgeryDone));
+                }
+                else if (_actionStartedTime + 30f < Time.time)
+                {
+                    bot.Player?.ActiveHealthController?.RestoreFullHealth();
+                    bot.Decision.ResetDecisions(true);
+                }
             }
             else
             {
-                BotOwner.Mover.MovementResume();
                 //Bot.Mover.SetTargetMoveSpeed(1);
-                Bot.Mover.SetTargetPose(1);
+                bot.Mover.SetTargetPose(1);
 
-                Bot.Medical.Surgery.SurgeryStarted = false;
-                Bot.Medical.TryCancelHeal();
-                Bot.Mover.DogFight.DogFightMove(false, Bot.Enemy);
+                bot.Medical.Surgery.SurgeryStarted = false;
+                bot.Medical.TryCancelHeal();
+                bot.Mover.DogFight.DogFightMove(false, bot.GoalEnemy);
             }
         }
 
         private void handleSteering()
         {
             if (!Bot.Steering.SteerByPriority(null, false) &&
-                !Bot.Steering.LookToLastKnownEnemyPosition(Bot.Enemy))
+                !Bot.Steering.LookToLastKnownEnemyPosition(Bot.GoalEnemy))
             {
                 Bot.Steering.LookToRandomPosition();
             }
-        }
-
-        private bool tryStartSurgery()
-        {
-            if (tryStart())
-            {
-                return true;
-            }
-            if (checkFullHeal())
-            {
-                return true;
-            }
-            return false;
-        }
-
-        private bool tryStart()
-        {
-            var surgery = BotOwner.Medecine.SurgicalKit;
-            if (_startSurgeryTime < Time.time
-                && !surgery.Using
-                && surgery.ShallStartUse())
-            {
-                Bot.Medical.Surgery.SurgeryStarted = true;
-                surgery.ApplyToCurrentPart(new System.Action(onSurgeryDone));
-                return true;
-            }
-            return false;
-        }
-
-        private bool checkFullHeal()
-        {
-            if (Bot.Medical.Surgery.SurgeryStarted = true &&
-                _actionStartedTime + 30f < Time.time)
-            {
-                Bot.Player?.ActiveHealthController?.RestoreFullHealth();
-                Bot.Decision.ResetDecisions(true);
-                return true;
-            }
-            return false;
         }
 
         private void onSurgeryDone()
@@ -102,7 +72,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
             if (BotOwner.Medecine.SurgicalKit.HaveWork)
             {
-                if (Bot.Enemy == null || Bot.Enemy.TimeSinceSeen > 90f)
+                if (Bot.GoalEnemy == null || Bot.GoalEnemy.TimeSinceSeen > 90f)
                 {
                     Bot.Player?.ActiveHealthController?.RestoreFullHealth();
                     Bot.Decision.ResetDecisions(true);
@@ -126,7 +96,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
         public override void Stop()
         {
             Toggle(false);
-            Bot.Cover.CheckResetCoverInUse();
             Bot.Medical.Surgery.SurgeryStarted = false;
             BotOwner.MovementResume();
         }

@@ -1,9 +1,9 @@
 ﻿using EFT;
-using SAIN.Classes.Coverfinder;
 using SAIN.Components;
 using SAIN.Helpers.Events;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
 using UnityEngine;
 
@@ -97,7 +97,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private void getDecision()
         {
-            Enemy enemy = Bot.Enemy;
+            Enemy enemy = Bot.GoalEnemy;
             EnemyList knownEnemies = Bot.EnemyController.EnemyLists.KnownEnemies;
             BaseClass.EnemyDecisions.DebugShallSearch = null;
             if (Bot.Info.Profile.WildSpawnType == WildSpawnType.bossTagilla)
@@ -137,7 +137,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (BaseClass.SelfActionDecisions.GetDecision(out ESelfDecision selfDecision, enemy))
             {
-                var selfCombat = Bot.Cover.InCover ? ECombatDecision.HoldInCover : ECombatDecision.Retreat;
+                var selfCombat = Bot.Cover.HasCover ? ECombatDecision.HoldInCover : ECombatDecision.Retreat;
                 SetDecisions(selfCombat, ESquadDecision.None, selfDecision);
                 return;
             }
@@ -244,48 +244,25 @@ namespace SAIN.SAINComponent.Classes.Decision
         private bool CheckContinueRetreat()
         {
             bool runningToCover = CurrentCombatDecision == ECombatDecision.Retreat || CurrentCombatDecision == ECombatDecision.RunToCover;
-            if (!runningToCover)
-            {
-                return false;
-            }
-            if (!Bot.Mover.PathFollower.Running)
-            {
-                return false;
-            }
-            if (Bot.Cover.InCover)
-            {
-                return false;
-            }
+            if (!runningToCover) return false;
+            if (!Bot.Mover.Moving) return false;
+            if (Bot.Cover.HasCover) return false;
 
             float timeChangeDec = Bot.Decision.TimeSinceChangeDecision;
-            if (timeChangeDec < 0.5f)
-            {
-                return true;
-            }
+            if (timeChangeDec < 0.5f)  return true;
 
-            if (timeChangeDec > 3 &&
-                !Bot.BotStuck.BotHasChangedPosition)
-            {
-                return false;
-            }
+            //if (timeChangeDec > 3 &&
+            //    !Bot.BotStuck.BotHasChangedPosition)
+            //{
+            //    return false;
+            //}
 
-            CoverPoint coverInUse = Bot.Cover.CoverInUse;
-            if (coverInUse == null)
-            {
-                return false;
-            }
-
-            switch (coverInUse.PathDistanceStatus)
-            {
-                case CoverStatus.InCover:
-                    return false;
-
-                case CoverStatus.CloseToCover:
-                    return true;
-
-                default:
-                    return !coverInUse.CoverData.IsBad;
-            }
+            CoverPoint coverMovingTo = Bot.Cover.CoverPoint_MovingTo;
+            return coverMovingTo != null && coverMovingTo.PathDistanceStatus switch {
+                CoverStatus.InCover => false,
+                CoverStatus.CloseToCover => true,
+                _ => !coverMovingTo.CoverData.IsBad,
+            };
         }
 
         private float _nextGetDecisionTime;

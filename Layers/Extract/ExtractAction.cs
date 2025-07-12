@@ -42,7 +42,6 @@ namespace SAIN.Layers
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            float stamina = Bot.Player.Physical.Stamina.NormalValue;
             bool fightingEnemy = IsFightingEnemy();
             // Environment id of 0 means a bot is outside.
             if (Bot.Player.AIData.EnvironmentId != 0)
@@ -53,13 +52,9 @@ namespace SAIN.Layers
             {
                 shallSprint = false;
             }
-            else if (stamina > 0.75f)
+            else 
             {
                 shallSprint = true;
-            }
-            else if (stamina < 0.2f)
-            {
-                shallSprint = false;
             }
 
             if (!BotOwner.GetPlayer.MovementContext.CanSprint)
@@ -107,8 +102,10 @@ namespace SAIN.Layers
                 Bot.Mover.SetTargetMoveSpeed(1f);
             }
 
-            Shoot.ShootAnyVisibleEnemies(Bot.Enemy);
-            Bot.Steering.SteerByPriority(Bot.Enemy);
+            if (!Bot.Shoot.ShootAnyVisibleEnemies(Bot.GoalEnemy))
+            {
+                Bot.Steering.SteerByPriority(Bot.GoalEnemy);
+            }
             this.EndProfilingSample();
         }
 
@@ -121,9 +118,9 @@ namespace SAIN.Layers
 
         private bool IsFightingEnemy()
         {
-            return Bot.Enemy != null
-                && Bot.Enemy.Seen
-                && (Bot.Enemy.Path.PathLength < 50f || Bot.Enemy.InLineOfSight);
+            return Bot.GoalEnemy != null
+                && Bot.GoalEnemy.Seen
+                && (Bot.GoalEnemy.Path.PathLength < 50f || Bot.GoalEnemy.InLineOfSight);
         }
 
         private bool shallSprint;
@@ -135,7 +132,10 @@ namespace SAIN.Layers
                 return;
             }
 
-            Bot.Mover.Sprint(shallSprint);
+            if (Bot.Mover.Moving)
+            {
+                Bot.Mover.ActivePath.WantToSprint = shallSprint;
+            }
 
             if (distance > MinDistanceToStartExtract * 2)
             {
@@ -156,22 +156,24 @@ namespace SAIN.Layers
                 ExtractTimer = -1f;
                 ReCalcPathTimer = Time.time + 4f;
 
-                Bot.Memory.Extract.ExtractStatus = EExtractStatus.MovingTo;
-                NavMeshPathStatus pathStatus = BotOwner.Mover.GoToPoint(point, true, 0.5f, false, false);
-                var pathController = BotOwner.Mover._pathController;
-                if (pathController?.CurPath != null)
+                if (Bot.Mover.WalkToPoint(point, false, 0.5f))
                 {
-                    float distanceToEndOfPath = Vector3.Distance(BotOwner.Position, pathController.CurPath.LastCorner());
-                    bool reachedEndOfIncompletePath = (pathStatus == NavMeshPathStatus.PathPartial) && (distanceToEndOfPath < BotExtractManager.MinDistanceToExtract);
-
-                    // If the path to the extract is invalid or the path is incomplete and the bot reached the end of it, select a new extract
-                    if ((pathStatus == NavMeshPathStatus.PathInvalid) || reachedEndOfIncompletePath)
+                    Bot.Memory.Extract.ExtractStatus = EExtractStatus.MovingTo;
+                    var pathController = Bot.Mover;
+                    if (pathController?.ActivePath != null)
                     {
-                        // Need to reset the search timer to prevent the bot from immediately selecting (possibly) the same extract
-                        BotManagerComponent.Instance.BotExtractManager.ResetExfilSearchTime(Bot);
+                        float distanceToEndOfPath = Vector3.Distance(BotOwner.Position, pathController.ActivePath.GetLastCorner().Position);
+                        bool reachedEndOfIncompletePath = (pathController.ActivePath.PathStatus == NavMeshPathStatus.PathPartial) && (distanceToEndOfPath < BotExtractManager.MinDistanceToExtract);
 
-                        Bot.Memory.Extract.ExfilPoint = null;
-                        Bot.Memory.Extract.ExfilPosition = null;
+                        // If the path to the extract is invalid or the path is incomplete and the bot reached the end of it, select a new extract
+                        if ((pathController.ActivePath.PathStatus == NavMeshPathStatus.PathInvalid) || reachedEndOfIncompletePath)
+                        {
+                            // Need to reset the search timer to prevent the bot from immediately selecting (possibly) the same extract
+                            BotManagerComponent.Instance.BotExtractManager.ResetExfilSearchTime(Bot);
+
+                            Bot.Memory.Extract.ExfilPoint = null;
+                            Bot.Memory.Extract.ExfilPosition = null;
+                        }
                     }
                 }
             }

@@ -17,7 +17,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public List<Vector3> SegmentPoints;
     }
 
-    public class SAINEnemyPath(Enemy enemy) : EnemyBase(enemy), IBotEnemyClass
+    public class SAINEnemyPath(EnemyData enemy) : EnemyBase(enemy), IBotEnemyClass
     {
         public EPathDistance EPathDistance {
             get
@@ -51,8 +51,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float PathLength { get; private set; } = float.MaxValue;
 
         public float DistanceToEnemyPositionFromLastCorner { get; private set; }
-
-        public EnemyCornerDictionary EnemyCorners { get; private set; } = new EnemyCornerDictionary(enemy.Bot.Transform, enemy.BotOwner.WeaponRoot);
 
         public NavMeshPath PathToEnemy { get; } = new NavMeshPath();
         public NavMeshPathStatus PathToEnemyStatus { get; private set; }
@@ -114,18 +112,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             PathToEnemyStatus = PathToEnemy.status;
             PathCorners = PathToEnemy.corners;
             CalcPathDistanceAndCreateVisionCheckSegments();
-            switch (PathToEnemyStatus)
-            {
-                case NavMeshPathStatus.PathInvalid:
-                    EnemyCorners.Clear();
-                    break;
-
-                case NavMeshPathStatus.PathPartial:
-                case NavMeshPathStatus.PathComplete:
-                    findCorners(enemyPosition, PathToEnemyStatus, PathCorners);
-                    break;
-            }
-
             Enemy.Events.PathUpdated(PathToEnemyStatus);
         }
 
@@ -243,24 +229,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 DistanceToEnemyPositionFromLastCorner = 0;
         }
 
-        private void findCorners(Vector3 enemyPosition, NavMeshPathStatus status, Vector3[] corners)
-        {
-            EnemyCorner first = findFirstCorner(enemyPosition, corners);
-            EnemyCorners.AddOrReplace(ECornerType.First, first);
-
-            EnemyCorner last = findLastCorner(enemyPosition, status, corners);
-            EnemyCorners.AddOrReplace(ECornerType.Last, last);
-
-            EnemyCorner lastKnown = createLastKnownCorner(enemyPosition, corners.Length - 1);
-            EnemyCorners.AddOrReplace(ECornerType.LastKnown, lastKnown);
-        }
-
         public void Clear()
         {
             _calcPathTime = 0;
             PathToEnemy.ClearCorners();
             PathToEnemyStatus = NavMeshPathStatus.PathInvalid;
-            EnemyCorners.Clear();
             PathLength = float.MaxValue;
             PathCorners = null;
             DistanceToEnemyPositionFromLastCorner = 0;
@@ -377,42 +350,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 result += (a - b).magnitude;
             }
             return result;
-        }
-
-        private EnemyCorner findLastCorner(Vector3 enemyPosition, NavMeshPathStatus pathStatus, Vector3[] corners)
-        {
-            int length = corners.Length;
-            // find the last corner before arriving at an enemy position, and then check if we can see it.
-            Vector3 lastCorner;
-            int index;
-            if (pathStatus == NavMeshPathStatus.PathComplete &&
-                length > 2)
-            {
-                index = length - 2;
-                lastCorner = corners[index];
-            }
-            else
-            {
-                index = length - 1;
-                lastCorner = corners[index];
-            }
-            return new EnemyCorner(lastCorner, index);
-        }
-
-        private EnemyCorner findFirstCorner(Vector3 enemyPosition, Vector3[] corners)
-        {
-            if (corners.Length < 2)
-            {
-                return null;
-            }
-
-            Vector3 firstCorner = corners[1];
-            return new EnemyCorner(firstCorner, 1);
-        }
-
-        private EnemyCorner createLastKnownCorner(Vector3 enemyPosition, int index)
-        {
-            return new EnemyCorner(enemyPosition, index);
         }
 
         private Vector3? _enemyLastPosChecked;

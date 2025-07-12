@@ -11,8 +11,7 @@ namespace SAIN.SAINComponent.Classes
             CanEverTick = false;
         }
 
-        public bool SurgeryStarted
-        {
+        public bool SurgeryStarted {
             get
             {
                 return _surgeryStarted;
@@ -27,68 +26,61 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
+        public void StartSurgery()
+        {
+
+        }
+
         public float SurgeryStartTime { get; private set; }
 
         private bool _surgeryStarted;
 
-        public bool AreaClearForSurgery
+        public bool AreaClearForSurgery { get; private set; }
+
+        public bool CheckAreaClearForSurgery()
         {
-            get
-            {
-                if (_nextCheckClearTime < Time.time)
-                {
-                    _nextCheckClearTime = Time.time + _checkClearFreq;
-                    _areaClear = shallTrySurgery();
-                }
-                return _areaClear;
-            }
+            return CheckCanStartUsingKit() && CheckEnemies();
         }
 
-        private bool _areaClear;
-        private float _nextCheckClearTime;
-        private float _checkClearFreq = 0.25f;
-
-        private bool shallTrySurgery()
+        public bool CheckCanStartUsingKit()
         {
-            const float useSurgDist = 100f * 100f;
-            bool useSurgery = false;
-
-            if (_canStartSurgery)
-            {
-                var enemy = Bot.Enemy;
-                if (Bot.EnemyController.AtPeace)
-                {
-                    if (Bot.CurrentTargetPosition == null)
-                    {
-                        useSurgery = true;
-                    }
-                    else if ((Bot.CurrentTargetPosition.Value - Bot.Position).sqrMagnitude > useSurgDist)
-                    {
-                        useSurgery = true;
-                    }
-                }
-                else
-                {
-                    useSurgery = checkAllClear(SurgeryStarted);
-                }
-            }
-
-            return useSurgery;
+            return BotOwner?.Medecine?.FirstAid?.IsBleeding == false && BotOwner?.Medecine?.SurgicalKit?.ShallStartUse() == true;
         }
 
-        public bool _canStartSurgery => BotOwner?.Medecine?.SurgicalKit?.ShallStartUse() == true && BotOwner?.Medecine?.FirstAid?.IsBleeding == false;
-
-        private bool checkAllClear(bool surgeryStarted)
+        private bool CheckEnemies()
         {
             if (_nextCheckEnemiesTime < Time.time)
             {
-                float timeAdd = surgeryStarted ? 0.5f : 0.1f;
-                _nextCheckEnemiesTime = Time.time + timeAdd;
+                _nextCheckEnemiesTime = Time.time + 0.1f;
+                const float minPathDist = 80f;
+                const float minTimeSinceLastKnown = 60f;
+                const float minTimeSinceSeen = 60f;
 
-                float minPathDist = surgeryStarted ? 50f : 100f;
-                float minTimeSinceLastKnown = surgeryStarted ? 30f : 60f;
-
-                _allClear = checkEnemies(minPathDist, minTimeSinceLastKnown);
+                _allClear = true;
+                EnemyList enemies = Bot.EnemyController.EnemyLists.KnownEnemies;
+                foreach (Enemy enemy in enemies)
+                {
+                    if (enemy.IsVisible)
+                    {
+                        _allClear = false;
+                        break;
+                    }
+                    if (enemy.Seen && enemy.TimeSinceSeen < minTimeSinceSeen)
+                    {
+                        _allClear = false;
+                        break;
+                    }
+                    if (enemy.TimeSinceLastKnownUpdated < minTimeSinceLastKnown)
+                    {
+                        _allClear = false;
+                        break;
+                    }
+                    if (enemy.Path.PathLength < minPathDist)
+                    {
+                        _allClear = false;
+                        break;
+                    }
+                }
             }
             return _allClear;
         }

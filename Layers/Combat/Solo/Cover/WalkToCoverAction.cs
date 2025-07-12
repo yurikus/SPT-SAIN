@@ -1,8 +1,7 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Classes.Coverfinder;
-using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Text;
 using UnityEngine;
 
@@ -19,76 +18,22 @@ namespace SAIN.Layers.Combat.Solo.Cover
             ToggleAction(value);
         }
 
-        private float _nextUpdateCoverTime;
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
-
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.Mover.SetTargetPose(1f);
-
-            Enemy Enemy = Bot.CurrentTarget.CurrentTargetEnemy;
-
-            if (_nextUpdateCoverTime < Time.time)
+            Enemy enemy = Bot.GoalEnemy;
+            if (!Shoot.ShootAnyVisibleEnemies(enemy) &&
+                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies) &&
+                !Bot.Steering.SteerByPriority(enemy, false))
             {
-                _nextUpdateCoverTime = Time.time + 0.1f;
-
-                findCover(Enemy);
-                reCheckCover(Enemy);
+                Bot.Steering.LookToLastKnownEnemyPosition(enemy);
             }
-
-            EngageEnemy(Enemy);
-
-            if (_coverDestination == null)
-            {
-                Bot.Mover.DogFight.DogFightMove(true, Enemy);
-            }
-            else if (Bot.Cover.CoverInUse == null)
-            {
-                Bot.Mover.DogFight.DogFightMove(false, Enemy);
-            }
-            this.EndProfilingSample();
-        }
-
-        private void findCover(Enemy enemy)
-        {
-            CoverPoint coverInUse = Bot.Cover.CoverInUse;
-            if (coverInUse == null || coverInUse.CoverData.IsBad)
-            {
-                //if (shallFallback())
-                //{
-                //    RecalcPathTimer = Time.time + 1f;
-                //    return;
-                //}
-
-                Bot.Cover.SortPointsByPathDist();
-                var points = Bot.Cover.CoverPoints;
-                for (int i = 0; i < points.Count; i++)
-                {
-                    var coverPoint = points[i];
-                    if (checkMoveToCover(coverPoint, enemy))
-                    {
-                        RecalcPathTimer = Time.time + 1f;
-                        return;
-                    }
-                }
-            }
-        }
-
-        private void reCheckCover(Enemy enemy)
-        {
-            CoverPoint coverInUse = Bot.Cover.CoverInUse;
-            if (coverInUse != null
-                && RecalcPathTimer < Time.time)
-            {
-                RecalcPathTimer = Time.time + 1f;
-                if (!checkMoveToCover(coverInUse, enemy))
-                {
-                    Bot.Cover.CoverInUse = null;
-                    _nextUpdateCoverTime = -1f;
-                }
-            }
+                //bool shallCrawl =
+                //    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
+                //    Bot.Player.MovementContext.CanProne &&
+                //    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
+                //
         }
 
         private bool checkMoveToCover(CoverPoint coverPoint, Enemy enemy)
@@ -97,83 +42,42 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 !coverPoint.Spotted &&
                 !coverPoint.CoverData.IsBad)
             {
-                bool shallCrawl =
-                    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
-                    Bot.Player.MovementContext.CanProne &&
-                    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
-
-                if (Bot.Mover.GoToPoint(coverPoint.Position, out _, -1, shallCrawl, true, true))
-                {
-                    _wasCrawling = Bot.Mover.Crawling;
-                    Bot.Cover.CoverInUse = coverPoint;
-                    _coverDestination = coverPoint;
-                    return true;
-                }
+                //bool shallCrawl =
+                //    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
+                //    Bot.Player.MovementContext.CanProne &&
+                //    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
+                //
             }
             return false;
-        }
-
-        private bool _wasCrawling;
-        private float RecalcPathTimer = 0f;
-
-        private CoverPoint _coverDestination;
-
-        private void EngageEnemy(Enemy Enemy)
-        {
-            if (Enemy == null)
-            {
-                Bot.Steering.SteerByPriority(null, true);
-                return;
-            }
-
-            if (!Shoot.ShootAnyVisibleEnemies(Enemy) && 
-                !Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies) &&
-                !Bot.Steering.SteerByPriority(Enemy, false))
-            {
-                Bot.Steering.LookToLastKnownEnemyPosition(Enemy);
-            }
         }
 
         public override void Start()
         {
             Toggle(true);
-            _timeStart = Time.time;
         }
 
         public override void Stop()
         {
             Toggle(false);
-
             Bot.Mover.DogFight.ResetDogFightStatus();
-            Bot.Cover.CheckResetCoverInUse();
             Bot.Suppression.ResetSuppressing();
         }
-
-        private float _timeStart;
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {
             stringBuilder.AppendLine("Walk To Cover Info");
             var cover = Bot.Cover;
             stringBuilder.AppendLabeledValue("CoverFinder State", $"{cover.CurrentCoverFinderState}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("Cover Seeking State", $"{cover.CoverSeekingState}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Cover Count", $"{cover.CoverPoints.Count}", Color.white, Color.yellow, true);
             DebugOverlay.AddMoveData(Bot, stringBuilder);
-            if (Bot.CurrentTargetPosition != null)
-            {
-                stringBuilder.AppendLabeledValue("Current Target Position", $"{Bot.CurrentTargetPosition.Value}", Color.white, Color.yellow, true);
-            }
-            else
-            {
-                stringBuilder.AppendLabeledValue("Current Target Position", null, Color.white, Color.yellow, true);
-            }
-
-            if (_coverDestination != null)
+            if (Bot.Cover.CoverPoint_MovingTo != null)
             {
                 stringBuilder.AppendLine("Cover Destination");
-                stringBuilder.AppendLabeledValue("Status", $"{_coverDestination.StraightDistanceStatus}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Height / Value", $"{_coverDestination.CoverHeight} {_coverDestination.HardData.Value}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Path Length", $"{_coverDestination.PathLength}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Straight Distance", $"{(_coverDestination.Position - Bot.Position).magnitude}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Status", $"{Bot.Cover.CoverPoint_MovingTo.StraightDistanceStatus}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Height / Value", $"{Bot.Cover.CoverPoint_MovingTo.CoverHeight} {Bot.Cover.CoverPoint_MovingTo.HardData.Value}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Path Length", $"{Bot.Cover.CoverPoint_MovingTo.PathData.PathLength}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Straight Distance", $"{(Bot.Cover.CoverPoint_MovingTo.Position - Bot.Position).magnitude}", Color.white, Color.yellow, true);
             }
         }
     }

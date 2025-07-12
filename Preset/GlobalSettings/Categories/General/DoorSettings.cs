@@ -4,9 +4,9 @@ namespace SAIN.Preset.GlobalSettings
 {
     public class DoorSettings : SAINSettingsBase<DoorSettings>, ISAINSettings
     {
-        [Name("SAIN Door Handling")]
-        [Description("WIP")]
-        public bool NewDoorOpening = true;
+        //[Name("SAIN Door Handling")]
+        //[Description("WIP")]
+        //public bool NewDoorOpening = true;
 
         [Name("No Door Animations")]
         [Description("Bots auto open doors instead of getting stuck in an animation, if fika is loaded, this is ignored and it is always disabled.")]

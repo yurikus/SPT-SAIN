@@ -17,7 +17,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         private const float REPORT_HEARD_FREQUENCY = 1f;
 
-        public EnemyHearing(Enemy enemy) : base(enemy)
+        public EnemyHearing(EnemyData enemy) : base(enemy)
         {
         }
 
@@ -122,7 +122,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             if (action != EEnemyAction.None)
             {
                 Enemy.Status.SetVulnerableAction(action);
-                Bot.Squad.SquadInfo.UpdateSharedEnemyStatus(EnemyIPlayer, action, Bot, soundType, soundPosition);
+                Bot.Squad.SquadInfo.UpdateSharedEnemyStatus(EnemyPlayer, action, Bot, soundType, soundPosition);
             }
         }
 

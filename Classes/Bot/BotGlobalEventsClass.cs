@@ -9,8 +9,6 @@ namespace SAIN.SAINComponent.Classes
 
         public event Action<BotComponent> OnExitPeace;
 
-        public event Action<BotComponent, NavGraphVoxelSimple, NavGraphVoxelSimple> OnVoxelChanged;
-
         public BotGlobalEventsClass(BotComponent sain) : base(sain)
         {
             CanEverTick = false;
@@ -19,20 +17,13 @@ namespace SAIN.SAINComponent.Classes
         public override void Init()
         {
             Bot.EnemyController.Events.OnPeaceChanged.OnToggle += PeaceChanged;
-            Bot.DoorOpener.DoorFinder.OnNewVoxel += onVoxelChange;
             base.Init();
         }
 
         public override void Dispose()
         {
             Bot.EnemyController.Events.OnPeaceChanged.OnToggle -= PeaceChanged;
-            Bot.DoorOpener.DoorFinder.OnNewVoxel -= onVoxelChange;
             base.Dispose();
-        }
-
-        private void onVoxelChange(NavGraphVoxelSimple newVoxel, NavGraphVoxelSimple oldVoxel)
-        {
-            OnVoxelChanged?.Invoke(Bot, newVoxel, oldVoxel);
         }
 
         public void PeaceChanged(bool value)

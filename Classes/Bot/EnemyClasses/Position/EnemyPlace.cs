@@ -52,21 +52,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool ShallClear {
             get
             {
-                var person = PlaceData.Enemy?.EnemyPerson;
-                if (person == null)
+                if (Enemy.IsEnemyActive(this.PlaceData.Enemy) && PlaceData.Enemy.WasValid)
                 {
-                    return true;
+                    if (PlayerLeftArea)
+                    {
+                        return true;
+                    }
+                    return false;
                 }
-                var activeClass = person.ActivationClass;
-                if (!activeClass.Active || !activeClass.IsAlive)
-                {
-                    return true;
-                }
-                if (PlayerLeftArea)
-                {
-                    return true;
-                }
-                return false;
+                return true;
             }
         }
 
@@ -123,7 +117,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private const float ENEMY_DIST_TO_PLACE_CHECK_FREQ = 10;
         private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE = 150;
-        private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE_AI = 100f;
+        private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE_AI = 125f;
 
         public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
         {
@@ -158,7 +152,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             BodyPartPositions.Clear();
             Vector3 position = _position;
             Vector3 enemyRealPos = enemy.EnemyPosition;
-            foreach (EnemyPartDataClass part in enemy.Vision.VisionChecker.EnemyParts.PartsArray)
+            foreach (EnemyPartDataClass part in enemy.Vision.EnemyParts.PartsArray)
             {
                 Vector3 translatedPartPos = part.Transform.position - enemyRealPos + position;
                 BodyPartPositions.Add(part.BodyPart, translatedPartPos);

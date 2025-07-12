@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Classes.Transform;
 using SAIN.Components;
 using SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
 using SAIN.Components.PlayerComponentSpace;
@@ -42,8 +43,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             if (IsCurrentEnemy && GetVisibilePathPoint(out Vector3 point))
             {
-                DebugGizmos.Sphere(point, 0.06f, Color.red, 0.02f);
-                DebugGizmos.Line(point, Bot.Transform.HeadPosition, Color.red, 0.015f, 0.02f);
+                DebugGizmos.DrawSphere(point, 0.06f, Color.red, 0.02f);
+                DebugGizmos.DrawLine(point, Bot.Transform.EyePosition, Color.red, 0.015f, 0.02f);
             }
 
             base.ManualUpdate();
@@ -54,10 +55,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public string EnemyName { get; }
         public string EnemyProfileId { get; }
         public PlayerComponent EnemyPlayerComponent { get; }
-        public PersonClass EnemyPerson { get; }
-        public IPlayer EnemyIPlayer { get; private set; }
         public Player EnemyPlayer { get; private set; }
-        public PersonTransformClass EnemyTransform { get; }
+        public PlayerTransformClass EnemyTransform { get; }
         public OtherPlayerData EnemyPlayerData { get; }
         public bool IsAI => EnemyPlayer.IsAI;
         public bool IsZombie => EnemyPlayer.UsedSimplifiedSkeleton;
@@ -104,21 +103,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool EnemyNotLooking => IsVisible && !Status.EnemyLookingAtMe && !Status.ShotAtMeRecently;
         public bool WasValid => ValidChecker.WasValid;
 
-        public Vector3? CenterMass {
-            get
-            {
-                if (EnemyIPlayer == null)
-                {
-                    return null;
-                }
-                if (_nextGetCenterTime < Time.time)
-                {
-                    _nextGetCenterTime = Time.time + 0.05f;
-                    _centerMass = new Vector3?(FindCenterMass());
-                }
-                return _centerMass;
-            }
-        }
+        public Vector3 CenterMass => FindCenterMass(EnemyPlayerComponent);
 
         public HashSet<EEnemyTag> Tags { get; } = [];
 
@@ -137,7 +122,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     _nextCalcMoveDirTime = Time.time + 0.1f;
                     Vector2 moveDirV2 = EnemyPlayer.MovementContext.MovementDirection;
                     Vector3 moveDirection = new(moveDirV2.x, 0, moveDirV2.y);
-                    if (EnemyTransform.VelocityMagnitudeNormal > 0.01f)
+                    if (EnemyTransform.VelocityData.VelocityMagnitudeNormal > 0f)
                     {
                         LastMoveDirection = moveDirection;
                         if (EnemyPlayer.IsSprintEnabled)
@@ -156,7 +141,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public Vector3 EnemyPosition => EnemyTransform.Position;
         public Vector3 EnemyDirection => EnemyPlayerData.DistanceData.Direction;
         public Vector3 EnemyDirectionNormal => EnemyPlayerData.DistanceData.DirectionNormal;
-        public Vector3 EnemyHeadPosition => EnemyTransform.HeadPosition;
 
         public float TimeSinceLastKnownUpdated => KnownPlaces.TimeSinceLastKnownUpdated;
         public bool InLineOfSight => Vision.InLineOfSight;
@@ -177,31 +161,44 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float ENEMY_UPDATEFREQUENCY_MAX_DIST = 500f;
         private const float ENEMY_UPDATEFREQUENCY_MIN_DIST = 50f;
         private const float SQUADREPORT_SIGHT_INTERVAL = 0.5f;
+        
+        public static bool IsEnemyActive(Enemy enemy)
+        {
+            if (enemy == null) return false;
+            if (!enemy.PlayerComponent.IsActive) return false;
+            if (enemy.IsAI)
+            {
+                BotOwner enemyBotOwner = enemy.EnemyPlayerComponent.BotOwner;
+                if (enemyBotOwner == null) return false;
+                if (enemyBotOwner.BotState != EBotState.Active) return false;
+                if (enemyBotOwner.StandBy.StandByType != BotStandByType.active) return false;
+            }
+            return true;
+        }
 
         public Enemy(BotComponent bot, PlayerComponent enemyComponent, EnemyInfo enemyInfo) : base(bot)
         {
             EnemyPlayerComponent = enemyComponent;
-            EnemyIPlayer = enemyComponent.IPlayer;
             EnemyPlayer = enemyComponent.Player;
-            EnemyPerson = enemyComponent.Person;
             EnemyTransform = enemyComponent.Transform;
-            EnemyName = $"{enemyComponent.Name} ({enemyComponent.Person.Nickname})";
+            EnemyName = $"{enemyComponent.Name} ({enemyComponent.Player.Profile.Nickname})";
             EnemyInfo = enemyInfo;
             EnemyProfileId = enemyComponent.ProfileId;
 
             EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[enemyComponent.ProfileId];
 
-            Events = new EnemyEvents(this);
+            var _enemyData = new EnemyData(this);
+            Events = new EnemyEvents(_enemyData);
             Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            ActiveThreatChecker = new EnemyActiveThreatChecker(this);
-            ValidChecker = new EnemyValidChecker(this);
-            KnownChecker = new EnemyKnownChecker(this);
-            Status = new SAINEnemyStatus(this);
-            Vision = new EnemyVisionClass(this);
-            Path = new SAINEnemyPath(this);
-            KnownPlaces = new EnemyKnownPlaces(this);
-            Aim = new EnemyAim(this);
-            Hearing = new EnemyHearing(this);
+            ActiveThreatChecker = new EnemyActiveThreatChecker(_enemyData);
+            ValidChecker = new EnemyValidChecker(_enemyData);
+            KnownChecker = new EnemyKnownChecker(_enemyData);
+            Status = new SAINEnemyStatus(_enemyData);
+            Vision = new EnemyVisionClass(_enemyData);
+            Path = new SAINEnemyPath(_enemyData);
+            KnownPlaces = new EnemyKnownPlaces(_enemyData);
+            Aim = new EnemyAim(_enemyData);
+            Hearing = new EnemyHearing(_enemyData);
 
             UpdateDistAndDirection();
         }
@@ -465,11 +462,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private Vector3 FindCenterMass()
+        private static Vector3 FindCenterMass(PlayerComponent playerComp)
         {
-            PlayerComponent enemy = EnemyPlayerComponent;
-            Vector3 headPos = enemy.Player.MainParts[BodyPartType.head].Position;
-            Vector3 floorPos = enemy.Position;
+            Vector3 headPos = playerComp.Player.MainParts[BodyPartType.head].Position;
+            Vector3 floorPos = playerComp.Position;
             Vector3 centerMass = Vector3.Lerp(headPos, floorPos, SAINPlugin.LoadedPreset.GlobalSettings.Aiming.CenterMassVal);
             return centerMass;
         }
@@ -521,8 +517,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float NextCheckFlashLightTime;
         private float _nextUpdateCoefTime;
         private bool _hasBeenActive;
-        private Vector3? _centerMass;
-        private float _nextGetCenterTime;
         private float _nextReportSightTime;
         private float _timeLastActive;
     }

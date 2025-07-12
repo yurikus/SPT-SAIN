@@ -40,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             isRandomLook = false;
 
-            if (EFTMath.RandomBool() && BaseClass.FindLastKnownTarget(Bot.Enemy, out Vector3 EnemyPosition))
+            if (EFTMath.RandomBool() && BaseClass.FindLastKnownTarget(Bot.GoalEnemy, out Vector3 EnemyPosition))
             {
                 return EnemyPosition;
             }
@@ -73,7 +73,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             const float RaycastDistance = 12f;
 
             LayerMask Mask = LayerMaskClass.HighPolyWithTerrainMaskAI;
-            var headPos = Bot.Transform.HeadPosition;
+            var headPos = Bot.Transform.EyePosition;
 
             bool randomDirFound = false;
             float pointDistance = 0f;

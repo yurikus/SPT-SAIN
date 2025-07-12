@@ -124,7 +124,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return false;
             }
             if (!_canThrowWhileSprint &&
-                (Player.IsSprintEnabled || Bot.Mover.PathFollower.Running))
+                (Player.IsSprintEnabled || Bot.Mover.Running))
             {
                 reason = "running";
                 return false;
@@ -203,7 +203,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private bool checkCanThrowBlindCorner(Enemy enemy, Vector3 lastKnownPos)
         {
-            Vector3? blindCorner = enemy.Path.EnemyCorners.GroundPosition(ECornerType.Blind);
+            Vector3? blindCorner = enemy.VisiblePathPoint;
             if (blindCorner == null)
             {
                 return false;
@@ -228,7 +228,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         private bool tryThrowToPos(Vector3 pos, string posString, float distance, params AIGreandeAng[] possibleAngles)
         {
             pos += Vector3.up * _checkThrowPos_HeightOffset;
-            var weaponRoot = Bot.Transform.WeaponRoot;
+            var weaponRoot = Bot.Transform.WeaponData.WeaponRoot;
             Vector3 throwDir = (pos - Bot.Position).normalized;
             float dispersion = getThrowDispersion(pos, throwDir, distance);
             if (canThrowAGrenade(weaponRoot, randomize(pos, throwDir, dispersion), possibleAngles))
@@ -312,7 +312,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 return false;
             }
-            if (Player.IsSprintEnabled || Bot.Mover.PathFollower.Running)
+            if (Player.IsSprintEnabled || Bot.Mover.Running)
             {
                 return false;
             }

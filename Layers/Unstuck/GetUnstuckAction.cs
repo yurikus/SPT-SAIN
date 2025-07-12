@@ -44,7 +44,7 @@ namespace SAIN.Layers.Combat.Run
 
         public override void Start()
         {
-            Bot.Mover.StopMove();
+            Bot.Mover.Stop();
         }
 
         public override void Stop()

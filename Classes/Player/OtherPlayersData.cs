@@ -65,7 +65,7 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 DataHashSet.Remove(Data);
                 DataDictionary.Remove(profileId);
-                Logger.LogWarning($"Removed Existing Playerdata for profile ID [{profileId}] : Old Data Nickname: [{Data.PlayerComponent?.Player?.Profile.Nickname}] : New Data Nickname: [{playerComp.Player?.Profile.Nickname}]");
+                Logger.LogWarning($"Removed Existing Playerdata for profile ID [{profileId}] : Old Data Nickname: [{Data.OtherPlayerComponent?.Player?.Profile.Nickname}] : New Data Nickname: [{playerComp.Player?.Profile.Nickname}]");
             }
 
             Data = new(profileId, playerComp);

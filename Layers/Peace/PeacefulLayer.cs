@@ -83,7 +83,7 @@ namespace SAIN.Layers.Peace
                     Logged = true;
                     Logger.LogInfo($"[{BotOwner.name}] Is Moving to Extract with [{percentageLeft}] of the raid remaining.");
                 }
-                if (Bot.Enemy == null || BotController.BotExtractManager.TimeRemaining < 120)
+                if (Bot.GoalEnemy == null || BotController.BotExtractManager.TimeRemaining < 120)
                 {
                     Bot.Memory.Extract.ExtractReason = EExtractReason.Time;
                     return true;
@@ -106,7 +106,7 @@ namespace SAIN.Layers.Peace
                     Logged = true;
                     Logger.LogInfo($"[{BotOwner.name}] Is Moving to Extract because of heavy injury and lack of healing items.");
                 }
-                if (Bot.Enemy == null || Bot.Enemy.TimeSinceSeen > 30f)
+                if (Bot.GoalEnemy == null || Bot.GoalEnemy.TimeSinceSeen > 30f)
                 {
                     if (_nextSayImLeavingTime < Time.time)
                     {
@@ -161,7 +161,7 @@ namespace SAIN.Layers.Peace
 
         private bool HasActiveThreat()
         {
-            if (Bot.Enemy == null || Bot.Enemy.TimeSinceSeen > 30f)
+            if (Bot.GoalEnemy == null || Bot.GoalEnemy.TimeSinceSeen > 30f)
             {
                 return false;
             }

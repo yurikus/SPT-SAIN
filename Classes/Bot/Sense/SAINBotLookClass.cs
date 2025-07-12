@@ -34,14 +34,14 @@ namespace SAIN.SAINComponent.Classes
 
         // This (And the methods it calls) mirrors a large part of BSG's LookSensor
         // Look at that for potential changes between versions
-        public int UpdateLook()
+        public int UpdateLook(float deltaTime)
         {
             if (BotOwner.LeaveData == null || BotOwner.LeaveData.LeaveComplete)
             {
                 return 0;
             }
 
-            int numUpdated = UpdateLookForEnemies(LookData);
+            int numUpdated = UpdateLookForEnemies(LookData, deltaTime);
             UpdateLookData(LookData);
             return numUpdated;
         }
@@ -67,23 +67,15 @@ namespace SAIN.SAINComponent.Classes
             lookData.Reset();
         }
 
-        private int UpdateLookForEnemies(LookAllData lookAll)
+        private int UpdateLookForEnemies(LookAllData lookAll, float deltaTime)
         {
             int updated = 0;
             _cachedList.Clear();
-            _cachedList.AddRange(_enemies.Values);
+            _cachedList.AddRange(Bot.EnemyController.Enemies.Values);
             foreach (Enemy enemy in _cachedList)
-            {
-                if (!ShallCheckEnemy(enemy))
-                {
-                    continue;
-                }
-
-                if (CheckEnemy(enemy, lookAll))
-                {
+                if (ShallCheckEnemy(enemy) && CheckEnemy(enemy, lookAll, deltaTime))
                     updated++;
-                }
-            }
+
             _cachedList.Clear();
             return updated;
         }
@@ -92,17 +84,13 @@ namespace SAIN.SAINComponent.Classes
 
         private bool ShallCheckEnemy(Enemy enemy)
         {
-            if (enemy?.CheckValid() != true)
-            {
-                return false;
-            }
-
-            if (!enemy.InLineOfSight || !enemy.Vision.Angles.CanBeSeen)
+            if (enemy == null) return false;
+            if (!enemy.CheckValid() || !Enemy.IsEnemyActive(enemy)) return false;
+            if (!enemy.Vision.EnemyParts.CanBeSeen || !enemy.Vision.Angles.CanBeSeen)
             {
                 SetNotVis(enemy);
                 return false;
             }
-
             return true;
         }
 
@@ -112,7 +100,7 @@ namespace SAIN.SAINComponent.Classes
             {
                 if (part.IsVisible || part.VisibleType == EEnemyPartVisibleType.Sence)
                 {
-                    part.UpdateVisibility(BotOwner, false, false, false, Time.time - enemy.Vision.VisionChecker.LastCheckLookTime);
+                    part.UpdateVisibility(BotOwner, false, false, false, Time.deltaTime);
                 }
             }
 
@@ -122,19 +110,11 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        private bool CheckEnemy(Enemy enemy, LookAllData lookAll)
+        private bool CheckEnemy(Enemy enemy, LookAllData lookAll, float deltaTime)
         {
-            float delay = GetDelay(enemy);
-            var look = enemy.Vision.VisionChecker;
-            float timeSince = Time.time - look.LastCheckLookTime;
-            if (timeSince >= delay)
-            {
-                look.LastCheckLookTime = Time.time;
-                // ArchangelWTF: In AITaskManager.UpdateGroup timeSince is passed here
-                enemy.EnemyInfo.CheckLookEnemy(lookAll, timeSince);
-                return true;
-            }
-            return false;
+            // ArchangelWTF: In AITaskManager.UpdateGroup timeSince is passed here
+            enemy.EnemyInfo.CheckLookEnemy(lookAll, deltaTime);
+            return true;
         }
 
         private float GetDelay(Enemy enemy)

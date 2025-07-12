@@ -1,26 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using SAIN.Components.PlayerComponentSpace;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class EnemyPartsClass : EnemyBase
+    public class EnemyPartsClass
     {
-        private const float LINEOFSIGHT_TIME = 0.25f;
-        private const float CANSHOOT_TIME = 0.25f;
-
-        public EnemyPartsClass(Enemy enemy) : base(enemy)
+        public EnemyPartsClass(PlayerComponent enemyPlayerComp)
         {
-            createPartDatas(enemy.Player.PlayerBones);
+            CreatePartDatas(enemyPlayerComp);
             PartsArray = [.. Parts.Values];
-            _indexMax = Parts.Count;
         }
 
-        public bool LineOfSight => TimeSinceInLineOfSight < LINEOFSIGHT_TIME;
-        public float TimeSinceInLineOfSight => Time.time - _timeLastInSight;
+        public bool CanBeSeen { get; private set; }
 
-        public bool CanShoot => TimeSinceCanShoot < CANSHOOT_TIME;
-        public float TimeSinceCanShoot => Time.time - _timeLastCanShoot;
+        public bool LineOfSight { get; private set; }
+
+        public bool CanShoot { get; private set; }
 
         public Dictionary<EBodyPart, EnemyPartDataClass> Parts { get; } = [];
 
@@ -28,67 +24,34 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void Update()
         {
-            UpdateParts();
-        }
-
-        private void UpdateParts()
-        {
-            bool inSight = false;
-            bool canShoot = false;
             float time = Time.time;
-
-            foreach (var part in Parts.Values)
+            CanBeSeen = false;
+            LineOfSight = false;
+            CanShoot = false;
+            foreach (var part in PartsArray)
             {
-                part.Update(Enemy);
-
-                if (!canShoot && part.CanShoot)
-                {
-                    canShoot = true;
-                    _timeLastCanShoot = time;
-                }
-
-                if (!inSight && part.LineOfSight)
-                {
-                    inSight = true;
-                    _timeLastInSight = time;
-                }
+                part.Update(time);
+                if (!CanShoot && part.CanShoot) CanShoot = true;
+                if (!LineOfSight && part.LineOfSight) LineOfSight = true;
+                if (!CanBeSeen && part.CanBeSeen) CanBeSeen = true;
             }
         }
 
         public EnemyPartDataClass GetNextPart()
         {
-            EBodyPart epart = (EBodyPart)_index;
-            if (!Parts.TryGetValue(epart, out EnemyPartDataClass result))
-            {
-                _index = 0;
-                result = Parts[EBodyPart.Chest];
-            }
-
             _index++;
-            if (_index > _indexMax)
-            {
-                _index = 0;
-            }
-
-            if (result == null)
-            {
-                result = Parts.PickRandom().Value;
-            }
-            return result;
+            if (_index == PartsArray.Length) _index = 0;
+            return PartsArray[_index];
         }
 
-        private void createPartDatas(PlayerBones bones)
+        private void CreatePartDatas(PlayerComponent enemyPlayer)
         {
-            var parts = Enemy.EnemyPlayerComponent.BodyParts.Parts;
+            var parts = enemyPlayer.BodyParts.Parts;
             foreach (var bodyPart in parts)
             {
                 Parts.Add(bodyPart.Key, new EnemyPartDataClass(bodyPart.Key, bodyPart.Value.Transform, bodyPart.Value.Colliders));
             }
         }
-
-        private float _timeLastInSight;
-        private float _timeLastCanShoot;
         private int _index;
-        private readonly int _indexMax;
     }
 }

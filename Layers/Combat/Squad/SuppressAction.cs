@@ -1,6 +1,5 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Models.Enums;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Squad
@@ -18,20 +17,19 @@ namespace SAIN.Layers.Combat.Squad
 
         public override void Update(CustomLayer.ActionData data)
         {
-            var enemy = Bot.Enemy;
+            var enemy = Bot.GoalEnemy;
             if (enemy != null)
             {
                 if (Shoot.ShootAnyVisibleEnemies(enemy))
                 {
-                    Bot.Mover.StopMove();
+                    Bot.Mover.Stop();
                     return;
                 }
 
-                if (Bot.ManualShoot.CanShoot(true) &&
-                    FindSuppressionTarget(out var target))
+                if (Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies))
                 {
                     _manualShooting = true;
-                    Bot.Mover.StopMove();
+                    Bot.Mover.Stop();
 
                     bool hasMachineGun = Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun;
                     if (hasMachineGun
@@ -39,22 +37,16 @@ namespace SAIN.Layers.Combat.Squad
                     {
                         Bot.Mover.Prone.SetProne(true);
                     }
-
-                    bool shot = Bot.ManualShoot.TryShoot(enemy, target.Value, true, EShootReason.SquadSuppressing);
-
-                    if (shot)
-                    {
-                        enemy.Status.EnemyIsSuppressed = true;
-                        float waitTime = hasMachineGun ? 0.1f : 0.5f;
-                        _nextShotTime = Time.time + (waitTime * Random.Range(0.75f, 1.25f));
-                    }
+                    enemy.Status.EnemyIsSuppressed = true;
+                    float waitTime = hasMachineGun ? 0.1f : 0.5f;
+                    _nextShotTime = Time.time + (waitTime * Random.Range(0.75f, 1.25f));
                     return;
                 }
 
                 Vector3? lastKnown = enemy.LastKnownPosition;
                 if (lastKnown != null)
                 {
-                    Bot.Mover.GoToPoint(lastKnown.Value, out _, -1, false, false, false);
+                    Bot.Mover.WalkToPointByWay(enemy.Path.PathToEnemy);
                 }
             }
 
@@ -80,28 +72,9 @@ namespace SAIN.Layers.Combat.Squad
 
         private bool FindSuppressionTarget(out Vector3? pos)
         {
-            pos = Bot.Enemy?.SuppressionTarget;
+            pos = Bot.GoalEnemy?.SuppressionTarget;
             return pos != null;
         }
-
-        private bool CanSeeSuppressionTarget(Vector3? target)
-        {
-            if (target == null)
-            {
-                _canSeeSuppTarget = false;
-            }
-            else if (_nextCheckVisTime < Time.time)
-            {
-                _nextCheckVisTime = Time.time + 0.5f;
-                Vector3 myHead = Bot.Transform.HeadPosition;
-                _canSeeSuppTarget = !Physics.Raycast(myHead, target.Value - myHead, (target.Value - myHead).magnitude * 0.8f);
-            }
-            return _canSeeSuppTarget;
-        }
-
-        private bool _canSeeSuppTarget;
-
-        private float _nextCheckVisTime;
 
         public override void Start()
         {

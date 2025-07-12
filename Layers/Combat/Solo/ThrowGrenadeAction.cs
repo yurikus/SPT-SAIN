@@ -18,7 +18,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            if (!Stopped && Time.time - StartTime > 1f || Bot.Cover.CheckLimbsForCover())
+            if (!Stopped && Time.time - StartTime > 1f || Bot.Cover.CheckLimbsForCover(Bot.GoalEnemy))
             {
                 Stopped = true;
                 BotOwner.StopMove();

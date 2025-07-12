@@ -63,7 +63,7 @@ namespace SAIN.Components
             {
                 if (player != null && player.IsActive && player.Flashlight.DeviceActive)
                 {
-                    Vector3 WeaponPointDir = player.Transform.WeaponPointDirection;
+                    Vector3 WeaponPointDir = player.Transform.WeaponData.PointDirection;
                     if (player.Flashlight.Laser || player.Flashlight.IRLaser)
                     {
                         Directions.Add(new(LaserTraceDistance, WeaponPointDir));
@@ -75,7 +75,7 @@ namespace SAIN.Components
                     }
                     if (Directions.Count > 0)
                     {
-                        RaycastJobs.Add(new RaycastJob(Directions, player.Transform.WeaponFirePort, LayerMaskClass.HighPolyWithTerrainMaskAI, player.Player, null));
+                        RaycastJobs.Add(new RaycastJob(Directions, player.Transform.WeaponData.PointDirection, LayerMaskClass.HighPolyWithTerrainMaskAI, player.Player, null));
                         Directions.Clear();
                     }
                 }
@@ -123,14 +123,14 @@ namespace SAIN.Components
                 {
                     foreach (Enemy Enemy in Bot.EnemyController.Enemies.Values)
                     {
-                        if (Enemy != null && Enemy.EnemyPerson.Active)
+                        if (Enemy != null && Enemy.PlayerComponent.IsActive)
                         {
                             FlashLightClass EnemyLight = Enemy.EnemyPlayerComponent.Flashlight;
                             if (EnemyLight.DeviceActive &&
                                 Bot.PlayerComponent.Flashlight.LightDetection.CheckIsBeamVisible(EnemyLight) &&
                                 Enemy.RealDistance <= 125f)
                             {
-                                RaycastJobs.Add(new RaycastJob(EnemyLight.LightDetection.LightPoints, Bot.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMaskAI, Bot.Player, Enemy.Player));
+                                RaycastJobs.Add(new RaycastJob(EnemyLight.LightDetection.LightPoints, Bot.Transform.EyePosition, LayerMaskClass.HighPolyWithTerrainMaskAI, Bot.Player, Enemy.Player));
                             }
                         }
                     }

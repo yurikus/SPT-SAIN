@@ -30,7 +30,7 @@ namespace SAIN.Components
                 {
                     //RaycastJobs.Add(new RaycastJob(ShortRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
                     //RaycastJobs.Add(new RaycastJob(MidRangeRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                    RaycastJobs.Add(new RaycastJob(LongRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
+                    RaycastJobs.Add(new RaycastJob(LongRandomDirections, player.Transform.EyePosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
                 }
             }
             int Total = RaycastJobs.Count;
@@ -58,7 +58,7 @@ namespace SAIN.Components
                                 Color RandomColor = DebugGizmos.RandomColor;
                                 if (Player.Player.IsYourPlayer)
                                 {
-                                    DebugGizmos.Sphere(Point, 0.025f, RandomColor, 0.05f);
+                                    DebugGizmos.DrawSphere(Point, 0.025f, RandomColor, 0.05f);
                                     //DebugGizmos.Line(Command.from, Point, RandomColor, 0.01f, true, 0.05f);
                                 }
                                 if (Command.distance > 3)
@@ -67,8 +67,8 @@ namespace SAIN.Components
                                     {
                                         if (Player.Player.IsYourPlayer)
                                         {
-                                            DebugGizmos.Sphere(NavHit.position, 0.1f, RandomColor, 0.05f);
-                                            DebugGizmos.Line(NavHit.position, NavHit.position + Vector3.up * 1.5f, RandomColor, 0.025f, 0.05f);
+                                            DebugGizmos.DrawSphere(NavHit.position, 0.1f, RandomColor, 0.05f);
+                                            DebugGizmos.DrawLine(NavHit.position, NavHit.position + Vector3.up * 1.5f, RandomColor, 0.025f, 0.05f);
                                         }
                                     }
                                 }
@@ -87,71 +87,6 @@ namespace SAIN.Components
                 RaycastJobs[i].Schedule();
         }
 
-        private void ReadResults(int Total)
-        {
-            for (int i = 0; i < Total; i++)
-            {
-                RaycastJob Job = RaycastJobs[i];
-                Job.Complete();
-                NativeArray<RaycastHit> Hits = Job.Hits;
-                NativeArray<RaycastCommand> Commands = Job.Commands;
-
-                if (GameWorldComponent.TryGetPlayerComponent(Job.Owner, out PlayerComponent Player))
-                {
-                    for (int j = Hits.Length - 1; j >= 0; j--)
-                    {
-                        RaycastHit Hit = Hits[j];
-                        if (Hit.collider == null)
-                        {
-                            RaycastCommand Command = Commands[j];
-                            Vector3 Point = Command.from + Command.direction * Command.distance;
-                            if (Player.Player.IsYourPlayer)
-                            {
-                                Color RandomColor = DebugGizmos.RandomColor;
-                                DebugGizmos.Sphere(Point, 0.05f, RandomColor, 0.1f);
-                                DebugGizmos.Line(Command.from, Point, RandomColor, 0.025f, 0.1f);
-                            }
-                        }
-                    }
-                }
-            }
-            //for (int i = 0; i < Total; i++)
-            //{
-            //    RaycastJob Job = RaycastJobs[i];
-            //    Job.Complete();
-            //    NativeArray<RaycastHit> Hits = Job.Hits;
-            //    NativeArray<RaycastCommand> Commands = Job.Commands;
-            //
-            //    if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
-            //    {
-            //        Enemy Enemy = Bot.EnemyController.GetEnemy(Job.Target?.ProfileId, false);
-            //        if (Enemy != null)
-            //        {
-            //            bool PointFound = false;
-            //            for (int j = Hits.Length - 1; j >= 0; j--)
-            //            {
-            //                RaycastHit Hit = Hits[j];
-            //                if (Hit.collider == null)
-            //                {
-            //                    RaycastCommand Command = Commands[j];
-            //                    Vector3 Point = Command.from + Command.direction * Command.distance;
-            //                    DebugGizmos.Sphere(Point, 0.05f, 0.1f);
-            //                    //if (NavMesh.SamplePosition(LastVisiblePoint, out NavMeshHit hit, 2, -1))
-            //                    //{
-            //                    //    PointFound = true;
-            //                    //    break;
-            //                    //}
-            //                }
-            //            }
-            //            if (!PointFound)
-            //            {
-            //                Enemy.ClearVisiblePathPoint();
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
         protected static RandomDir[] GenerateRandomDirections(int Count, float LengthMin, float LengthMax)
         {
             RandomDir[] Result = new RandomDir[Count];
@@ -160,31 +95,6 @@ namespace SAIN.Components
                 Result[i] = new RandomDir(LengthMin, LengthMax);
             }
             return Result;
-        }
-
-        private void CreateJobs()
-        {
-            RandomDir[] RandomDirections = GenerateRandomDirections(100, 0.5f, 8.0f);
-            foreach (var player in AlivePlayers.Values)
-            {
-                if (player?.IsActive == true)
-                {
-                    RaycastJobs.Add(new RaycastJob(RandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                }
-            }
-            //foreach (var bot in AliveBots.Values)
-            //{
-            //    if (bot?.BotActive == true)
-            //    {
-            //        foreach (Enemy enemy in bot.EnemyController.Enemies.Values)
-            //        {
-            //            if (enemy?.EnemyKnown == true)
-            //            {
-            //                RaycastJobs.Add(new RaycastJob(RandomDirections, enemy.EnemyHeadPosition, LayerMaskClass.HighPolyWithTerrainMask, bot.Player, enemy.EnemyPlayer));
-            //            }
-            //        }
-            //    }
-            //}
         }
 
         private IEnumerator AwaitCompletion(int Total)
