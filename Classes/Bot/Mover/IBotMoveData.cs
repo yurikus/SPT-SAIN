@@ -18,6 +18,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool OnLastCorner { get; }
         public float CurrentCornerDistanceSqr { get; }
         public BotCornerDetails CurrentCorner { get; }
+        public BotCornerDetails LastCorner { get; }
         public bool WantToSprint { get; }
         public bool ShallSprintNow { get; }
         public bool ShallStopSprintWhenSeeEnemy { get; }

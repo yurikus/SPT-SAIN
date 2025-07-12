@@ -76,6 +76,12 @@ namespace SAIN.SAINComponent.Classes
         
         public Enemy GetEnemyToShoot(Enemy priorityEnemy = null)
         {
+            if (priorityEnemy == null)
+            {
+                Bot.Aim.LoseAimTarget();
+                return null;
+            }
+
             if (AimAndShootAtEnemy(priorityEnemy, Bot))
             {
                 UpdateADS(priorityEnemy);
