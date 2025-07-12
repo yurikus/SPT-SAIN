@@ -37,6 +37,11 @@ namespace SAIN.Layers
         {
             get
             {
+                if (BotOwner == null)
+                {
+                    return null;
+                }
+
                 if (_bot == null &&
                     BotManagerComponent.Instance.GetSAIN(BotOwner, out var bot))
                 {

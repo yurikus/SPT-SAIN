@@ -1,4 +1,5 @@
 ﻿using EFT;
+using Mono.Cecil;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
@@ -73,7 +74,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public bool RunToPoint(Vector3 point, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, System.Action callback = null)
+        public bool RunToPoint(Vector3 point, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, bool mustHaveCompletePath = true, System.Action callback = null)
         {
             if (checkSameWay && TryUpdatePath(point, true))
             {
@@ -81,7 +82,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return true;
             }
 
-            if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path))
+            if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
             {
                 TriggerNewMove(path.corners, point, true, urgency, callback);
                 _moveData.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
@@ -112,15 +113,16 @@ namespace SAIN.SAINComponent.Classes.Mover
             return RunToPointByWay(way?.corners, urgency, stopSprintEnemyVisible, checkSameWay, callback);
         }
 
-        public bool WalkToPoint(Vector3 point, bool checkSameWay = true, System.Action callback = null)
+        public bool WalkToPoint(Vector3 point, bool checkSameWay = true, bool mustHaveCompletePath = true, System.Action callback = null)
         {
             if (checkSameWay && TryUpdatePath(point, false))
             {
                 return true;
             }
-            if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path))
+            if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
             {
                 TriggerNewMove(path.corners, point, false, ESprintUrgency.None, callback);
+                return true;
             }
             return false;
         }

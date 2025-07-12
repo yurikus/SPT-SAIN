@@ -159,7 +159,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool GoToPoint(Vector3 point, out bool calculating, float reachDist = -1f, bool crawl = false, bool slowAtEnd = true, bool mustHaveCompletePath = true)
         {
             calculating = false;
-            if (PathFollower.WalkToPoint(point, true))
+            if (PathFollower.WalkToPoint(point, true, mustHaveCompletePath))
             {
                 CurrentPathStatus = NavMeshPathStatus.PathComplete;
                 Crawling = crawl && Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE;
@@ -172,7 +172,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool RunToPoint(Vector3 point, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, bool mustHaveCompletePath = true)
         {
-            if (PathFollower.RunToPoint(point, urgency, stopSprintEnemyVisible, checkSameWay))
+            if (PathFollower.RunToPoint(point, urgency, stopSprintEnemyVisible, checkSameWay, mustHaveCompletePath))
             {
                 CurrentPathStatus = NavMeshPathStatus.PathComplete;
                 Crawling = false;
@@ -255,6 +255,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 path = new NavMeshPath();
                 if (NavMesh.CalculatePath(botHit.position, targetHit.position, -1, path) && path.corners.Length > 1)
                 {
+                    if (path.status == NavMeshPathStatus.PathInvalid)
+                    {
+                        return false;
+                    }
+
                     if (mustHaveCompletePath
                         && path.status != NavMeshPathStatus.PathComplete)
                     {
