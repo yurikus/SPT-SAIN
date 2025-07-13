@@ -113,8 +113,12 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             int oldLastIndex = PathCorners.Count - 1;
             bool wasOnLastCorner = CurrentCorner.Index == oldLastIndex;
-            PathCorners.RemoveAt(oldLastIndex);
-            PathCornerDetails.RemoveAt(oldLastIndex);
+
+            if (oldLastIndex >= 0)
+            {
+                PathCorners.RemoveAt(oldLastIndex);
+                PathCornerDetails.RemoveAt(oldLastIndex);
+            }
 
             int newCornerCount = newCorners.Length;
             for (int i = 0; i < newCornerCount; i++)
@@ -128,7 +132,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             int newLastIndex = PathCorners.Count - 1;
             LastCorner = PathCornerDetails[newLastIndex];
-            if (wasOnLastCorner && newLastIndex >= oldLastIndex)
+            if (wasOnLastCorner && newLastIndex >= oldLastIndex && oldLastIndex >= 0)
             {
                 CurrentCorner = PathCornerDetails[oldLastIndex];
             }
