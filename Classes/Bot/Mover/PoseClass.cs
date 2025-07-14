@@ -16,11 +16,11 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public override void ManualUpdate()
         {
-            if (Player.IsSprintEnabled)
+            if (Bot.Mover.Running)
             {
-                _stopSprintAndPoseChangeTime = Time.time + 1f;
+                _stopSprintAndPoseChangeTime = Time.time + 0.5f;
             }
-            if (Bot.SAINLayersActive)
+            if (Bot.SAINLayersActive || Bot.HasEnemy)
             {
                 float deltaTime = GameWorldComponent.WorldTickDeltaTime;
                 if (_stopSprintAndPoseChangeTime > Time.time)
@@ -28,19 +28,15 @@ namespace SAIN.SAINComponent.Classes.Mover
                     PoseValue.Set(1);
                     PoseValue.Get(deltaTime);
                     SetPlayerPoseLevel(1);
-                    SpeedValue.Set(1);
-                    SpeedValue.Get(deltaTime);
-                    SetPlayerSpeed(1);
                     return;
                 }
                 SetPlayerPoseLevel(PoseValue.Get(deltaTime));
-                SetPlayerSpeed(SpeedValue.Get(deltaTime));
             }
         }
 
         private void SetPlayerPoseLevel(float value)
         {
-            if (Player.IsInPronePose || Bot.Mover.Crawling)
+            if (Player.IsInPronePose)
             {
                 return;
             }
@@ -87,7 +83,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool canChangePose()
         {
-            return _stopSprintAndPoseChangeTime < Time.time && !Player.IsInPronePose && !Bot.Mover.Crawling;
+            return _stopSprintAndPoseChangeTime < Time.time && !Player.IsInPronePose;// && !Bot.Mover.Crawling;
         }
 
         private float _stopSprintAndPoseChangeTime;

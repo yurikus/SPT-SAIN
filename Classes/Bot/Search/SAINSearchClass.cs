@@ -89,17 +89,23 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private bool MoveToEnemy(Enemy enemy, bool shallSprint)
         {
+            if (Time.time - _timeLastMoved < 1f) return true;
+
             if (shallSprint &&
                 Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, Mover.ESprintUrgency.Middle, true))
             {
+                _timeLastMoved = Time.time;
                 return true;
             }
             if (Bot.Mover.WalkToPointByWay(enemy.Path.PathToEnemy))
             {
+                _timeLastMoved = Time.time;
                 return true;
             }
             return false;
         }
+
+        private float _timeLastMoved;
 
         private void HandleLight(bool stealthy)
         {

@@ -22,28 +22,18 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
-            checkPositionAdjustments();
+            Bot.Cover.UpdateCover();
             Enemy Enemy = Bot.GoalEnemy;
+            CoverPoint coverInUse = CoverInUse;
+            if (coverInUse != null)
+            {
+                Bot.Cover.DuckInCover(Enemy);
+                checkSetProne();
+                checkSetLean();
+            }
             if (!Shoot.ShootAnyVisibleEnemies(Enemy) && !Bot.Suppression.TrySuppressEnemy(Enemy))
             {
                 Bot.Steering.SteerByPriority(Enemy);
-            }
-            this.EndProfilingSample();
-        }
-
-        private void checkPositionAdjustments()
-        {
-            CoverPoint coverInUse = CoverInUse;
-            if (coverInUse == null)
-            {
-                Bot.Mover.DogFight.DogFightMove(true, Bot.GoalEnemy);
-            }
-            else
-            {
-                Bot.Cover.DuckInCover(Bot.GoalEnemy);
-                checkSetProne();
-                checkSetLean();
             }
         }
 

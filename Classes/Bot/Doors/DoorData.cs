@@ -42,7 +42,7 @@ namespace SAIN.SAINComponent.Classes.Mover
     }
     public class DoorData
     {
-        private const float DOOR_INTERACTION_INTERVAL = 1f;
+        private const float DOOR_INTERACTION_INTERVAL = 2.5f;
         private const float DOOR_OPEN_INTERVAL = 5f;
         private const float DOOR_CLOSE_INTERVAL = 5f;
 
@@ -52,17 +52,17 @@ namespace SAIN.SAINComponent.Classes.Mover
             LinkPosition = link.transform.position;
             Door = link.Door;
             MoveLocations = new(link);
-            DebugGizmos.DrawSphere(MoveLocations.NeutralDoorPoint, 0.15f, Color.gray);
-
-            DebugGizmos.DrawSphere(MoveLocations.DoorHandleCloseLookPoint, 0.1f, Color.blue);
-            DebugGizmos.DrawSphere(MoveLocations.DoorHandleCloseFloorPoint, 0.1f, Color.blue);
-
-            DebugGizmos.DrawSphere(MoveLocations.DoorHandleOpenLookPoint, 0.1f, Color.green);
-            DebugGizmos.DrawSphere(MoveLocations.DoorHandleOpenFloorPoint, 0.1f, Color.green);
-            
-            DebugGizmos.DrawSphere(MoveLocations.DoorPivotPoint, 0.15f, Color.white);
-            DebugGizmos.DrawLine(MoveLocations.DoorPivotPoint, MoveLocations.DoorBackupPoint, Color.red, 0.1f);
-            DebugGizmos.DrawSphere(MoveLocations.DoorBackupPoint, 0.15f, Color.red);
+            //DebugGizmos.DrawSphere(MoveLocations.NeutralDoorPoint, 0.15f, Color.gray);
+            //
+            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleCloseLookPoint, 0.1f, Color.blue);
+            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleCloseFloorPoint, 0.1f, Color.blue);
+            //
+            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleOpenLookPoint, 0.1f, Color.green);
+            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleOpenFloorPoint, 0.1f, Color.green);
+            //
+            //DebugGizmos.DrawSphere(MoveLocations.DoorPivotPoint, 0.15f, Color.white);
+            //DebugGizmos.DrawLine(MoveLocations.DoorPivotPoint, MoveLocations.DoorBackupPoint, Color.red, 0.1f);
+            //DebugGizmos.DrawSphere(MoveLocations.DoorBackupPoint, 0.15f, Color.red);
         }
 
         public DoorLocations MoveLocations { get; }

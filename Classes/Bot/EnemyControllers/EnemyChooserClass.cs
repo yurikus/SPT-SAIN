@@ -197,7 +197,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void setActiveEnemy(Enemy enemy)
         {
-            if (enemy == null && enemy.CheckValid() && Enemy.IsEnemyActive(enemy))
+            if (enemy != null && enemy.CheckValid() && Enemy.IsEnemyActive(enemy))
             {
                 GoalEnemy = enemy;
                 setGoalEnemy(enemy?.EnemyInfo);

@@ -84,7 +84,7 @@ namespace SAIN.Layers.Combat.Solo
 
             if (Bot.Mover.Moving)
             {
-                Bot.Mover.ActivePath.WantToSprint = true;
+                Bot.Mover.ActivePath?.RequestStartSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
             }
 
             if (RecalcPathTimer < Time.time)

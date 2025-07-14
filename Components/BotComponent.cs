@@ -48,15 +48,15 @@ namespace SAIN.Components
             {
                 return;
             }
-            var person = botOwner.GetComponent<PlayerComponent>();
-            if (person == null)
+            var playerComponent = botOwner.GetComponent<PlayerComponent>();
+            if (playerComponent == null)
             {
                 Logger.LogError("Person Null");
                 return;
             }
             if (botOwner.BotState == EBotState.Active)
             {
-                if (InitializeBot(person))
+                if (InitializeBot(playerComponent, botOwner))
                 {
                     _Activated = true;
                     OnBotActivated?.Invoke(this);
@@ -173,7 +173,7 @@ namespace SAIN.Components
                         handleDumbShit();
                     }
 
-                    bool inCombat = active && !inStandBy && SAINLayersActive && CurrentTarget.CurrentTargetEnemy != null;
+                    bool inCombat = active && !inStandBy && SAINLayersActive && (CurrentTarget.CurrentTargetEnemy != null || GoalEnemy != null);
                     BotActivation.SetInCombat(inCombat);
                     if (inCombat)
                     {
@@ -187,7 +187,7 @@ namespace SAIN.Components
         {
             var enemy = CurrentTarget.CurrentTargetEnemy;
             //DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.TargetLookDirection.normalized * 1.5f, Color.white, 0.06f, true, 0.02f);
-            DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.SmoothController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
+            DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.CharacterController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
             DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, 0.02f);
         }
 
@@ -204,12 +204,9 @@ namespace SAIN.Components
             }
         }
 
-        public bool InitializeBot(PlayerComponent playerComponent)
+        public bool InitializeBot(PlayerComponent playerComponent, BotOwner botOwner)
         {
-            if (!base.Init(playerComponent))
-            {
-                return false;
-            }
+            base.Init(playerComponent, botOwner);
             if (!CreateClasses())
             {
                 return false;

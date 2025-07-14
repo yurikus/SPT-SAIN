@@ -180,6 +180,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 AlivePlayersDictionary.Add(player.ProfileId, component);
                 AlivePlayerArray.Add(component);
                 OnPlayerAdded?.Invoke(component);
+                Logger.LogDebug($"Initialized Player Component {player.name} : {player.ProfileId}");
                 return true;
             }
             else

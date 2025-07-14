@@ -123,7 +123,7 @@ namespace SAIN.Components.CoverFinder
 
         public void Init(BotComponent bot)
         {
-            base.Init(bot.PlayerComponent);
+            base.Init(bot.PlayerComponent, bot.BotOwner);
             Bot = bot;
 
             ColliderFinder = new ColliderFinder(this);

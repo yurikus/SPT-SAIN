@@ -24,7 +24,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private void updateLightToggle()
         {
-            if (Bot.SAINLayersActive &&
+            if ((Bot.SAINLayersActive || Bot.HasEnemy) &&
                 IsLightEnabled != wantLightOn &&
                 _nextLightChangeTime < Time.time)
             {

@@ -47,8 +47,6 @@ namespace SAIN.Layers.Combat.Solo
             if (!shallMoveShoot)
             {
                 Bot.Mover.Stop();
-                BotOwner.Mover.SprintPause(STAND_AND_SHOOT_SPRINTPAUSE_DURATION);
-                shallResume = Bot.Decision.CurrentCombatDecision == ECombatDecision.ShootDistantEnemy;
             }
             Bot.Mover.Lean.HoldLean(STAND_AND_SHOOT_HOLDLEAN_DURATION);
         }
@@ -70,7 +68,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             movePosition = Vector3.zero;
             if (enemy != null && 
-                navData.PlayerNavMeshStatus == EPlayerNavMeshDistance.OnNavMesh &&
+                navData.IsOnNavMesh &&
                 enemy.RealDistance < 50)
             {
                 float angle = UnityEngine.Random.Range(70, 110);
@@ -105,9 +103,6 @@ namespace SAIN.Layers.Combat.Solo
         public override void Stop()
         {
             Toggle(false);
-
-            if (shallResume)
-                BotOwner.Mover.MovementResume();
         }
     }
 }

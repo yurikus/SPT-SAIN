@@ -22,14 +22,18 @@ namespace SAIN.Layers.Combat.Run
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
 
-            if (nextRandomRunTime > Time.time && (_runDestination - Bot.Position).sqrMagnitude < 1f)
+
+            if (!Bot.Mover.Moving)
+                nextRandomRunTime = 0f;
+            else if (nextRandomRunTime > Time.time && (_runDestination - Bot.Position).sqrMagnitude < 2f)
             {
                 nextRandomRunTime = 0f;
             }
 
-            if (!Bot.Mover.Running
-                && findRandomPlace(out var path)
-                && Bot.Mover.RunToPoint(_runDestination, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, false))
+            if (nextRandomRunTime > Time.time)
+                return;
+
+            if (findRandomPlace(out var path) && Bot.Mover.RunToPoint(_runDestination, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true))
             {
                 nextRandomRunTime = Time.time + 20f;
             }

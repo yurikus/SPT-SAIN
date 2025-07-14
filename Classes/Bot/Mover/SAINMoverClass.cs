@@ -1,13 +1,8 @@
 ﻿using EFT;
 using SAIN.Classes.Transform;
 using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
-using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
-using System.Collections;
-using System.IO;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -30,154 +25,187 @@ namespace SAIN.SAINComponent.Classes.Mover
         }
 
         public DogFight DogFight { get; private set; }
-        
-        public IBotMoveData ActivePath {
+
+        public IBotPathData ActivePath {
             get
             {
                 return _activePath;
             }
         }
 
-        private BotPathData _activePath;
-
-        public bool RunToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, ESprintUrgency urgency = ESprintUrgency.Low, bool stopSprintEnemyVisible = false, bool checkSameWay = true, Action<OperationResult> onComplete = null)
+        private void PathComplete(OperationResult result, IBotPathData path)
         {
-            if (checkSameWay && TryUpdatePath(point, true))
+            if (path != _activePath)
             {
-                _activePath.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
+                Logger.LogWarning("uh oh, paths are diffent");
+                return;
+            }
+            _activePath = null;
+            if (_preparedPath != null)
+            {
+                _activePath = _preparedPath;
+                _preparedPath = null;
+                _activePath.OnPathComplete += PathComplete;
+                _activePath.Start();
+            }
+        }
+
+        private BotPathDataManual _activePath;
+        private BotPathDataManual _preparedPath;
+
+        public bool RunToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, ESprintUrgency urgency = ESprintUrgency.Low, bool checkSameWay = true)
+        {
+            if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
+            if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+
+            if (checkSameWay && TryUpdatePath(point, null))
+            {
+                if (!_activePath.WantToSprint)
+                {
+                    _activePath.RequestStartSprint(urgency, "path updated");
+                }
+                _activePath.SetDestinationReachDistance(reachDist);
                 return true;
             }
 
             if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
             {
-                TriggerNewMove(path.corners, point, true, urgency, onComplete);
-                _activePath.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
+                TriggerNewMove(path.corners, point, true, urgency, path, null);
+                _activePath.SetDestinationReachDistance(reachDist);
                 _activePath.PathStatus = path.status;
                 return true;
             }
             return false;
         }
 
-
-        public bool RunToPointByWay(Vector3[] way, ESprintUrgency urgency, bool stopSprintEnemyVisible, bool checkSameWay = true, Action<OperationResult> onComplete = null)
+        public bool RunToPointByWay(NavMeshPath path, bool mustHaveCompletePath = true, float reachDist = -1, ESprintUrgency urgency = ESprintUrgency.Low, bool checkSameWay = true)
         {
-            if (way == null)
-                return false;
-            if (way.Length <= 1)
-                return false;
-            Vector3 lastCorner = way[way.Length - 1];
-            if (checkSameWay && TryUpdatePath(lastCorner, true))
+            if (path == null) return false;
+            if (path.status == NavMeshPathStatus.PathInvalid) return false;
+            if (mustHaveCompletePath && path.status != NavMeshPathStatus.PathComplete) return false;
+            
+            Vector3[] pathCorners = path.corners;
+            if (pathCorners.Length <= 1) return false;
+            Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
+            if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
+            if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+
+            if (checkSameWay && TryUpdatePath(lastCorner, null))
             {
-                _activePath.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
+                if (!_activePath.WantToSprint) _activePath.RequestStartSprint(urgency, "path updated");
+                _activePath.SetDestinationReachDistance(reachDist);
                 return true;
             }
-            TriggerNewMove(way, lastCorner, true, urgency, onComplete);
-            _activePath.ShallStopSprintWhenSeeEnemy = stopSprintEnemyVisible;
-            return true;
-        }
-
-        public bool RunToPointByWay(NavMeshPath way, bool mustHaveCompletePath = true, float reachDist = -1, ESprintUrgency urgency = ESprintUrgency.Low, bool stopSprintEnemyVisible = false, bool checkSameWay = true, Action<OperationResult> onComplete = null)
-        {
-            if (way == null) return false;
-            if (way.status == NavMeshPathStatus.PathInvalid) return false;
-            if (mustHaveCompletePath && way.status != NavMeshPathStatus.PathComplete) return false;
-            if (RunToPointByWay(way?.corners, urgency, stopSprintEnemyVisible, checkSameWay, onComplete))
-            {
-                _activePath.PathStatus = way.status;
-                return true;
-            }
+            TriggerNewMove(path.corners, lastCorner, true, urgency, path, null);
+            _activePath.SetDestinationReachDistance(reachDist);
             return false;
         }
 
-        public bool WalkToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, bool checkSameWay = true, Action<OperationResult> onComplete = null)
+        private const float BASE_DESTINATION_REACH_DIST = 0.33f;
+
+        public bool WalkToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, bool checkSameWay = true)
         {
-            if (checkSameWay && TryUpdatePath(point, false))
+            if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
+            if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+
+            if (checkSameWay && TryUpdatePath(point, null))
             {
+                if (_activePath.WantToSprint) _activePath.RequestEndSprint(ESprintUrgency.None, "path updated");
                 return true;
             }
             if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
             {
-                TriggerNewMove(path.corners, point, false, ESprintUrgency.None, onComplete);
-                _activePath.PathStatus = path.status;
+                TriggerNewMove(path.corners, point, false, ESprintUrgency.None, path, null);
+                _activePath.SetDestinationReachDistance(reachDist);
             }
             return false;
         }
 
-        public NavMeshPathStatus _pathStatus;
-
-        public bool WalkToPointByWay(Vector3[] way, bool checkSameWay = true, Action<OperationResult> onComplete = null)
+        public bool WalkToPointByWay(NavMeshPath path, bool mustHaveCompletePath = true, float reachDist = -1, bool checkSameWay = true)
         {
-            if (way == null) return false;
-            if (way.Length <= 1) return false;
-            Vector3 lastCorner = way[way.Length - 1];
-            if (checkSameWay && TryUpdatePath(lastCorner, false)) return true;
-            TriggerNewMove(way, lastCorner, false, ESprintUrgency.None, onComplete);
+            if (path == null) return false;
+            if (path.status == NavMeshPathStatus.PathInvalid) return false;
+            if (mustHaveCompletePath && path.status == NavMeshPathStatus.PathPartial) return false;
+
+            Vector3[] pathCorners = path.corners;
+            if (pathCorners.Length <= 1) return false;
+            Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
+            if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
+            if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+
+            if (checkSameWay && TryUpdatePath(lastCorner, null))
+            {
+                if (_activePath.WantToSprint)
+                {
+                    _activePath.RequestEndSprint(ESprintUrgency.None, "path updated");
+                }
+                return true;
+            }
+
+            TriggerNewMove(pathCorners, lastCorner, false, ESprintUrgency.None, path, null);
+            _activePath.SetDestinationReachDistance(-1);
             return true;
         }
 
-        public bool WalkToPointByWay(NavMeshPath way, bool mustHaveCompletePath = true, bool checkSameWay = true, Action<OperationResult> onComplete = null)
+        private bool TryUpdatePath(Vector3 point, Action<OperationResult, IBotPathData> onComplete)
         {
-            if (way == null) return false;
-            if (way.status == NavMeshPathStatus.PathInvalid) return false;
-            if (mustHaveCompletePath && way.status == NavMeshPathStatus.PathPartial) return false;
-            return WalkToPointByWay(way.corners, checkSameWay, onComplete);
-        }
-
-        private bool TryUpdatePath(Vector3 point, bool shallSprint)
-        {
-            if (_activePath != null && _activePath.TryUpdatePath(point))
+            if (_preparedPath != null)
             {
-                _activePath.WantToSprint = shallSprint;
-                return true;
+                return _preparedPath.TryUpdatePath(point);
             }
-            return false;
+            return _activePath != null && _activePath.TryUpdatePath(point);
         }
 
-        private void TriggerNewMove(Vector3[] path, Vector3 point, bool shallSprint, ESprintUrgency urgency, Action<OperationResult> onComplete = null)
+        private void TriggerNewMove(Vector3[] pathCorners, Vector3 point, bool shallSprint, ESprintUrgency urgency, NavMeshPath path, Action<OperationResult, IBotPathData> onComplete = null)
         {
-            _activePath?.Stop(false, "newMove");
-            _activePath = new BotPathData(Bot, Bot.Transform.NavData.NavMeshPosition, point, shallSprint, urgency, path, onComplete);
+            BotPathDataManual newPath = new(Bot, Bot.Transform.NavData.NavMeshPosition, point, shallSprint, urgency, pathCorners, path, onComplete);
+            //if (_activePath != null)
+            //{
+            //    _activePath.Cancel();
+            //    _preparedPath = newPath;
+            //}
+            if (_activePath != null)
+            {
+                _activePath.Cancel();
+                _preparedPath = newPath;
+                return;
+            }
+            _activePath = newPath;
+            _activePath.OnPathComplete += PathComplete;
             _activePath.Start();
         }
 
-        public bool RecalcPath()
+        private bool TriggerRecalcPath()
         {
             if (_activePath == null) return false;
             if (_activePath.WantToSprint)
-                return RunToPoint(_activePath.Destination.Position, true, -1, _activePath.SprintUrgency, false, true, _activePath.OnPathComplete);
-            return WalkToPoint(_activePath.Destination.Position, true, -1, false, _activePath.OnPathComplete);
+                return RunToPoint(_activePath.Destination, true, -1, _activePath.SprintUrgency, true);
+            return WalkToPoint(_activePath.Destination, true, -1, false);
         }
 
         public override void ManualUpdate()
         {
-            if (Crawling && _activePath != null && _activePath.WantToSprint)
-            {
-                Crawling = false;
-            }
-
             Pose.ManualUpdate();
             Lean.ManualUpdate();
             BlindFire.ManualUpdate();
 
-            if (_activePath != null && _activePath.PathRecalcRequested)
+            if (_activePath != null)
             {
-                RecalcPath();
+                if ( _activePath.PathRecalcRequested && !_activePath.CancelRequested)
+                {
+                    _activePath.PathRecalcRequested = false;
+                    TriggerRecalcPath();
+                }
+                else
+                {
+                    _activePath.TickPath(GameWorldComponent.WorldTickDeltaTime, Time.time);
+                }
             }
             if (_activePath == null || !_activePath.WantToSprint)
             {
                 UpdateStance(Time.time);
             }
             base.ManualUpdate();
-        }
-
-        public void MovePlayerCharacterInDirection(Vector3 direction)
-        {
-            PlayerComponent.SmoothController.SetTargetMoveDirection(direction, Player);
-        }
-
-        public void MovePlayerCharacterToPoint(Vector3 point)
-        {
-            PlayerComponent.SmoothController.SetTargetMovePoint(point, Player);
         }
 
         private bool CanSetPatrol()
@@ -199,11 +227,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-
         public override void Dispose()
         {
             _activePath?.Dispose();
             _activePath = null;
+            _preparedPath?.Dispose();
+            _preparedPath = null;
             base.Dispose();
         }
 
@@ -212,7 +241,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         public LeanClass Lean { get; private set; }
         public PoseClass Pose { get; private set; }
         public ProneClass Prone { get; private set; }
-        public bool Crawling { get; private set; }
 
         public bool CrawlToPoint(Vector3 point, bool mustHaveCompletePath = true)
         {
@@ -222,7 +250,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool CanGoToPoint(Vector3 point, out NavMeshPath path, bool mustHaveCompletePath = true, float navSampleRange = 0.5f)
         {
             var navData = Bot.Transform.NavData;
-            if (navData.PlayerNavMeshStatus != EPlayerNavMeshDistance.OnNavMesh)
+            if (!navData.IsOnNavMesh)
             {
                 path = null;
                 return false;
@@ -244,20 +272,21 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        public bool GoToCoverPoint(CoverPoint point, bool sprint, ESprintUrgency urgency = ESprintUrgency.Low, bool stopSprintIfEnemyVisible = false, Action<OperationResult> onComplete = null)
+        public bool GoToCoverPoint(CoverPoint point, bool sprint, ESprintUrgency urgency = ESprintUrgency.Low)
         {
             if (CanGoToCoverPoint(point, Bot.Transform.NavData))
             {
                 if (sprint)
-                    return RunToPointByWay(point.PathData.Path, true, -1, urgency, stopSprintIfEnemyVisible, true, onComplete);
-                return WalkToPointByWay(point.PathData.Path, true, true, onComplete);
+                    return RunToPointByWay(point.PathData.Path, true, -1, urgency);
+                return WalkToPointByWay(point.PathData.Path);
             }
             return false;
         }
 
         private static bool CanGoToCoverPoint(CoverPoint point, PlayerNavData navData)
         {
-            if (navData.PlayerNavMeshStatus == EPlayerNavMeshDistance.OnNavMesh)
+            if (point.Distance < 0.25f * 0.25f) return false;
+            if (navData.IsOnNavMesh)
             {
                 PathData coverPathData = point.PathData;
                 if (coverPathData.TimeSinceLastUpdated > 1f)
@@ -290,14 +319,14 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void SetTargetMoveSpeed(float speed)
         {
-            Pose.SetTargetSpeed(speed);
+            PlayerComponent.CharacterController.SetTargetMoveSpeed(speed);
         }
 
         public void Stop()
         {
             BotOwner?.Mover?.Stop();
-            _activePath?.Stop(false, "stopped");
-            _activePath = null;
+            _activePath?.Cancel();
+            _preparedPath = null;
         }
 
         public void PauseMovement(float forDuration)
@@ -305,7 +334,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             _activePath?.Pause(forDuration);
         }
 
-        public void ResetPath()
+        public void RecalcPath()
         {
             if (_activePath != null) _activePath.PathRecalcRequested = true;
         }

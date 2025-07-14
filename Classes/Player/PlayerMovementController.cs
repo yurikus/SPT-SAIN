@@ -1,24 +1,27 @@
 ﻿using EFT;
+using JetBrains.Annotations;
+using SAIN.Classes.Transform;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.RotationController;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using System;
 using UnityEngine;
 
 namespace SAIN.Classes
 {
-    public class PlayerMovementSmoothingClass
+    public class PlayerMovementController
     {
+        public bool Moving { get; private set; }
         public Vector3 CurrentControlLookDirection => ControlLookDirection.Current;
         public SmoothDampVectorDirectionNormal ControlLookDirection { get; } = new();
 
-        public void ManualUpdate(float currentTime, float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent)
+        public void UpdateBotMovement(float currentTime, float deltaTime, [NotNull] Player player, [NotNull] BotOwner botOwner, [CanBeNull] BotComponent botComponent)
         {
             var settings = GlobalSettingsClass.Instance.Steering;
             UpdateRandomSway(deltaTime, player, botOwner, botComponent, settings);
             UpdateTurnSmoothing(deltaTime, botOwner, botComponent, settings);
-            //player.CharacterController.SetSteerDirection(ControlLookDirection.Current);
         }
 
         private void UpdateTurnSmoothing(float deltaTime, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
@@ -33,10 +36,64 @@ namespace SAIN.Classes
             else RandomSwayOffset = Vector3.zero;
         }
 
-        private void CalcRecoil()
+        private void SetPlayerSpeed(Player player, float magnitude, float playerSpeed, float START_SLOW_DIST, bool shallSprint)
         {
-
+            const float SLOW_COEF = 7f;
+            if (shallSprint)
+            {
+                ChangeSpeed(player, 1f - playerSpeed);
+            }
+            else
+            {
+                float targetSpeed = _targetMoveSpeed;
+                if (magnitude <= START_SLOW_DIST)
+                {
+                    targetSpeed *= (magnitude / SLOW_COEF);
+                }
+                float speedDelta = targetSpeed - playerSpeed;
+                ChangeSpeed(player, speedDelta);
+            }
         }
+
+        private static void ChangeSpeed(Player player, float delta)
+        {
+            if (Math.Abs(delta) >= 1E-45f) player.ChangeSpeed(delta);
+        }
+
+        private static bool CheckCanSprintByDistanceRemaining(float magnitude, float STOP_SPRINT_DIST)
+        {
+            bool canSprint = false;
+            if (magnitude < STOP_SPRINT_DIST)
+            {
+                canSprint = false;
+            }
+            else if (magnitude >= STOP_SPRINT_DIST * 1.1f)
+            {
+                canSprint = true;
+            }
+            else
+            {
+                canSprint = false;
+            }
+            return canSprint;
+        }
+
+        public void SetWantToSprint(bool value)
+        {
+            _wantToSprint = value;
+        }
+
+        private bool _wantToSprint;
+
+        /// <summary>
+        /// Value between 0 and 1
+        /// </summary>
+        public void SetTargetMoveSpeed(float value)
+        {
+            _targetMoveSpeed = Mathf.Clamp01(value);
+        }
+
+        private float _targetMoveSpeed;
 
         private Vector3 RandomSwayOffset;
 
@@ -59,6 +116,35 @@ namespace SAIN.Classes
             // Add small chaotic offset for more natural motion
             float wobble = Mathf.Sin(angle * 4f + Mathf.PI * 0.5f) * settings.RANDOMSWAY_CIRCLE_SCALE;
             return basePos + new Vector3(wobble, -wobble, wobble * 0.5f);
+        }
+
+        private float loopTime;
+
+        public void SetTargetLookDirection(Vector3 targetDirection)
+        {
+            ControlLookDirection.Target = targetDirection + RandomSwayOffset;
+        }
+
+        public void SetTargetMoveDirection(Vector3 direction, Vector3 finalMoveDestination, PlayerComponent playerComp)
+        {
+            //if (direction.sqrMagnitude < 0.001f) return;
+            Player player = playerComp.Player;
+            float playerSpeed = player.Speed;
+
+            const float START_SLOW_DIST = 1f;
+            const float STOP_SPRINT_DIST = START_SLOW_DIST * 1.1f;
+
+            float destinationDistance = (finalMoveDestination - playerComp.Position).magnitude;
+            bool canSprint = player.MovementContext.CanSprint && CheckCanSprintByDistanceRemaining(destinationDistance, STOP_SPRINT_DIST);
+            bool shallSprint = canSprint && _wantToSprint;
+            SetPlayerSpeed(player, destinationDistance, playerSpeed, START_SLOW_DIST, shallSprint);
+            player.EnableSprint(shallSprint);
+
+            direction.Normalize();
+            player.CharacterController.SetSteerDirection(direction);
+            Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
+            player.Move(moveDir);
+            playerComp.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);
         }
 
         private static float CalcRandomSwayModifier(Player player, BotOwner botOwner, BotComponent botComponent)
@@ -85,7 +171,16 @@ namespace SAIN.Classes
             return Mathf.Clamp(result, 0.001f, 2.5f);
         }
 
-        private float loopTime;
+        private static Vector2 FindMoveDirection(Vector3 direction, Vector2 playerRotation)
+        {
+            Vector3 vector = Quaternion.Euler(0f, 0f, playerRotation.x) * new Vector2(direction.x, direction.z);
+            return MoveDirToVector2(vector);
+        }
+
+        private static Vector2 MoveDirToVector2(Vector3 direction)
+        {
+            return new Vector2(direction.x, direction.y);
+        }
 
         private static TurnSettings GetTurnSettings(BotOwner bot, BotComponent botComponent)
         {
@@ -101,7 +196,7 @@ namespace SAIN.Classes
             }
             if (botComponent != null)
             {
-                if (botComponent.SAINLayersActive && botComponent.Mover.Running)
+                if (botComponent.Mover.Running)
                 {
                     if (settings.SMOOTHTURN_SETTINGS_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
                         return turnSettings;
@@ -146,41 +241,6 @@ namespace SAIN.Classes
                 return turnSettings;
             }
             return new TurnSettings(0.65f, 360f);
-        }
-
-        public void SetTargetLookDirection(Vector3 targetDirection)
-        {
-            ControlLookDirection.Target = targetDirection + RandomSwayOffset;
-        }
-
-        public void SetTargetMoveDirection(Vector3 direction, Player player)
-        {
-            if (direction.sqrMagnitude > 0.0001f)
-            {
-                player.CharacterController.SetSteerDirection(direction);
-                Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
-                if (moveDir.sqrMagnitude > 0.0001f)
-                {
-                    player.Move(moveDir);
-                    player.AIData?.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);
-                }
-            }
-        }
-
-        public void SetTargetMovePoint(Vector3 point, Player player)
-        {
-            SetTargetMoveDirection(point - player.Position, player);
-        }
-
-        private static Vector2 FindMoveDirection(Vector3 direction, Vector2 playerRotation)
-        {
-            Vector3 vector = Quaternion.Euler(0f, 0f, playerRotation.x) * new Vector2(direction.x, direction.z);
-            return MoveDirToVector2(vector);
-        }
-
-        private static Vector2 MoveDirToVector2(Vector3 direction)
-        {
-            return new Vector2(direction.x, direction.y);
         }
     }
 }

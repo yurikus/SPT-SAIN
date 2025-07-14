@@ -105,7 +105,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            if (!Bot.SAINLayersActive)
+            if (!Bot.SAINLayersActive && !Bot.HasEnemy)
             {
                 return false;
             }
@@ -214,6 +214,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 _stopHoldLeanTime = Time.time + duration;
             }
+        }
+
+        public void ResetHoldLean()
+        {
+            _stopHoldLeanTime = 0;
         }
 
         private float _leanTimer = 0f;

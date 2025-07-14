@@ -132,9 +132,9 @@ namespace SAIN.Layers
                 return;
             }
 
-            if (Bot.Mover.Moving)
+            if (shallSprint && Bot.Mover.Moving)
             {
-                Bot.Mover.ActivePath.WantToSprint = shallSprint;
+                Bot.Mover.ActivePath.RequestStartSprint(SAINComponent.Classes.Mover.ESprintUrgency.High, "extract");
             }
 
             if (distance > MinDistanceToStartExtract * 2)
@@ -191,7 +191,7 @@ namespace SAIN.Layers
 
                 float timeRemaining = ExtractTimer - Time.time;
                 Logger.LogInfo($"{BotOwner.name} Starting Extract Timer of {timeRemaining}");
-                BotOwner.Mover.MovementPause(timeRemaining);
+                Bot.Mover.PauseMovement(timeRemaining);
             }
 
             if (ExtractTimer < Time.time)

@@ -153,7 +153,7 @@ namespace SAIN.Components.BotController
                 Logger.LogInfo($"Looking for Exfil for {bot.name}...");
             }
 
-            int validExfils = GameWorldHandler.SAINGameWorld.ExtractFinder.CountValidExfilsForBot(bot);
+            int validExfils = GameWorldComponent.Instance.ExtractFinder.CountValidExfilsForBot(bot);
             if (validExfils == 0)
             {
                 if (SAINPlugin.DebugMode)
@@ -194,7 +194,7 @@ namespace SAIN.Components.BotController
 
         private bool TryAssignExfilForBot(BotComponent bot)
         {
-            IDictionary<ExfiltrationPoint, Vector3> validExfils = GameWorldHandler.SAINGameWorld.ExtractFinder.GetValidExfilsForBot(bot);
+            IDictionary<ExfiltrationPoint, Vector3> validExfils = GameWorldComponent.Instance.ExtractFinder.GetValidExfilsForBot(bot);
             bot.Memory.Extract.ExfilPoint = SelectExfilForBot(bot, validExfils);
 
             return bot.Memory.Extract.ExfilPoint != null;

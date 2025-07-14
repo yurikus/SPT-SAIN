@@ -20,6 +20,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Update(CustomLayer.ActionData data)
         {
+            Bot.Cover.UpdateCover();
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.Mover.SetTargetPose(1f);
             Enemy enemy = Bot.GoalEnemy;
@@ -34,21 +35,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 //    Bot.Player.MovementContext.CanProne &&
                 //    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
                 //
-        }
-
-        private bool checkMoveToCover(CoverPoint coverPoint, Enemy enemy)
-        {
-            if (coverPoint != null &&
-                !coverPoint.Spotted &&
-                !coverPoint.CoverData.IsBad)
-            {
-                //bool shallCrawl =
-                //    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
-                //    Bot.Player.MovementContext.CanProne &&
-                //    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
-                //
-            }
-            return false;
         }
 
         public override void Start()

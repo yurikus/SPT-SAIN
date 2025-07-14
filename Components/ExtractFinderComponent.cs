@@ -63,10 +63,11 @@ namespace SAIN.Components.Extract
                 return;
             }
 
-            GUIStyle guiStyle = new(GUI.skin.label);
-            guiStyle.alignment = TextAnchor.MiddleLeft;
-            guiStyle.fontSize = 14;
-            guiStyle.margin = new RectOffset(3, 3, 3, 3);
+            GUIStyle guiStyle = new(GUI.skin.label) {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 14,
+                margin = new RectOffset(3, 3, 3, 3)
+            };
 
             foreach (ExfiltrationPoint ex in extractPositionFinders.Keys)
             {

@@ -15,11 +15,11 @@ namespace SAIN.Components
 
         public BodyPartsClass(PlayerComponent component) : base(component)
         {
-            createParts();
+            createParts(component.Player);
             PartsArray = [.. Parts.Values];
         }
 
-        private void createParts()
+        private void createParts(Player player)
         {
             PlayerBones playerBones = Player.PlayerBones;
             foreach (var part in PartToBoneTypes.PartsToCollidersTypes)

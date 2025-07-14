@@ -37,7 +37,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (SteeringLocked)
             {
-                Logger.LogInfo("Steering Locked");
+                //Logger.LogInfo("Steering Locked");
                 return false;
             }
             enemy ??= Bot.CurrentTarget.CurrentTargetEnemy;
@@ -239,7 +239,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         internal bool IsLookingAtPoint(Vector3 point, out float dotResult, float dotProductThreshold = 0.66f)
         {
-            Vector3 lookDirection = Bot.PlayerComponent.SmoothController.CurrentControlLookDirection;
+            Vector3 lookDirection = Bot.PlayerComponent.CharacterController.CurrentControlLookDirection;
             Vector3 pointDirection = point - Bot.Transform.WeaponData.WeaponRoot;
             dotResult = Vector3.Dot(lookDirection, pointDirection.normalized);
             return dotResult >= dotProductThreshold;

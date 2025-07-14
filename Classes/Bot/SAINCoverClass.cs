@@ -4,6 +4,7 @@ using SAIN.Components.CoverFinder;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.Classes.Mover;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
 using System.Collections;
@@ -37,7 +38,7 @@ namespace SAIN.SAINComponent.Classes
         private float _spottedTime;
         public bool SpottedInCover => _spottedTime > Time.time;
 
-        public bool HasCover => CoverSeekingState == ECoverSeekingState.HoldInCover;
+        public bool HasCover => CoverInUse != null;
         public CoverFinderState CurrentCoverFinderState { get; private set; }
         public List<CoverPoint> CoverPoints => CoverFinder.CoverPoints;
         public CoverFinderComponent CoverFinder { get; private set; }
@@ -59,7 +60,7 @@ namespace SAIN.SAINComponent.Classes
         public override void ManualUpdate()
         {
             base.ManualUpdate();
-            bool active = Bot.SAINLayersActive;
+            bool active = Bot.HasEnemy;
             ActivateCoverFinder(active);
             if (active)
             {
@@ -76,111 +77,127 @@ namespace SAIN.SAINComponent.Classes
             CoverSeekingState = value ? ECoverSeekingState.RunningTo : ECoverSeekingState.WalkingTo;
         }
 
-        private IEnumerator SeekCover()
+        private CoverPoint FindCoverPoint()
         {
-            WaitForSeconds wait = new(1f / 30);
-            WaitForSeconds holdInCoverWait = new(1 / 8f);
-            while (CoverSeekingState != ECoverSeekingState.None)
+            CoverPoints.Sort((x, y) => x.PathData.PathLength.CompareTo(y.PathData.PathLength));
+            for (int i = 0; i < CoverPoints.Count; i++)
             {
-                CoverInUse = null;
-                CoverPoint_MovingTo = null;
-
-                CoverPoints.Sort((x, y) => x.PathData.TimeSinceLastUpdated.CompareTo(y.PathData.TimeSinceLastUpdated));
-                _localCoverList.Clear();
-                _localCoverList.AddRange(CoverPoints);
-                Action<OperationResult> onComplete = new(PathComplete);
-                for (int i = 0; i < _localCoverList.Count; i++)
+                CoverPoint coverPoint = CoverPoints[i];
+                if (CheckMoveToCover(coverPoint, CoverSeekingState == ECoverSeekingState.RunningTo))
                 {
-                    CoverPoint coverPoint = _localCoverList[i];
-                    if (CheckMoveToCover(coverPoint, CoverSeekingState == ECoverSeekingState.RunningTo, onComplete))
-                    {
-                        CoverPoint_MovingTo = coverPoint;
-                        Logger.LogDebug($"Found Cover [{coverPoint.HardData.Id}]");
-                        break;
-                    }
-                    yield return null; // wait 1 frame between path checks
+                    return coverPoint;
                 }
-                _localCoverList.Clear();
+            }
+            return null;
+        }
+
+        public void UpdateCover()
+        {
+            if (CoverInUse == null && CoverPoint_MovingTo == null)
+            {
+                CoverPoint_MovingTo = FindCoverPoint();
                 if (CoverPoint_MovingTo == null)
                 {
-                    Bot.Mover.DogFight.DogFightMove(false, Bot.CurrentTarget.CurrentTargetEnemy);
-                    yield return wait;
-                    continue;
+                    Bot.Mover.DogFight.DogFightMove(false, Bot.GoalEnemy);
+                    return;
                 }
-                // We are in the process of moving to cover, wait and check to make sure the cover is good but otherwise hold
-                while (CoverPoint_MovingTo != null && !CoverPoint_MovingTo.CoverData.IsBad && Bot.Mover.Moving)
-                {
-                    //Logger.LogDebug($"Movin");
-                    yield return wait;
-                }
-                // We completed movement, if it was successful CoverInUse gets set OnComplete
-                while (CoverInUse != null && !CoverInUse.CoverData.IsBad)
-                {
-                    //Logger.LogDebug($"Hold");
-                    CheckMoveToCover(CoverInUse, false, null);
-                    yield return holdInCoverWait;
-                }
-                yield return wait;
             }
-        }
 
-        private void PathComplete(OperationResult result)
-        {
-            if (_seekCoverCoroutine == null)
-                return;
-            if (result.Success)
+            if (Time.time - _timeLastUpdate > GetInterval()) return;
+
+            if (CoverSeekingState == ECoverSeekingState.None)
             {
-                CoverInUse = CoverPoint_MovingTo;
-                CoverPoint_MovingTo = null;
-                CoverSeekingState = ECoverSeekingState.HoldInCover;
+                Logger.LogDebug("cover status none");
                 return;
             }
-            CoverInUse = null;
-            CoverPoint_MovingTo = null;
-            Logger.LogDebug($"Fail : {result.Error}");
+            if (CoverInUse != null)
+            {
+                if (CheckMoveToCover(CoverInUse, false))
+                {
+                    return;
+                }
+                CoverInUse = null;
+            }
+            if (CoverPoint_MovingTo != null)
+            {
+                if (!Bot.Mover.Moving)
+                {
+                    CoverPoint_MovingTo = null;
+                }
+                else
+                {
+                    var status = CoverPoint_MovingTo.StraightDistanceStatus;
+                    if (status == CoverStatus.InCover)
+                    {
+                        CoverInUse = CoverPoint_MovingTo;
+                        CoverPoint_MovingTo = null;
+                    }
+                    else if (status == CoverStatus.CloseToCover)
+                    {
+                        return;
+                    }
+                    else if (CheckMoveToCover(CoverPoint_MovingTo, CoverSeekingState == ECoverSeekingState.RunningTo))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        CoverPoint_MovingTo = null;
+                    }
+                }
+            }
         }
 
-        private readonly List<CoverPoint> _localCoverList = [];
+        private float GetInterval()
+        {
+            if (CoverInUse == null && CoverPoint_MovingTo == null)
+            {
+                return 0f;
+            }
+            if (CoverPoint_MovingTo != null)
+            {
+                return Bot.Mover.Moving ? 0.5f : 0.1f;
+            }
+            if (CoverInUse != null)
+            {
+                return 0.5f;
+            }
+            return 0.1f;
+        }
+
+        private float _timeLastUpdate;
 
         public void SetCoverSeekingState(ECoverSeekingState behavior)
         {
             switch (behavior)
             {
                 case ECoverSeekingState.RunningTo:
-                    _seekCoverCoroutine ??= Bot.StartCoroutine(SeekCover());
                     SetShallSprint(true);
                     return;
 
                 case ECoverSeekingState.WalkingTo:
-                    _seekCoverCoroutine ??= Bot.StartCoroutine(SeekCover());
                     SetShallSprint(false);
                     return;
 
                 case ECoverSeekingState.None:
-                    if (_seekCoverCoroutine != null)
-                    {
-                        Bot.StopCoroutine(_seekCoverCoroutine);
-                        _seekCoverCoroutine = null;
-                    }
+                    CoverSeekingState = ECoverSeekingState.None;
                     CoverInUse = null;
                     CoverPoint_MovingTo = null;
                     return;
 
                 default:
-                    //Logger.LogError("invalid state");
+                    Logger.LogError("invalid input state");
                     return;
             }
         }
 
-        private Coroutine _seekCoverCoroutine;
-
         public CoverPoint CoverPoint_MovingTo { get; private set; }
 
-        private bool CheckMoveToCover(CoverPoint coverPoint, bool sprint, Action<OperationResult> onComplete)
+        private bool CheckMoveToCover(CoverPoint coverPoint, bool sprint)
         {
             if (coverPoint != null &&
                 !coverPoint.CoverData.IsBad &&
-                Bot.Mover.GoToCoverPoint(coverPoint, sprint, Mover.ESprintUrgency.High, false, onComplete))
+                Bot.Mover.GoToCoverPoint(coverPoint, sprint, Mover.ESprintUrgency.High))
             {
                 return true;
             }
@@ -229,18 +246,8 @@ namespace SAIN.SAINComponent.Classes
         {
             if (SAINPlugin.DebugMode && CoverInUse != null)
             {
-                if (debugCoverObject == null)
-                {
-                    debugCoverObject = DebugGizmos.CreateLabel(CoverInUse.Position, "Cover In Use");
-                    debugCoverLine = DebugGizmos.DrawLine(CoverInUse.Position, Bot.Position + Vector3.up, Color.cyan, 0.075f, -1, true);
-                }
-                debugCoverObject.WorldPos = CoverInUse.Position;
-                DebugGizmos.UpdateLinePosition(CoverInUse.Position, Bot.Position + Vector3.up, debugCoverLine);
-            }
-            else if (debugCoverObject != null)
-            {
-                DebugGizmos.DestroyLabel(debugCoverObject);
-                debugCoverObject = null;
+                DebugGizmos.DrawSphere(CoverInUse.Position, 0.1f, Color.cyan, 0.02f, $"[{Bot.name}] Cover In Use");
+                DebugGizmos.DrawLine(CoverInUse.Position, Bot.Position + Vector3.up, Color.cyan, 0.075f, 0.02f, true);
             }
         }
 

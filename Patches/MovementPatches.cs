@@ -2,6 +2,8 @@
 using EFT;
 using EFT.Interactive;
 using HarmonyLib;
+using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Preset.GlobalSettings;
 using SPT.Reflection.Patching;
 using System.Collections;
@@ -28,6 +30,7 @@ namespace SAIN.Patches.Movement
                 return false;
             }
             BotOwner botOwner = __instance.botOwner_0;
+            if (SAINEnableClass.IsBotInCombat(botOwner)) return false;
             if (__instance.NoSprint)
             {
                 __instance._player.EnableSprint(false);
@@ -53,6 +56,82 @@ namespace SAIN.Patches.Movement
             }
             __instance._player.EnableSprint(val);
             return false;
+        }
+    }
+    
+    /// <summary>
+    /// for debug purposes
+    /// </summary>
+    public class PlayerEnableSprintPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BasePhysicalClass), nameof(BasePhysicalClass.Sprint));
+        }
+
+        [PatchPrefix]
+        public static bool Sprint(bool target, BasePhysicalClass __instance)
+        {
+            if (target) return true;
+            Logger.LogWarning("stop sprinting");
+            if (target == __instance.bool_2) return true;
+            IPlayer player = __instance.iobserverToPlayerBridge_0.iPlayer;
+            if (player?.IsAI == true && 
+                __instance.bool_2 && 
+                GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent comp) && 
+                comp.BotComponent?.Mover.Moving == true)
+            {
+                SAIN.Logger.LogError("WHO DID IT");
+            }
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Blocks pose changes when a player is sprinting for ai
+    /// </summary>
+    public class PlayerSetPosePatch : ModulePatch
+    {
+        private static readonly FieldInfo playerField = AccessTools.Field(typeof(MovementContext), "_player");
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(RunStateClass), nameof(RunStateClass.ChangePose));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(RunStateClass __instance)
+        {
+            if (playerField.GetValue(__instance.MovementContext) is Player player)
+            {
+                if (player.IsAI && __instance.MovementContext.IsSprintEnabled)
+                {
+                    __instance.MovementContext.SetPoseLevel(1f, true);
+                    return false;
+                }
+                return true;
+            }
+            else
+            {
+                Logger.LogError("nope");
+            }
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Blocks speed changes when a player is sprinting for ai
+    /// </summary>
+    public class PlayerSetSpeedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player), nameof(Player.ChangeSpeed));
+        }
+
+        [PatchPrefix]
+        public static void Patch(ref float speedDelta, Player __instance)
+        {
         }
     }
 
@@ -417,7 +496,7 @@ namespace SAIN.Patches.Movement
                 return false;
             }
             if (SAINEnableClass.GetSAIN(____owner, out var botComponent) &&
-                botComponent.SAINLayersActive)
+                (botComponent.SAINLayersActive || botComponent.HasEnemy))
             {
                 __result = false;
                 return false;

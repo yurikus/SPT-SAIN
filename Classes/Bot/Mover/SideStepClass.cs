@@ -14,6 +14,8 @@ namespace SAIN.SAINComponent.Classes.Mover
         public override void ManualUpdate()
         {
             base.ManualUpdate();
+
+            return;
             float currentSideStep = CurrentSideStep;
             if (SideStepSetting != SideStepSetting.None && currentSideStep == 0f)
             {

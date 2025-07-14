@@ -259,10 +259,10 @@ namespace SAIN.Components
             SAINGameWorld.PlayerTracker.GetPlayerComponent(profileID)?.AIData.PlayerLocation.UpdateEnvironment(trigger);
         }
 
-        public void Awake()
+        public void Activate(GameWorldComponent gameWorldComp)
         {
             Instance = this;
-            SAINGameWorld = this.GetComponent<GameWorldComponent>();
+            SAINGameWorld = gameWorldComp;
             BotSpawnController = new BotSpawnController(this);
             BotExtractManager = new BotExtractManager(this);
             TimeVision = new TimeClass(this);

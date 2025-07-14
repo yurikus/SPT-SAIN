@@ -20,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (!Bot.SAINLayersActive ||
                 !BotOwner.WeaponManager.IsReady ||
                 !BotOwner.WeaponManager.HaveBullets ||
-                Bot.Player.IsSprintEnabled ||
+                Bot.Mover.Moving ||
                 Bot.Cover.CoverInUse == null)
             {
                 return false;

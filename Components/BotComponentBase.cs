@@ -21,10 +21,14 @@ namespace SAIN.Components
         public Vector3 Position => Transform.Position;
         public Vector3 LookDirection => Transform.LookDirection;
 
-        public virtual bool Init(PlayerComponent PlayerComponent)
+        public virtual bool Init(PlayerComponent playerComponent, BotOwner botOwner)
         {
-            ProfileId = PlayerComponent.ProfileId;
-            PlayerComponent.Player.ActiveHealthController.SetDamageCoeff(1f);
+            PlayerComponent = playerComponent;
+            Player = playerComponent.Player;
+            BotOwner = botOwner;
+            Transform = playerComponent.Transform;
+            ProfileId = Player.ProfileId;
+            Player.ActiveHealthController.SetDamageCoeff(1f);
             return true;
         }
 

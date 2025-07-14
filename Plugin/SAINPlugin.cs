@@ -135,6 +135,9 @@ namespace SAIN
             new Patches.Movement.BotMoverManualUpdatePatch(),
             new Patches.Movement.BotMoverManualFixedUpdatePatch(),
             new Patches.Movement.SprintLookDirPatch(),
+            new Patches.Movement.PlayerSetPosePatch(),
+            new Patches.Movement.PlayerSetSpeedPatch(),
+            new Patches.Movement.PlayerEnableSprintPatch(),
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
             new Patches.Hearing.OnMakingShotPatch(),

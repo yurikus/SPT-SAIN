@@ -145,15 +145,12 @@ namespace SAIN.Layers
         {
             var moveData = bot.Mover.ActivePath;
             if (moveData == null) return;
-            stringBuilder.AppendLabeledValue("Move Status", $"{moveData.CurrentMoveStatus}", Color.white, Color.yellow);
+            stringBuilder.AppendLabeledValue("Move Status", $"{moveData.Status}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Moving", $"{moveData.Moving}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Crawling", $"{moveData.Crawling}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Running", $"{moveData.Running}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Want To Sprint", $"{moveData.WantToSprint}", Color.white, Color.yellow);
-            stringBuilder.AppendLabeledValue("Shall Sprint Now", $"{moveData.ShallSprintNow}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Sprint Status", $"{moveData.CurrentSprintStatus}", Color.white, Color.yellow);
-            stringBuilder.AppendLabeledValue("Move Paused", $"{moveData.PauseTime > Time.time}", Color.white, Color.yellow);
-            stringBuilder.AppendLabeledValue("Move Canceling", $"{moveData.Canceling}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Move CornerCount", $"{moveData.PathCorners.Count}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Move CurrentIndex", $"{moveData.CurrentIndex}", Color.white, Color.yellow);
             stringBuilder.AppendLabeledValue("Move Corner Distance", $"{moveData.CurrentCornerDistanceSqr.Sqrt()}", Color.white, Color.yellow);

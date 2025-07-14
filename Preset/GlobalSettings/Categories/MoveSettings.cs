@@ -70,48 +70,34 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Sprinting")]
         [Advanced]
         [MinMax(0.01f, 1.5f, 100f)]
-        public float BotSprintTryVaultTime = 0.25f;
+        public float BOT_NOMOVE_TRYVAULT_TIME = 0.5f;
 
         [Name("Not Moving Jump Time")]
         [Description("If a bot is not moving for this length of time or longer, try jumping to get themselves unstuck")]
         [Category("Sprinting")]
         [Advanced]
         [MinMax(0.01f, 1.5f, 100f)]
-        public float BotSprintTryJumpTime = 0.66f;
+        public float BOT_NOMOVE_TRYJUMP_TIME = 1f;
 
         [Name("Not Moving Recalculate Time")]
         [Description("If a bot is not moving for this length of time or longer, recalculate a path to their destination")]
         [Category("Sprinting")]
         [Advanced]
         [MinMax(0.01f, 3f, 100f)]
-        public float BotSprintRecalcTime = 1.5f;
-
-        [Name("First Turn Dot Product Min")]
-        [Description("The minimum Dot Product before a bot will activate sprint when they are first told to sprint to a position.")]
-        [Category("Sprinting")]
-        [Advanced]
-        [MinMax(0f, 1f, 1000f)]
-        public float BotSprintFirstTurnDotThreshold = 0.925f;
+        public float BOT_NOMOVE_RECALC_TIME = 3f;
 
         [Name("Path Corner Sprint Reach Distance")]
         [Description("How far from a corner along a path before a bot considers it self arrived, and attemps to navigate to the next corner.")]
         [Category("Sprinting")]
         [Advanced]
         [MinMax(0.01f, 1f, 100f)]
-        public float BotSprintCornerReachDist = 0.2f;
+        public float BotSprintCornerReachDist = 0.3f;
 
         [Name("Path Corner Walk Reach Distance")]
         [Description("How far from a corner along a path before a bot considers it self arrived, and attemps to navigate to the next corner.")]
         [Advanced]
         [MinMax(0.01f, 1f, 100f)]
-        public float BotWalkCornerReachDist = 0.15f;
-
-        [Name("Final Destination Reach Distance")]
-        [Description("How far, in meters, to a bot's final destination before they will pause sprinting.")]
-        [Category("Sprinting")]
-        [Advanced]
-        [MinMax(0.01f, 2f, 100f)]
-        public float BotSprintDistanceToStopSprintDestination = 1.2f;
+        public float BotWalkCornerReachDist = 0.1f;
 
         [Name("Max Corner Angle to Pause Sprint")]
         [Description("When a bot approaches a turn along a path, this is the maximum degrees before they pause sprinting to turn instead of keeping sprint active while they turn.")]
@@ -119,20 +105,6 @@ namespace SAIN.Preset.GlobalSettings
         [Advanced]
         [MinMax(1f, 90f, 1f)]
         public float BotSprintCurrentCornerAngleMax = 25f;
-
-        [Name("Max Turning Speed - Sprint Active")]
-        [Description("The maximum speed that bots can turn while sprinting is active. In Degrees per Second.")]
-        [Category("Sprinting")]
-        [Advanced]
-        [MinMax(1f, 500f, 1f)]
-        public float BotSprintTurnSpeedWhileSprint = 300f;
-
-        [Name("Max Turning Speed - Sprint Paused")]
-        [Description("The maximum speed that bots can turn after they stop sprinting to turn to a new direction. In Degrees per Second.")]
-        [Category("Sprinting")]
-        [Advanced]
-        [MinMax(1f, 500f, 1f)]
-        public float BotSprintTurningSpeed = 400f;
 
         public override void Init(List<ISAINSettings> list)
         {

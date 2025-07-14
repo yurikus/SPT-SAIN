@@ -3,13 +3,11 @@
     public enum EBotSprintStatus
     {
         None,
-        Running,
-        Turning,
-        ShortCorner,
-        NoStamina,
-        ArrivingAtDestination,
         CantSprint,
-        LookAtEnemyNoSprint,
         Canceling,
+        Pausing,
+        Turning,
+        NoStamina,
+        Running,
     }
 }

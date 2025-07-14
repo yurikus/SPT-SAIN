@@ -1,5 +1,4 @@
-﻿using Comfort.Common;
-using EFT;
+﻿using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.BotController;
@@ -61,7 +60,15 @@ namespace SAIN.Patches.Components
 
             try
             {
-                GameWorldHandler.Create(gameWorld);
+                if (GameWorldComponent.Instance != null)
+                {
+                    Logger.LogWarning($"Old SAIN Gameworld is not null! Destroying...");
+                    GameWorldComponent.Instance.DestroyComponent();
+                }
+                GameWorldComponent gameWorldComponent = gameWorld.gameObject.AddComponent<GameWorldComponent>();
+                BotManagerComponent botController = gameWorld.gameObject.AddComponent<BotManagerComponent>();
+                gameWorldComponent.Init(gameWorld, botController);
+                botController.Activate(gameWorldComponent);
             }
             catch (Exception ex)
             {

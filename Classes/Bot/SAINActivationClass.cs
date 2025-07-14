@@ -35,6 +35,8 @@ namespace SAIN.SAINComponent.Classes
                 BotStandByToggle.CheckToggle(true);
                 ActiveLayer = ESAINLayer.None;
                 SAINLayersActiveToggle.CheckToggle(false);
+                Bot.Mover.Stop();
+                Bot.Cover.SetCoverSeekingState(ECoverSeekingState.None);
             }
         }
 
@@ -53,7 +55,14 @@ namespace SAIN.SAINComponent.Classes
             CheckGameEnding();
             CheckBotActive();
             CheckStandBy();
+
+            bool wasActive = SAINLayersActiveToggle.Value;
             SAINLayersActiveToggle.CheckToggle(ActiveLayer != ESAINLayer.None);
+            if (wasActive && !SAINLayersActiveToggle.Value)
+            {
+                Bot.Mover.Stop();
+                Bot.Cover.SetCoverSeekingState(ECoverSeekingState.None);
+            }
         }
 
         private void CheckBotActive()
@@ -89,6 +98,12 @@ namespace SAIN.SAINComponent.Classes
                     BotOwner.StandBy.Activate();
                     standby = false;
                 }
+            }
+
+            if (standby)
+            {
+                Bot.Mover.Stop();
+                Bot.Cover.SetCoverSeekingState(ECoverSeekingState.None);
             }
 
             BotStandByToggle.CheckToggle(standby);

@@ -58,8 +58,9 @@ namespace SAIN.Layers.Combat.Solo
 
             if (Bot.Mover.Moving)
             {
-                Bot.Mover.ActivePath.WantToSprint = false;
+                Bot.Mover.ActivePath?.RequestEndSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
             }
+
             Bot.Mover.DogFight.DogFightMove(true, _enemy);
 
             if (Shoot.ShootAnyVisibleEnemies(_enemy))
@@ -122,14 +123,10 @@ namespace SAIN.Layers.Combat.Solo
         {
             if (_updateMoveTime < Time.time)
             {
-                if (Bot.Mover.Moving && Bot.Mover.ActivePath.Canceling)
-                {
-                     _updateMoveTime = Time.time + 0.1f;
-                    return;
-                }
                 if (updateMove(_enemy))
                 {
                     _updateMoveTime = Time.time + 2f;
+                    return;
                 }
                 _updateMoveTime = Time.time + 0.1f;
             }

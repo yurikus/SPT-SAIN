@@ -478,8 +478,8 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 newTargetLookDirection.y = 0;
             }
-            playerComponent.SmoothController.SetTargetLookDirection(newTargetLookDirection);
-            __instance._lookDirection = playerComponent.SmoothController.CurrentControlLookDirection;
+            playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection);
+            __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
             __instance.Speed = float.MaxValue;
             __instance.SetXAngle(float.MaxValue);
             __instance.SetYByDir(__instance._lookDirection);

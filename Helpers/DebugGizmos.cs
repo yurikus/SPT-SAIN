@@ -7,6 +7,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using static System.Net.Mime.MediaTypeNames;
+using UnityEngine.UIElements;
 using Color = UnityEngine.Color;
 
 namespace SAIN.Helpers
@@ -42,7 +44,8 @@ namespace SAIN.Helpers
         public static void ManualUpdate()
         {
             float currentTime = Time.time;
-            for (int i = _gizmos.Count; i > 0; i--)
+            if (_gizmos.Count == 0) return;
+            for (int i = _gizmos.Count - 1; i >= 0; i--)
             {
                 DebugGizmo gizmo = _gizmos[i];
                 float expireTime = gizmo.ExpireTime;
@@ -81,7 +84,7 @@ namespace SAIN.Helpers
 
         public static void DestroyLabel(DebugLabel obj)
         {
-            for (int i = _gizmos.Count; i > 0; i--)
+            for (int i = _gizmos.Count - 1; i >= 0; i--)
             {
                 if (_gizmos[i].Label == obj)
                 {
@@ -109,10 +112,11 @@ namespace SAIN.Helpers
             {
                 if (_defaultStyle == null)
                 {
-                    _defaultStyle = new GUIStyle(GUI.skin.box);
-                    _defaultStyle.alignment = TextAnchor.MiddleLeft;
-                    _defaultStyle.fontSize = 20;
-                    _defaultStyle.margin = new RectOffset(3, 3, 3, 3);
+                    _defaultStyle = new GUIStyle(GUI.skin.box) {
+                        alignment = TextAnchor.MiddleLeft,
+                        fontSize = 20,
+                        margin = new RectOffset(3, 3, 3, 3)
+                    };
                     ApplyToStyle.BackgroundAllStates(null, _defaultStyle);
                 }
                 guiStyle = _defaultStyle;
@@ -202,9 +206,10 @@ namespace SAIN.Helpers
             if (DrawGizmos && SAINPlugin.DebugMode)
             {
                 GameObject gameObject = new();
-                SetGizmoColor(gameObject, color);
+                gameObject.transform.position = startPoint;
                 SetLineWidth(gameObject, lineWidth, taperLine);
                 SetLinePositions(gameObject, startPoint, endPoint);
+                SetGizmoColor(gameObject, color);
                 AddGizmo(gameObject, expiretime, label);
                 return gameObject;
             }
@@ -233,8 +238,13 @@ namespace SAIN.Helpers
         public static void SetGizmoColor(GameObject gameObject, Color color)
         {
             if (gameObject != null &&
-                gameObject.TryGetComponent<Renderer>(out var renderer) &&
-                renderer.material != null)
+                gameObject.TryGetComponent<LineRenderer>(out var linerenderer))
+            {
+                linerenderer.material.color = color;
+                return;
+            }
+            if (gameObject != null &&
+                gameObject.TryGetComponent<Renderer>(out var renderer))
             {
                 renderer.material.color = color;
             }
@@ -278,7 +288,7 @@ namespace SAIN.Helpers
             DebugGizmo gizmo = new() { GameObject = obj };
             if (label != null)
             {
-                gizmo.Label = CreateLabel(obj.transform.position, label);
+                gizmo.Label =new() { WorldPos = obj.transform.position, Text = label };
             }
             if (expireTime > 0) gizmo.ExpireTime = Time.time + expireTime;
             _gizmos.Add(gizmo);

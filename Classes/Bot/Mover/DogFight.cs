@@ -60,14 +60,20 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             Bot.Mover.SetTargetMoveSpeed(Bot.Info.FileSettings.Move.STRAFE_SPEED);
 
-            if (HasEnemy && stopMoveToShoot(Enemy))
+            if (HasEnemy && Enemy.IsVisible && Enemy.CanShoot && 
+                Status == EDogFightStatus.MovingToEnemy)
             {
                 Status = EDogFightStatus.Shooting;
                 Bot.Mover.Stop();
-                float timeAdd = 0.5f * UnityEngine.Random.Range(0.5f, 1.33f);
+                float timeAdd = 0.25f * UnityEngine.Random.Range(0.66f, 1.33f);
                 Bot.Mover.Lean.HoldLean(timeAdd);
                 _updateDogFightTimer = Time.time + timeAdd;
                 return;
+            }
+
+            if (HasEnemy && !Enemy.CanShoot)
+            {
+                Bot.Mover.Lean.ResetHoldLean();
             }
 
             if (_updateDogFightTimer > Time.time)
@@ -77,13 +83,20 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies);
 
+            if (_backingUp && Bot.Mover.Moving)
+            {
+                _updateDogFightTimer = Time.time + 0.1f;
+                return;
+            }
             if (HasEnemy && BackUpFromEnemy(Enemy))
             {
+                _backingUp = true;
                 Status = EDogFightStatus.BackingUp;
                 float baseTime = Enemy.IsVisible ? 0.75f : 1f;
                 _updateDogFightTimer = Time.time + baseTime * UnityEngine.Random.Range(0.66f, 1.33f);
                 return;
             }
+            _backingUp = false;
 
             if (!aggressive)
             {
@@ -112,6 +125,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             //(Enemy.InLineOfSight || Enemy.IsVisible) &&
             //Enemy.CanShoot;
         }
+
+        private bool _backingUp;
 
         public bool BackUpFromEnemy(Enemy Enemy)
         {

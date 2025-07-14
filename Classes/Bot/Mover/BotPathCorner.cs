@@ -29,5 +29,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         public float Dot = 1;
         public float SqrMagnitude = float.MaxValue;
         public float PercentageComplete = 0;
+        public float Magnitude = float.MaxValue;
     }
 }

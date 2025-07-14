@@ -84,11 +84,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            if (CheckIfDoorLast(link))
-            {
-                //Logger.LogDebug($"Link {link.Id} is last!");
-                return false;
-            }
+            //if (CheckIfDoorLast(link))
+            //{
+            //    //Logger.LogDebug($"Link {link.Id} is last!");
+            //    return false;
+            //}
             if (!link.Door.Operatable || !link.Door.enabled)
             {
                 //Logger.LogDebug($"Link {link.Id} door not operable!");
@@ -150,32 +150,32 @@ namespace SAIN.SAINComponent.Classes.Mover
                 }
 
                 Door door = data.Door;
-                drawLink(link);
-                float maxDistance;
-
-                switch (door.DoorState)
-                {
-                    case EDoorState.Open:
-                        maxDistance = 3f * 3f;
-                        break;
-
-                    case EDoorState.Shut:
-                        maxDistance = 3f * 3f;
-                        break;
-
-                    default:
-                        continue;
-                }
-                if (data.CurrentSqrMagnitude > maxDistance)
-                {
-                    //Logger.LogDebug($"Toofar [{link.Id}] Dist: [{data.CurrentSqrMagnitude.Sqrt()}] maxDist: [{maxDistance.Sqrt()}]");
-                    continue;
-                }
-                if (!CheckWantToInteract(data, botPosition))
-                {
-                    //Logger.LogDebug($"Dont want to interact with [{link.Id}]");
-                    continue;
-                }
+                //drawLink(link);
+                //float maxDistance;
+                //
+                //switch (door.DoorState)
+                //{
+                //    case EDoorState.Open:
+                //        maxDistance = 3f * 3f;
+                //        break;
+                //
+                //    case EDoorState.Shut:
+                //        maxDistance = 3f * 3f;
+                //        break;
+                //
+                //    default:
+                //        continue;
+                //}
+                //if (data.CurrentSqrMagnitude > maxDistance)
+                //{
+                //    //Logger.LogDebug($"Toofar [{link.Id}] Dist: [{data.CurrentSqrMagnitude.Sqrt()}] maxDist: [{maxDistance.Sqrt()}]");
+                //    continue;
+                //}
+                //if (!CheckWantToInteract(data, botPosition))
+                //{
+                //    //Logger.LogDebug($"Dont want to interact with [{link.Id}]");
+                //    continue;
+                //}
                 _possibleInteractDoors.Add(data);
             }
         }
@@ -242,36 +242,30 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void Interact(DoorData data, EInteractionType Etype, Vector3 botPosition, System.Action onInteractionDone = null)
         {
-            _activeDoor = data;
-            data.LastInteractTime = Time.time;
             Door door = data.Door;
-            BreachingDoor = Etype == EInteractionType.Breach;
-            switch (Etype)
-            {
-                case EInteractionType.Breach:
-                    break;
-
-                case EInteractionType.Open:
-                    door.Snap = EDoorState.None;
-                    break;
-
-                case EInteractionType.Close:
-                    door.Snap = EDoorState.None;
-                    break;
-
-                default:
-                    return;
-            }
+            //switch (Etype)
+            //{
+            //    case EInteractionType.Breach:
+            //        break;
+            //
+            //    case EInteractionType.Open:
+            //        door.Snap = EDoorState.None;
+            //        break;
+            //
+            //    case EInteractionType.Close:
+            //        door.Snap = EDoorState.None;
+            //        break;
+            //
+            //    default:
+            //        return;
+            //}
 
             if (Etype == EInteractionType.Breach ||
                 ModDetection.ProjectFikaLoaded ||
                 !GlobalSettingsClass.Instance.General.Doors.NoDoorAnimations)
             {
                 //Logger.LogDebug($"{BotOwner.name} Executing [{Etype}] door interaction on {doorInfo.Link.Id}");
-                Bot.Steering.LookToFloorPoint(data.LinkPosition);
-                InteractionResult interactionResult = new(Etype);
-                Player.CurrentManagedState.StartDoorInteraction(door, interactionResult, onInteractionDone);
-                Interacting = true;
+                method_0(door, Etype);
                 return;
             }
 
@@ -297,6 +291,27 @@ namespace SAIN.SAINComponent.Classes.Mover
             GameWorldComponent.Instance.Doors.ChangeDoorState(door, state, shallInvert);
             BotManagerComponent.Instance.BotHearing.PlayAISound(PlayerComponent, SAINSoundType.Door, data.Link.MidClose, 30f, 1f, true);
             onInteractionDone?.Invoke();
+        }
+
+        private void method_0(Door door, EInteractionType type)
+        {
+            Player.MovementContext.ResetCanUsePropState();
+            var gstruct = Door.Interact(Player, type);
+            if (gstruct.Succeeded)
+            {
+                //Logger.LogDebug("Success");
+                switch (type)
+                {
+                    case EInteractionType.Breach:
+                        Player.vmethod_0(door, gstruct.Value, null);
+                        break;
+
+                    default:
+                        Player.vmethod_1(door, gstruct.Value);
+                        break;
+                }
+            }
+            //Logger.LogDebug("Fail");
         }
 
         private static bool ShallInvertDoorAngle(Door door, Vector3 botPosition)

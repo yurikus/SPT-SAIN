@@ -4,9 +4,7 @@
     {
         None,
         ReadyToMove,
-        Canceling,
-        Paused,
         Moving,
-        DoorInteraction,
+        Complete,
     }
 }

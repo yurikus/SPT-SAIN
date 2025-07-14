@@ -2,6 +2,7 @@
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.Classes.Mover;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
@@ -56,7 +57,10 @@ namespace SAIN.Patches.Generic.Fixes
                     bot.Steering.LookToMovingDirection(true);
                 }
 
-                bot.Mover.ActivePath.WantToSprint = __instance.Running && goalEnemy.Distance > __instance.Single_1;
+                if (__instance.Running && goalEnemy.Distance > __instance.Single_1)
+                {
+                    bot.Mover.ActivePath.RequestStartSprint(ESprintUrgency.High, "melee");
+                }
                 if (__instance._nextTryHitTime < Time.time)
                 {
                     __instance.method_0((flag && __instance.method_2(goalEnemy)) ? 10f : __instance.TRY_HIT_PERIOD_FALSE);
@@ -86,7 +90,7 @@ namespace SAIN.Patches.Generic.Fixes
                         }
                         else
                         {
-                            bot.Mover.RunToPointByWay(way, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
+                            bot.Mover.RunToPoint(goalEnemy.CurrPosition, true, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true);
                         }
                     }
                 }
@@ -103,7 +107,7 @@ namespace SAIN.Patches.Generic.Fixes
                     }
                     else
                     {
-                        bot.Mover.RunToPointByWay(way2, SAINComponent.Classes.Mover.ESprintUrgency.High, false, true);
+                        bot.Mover.RunToPoint(goalEnemy.CurrPosition, true, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true);
                     }
                 }
                 return false;
@@ -128,6 +132,7 @@ namespace SAIN.Patches.Generic.Fixes
             return false;
         }
     }
+
     internal class EnableVaultPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

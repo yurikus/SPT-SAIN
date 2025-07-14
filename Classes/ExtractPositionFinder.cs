@@ -282,7 +282,7 @@ namespace SAIN.Components.Extract
                 return;
             }
 
-            List<Vector3> navMeshPoints = GameWorldHandler.SAINGameWorld.GetAllSpawnPointPositionsOnNavMesh()?.ToList();
+            List<Vector3> navMeshPoints = GameWorldComponent.Instance.GetAllSpawnPointPositionsOnNavMesh()?.ToList();
             if (navMeshPoints == null || navMeshPoints.Count == 0)
             {
                 return;

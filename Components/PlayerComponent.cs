@@ -70,7 +70,7 @@ namespace SAIN.Components.PlayerComponentSpace
         public BotComponent BotComponent { get; private set; }
         public Player Player { get; private set; }
 
-        public PlayerMovementSmoothingClass SmoothController { get; private set; } = new();
+        public PlayerMovementController CharacterController { get; private set; } = new();
         public PlayerTickData PlayerTickData { get; private set; }
         public OtherPlayersData OtherPlayersData { get; private set; }
         public BodyPartsClass BodyParts { get; private set; }
@@ -214,7 +214,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 Transform.ManualUpdate(Player, isAI);
                 if (isAI)
                 {
-                    SmoothController.ManualUpdate(currentTime, deltaTime, Player, BotOwner, BotComponent);
+                    CharacterController.UpdateBotMovement(currentTime, deltaTime, Player, BotOwner, BotComponent);
                 }
                 if (!isAI ||
                     (BotOwner.BotState == EBotState.Active && BotOwner.StandBy.StandByType == BotStandByType.active))
@@ -291,8 +291,10 @@ namespace SAIN.Components.PlayerComponentSpace
             try
             {
                 PlayerData playerData = new(this, iPlayer as Player, iPlayer);
-                ActivationClass = new PersonActiveClass(this);
+                Player = playerData.Player;
                 Name = playerData.Player.name;
+
+                ActivationClass = new PersonActiveClass(this);
 
                 OtherPlayersData = new OtherPlayersData(this);
                 PlayerTickData = new PlayerTickData(this);

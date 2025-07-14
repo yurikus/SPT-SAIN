@@ -203,7 +203,11 @@ namespace SAIN
         /// <returns></returns>
         public static bool IsBotInCombat(IPlayer player)
         {
-            return BotManagerComponent.Instance?.BotSpawnController?.GetSAIN(player.ProfileId)?.SAINLayersActive == true;
+            BotComponent bot = BotManagerComponent.Instance?.BotSpawnController?.GetSAIN(player.ProfileId);
+            if (bot == null) return false;
+            if (bot.SAINLayersActive) return true;
+            if (bot.HasEnemy) return true;
+            return false;
         }
 
         public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)

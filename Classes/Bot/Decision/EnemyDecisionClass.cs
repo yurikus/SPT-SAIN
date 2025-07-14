@@ -155,6 +155,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 }
                 return true;
             }
+
             StartRunCoverTimer = 0f;
             bool hold = shallHoldInCover(out reason);
             DecisionReasons.AppendLine($"9. Shall HoldinCover: [{hold}, {reason}]");
@@ -478,7 +479,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallRunForCover(Enemy enemy, out string reason)
         {
-            if (!BotOwner.CanSprintPlayer)
+            if (!Player.MovementContext.CanSprint)
             {
                 reason = "cantSprint";
                 return false;
