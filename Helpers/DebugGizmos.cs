@@ -194,6 +194,27 @@ namespace SAIN.Helpers
 
             return box;
         }
+        public static GameObject DrawBox(Vector3 position, Vector3 size, Color color, float expiretime = -1f)
+        {
+            if (!DrawGizmos)
+            {
+                return null;
+            }
+            if (!SAINPlugin.DebugMode)
+            {
+                return null;
+            }
+
+            var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+            box.GetComponent<Renderer>().material.color = color;
+            box.GetComponent<Collider>().enabled = false;
+            box.transform.position = position;
+            box.transform.localScale = size;
+            AddGizmo(box, expiretime);
+
+            return box;
+        }
 
         public static GameObject Ray(Vector3 startPoint, Vector3 direction, Color color, float length = 1f, float lineWidth = 0.1f, float expiretime = 1f, bool taperLine = false, string label = null)
         {
@@ -226,6 +247,7 @@ namespace SAIN.Helpers
                     LineRenderer lineRenderer = gameObject.GetOrAddComponent<LineRenderer>();
                     if (lineRenderer != null)
                     {
+                            lineRenderer.positionCount = positions.Length;
                         for (int i = 0; i < count; i++)
                         {
                             lineRenderer.SetPosition(i, positions[i]);

@@ -1,31 +1,109 @@
-﻿using SAIN.Components.PlayerComponentSpace;
+﻿using SAIN.Classes.Transform;
+using SAIN.Components.PlayerComponentSpace;
+using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using Sirenix.Serialization;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.LowLevel;
 
 namespace SAIN.SAINComponent.Classes
 {
     public class HearingDispersionClass(SAINHearingSensorClass hearing) : BotSubClass<SAINHearingSensorClass>(hearing), IBotClass
     {
+        private const float MIN_DISTANCE_LAST_KNOWN_NO_RANDOMIZATION = 3f;
+        private const float MAX_DISTANCE_LASTKNOWN_REDUCE_RANDOM = 50;
+        private const float MIN_COEF_LASTKNOWN_REDUCE_RANDOM = 0.05f;
+
         public Vector3 CalcRandomizedPosition(AISoundData Sound, float addDispersion)
         {
+            EnemyPlace enemyLastKnown = Sound.Enemy.KnownPlaces.LastKnownPlace;
+            float distanceFromLastKnown = enemyLastKnown != null ? enemyLastKnown.DistanceToEnemyRealPosition : float.MaxValue;
+
+            if (distanceFromLastKnown <= MIN_DISTANCE_LAST_KNOWN_NO_RANDOMIZATION)
+            {
+                return enemyLastKnown.Position;
+            }
+            float lastKnownDistCoef = 1f;
+            if (distanceFromLastKnown < MAX_DISTANCE_LASTKNOWN_REDUCE_RANDOM)
+            {
+                float ratio = distanceFromLastKnown - MIN_DISTANCE_LAST_KNOWN_NO_RANDOMIZATION / MAX_DISTANCE_LASTKNOWN_REDUCE_RANDOM - MIN_DISTANCE_LAST_KNOWN_NO_RANDOMIZATION;
+                lastKnownDistCoef = Mathf.Lerp(MIN_COEF_LASTKNOWN_REDUCE_RANDOM, 1f, ratio);
+            }
             float baseDispersion = getBaseDispersion(Sound.PlayerDistance, Sound.SoundType);
             float dispersionMod = getDispersionModifier(Sound.Enemy) * addDispersion;
-            float finalDispersion = baseDispersion * dispersionMod;
+            float finalDispersion = baseDispersion * dispersionMod * lastKnownDistCoef;
 
             HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;
             finalDispersion = Mathf.Clamp(finalDispersion, 0f, hearingSettings.HEAR_DISPERSION_MAX_DISPERSION);
-            float min = Sound.PlayerDistance < hearingSettings.HEAR_DISPERSION_MIN_DISTANCE_THRESH ? 0f : hearingSettings.HEAR_DISPERSION_MIN;
-            Vector3 randomdirection = getRandomizedDirection(finalDispersion, min);
+            Vector3 randomBox = getRandomizedDirection(finalDispersion, 1f, 0.15f, 1f);
+            if (GetRandomReachablePointInBoxAroundPlayer(Sound.HeardPlayerComponent, randomBox, out Vector3 result, out NavMeshPath path, 4f, 20))
+            {
+                if (Sound.HeardPlayer.IsYourPlayer)
+                {
+                    DebugGizmos.DrawBox(Sound.HeardPlayer.Position, randomBox * 0.5f, Color.magenta, 10f);
+                    var line = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.magenta, 0.1f, 10f, false);
+                    DebugGizmos.SetLinePositions(line, path.corners);
+                }
+                return result;
+            }
+            if (enemyLastKnown != null)
+            {
+                if (SAINPlugin.DebugMode) Logger.LogWarning($"[{Bot.name}] Failed to find reachable point from perception event for Enemy: [{Sound.Enemy.Player.name}]! but we had their old last known to fall back on.");
+                return enemyLastKnown.Position;
+            }
 
-            if (SAINPlugin.DebugSettings.Logs.DebugHearing)
-                Logger.LogDebug($"Dispersion: [{randomdirection.magnitude}] Distance: [{ Sound.PlayerDistance}] Base Dispersion: [{baseDispersion}] DispersionModifier [{dispersionMod}] Final Dispersion: [{finalDispersion}] : SoundType: [{Sound.SoundType}]");
-
-            Vector3 estimatedEnemyPos = Sound.Position + randomdirection;
-            Vector3 dirToRandomPos = estimatedEnemyPos - Bot.Position;
-            Vector3 result = Bot.Position + (dirToRandomPos.normalized * Sound.PlayerDistance);
-            return result;
+            Logger.LogWarning($"[{Bot.name}] Failed to find reachable point from perception event for Enemy: [{Sound.Enemy.Player.name}]! had to use enemy's real location as fallback!");
+            return Sound.Enemy.EnemyPosition;
         }
+
+        public static bool GetRandomReachablePointInBoxAroundPlayer(PlayerComponent playerComp, Vector3 size, out Vector3 result, out NavMeshPath path, float navSampleRange = 2f, int maxTries = 10)
+        {
+            for (int i = _preAlocPathList.Count - 1; i < maxTries; i++)
+            {
+                _preAlocPathList.Add(new());
+            }
+            PlayerNavData navData = playerComp.Transform.NavData;
+            Vector3 minSize = size * 0.5f;
+            Vector3 origin = navData.PlayerNavMeshStatus == EPlayerNavMeshDistance.OffNavMesh ? playerComp.Position : playerComp.Transform.NavData.NavMeshPosition;
+            for (int i = 0; i < maxTries; i++)
+            {
+                Vector3 randomDirection = RandomPointInBox(origin, size);
+                Vector3 clampedDirection = randomDirection.Clamp(minSize, randomDirection);
+                path = _preAlocPathList[i];
+                path.ClearCorners();
+                if (NavMesh.SamplePosition(origin + clampedDirection, out NavMeshHit hit, navSampleRange, -1) && 
+                    NavMesh.CalculatePath(origin, hit.position, -1, path))
+                {
+                    Vector3[] corners = path.corners;
+                    int length = corners.Length;
+                    if (length > 1)
+                    {
+                        result = corners[length - 1];
+                        return true;
+                    }
+                }
+            }
+
+            result = Vector3.zero;
+            path = null;
+            return false; // No valid point found
+        }
+
+        public static Vector3 RandomPointInBox(Vector3 center, Vector3 size)
+        {
+            Vector3 halfSize = size * 0.5f;
+
+            return new Vector3(
+                Random.Range(-halfSize.x, halfSize.x),
+                Random.Range(-halfSize.y, halfSize.y),
+                Random.Range(-halfSize.z, halfSize.z)
+            ) + center;
+        }
+
+        private static readonly List<NavMeshPath> _preAlocPathList = [];
 
         private float getBaseDispersion(float enemyDistance, SAINSoundType soundType)
         {
@@ -50,24 +128,12 @@ namespace SAIN.SAINComponent.Classes
             return dispersionModifier;
         }
 
-        private Vector3 getRandomizedDirection(float dispersion, float min = 0.5f)
+        private static Vector3 getRandomizedDirection(float dispersion, float xCoef = 1f, float yCoef = 0.25f, float zCoef = 1f)
         {
-            float randomX = UnityEngine.Random.Range(-dispersion, dispersion);
-            float randomZ = UnityEngine.Random.Range(-dispersion, dispersion);
-            Vector3 randomdirection = new(randomX, 0, randomZ);
-            if (min > 0 && randomdirection.sqrMagnitude < min * min)
-            {
-                randomdirection = Vector3.Normalize(randomdirection) * min;
-            }
-            return randomdirection;
-        }
-
-        public Vector3 GetEstimatedPoint(Vector3 source, float distance)
-        {
-            Vector3 randomPoint = UnityEngine.Random.onUnitSphere;
-            randomPoint.y = 0;
-            randomPoint *= (distance / 10f);
-            return source + randomPoint;
+            float randomX = Random.Range(-dispersion * xCoef, dispersion * xCoef);
+            float randomy = Random.Range(-dispersion * yCoef, dispersion * yCoef);
+            float randomZ = Random.Range(-dispersion * zCoef, dispersion * zCoef);
+            return new(randomX, randomy, randomZ);
         }
     }
 }

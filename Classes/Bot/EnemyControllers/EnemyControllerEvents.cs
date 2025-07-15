@@ -12,47 +12,41 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public ToggleEvent HumanInLineOfSightEvent { get; } = new ToggleEvent();
 
         public event Action<Enemy> OnEnemyHit;
+
         public event Action<Enemy> OnEnemyAdded;
+
         public event Action<string, Enemy> OnEnemyRemoved;
+
         public event Action<Player> OnEnemyKilled;
+
         public event Action<Enemy, SAINSoundType, bool, EnemyPlace> OnEnemyHeard;
+
         public event Action<bool, Enemy> OnEnemyKnownChanged;
+
         public event Action<Enemy, Enemy> OnEnemyChanged;
+
         public event Action<ETagStatus, Enemy> OnEnemyHealthChanged;
 
         public EnemyControllerEvents(SAINEnemyController controller) : base(controller)
         {
-
         }
 
         public override void Init()
         {
-            var knownEnemies = BaseClass.EnemyLists.GetEnemyList(EEnemyListType.Known);
+            var knownEnemies = BaseClass.KnownEnemies;
             knownEnemies.OnListEmptyOrGetFirst += OnPeaceChanged.CheckToggle;
             knownEnemies.OnListEmptyOrGetFirstHuman += ActiveHumanEnemyEvent.CheckToggle;
 
-            var enemiesInLOS = BaseClass.EnemyLists.GetEnemyList(EEnemyListType.InLineOfSight);
+            var enemiesInLOS = BaseClass.EnemiesInLineOfSight;
             enemiesInLOS.OnListEmptyOrGetFirstHuman += HumanInLineOfSightEvent.CheckToggle;
             base.Init();
         }
 
         public override void Dispose()
         {
-            var lists = BaseClass.EnemyLists;
-            if (lists != null)
-            {
-                var knownEnemies = lists.GetEnemyList(EEnemyListType.Known);
-                if (knownEnemies != null)
-                {
-                    knownEnemies.OnListEmptyOrGetFirst -= OnPeaceChanged.CheckToggle;
-                    knownEnemies.OnListEmptyOrGetFirstHuman -= ActiveHumanEnemyEvent.CheckToggle;
-                }
-                var enemiesInLOS = lists.GetEnemyList(EEnemyListType.InLineOfSight);
-                if (enemiesInLOS != null)
-                {
-                    enemiesInLOS.OnListEmptyOrGetFirstHuman -= HumanInLineOfSightEvent.CheckToggle;
-                }
-            }
+            Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirst -= OnPeaceChanged.CheckToggle;
+            Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirstHuman -= ActiveHumanEnemyEvent.CheckToggle;
+            Bot.EnemyController.EnemiesInLineOfSight.OnListEmptyOrGetFirstHuman -= HumanInLineOfSightEvent.CheckToggle;
             base.Dispose();
         }
 

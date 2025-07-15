@@ -12,7 +12,7 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Update(CustomLayer.ActionData data)
         {
-            Enemy priorityEnemy = Bot.CurrentTarget.CurrentTargetEnemy;
+            Enemy priorityEnemy = Bot.GoalEnemy;
             Enemy shotEnemy = Shoot.GetEnemyToShoot(priorityEnemy);
             if (shotEnemy != null)
             {

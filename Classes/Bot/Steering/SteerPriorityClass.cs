@@ -182,11 +182,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool lookToAimTarget()
         {
-            if (Bot.Aim.AimStatus == AimStatus.NoTarget)
-            {
-                return false;
-            }
-            return canSeeAndShoot(Bot.Shoot.LastShotEnemy) || canSeeAndShoot(Bot.GoalEnemy) || canSeeAndShoot(Bot.CurrentTarget.CurrentTargetEnemy);
+            return Bot.Aim.AimStatus != AimStatus.NoTarget && (canSeeAndShoot(Bot.GoalEnemy) || canSeeAndShoot(Bot.Shoot.LastShotEnemy));
         }
 
         private bool canSeeAndShoot(Enemy enemy)

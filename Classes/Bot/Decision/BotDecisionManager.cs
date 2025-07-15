@@ -5,10 +5,27 @@ using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
+    //public struct FBotDecisionDataData
+    //{
+    //    public ECombatDecision CurrentCombatDecision;
+    //    public ECombatDecision PreviousCombatDecision;
+    //    public ESquadDecision CurrentSquadDecision;
+    //    public ESquadDecision PreviousSquadDecision;
+    //    public ESelfDecision CurrentSelfDecision;
+    //    public ESelfDecision PreviousSelfDecision;
+    //    public bool HasDecision;
+    //    public float ChangeDecisionTime;
+    //    public float TimeSinceChangeDecision;
+    //
+    //    public ETagStatus HealthStatus;
+    //}
+
+
     public class BotDecisionManager : BotSubClass<SAINDecisionClass>, IBotClass
     {
         private const float DECISION_FREQUENCY = 1f / 30;
@@ -97,8 +114,13 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private void getDecision()
         {
-            Enemy enemy = Bot.GoalEnemy;
-            EnemyList knownEnemies = Bot.EnemyController.EnemyLists.KnownEnemies;
+            Enemy enemy = Bot.EnemyController.ChooseEnemy();
+            if (enemy == null)
+            {
+                SetDecisions(ECombatDecision.None, ESquadDecision.None, ESelfDecision.None);
+                return;
+            }
+            
             BaseClass.EnemyDecisions.DebugShallSearch = null;
             if (Bot.Info.Profile.WildSpawnType == WildSpawnType.bossTagilla)
             {
@@ -113,7 +135,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (enemy != null && enemy.IsZombie)
             {
                 bool hasShooterContact = false;
-                foreach (var knownEnemy in knownEnemies)
+                foreach (var knownEnemy in Bot.EnemyController.KnownEnemies)
                     if (knownEnemy?.IsZombie != true)
                         hasShooterContact = true;
                 if (!hasShooterContact)
@@ -124,12 +146,6 @@ namespace SAIN.SAINComponent.Classes.Decision
                     return;
                 }
             }
-
-            if (BaseClass.DogFightDecision.ShallDogFight(knownEnemies))
-            {
-                SetDecisions(ECombatDecision.DogFight, ESquadDecision.None, ESelfDecision.None);
-                return;
-            }
             if (BotOwner.WeaponManager.IsMelee)
             {
                 SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfDecision.None);
@@ -137,13 +153,12 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (BaseClass.SelfActionDecisions.GetDecision(out ESelfDecision selfDecision, enemy))
             {
-                var selfCombat = Bot.Cover.HasCover ? ECombatDecision.HoldInCover : ECombatDecision.Retreat;
-                SetDecisions(selfCombat, ESquadDecision.None, selfDecision);
+                SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, selfDecision);
                 return;
             }
             if (CheckContinueRetreat())
             {
-                SetDecisions(ECombatDecision.Retreat, ESquadDecision.None, ESelfDecision.None);
+                SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, Bot.Decision.CurrentSelfDecision);
                 return;
             }
             if (BaseClass.SquadDecisions.GetDecision(out ESquadDecision squadDecision, enemy))
@@ -151,7 +166,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 SetDecisions(ECombatDecision.None, squadDecision, ESelfDecision.None);
                 return;
             }
-            if (BaseClass.EnemyDecisions.GetDecision(out ECombatDecision combatDecision, enemy, knownEnemies))
+            if (BaseClass.EnemyDecisions.GetDecision(out ECombatDecision combatDecision, enemy, Bot.EnemyController.KnownEnemies))
             {
                 SetDecisions(combatDecision, ESquadDecision.None, ESelfDecision.None);
                 return;
@@ -243,7 +258,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool CheckContinueRetreat()
         {
-            bool runningToCover = CurrentCombatDecision == ECombatDecision.Retreat || CurrentCombatDecision == ECombatDecision.RunToCover;
+            bool runningToCover = Bot.Decision.RunningToCover;
             if (!runningToCover) return false;
             if (!Bot.Mover.Moving) return false;
             if (Bot.Cover.HasCover) return false;

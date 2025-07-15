@@ -7,6 +7,8 @@ namespace SAIN.SAINComponent.Classes.Decision
 {
     public class DogFightDecisionClass : BotBase
     {
+        public bool DogFightActive => _lastDogFightTarget != null;
+
         public DogFightDecisionClass(BotComponent bot) : base(bot)
         {
             CanEverTick = false;
@@ -24,23 +26,31 @@ namespace SAIN.SAINComponent.Classes.Decision
             base.Dispose();
         }
 
-        public bool ShallDogFight(EnemyList KnownEnemies)
+        public bool CheckShallDogFight(EnemyList KnownEnemies, out Enemy result)
         {
             BotWeaponManager weaponManager = BotOwner?.WeaponManager;
             if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
             {
-                DogFightTarget = null;
+                _lastDogFightTarget = null;
+                result = null;
                 return false;
             }
-            switch (Bot.Decision.CurrentCombatDecision)
+            var decision = Bot.Decision.CurrentCombatDecision;
+            switch (decision)
             {
                 case ECombatDecision.RushEnemy:
+                    result = null;
                     return false;
 
                 case ECombatDecision.Retreat:
-                case ECombatDecision.RunToCover:
-                    if (Bot.Decision.SelfActionDecisions.LowOnAmmo(0.2f))
+                case ECombatDecision.SeekCover:
+                    if (decision == ECombatDecision.SeekCover && !Bot.Cover.SprintingToCover)
                     {
+                        break;
+                    }
+                    if (Bot.Decision.SelfActionDecisions.LowOnAmmo(0.3f))
+                    {
+                        result = null;
                         return false;
                     }
                     break;
@@ -48,129 +58,69 @@ namespace SAIN.SAINComponent.Classes.Decision
                 default:
                     break;
             }
-            if (DogFightTarget != null)
+            if (!KnownEnemies.Contains(_lastDogFightTarget)) _lastDogFightTarget = null;
+            if (_lastDogFightTarget != null)
             {
-                if (shallDogFightEnemy(DogFightTarget))
+                if (ShallDogfightEnemy(_lastDogFightTarget))
                 {
+                    result = _lastDogFightTarget;
                     return true;
                 }
-                if (shallClearDogfightTarget(DogFightTarget))
+                if (shallClearDogfightTarget(_lastDogFightTarget))
                 {
-                    DogFightTarget = null;
+                    _lastDogFightTarget = null;
                 }
             }
 
             if (_changeDFTargetTime < Time.time)
             {
                 _changeDFTargetTime = Time.time + 0.33f;
-
-                for (int i = _dogFightTargets.Count - 1; i >= 0; i--)
-                    if (shallClearDogfightTarget(_dogFightTargets[i]))
-                        _dogFightTargets.RemoveAt(i);
-
-                Enemy newTarget = SelectDFTarget();
-                if (newTarget != null)
+                KnownEnemies.Sort((x, y) => x.RealDistance.CompareTo(y.RealDistance));
+                for (int i = 0; i < KnownEnemies.Count; i++)
                 {
-                    DogFightTarget = newTarget;
-                }
-                else
-                {
-                    foreach (var enemy in KnownEnemies)
-                        if (!_dogFightTargets.Contains(enemy) && shallDogFightEnemy(enemy))
-                            _dogFightTargets.Add(enemy);
-
-                    DogFightTarget = SelectDFTarget();
+                    Enemy enemy = KnownEnemies[i];
+                    if (ShallDogfightEnemy(enemy))
+                    {
+                        _lastDogFightTarget = enemy;
+                        result = enemy;
+                        return true;
+                    }
                 }
             }
-            return DogFightTarget != null;
+            result = _lastDogFightTarget;
+            return _lastDogFightTarget != null;
         }
 
-        private void clearDogFightTarget()
+        private bool ShallDogfightEnemy(Enemy enemy)
         {
-            if (DogFightTarget != null)
-            {
-                DogFightTarget = null;
-            }
+            return enemy.Path.PathLength <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START && 
+                ((enemy.Seen && enemy.TimeSinceSeen < Bot.Info.PersonalitySettings.General.DOGFIGHT_TIMESINCESEEN_START) 
+                || 
+                enemy.Status.ShotByEnemyRecently);
         }
 
         private bool shallClearDogfightTarget(Enemy enemy)
         {
-            if (enemy == null ||
-                !enemy.Seen ||
-                !enemy.EnemyKnown ||
-                enemy.Player?.HealthController.IsAlive == false)
-            {
-                return true;
-            }
-            if (!Bot.EnemyController.Enemies.ContainsValue(enemy) || !enemy.CheckValid())
-            {
-                return true;
-            }
             float pathDist = enemy.Path.PathLength;
-            if (pathDist > _dogFightEndDist)
+            var settings = Bot.Info.PersonalitySettings.General;
+            if (pathDist > settings.DOGFIGHT_PATH_DIST_END)
             {
                 return true;
             }
-            return !enemy.IsVisible && enemy.TimeSinceSeen > 6f;
+            return !enemy.IsVisible && enemy.TimeSinceSeen > settings.DOGFIGHT_TIMESINCESEEN_END;
         }
 
         private float _changeDFTargetTime;
 
-        private void getNewDFTargets()
-        {
-            _dogFightTargets.Clear();
-
-            var enemies = Bot.EnemyController.Enemies;
-            foreach (var enemy in enemies.Values)
-            {
-                if (shallDogFightEnemy(enemy))
-                {
-                    _dogFightTargets.Add(enemy);
-                }
-            }
-        }
-
-        private Enemy SelectDFTarget()
-        {
-            int count = _dogFightTargets.Count;
-            if (count > 0)
-            {
-                if (count > 1)
-                {
-                    _dogFightTargets.Sort((x, y) => x.RealDistance.CompareTo(y.RealDistance));
-                    foreach (var enemy in _dogFightTargets)
-                        if (enemy.IsVisible)
-                            return enemy;
-                }
-                return _dogFightTargets[0];
-            }
-            return null;
-        }
-
-        private readonly List<Enemy> _dogFightTargets = new();
-
-        public Enemy DogFightTarget { get; set; }
+        private Enemy _lastDogFightTarget;
 
         private void checkClear(string profileID, Enemy enemy)
         {
-            if (DogFightTarget != null &&
-                DogFightTarget.EnemyProfileId == profileID)
+            if (_lastDogFightTarget != null &&
+                _lastDogFightTarget.EnemyProfileId == profileID)
             {
-                DogFightTarget = null;
+                _lastDogFightTarget = null;
             }
         }
-
-        private bool shallDogFightEnemy(Enemy enemy)
-        {
-            return enemy != null &&
-                Bot.EnemyController.Enemies.ContainsValue(enemy) &&
-                enemy?.CheckValid() == true &&
-                enemy.IsVisible &&
-                enemy.EnemyKnown &&
-                enemy.Path.PathLength <= _dogFightStartDist;
-        }
-
-        private float _dogFightStartDist = 8f;
-        private float _dogFightEndDist = 15f;
     }
 }

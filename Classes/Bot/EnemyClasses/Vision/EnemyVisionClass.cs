@@ -143,11 +143,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 IsVisible = EnemyInfo.IsVisible;
             }
 
-            if (Enemy.IsCurrentEnemy && !IsVisible && wasVisible)
+            bool iamCurrentEnemy = Enemy.IsCurrentEnemy;
+            if (iamCurrentEnemy && !IsVisible && wasVisible)
             {
                 try { BotOwner.CalcGoal(); } catch { /* eft code */  }
             }
-            else if (!Enemy.IsCurrentEnemy && IsVisible && Bot.CurrentTarget.CurrentTargetEnemy?.IsVisible != true)
+            else if (!iamCurrentEnemy && IsVisible && Bot.GoalEnemy?.IsVisible != true)
             {
                 try { BotOwner.CalcGoal(); } catch { /* eft code */  }
             }

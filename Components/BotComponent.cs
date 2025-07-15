@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
@@ -19,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.UIElements;
 
 namespace SAIN.Components
 {
@@ -81,10 +78,6 @@ namespace SAIN.Components
         public bool HasEnemy => Enemy.IsEnemyActive(EnemyController.GoalEnemy);
         public Enemy GoalEnemy => HasEnemy ? EnemyController.GoalEnemy : null;
 
-        public Vector3? CurrentTargetPosition => CurrentTarget.CurrentTargetPosition;
-        public Vector3? CurrentTargetDirection => CurrentTarget.CurrentTargetDirection;
-        public float CurrentTargetDistance => CurrentTarget.CurrentTargetDistance;
-
         public BotGlobalEventsClass GlobalEvents { get; private set; }
         public BotBusyHandsDetector BusyHandsDetector { get; private set; }
         public ShootDeciderClass Shoot { get; private set; }
@@ -131,7 +124,11 @@ namespace SAIN.Components
                 {
                     return BotOwner.AimingManager.CurrentAiming.LastDist2Target;
                 }
-                return CurrentTarget.CurrentTargetDistance;
+                if (EnemyController.GoalEnemy != null)
+                {
+                    return EnemyController.GoalEnemy.KnownPlaces.BotDistanceFromLastKnown;
+                }
+                return float.MaxValue;
             }
         }
 
@@ -173,7 +170,7 @@ namespace SAIN.Components
                         handleDumbShit();
                     }
 
-                    bool inCombat = active && !inStandBy && SAINLayersActive && (CurrentTarget.CurrentTargetEnemy != null || GoalEnemy != null);
+                    bool inCombat = active && !inStandBy && SAINLayersActive && GoalEnemy != null;
                     BotActivation.SetInCombat(inCombat);
                     if (inCombat)
                     {
@@ -185,8 +182,6 @@ namespace SAIN.Components
 
         private void DrawDebugGizmos()
         {
-            var enemy = CurrentTarget.CurrentTargetEnemy;
-            //DebugGizmos.Line(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.TargetLookDirection.normalized * 1.5f, Color.white, 0.06f, true, 0.02f);
             DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.CharacterController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
             DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, 0.02f);
         }

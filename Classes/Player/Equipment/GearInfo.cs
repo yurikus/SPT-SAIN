@@ -99,16 +99,16 @@ namespace SAIN.SAINComponent.Classes.Info
 
                 BodyArmorClass = Mathf.Max(vestAC, bodyAC);
 
-                if (SAINPlugin.DebugMode)
-                {
-                    Logger.LogInfo(
-                        $" Found GearInfo: " +
-                        $" Body Armor Class: [{BodyArmorClass}]" +
-                        $" Helmet Armor Class [{HelmetArmorClass}]" +
-                        $" Has Heavy Helmet? [{HasHeavyHelmet}]" +
-                        $" Has EarPiece? [{HasEarPiece}]" +
-                        $" Has Face Shield? [{HasFaceShield}]");
-                }
+                //if (SAINPlugin.DebugMode)
+                //{
+                //    Logger.LogInfo(
+                //        $" Found GearInfo: " +
+                //        $" Body Armor Class: [{BodyArmorClass}]" +
+                //        $" Helmet Armor Class [{HelmetArmorClass}]" +
+                //        $" Has Heavy Helmet? [{HasHeavyHelmet}]" +
+                //        $" Has EarPiece? [{HasEarPiece}]" +
+                //        $" Has Face Shield? [{HasFaceShield}]");
+                //}
 
                 yield return wait;
             }

@@ -187,7 +187,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (Moving)
             {
                 const float MIN_DIST_CHANGE_DESTINATION = 0.5f;
-                const float MIN_DIST_UPDATE_DESTINATION = 1f;
                 // If the place being requested to move to is very close to where we are already moving to, we dont need to change anything.
                 if ((Destination - possibleDestination).sqrMagnitude < MIN_DIST_CHANGE_DESTINATION)
                 {
@@ -717,17 +716,79 @@ namespace SAIN.SAINComponent.Classes.Mover
                 doorOpener.DoorFinder.UpdateDoors(botPosition, cornerPosition);
                 List<DoorData> doors = doorOpener.FindDoorsToInteractWith(botPosition);
                 Vector3 cornerDir = cornerPosition - botPosition;
+                Ray ray = new() {
+                    origin = botPosition + Vector3.up,
+                    direction = cornerDir,
+                };
                 foreach (DoorData data in doors)
                 {
                     Collider doorCollider = data?.Door?.Collider;
                     if (doorCollider == null) continue;
-                    Ray ray = new() {
-                        origin = botPosition + Vector3.up,
-                        direction = cornerDir,
-                    };
                     if (doorCollider.Raycast(ray, out RaycastHit hit, 1f))
                     {
-                        Logger.LogDebug($"hit door");
+                        Logger.LogDebug($"hit door  [Door.collider.Raycast]");
+                        DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                        if (data.Door.DoorState == EDoorState.Open)
+                        {
+                            opening = false;
+                            kicking = false;
+                            return data;
+                        }
+                        if (data.Door.DoorState == EDoorState.Shut)
+                        {
+                            opening = true;
+                            kicking = false;
+                            return data;
+                        }
+                    }
+                    if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.PlayerStaticDoorMask))
+                    {
+                        if (hit.collider != data.Door.Collider)
+                        {
+                            var hitDoor = hit.collider.gameObject.GetComponent<Door>();
+                            if (hitDoor != null)
+                            {
+                                Logger.LogDebug($"Found door from hit getcomp [PlayerStaticDoorMask] ");
+                                if (hitDoor == data.Door)
+                                {
+                                    Logger.LogDebug($"its the same door! [PlayerStaticDoorMask] ");
+                                }
+                            }
+                            Logger.LogDebug($"hit.collider != data.Door.Collider [PlayerStaticDoorMask] [{hit.collider.name}]");
+                            continue;
+                        }
+                        Logger.LogDebug($"hit door [LayerMaskClass.PlayerStaticDoorMask]");
+                        DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                        if (data.Door.DoorState == EDoorState.Open)
+                        {
+                            opening = false;
+                            kicking = false;
+                            return data;
+                        }
+                        if (data.Door.DoorState == EDoorState.Shut)
+                        {
+                            opening = true;
+                            kicking = false;
+                            return data;
+                        }
+                    }
+                    if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.DoorLayer))
+                    {
+                        if (hit.collider != data.Door.Collider)
+                        {
+                            var hitDoor = hit.collider.gameObject.GetComponent<Door>();
+                            if (hitDoor != null)
+                            {
+                                Logger.LogDebug($"Found door from hit getcomp [DoorLayer] ");
+                                if (hitDoor == data.Door)
+                                {
+                                    Logger.LogDebug($"its the same door! [DoorLayer] ");
+                                }
+                            }
+                            Logger.LogDebug($"hit.collider != data.Door.Collider [DoorLayer] [{hit.collider.name}]");
+                            continue;
+                        }
+                        Logger.LogDebug($"hit door [DoorLayer]");
                         DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
                         if (data.Door.DoorState == EDoorState.Open)
                         {
@@ -1429,9 +1490,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private float _cancelTime;
         private Coroutine _coroutine;
         private float _timeNotMoving;
-        private bool positionMoving;
         protected readonly BotComponent Bot;
-        private static int _index = 0;
 
         private static class Util
         {

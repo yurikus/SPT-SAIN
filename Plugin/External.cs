@@ -179,7 +179,7 @@ namespace SAIN.Plugin
 
         public static bool IsQuestTowardTarget(BotComponent component, Vector3 questPosition, float dotProductThresh)
         {
-            Vector3? currentTarget = component.CurrentTargetPosition;
+            Vector3? currentTarget = component.GoalEnemy?.LastKnownPosition;
             if (currentTarget == null)
             {
                 return false;
@@ -208,7 +208,7 @@ namespace SAIN.Plugin
             const float TimeSinceUnderFireThreshold = 10f;
 
             reason = ECombatReason.None;
-            Enemy enemy = component?.CurrentTarget.CurrentTargetEnemy;
+            Enemy enemy = component?.GoalEnemy;
             if (enemy == null)
             {
                 return false;

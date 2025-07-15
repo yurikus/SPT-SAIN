@@ -127,15 +127,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
             var cover = Bot.Cover;
             stringBuilder.AppendLabeledValue("CoverFinder State", $"{cover.CurrentCoverFinderState}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Cover Count", $"{cover.CoverPoints.Count}", Color.white, Color.yellow, true);
-            if (Bot.CurrentTargetPosition != null)
-            {
-                stringBuilder.AppendLabeledValue("Current Target Position", $"{Bot.CurrentTargetPosition.Value}", Color.white, Color.yellow, true);
-            }
-            else
-            {
-                stringBuilder.AppendLabeledValue("Current Target Position", null, Color.white, Color.yellow, true);
-            }
-
             if (NewPoint != null)
             {
                 stringBuilder.AppendLine("Cover In Use");

@@ -14,7 +14,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Enemy Enemy = Bot.Decision.DogFightDecision.DogFightTarget ?? Bot.CurrentTarget.CurrentTargetEnemy;
+            Enemy Enemy = Bot.GoalEnemy;
             Bot.Mover.SetTargetPose(1f);
             Shoot.ShootAnyVisibleEnemies(Enemy);
             Bot.Steering.SteerByPriority(Enemy);

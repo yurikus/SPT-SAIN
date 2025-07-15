@@ -3,8 +3,21 @@ using System.Collections.Generic;
 
 namespace SAIN.Helpers
 {
-    internal class ListHelpers
+    internal static class ListHelpers
     {
+        public static void FilterByPredicateNonAlloc<T>(this List<T> input, List<T> output, Predicate<T> predicate)
+        {
+                output.Clear();
+            for (int i = 0; i < input.Count; i++)
+            {
+                T item = input[i];
+                if (predicate(item))
+                {
+                    output.Add(item);
+                }
+            }
+        }
+
         public static bool ClearCache<T>(List<T> list)
         {
             if (list != null && list.Count > 0)

@@ -23,7 +23,6 @@ namespace SAIN.Layers
                 {
                     stringBuilder.AppendLine($"Name: [{bot.PlayerComponent.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
                     stringBuilder.AppendLabeledValue("In Combat", $"{bot.IsInCombat}", Color.white, Color.yellow);
-                    stringBuilder.AppendLabeledValue("Target Enemy", $"{bot.CurrentTarget?.CurrentTargetEnemy?.EnemyName}", Color.white, Color.yellow);
                     stringBuilder.AppendLabeledValue("Goal Enemy", $"{bot.GoalEnemy?.EnemyName}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("Active", $"{bot.BotActive}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("Standby", $"{bot.BotInStandBy}", Color.white, Color.yellow);
@@ -67,11 +66,11 @@ namespace SAIN.Layers
 
                 if (debug.Overlay_EnemyLists)
                 {
-                    var lists = bot.EnemyController.EnemyLists;
-                    var known = lists.GetEnemyList(EEnemyListType.Known);
-                    var vis = lists.GetEnemyList(EEnemyListType.Visible);
-                    var los = lists.GetEnemyList(EEnemyListType.InLineOfSight);
-                    var threats = lists.GetEnemyList(EEnemyListType.ActiveThreats);
+                    var enemyCon = bot.EnemyController;
+                    var known = enemyCon.KnownEnemies;
+                    var vis = enemyCon.VisibleEnemies;
+                    var los = enemyCon.EnemiesInLineOfSight;
+                    var threats = enemyCon.ActiveThreats;
                     stringBuilder.AppendLine($"EnemyList[bots/human]: " +
                         $"Known[{known.Bots}/{known.Humans}] " +
                         $"Visible[{vis.Bots}/{vis.Humans}] " +

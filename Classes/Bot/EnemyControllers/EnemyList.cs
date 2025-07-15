@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class EnemyList : List<Enemy>
+    public class EnemyList(string name) : List<Enemy>
     {
         public enum EBotListSortType
         {
@@ -17,28 +16,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             VisiblePathPointDistanceToEnemy,
         }
 
-        public EnemyList(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; }
+        public string Name { get; } = name;
 
         public event Action<bool> OnListEmptyOrGetFirst;
 
         public event Action<bool> OnListEmptyOrGetFirstHuman;
 
-        public void SubOrUnSub(bool value, ref Action<bool, Enemy> action, Enemy enemy)
+        public void Subscribe(ref Action<bool, Enemy> action)
         {
-            if (value)
-            {
-                action += AddOrRemoveEnemy;
-            }
-            else
-            {
-                action -= AddOrRemoveEnemy;
-                this.RemoveEnemy(enemy);
-            }
+            action += AddOrRemoveEnemy;
+        }
+
+        public void Unsubscribe(ref Action<bool, Enemy> action, Enemy enemy)
+        {
+            action -= AddOrRemoveEnemy;
+            this.RemoveEnemy(enemy);
         }
 
         public void SortBy(EBotListSortType sortingType)

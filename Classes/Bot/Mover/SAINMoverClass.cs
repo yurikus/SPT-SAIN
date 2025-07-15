@@ -376,7 +376,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     LeftStanceController leftStanceController = movementContext.LeftStanceController;
 
-                    bool wantToPatrolStance = !movementContext.IsSprintEnabled && Bot.CurrentTarget.CurrentTargetEnemy == null;
+                    bool wantToPatrolStance = !movementContext.IsSprintEnabled && Bot.GoalEnemy == null;
                     if (wantToPatrolStance != movementContext._isInPatrol)
                     {
                         // If we are in left stance and want to patrol, reset back to normal  before setting patrol next update.

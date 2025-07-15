@@ -181,21 +181,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         }
 
         private readonly List<DoorData> _possibleInteractDoors = [];
-        private const float DOOR_CHECK_FREQ = 0.25f;
-
-        private bool CheckIfDoorLast(NavMeshDoorLink link)
-        {
-            DoorData lastInfo = _activeDoor;
-            if (lastInfo == null)
-            {
-                return false;
-            }
-            if (lastInfo.Link.Id != link.Id)
-            {
-                return false;
-            }
-            return true;
-        }
 
         public bool ShallKickOpen(Door door, EInteractionType Etype)
         {
@@ -339,7 +324,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         }
 
         private static bool _debugMode => SAINPlugin.DebugSettings.Gizmos.DrawDoorLinks;
-        private DoorData _activeDoor;
         private static readonly Dictionary<NavMeshDoorLink, linkObjects> _debugObjects = new();
     }
 }

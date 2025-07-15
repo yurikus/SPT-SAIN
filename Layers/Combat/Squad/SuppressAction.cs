@@ -26,7 +26,7 @@ namespace SAIN.Layers.Combat.Squad
                     return;
                 }
 
-                if (Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies))
+                if (Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies))
                 {
                     _manualShooting = true;
                     Bot.Mover.Stop();

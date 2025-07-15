@@ -40,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 //Logger.LogInfo("Steering Locked");
                 return false;
             }
-            enemy ??= Bot.CurrentTarget.CurrentTargetEnemy;
+            enemy ??= Bot.GoalEnemy;
 
             switch (_steerPriorityClass.GetCurrentSteerPriority(lookRandom, ignoreRunningPath))
             {
@@ -52,7 +52,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return true;
 
                 case ESteerPriority.ManualShooting:
-                    LookToPoint(Bot.ManualShoot.ShootPosition + Bot.Info.WeaponInfo.Recoil.CurrentRecoilOffset);
+                    LookToPoint(Bot.ManualShoot.ShootPosition);
                     return true;
 
                 case ESteerPriority.EnemyVisible:
@@ -94,6 +94,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool LookToLastKnownEnemyPosition(Enemy enemy)
         {
+            if (SteeringLocked)
+            {
+                return false;
+            }
             if (FindLastKnownTarget(enemy, out Vector3 Position))
             {
                 LookToPoint(Position);

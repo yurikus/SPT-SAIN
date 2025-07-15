@@ -32,7 +32,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         private static readonly ECombatDecision[] DontLean =
         [
             ECombatDecision.Retreat,
-            ECombatDecision.RunToCover,
             ECombatDecision.RunAway,
             ECombatDecision.MeleeAttack,
         ];
@@ -84,7 +83,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     if (_leanTimer < Time.time)
                     {
-                        var enemy = Bot.CurrentTarget.CurrentTargetEnemy;
+                        var enemy = Bot.GoalEnemy;
                         FindLean(enemy);
                         float timeAdd = LeanDirection == LeanSetting.None ? LEAN_UPDATE_NOT_FOUND_FREQ : LEAN_UPDATE_FOUND_FREQ;
                         _leanTimer = Time.time + timeAdd;
@@ -114,7 +113,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return false;
             }
             var CurrentDecision = Bot.Decision.CurrentCombatDecision;
-            var enemy = Bot.CurrentTarget.CurrentTargetEnemy;
+            var enemy = Bot.GoalEnemy;
             if (enemy == null || DontLean.Contains(CurrentDecision) || Bot.Suppression.IsHeavySuppressed)
             {
                 return false;
@@ -134,7 +133,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            if (CurrentDecision == ECombatDecision.HoldInCover)
+            if (Bot.Cover.CoverInUse != null)
             {
                 resetLean = false;
                 return false;

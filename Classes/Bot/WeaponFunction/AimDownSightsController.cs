@@ -22,6 +22,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void UpdateADSstatus(Enemy Enemy)
         {
+            if (_timeLastChangedADS > Time.time)
+                return;
+
             // If a bot is sneaky, don't change ADS if their enemy is close to avoid alerting them.
             if (Bot?.Info?.PersonalitySettings?.Search?.Sneaky == true &&
                 Enemy != null &&
@@ -31,8 +34,15 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return;
             }
 
+            bool wasAiming = AimingDownSights;
             AimingDownSights = ShallAimDownSights(Enemy?.KnownPlaces.LastKnownPosition, Enemy);
+            if (AimingDownSights != wasAiming)
+            {
+                _timeLastChangedADS = Time.time;
+            }
         }
+
+        private float _timeLastChangedADS;
 
         public bool AimingDownSights { get; private set; }
 
@@ -112,8 +122,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public EAimDownSightsStatus GetADSStatus(Vector3 targetPosition, Enemy enemy)
         {
-            float sqrMagToTarget = (targetPosition - Bot.Position).sqrMagnitude;
-
             if (Bot.Player.IsSprintEnabled || Bot.Mover.Running)
             {
                 return EAimDownSightsStatus.Sprinting;
@@ -149,27 +157,13 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return EAimDownSightsStatus.Suppressing;
             }
 
-            switch (currentDecision)
-            {
-                case ECombatDecision.RunToCover:
-                case ECombatDecision.MoveToCover:
-                    return EAimDownSightsStatus.MovingToCover;
-
-                case ECombatDecision.HoldInCover:
-                    return EAimDownSightsStatus.HoldInCover;
-
-                case ECombatDecision.StandAndShoot:
-                    return EAimDownSightsStatus.StandAndShoot;
-
-                case ECombatDecision.DogFight:
-                    return EAimDownSightsStatus.DogFight;
-
-                case ECombatDecision.Search:
-                    return Bot.Search.CurrentState != ESearchMove.DirectMove ? EAimDownSightsStatus.SearchPeekWait : EAimDownSightsStatus.None;
-
-                default:
-                    return EAimDownSightsStatus.None;
-            }
+            return currentDecision switch {
+                ECombatDecision.SeekCover => Bot.Cover.CoverInUse == null ? EAimDownSightsStatus.MovingToCover : EAimDownSightsStatus.HoldInCover,
+                ECombatDecision.StandAndShoot => EAimDownSightsStatus.StandAndShoot,
+                ECombatDecision.DogFight => EAimDownSightsStatus.DogFight,
+                ECombatDecision.Search => Bot.Search.CurrentState != ESearchMove.DirectMove ? EAimDownSightsStatus.SearchPeekWait : EAimDownSightsStatus.None,
+                _ => EAimDownSightsStatus.None,
+            };
         }
 
         public enum EAimDownSightsStatus

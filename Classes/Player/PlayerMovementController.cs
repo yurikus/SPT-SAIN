@@ -208,7 +208,7 @@ namespace SAIN.Classes
                         return turnSettings;
                     return new TurnSettings(0.75f, 240f);
                 }
-                Enemy enemy = botComponent.CurrentTarget.CurrentTargetEnemy;
+                Enemy enemy = botComponent.GoalEnemy;
                 if (enemy != null)
                 {
                     if (enemy.IsVisible)

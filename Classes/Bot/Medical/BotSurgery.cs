@@ -57,7 +57,7 @@ namespace SAIN.SAINComponent.Classes
                 const float minTimeSinceSeen = 60f;
 
                 _allClear = true;
-                EnemyList enemies = Bot.EnemyController.EnemyLists.KnownEnemies;
+                EnemyList enemies = Bot.EnemyController.KnownEnemies;
                 foreach (Enemy enemy in enemies)
                 {
                     if (enemy.IsVisible)

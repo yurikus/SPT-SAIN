@@ -193,34 +193,16 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             foreach (var member in Bot.Squad.Members.Values)
             {
-                if (member.Decision.CurrentCombatDecision == ECombatDecision.Search)
+                if (member.Decision.CurrentCombatDecision == ECombatDecision.Search && 
+                    Bot.GoalEnemy != null && 
+                    doesMemberShareEnemy(member))
                 {
-                    if (Bot.GoalEnemy != null
-                        && doesMemberShareEnemy(member))
-                    {
-                        return true;
-                    }
-                    if (Bot.GoalEnemy == null
-                        && Bot.CurrentTargetPosition != null
-                        && doesMemberShareTarget(member, Bot.CurrentTargetPosition.Value))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             return false;
         }
 
-        private bool doesMemberShareTarget(BotComponent member, Vector3 targetPosition, float maxDist = 20f)
-        {
-            if (member == null || member.ProfileId == Bot.ProfileId || member.BotOwner?.IsDead == true)
-            {
-                return false;
-            }
-
-            return member.CurrentTargetPosition != null
-                && (member.CurrentTargetPosition.Value - targetPosition).sqrMagnitude < maxDist;
-        }
         private bool doesMemberShareEnemy(BotComponent member)
         {
             if (member == null || member.ProfileId == Bot.ProfileId || member.BotOwner?.IsDead == true)

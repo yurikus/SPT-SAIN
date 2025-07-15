@@ -160,8 +160,6 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         public float CoverHeight => CoverPoint.Height;
         public Collider Collider => CoverPoint.Collider;
         public float LastHitInCoverTime { get; private set; }
-        public int RoundedPathLength => PathData.RoundedPathLength;
-        public bool BotInThisCover => (StraightDistanceStatus == CoverStatus.InCover || PathDistanceStatus == CoverStatus.InCover);
 
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart partHit, Enemy currentEnemy)
         {
@@ -304,8 +302,8 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         private const float CHECKDIST_MIN_DIST = 10;
         private const float CHECKDIST_MAX_DELAY = 1f;
         private const float CHECKDIST_MIN_DELAY = 0.1f;
-        private const float DIST_COVER_INCOVER = 1f;
-        private const float DIST_COVER_INCOVER_STAY = 1.25f;
+        private const float DIST_COVER_INCOVER = 1.25f;
+        private const float DIST_COVER_INCOVER_STAY = 1.5f;
         private const float DIST_COVER_CLOSE = 10f;
         private const float DIST_COVER_MID = 20f;
 

@@ -16,8 +16,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             _nextRandomTalkTime = Time.time + 15f;
         }
 
-        public bool FriendIsClose
-        {
+        public bool FriendIsClose {
             get
             {
                 if (Player == null)
@@ -166,10 +165,13 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 case ECombatDecision.Retreat:
                 case ECombatDecision.RunAway:
-                case ECombatDecision.RunToCover:
-                    gesture = EInteraction.ComeWithMeGesture;
-                    commandTrigger = EFTMath.RandomBool() ? EPhraseTrigger.GetInCover : EPhraseTrigger.GetBack;
-                    memberTrigger = EPhraseTrigger.Roger;
+                case ECombatDecision.SeekCover:
+                    if (member.Cover.CoverInUse == null)
+                    {
+                        gesture = EInteraction.ComeWithMeGesture;
+                        commandTrigger = EFTMath.RandomBool() ? EPhraseTrigger.GetInCover : EPhraseTrigger.GetBack;
+                        memberTrigger = EPhraseTrigger.Roger;
+                    }
                     break;
 
                 case ECombatDecision.RushEnemy:
@@ -251,11 +253,11 @@ namespace SAIN.SAINComponent.Classes.Talk
             switch (solo)
             {
                 case ECombatDecision.Retreat:
-                case ECombatDecision.RunToCover:
+                case ECombatDecision.SeekCover:
                 case ECombatDecision.RunAway:
                     if (_nextCheckTalkRetreatTime < Time.time
                         && Bot.HasEnemy
-                        && (Bot.GoalEnemy.IsVisible == true || Bot.GoalEnemy.InLineOfSight) &&
+                        && (Bot.GoalEnemy.IsVisible || Bot.GoalEnemy.InLineOfSight) &&
                         Bot.Talk.GroupSay(_talkRetreatTrigger, _talkRetreatMask, _talkRetreatGroupDelay, _talkRetreatChance))
                     {
                         _nextCheckTalkRetreatTime = Time.time + _talkRetreatFreq;
@@ -301,10 +303,13 @@ namespace SAIN.SAINComponent.Classes.Talk
 
             switch (solo)
             {
-                case ECombatDecision.HoldInCover:
-                    gesture = EInteraction.HoldGesture;
-                    commandTrigger = EPhraseTrigger.HoldPosition;
-                    trigger = EPhraseTrigger.Roger;
+                case ECombatDecision.SeekCover:
+                    if (Bot.Cover.CoverInUse != null)
+                    {
+                        gesture = EInteraction.HoldGesture;
+                        commandTrigger = EPhraseTrigger.HoldPosition;
+                        trigger = EPhraseTrigger.Roger;
+                    }
                     break;
 
                 case ECombatDecision.Retreat:
@@ -645,7 +650,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                                     myTrigger = EPhraseTrigger.Negative;
                                     break;
 
-                                case ECombatDecision.HoldInCover:
+                                case ECombatDecision.SeekCover:
                                     myTrigger = EFTMath.RandomBool() ? EPhraseTrigger.Roger : EPhraseTrigger.OnPosition;
                                     break;
 
@@ -671,7 +676,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                                     myTrigger = EFTMath.RandomBool() ? EPhraseTrigger.Ready : EPhraseTrigger.Going;
                                     break;
 
-                                case ECombatDecision.HoldInCover:
+                                case ECombatDecision.SeekCover:
                                     myTrigger = EFTMath.RandomBool() ? EPhraseTrigger.Negative : EPhraseTrigger.Covering;
                                     break;
 

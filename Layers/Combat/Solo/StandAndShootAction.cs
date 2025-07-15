@@ -24,14 +24,15 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            if (!Shoot.ShootAnyVisibleEnemies(Bot.GoalEnemy))
+            Enemy enemy = Bot.GoalEnemy;
+            if (!Shoot.ShootAnyVisibleEnemies(enemy))
             {
-                Bot.Steering.SteerByPriority(Bot.GoalEnemy);
+                Bot.Steering.SteerByPriority(enemy);
             }
-            if (!shallMoveShoot)
-            {
-                Bot.Mover.Pose.SetPoseToCover();
-            }
+            //if (!shallMoveShoot)
+            //{
+                Bot.Mover.Pose.SetPoseToCover(enemy);
+            //}
             this.EndProfilingSample();
         }
 
@@ -40,7 +41,6 @@ namespace SAIN.Layers.Combat.Solo
         public override void Start()
         {
             const float STAND_AND_SHOOT_HOLDLEAN_DURATION = 0.66f;
-            const float STAND_AND_SHOOT_SPRINTPAUSE_DURATION = 0.5f;
 
             Toggle(true);
             shallMoveShoot = moveShoot(Bot.GoalEnemy);
@@ -97,8 +97,6 @@ namespace SAIN.Layers.Combat.Solo
             }
             return false;
         }
-
-        private bool shallResume = false;
 
         public override void Stop()
         {

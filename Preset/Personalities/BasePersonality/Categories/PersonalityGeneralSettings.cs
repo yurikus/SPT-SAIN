@@ -13,6 +13,22 @@ namespace SAIN.Preset.Personalities
         [Name("Kick Open All Possible Doors")]
         [Description("If this personality has an enemy, always kick open doors if they can.")]
         public bool KickOpenAllDoors = false;
+        
+        [Name("Dogfight - Path Distance - Start")]
+        [MinMax(0.0f, 50f, 100)]
+        public float DOGFIGHT_PATH_DIST_START = 8;
+
+        [Name("Dogfight - Time Since Seen - End")]
+        [MinMax(0.0f, 50f, 100)]
+        public float DOGFIGHT_TIMESINCESEEN_START = 1;
+        
+        [Name("Dogfight - Path Distance - End")]
+        [MinMax(0.0f, 50f, 100)]
+        public float DOGFIGHT_PATH_DIST_END = 12;
+
+        [Name("Dogfight - Time Since Seen - End")]
+        [MinMax(0.0f, 60f, 100)]
+        public float DOGFIGHT_TIMESINCESEEN_END = 6;
 
         [Name("Hold Ground Base Time")]
         [Description("The base time, before modifiers, that a personality will stand their ground and shoot or return fire on an enemy if caught out of cover.")]

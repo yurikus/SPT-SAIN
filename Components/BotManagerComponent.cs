@@ -13,6 +13,7 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
@@ -282,11 +283,28 @@ namespace SAIN.Components
             WeatherVision.Update(currentTime, deltaTime);
             BotSquads.Update(currentTime, deltaTime);
 
-            HashSet<BotComponent> BotsArray = BotSpawnController?.SAINBots;
-            if (BotsArray != null)
+            HashSet<BotComponent> BotsArray = BotSpawnController.SAINBots;
+
+            if (SAINPlugin.DebugMode)
+            {
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 foreach (BotComponent BotComponent in BotsArray)
                     BotComponent?.ManualUpdate(currentTime, deltaTime);
+                stopwatch.Stop();
+                if (Time.time - _debug_lastshowticktime > 10)
+                {
+                    _debug_lastshowticktime = Time.time;
+                    Logger.LogDebug($"Bot Tick Time [{stopwatch.ElapsedMilliseconds}.ms]");
+                }
+            }
+            else
+            {
+                foreach (BotComponent BotComponent in BotsArray)
+                    BotComponent?.ManualUpdate(currentTime, deltaTime);
+            }
         }
+
+        private float _debug_lastshowticktime;
 
         public void BotDeath(BotOwner bot)
         {

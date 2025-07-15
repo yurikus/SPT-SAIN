@@ -3,16 +3,12 @@ using SAIN.Classes.Transform;
 using SAIN.Components;
 using SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
-using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.UIElements.UIR.Implementation.UIRStylePainter;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -27,8 +23,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
     {
         public override void ManualUpdate()
         {
-            IsCurrentEnemy = Bot.CurrentTarget.CurrentTargetEnemy == this;
-
             CalcFrequencyCoef();
             UpdateDistAndDirection();
             UpdateSniperStatus();
@@ -61,6 +55,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool IsAI => EnemyPlayer.IsAI;
         public bool IsZombie => EnemyPlayer.UsedSimplifiedSkeleton;
 
+        /// <summary>
+        /// Does this enemy have a usable firearm
+        /// </summary>
+        /// <returns></returns>
+        public bool IsShooter()
+        {
+            return !IsZombie && EnemyPlayer.HandsController is Player.FirearmController;
+        }
+
         public EnemyEvents Events { get; }
         public EnemyKnownPlaces KnownPlaces { get; private set; }
         public SAINEnemyStatus Status { get; }
@@ -70,7 +73,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyAim Aim { get; }
         public EnemyHearing Hearing { get; }
 
-        public bool IsCurrentEnemy { get; private set; }
+        public bool IsCurrentEnemy => Bot.EnemyController.GoalEnemy == this;
+
         public float RealDistance => EnemyPlayerData.DistanceData.Distance;
         public bool IsSniper { get; private set; }
         public Vector3? VisiblePathPoint { get; private set; }
@@ -100,7 +104,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         }
 
         public bool EnemyKnown => Events.OnEnemyKnownChanged.Value;
-        public bool EnemyNotLooking => IsVisible && !Status.EnemyLookingAtMe && !Status.ShotAtMeRecently;
+        public bool EnemyNotLooking => IsVisible && !Status.EnemyLookAtMe && !Status.ShotAtMeRecently;
         public bool WasValid => ValidChecker.WasValid;
 
         public Vector3 CenterMass => FindCenterMass(EnemyPlayerComponent);
@@ -149,7 +153,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool Seen => Vision.Seen;
         public bool Heard => Hearing.Heard;
 
-        public bool EnemyLookingAtMe => Status.EnemyLookingAtMe;
+        public bool EnemyLookingAtMe => Status.EnemyLookAtMe;
         public float TimeSinceSeen => Vision.TimeSinceSeen;
         public float TimeSinceHeard => Hearing.TimeSinceHeard;
         public float UpdateFrequencyCoef { get; private set; }
@@ -161,7 +165,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float ENEMY_UPDATEFREQUENCY_MAX_DIST = 500f;
         private const float ENEMY_UPDATEFREQUENCY_MIN_DIST = 50f;
         private const float SQUADREPORT_SIGHT_INTERVAL = 0.5f;
-        
+
         public static bool IsEnemyActive(Enemy enemy)
         {
             if (enemy == null) return false;
@@ -240,7 +244,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 ClearVisiblePathPoint();
                 IsSniper = false;
                 FirstContactReported = false;
-                IsCurrentEnemy = false;
             }
         }
 
@@ -265,11 +268,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             distToBot = (visPathPoint.Value - headPosition).magnitude;
             distToEnemy = (visPathPoint.Value - lastKnown.Value).magnitude;
-        }
-
-        public void SetIsCurrentEnemy(bool value)
-        {
-            IsCurrentEnemy = value;
         }
 
         public bool GetVisibilePathPoint(out Vector3 pathPoint)

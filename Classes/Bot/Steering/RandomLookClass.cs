@@ -44,7 +44,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return EnemyPosition;
             }
-            EnemyList KnownEnemies = Bot.EnemyController.EnemyLists.KnownEnemies;
+            EnemyList KnownEnemies = Bot.EnemyController.KnownEnemies;
             int enemyCount = KnownEnemies.Count;
             if (enemyCount > 0)
             {

@@ -45,14 +45,6 @@ namespace SAIN.BotController.Classes
         public Dictionary<ESquadRole, BotComponent> Roles { get; } = new Dictionary<ESquadRole, BotComponent>();
         public Dictionary<string, PlaceForCheck> PlayerPlaceChecks { get; } = new Dictionary<string, PlaceForCheck>();
 
-        public bool MemberIsFallingBack
-        {
-            get
-            {
-                return MemberHasDecision(ECombatDecision.Retreat, ECombatDecision.RunAway, ECombatDecision.RunToCover);
-            }
-        }
-
         public bool MemberIsRegrouping
         {
             get
@@ -182,10 +174,7 @@ namespace SAIN.BotController.Classes
 
         private void AddPlaceForCheck(Vector3 position, SAINSoundType soundType, BotComponent bot, Enemy enemy, bool heard, bool isDanger)
         {
-            if (BotsGroup == null)
-            {
-                BotsGroup = bot.BotOwner.BotsGroup;
-            }
+            BotsGroup ??= bot.BotOwner.BotsGroup;
 
             position.y = enemy.EnemyPosition.y;
 

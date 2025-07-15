@@ -1,11 +1,14 @@
 ﻿using EFT;
 using SAIN.Models.Enums;
+using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class SAINEnemyStatus : EnemyBase, IBotEnemyClass
     {
+        public event Action<Enemy> OnEnemyShotAtMe;
+
         public ETagStatus EnemyHealthStatus { get; private set; }
         public EEnemyAction VulnerableAction { get; private set; }
 
@@ -19,6 +22,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             if (Enemy.EnemyKnown)
             {
+                const float DOT_THRESHOLD_LOOK_AT_ME = 0.75f;
+                const float DOT_THRESHOLD_POINTWEAPON_AT_ME = 0.75f;
+                if (_nextCheckEnemyLookTime < Time.time)
+                {
+                    _nextCheckEnemyLookTime = Time.time + 0.25f;
+                    EnemyLookAtMe = Vector3.Dot((Bot.Position - EnemyTransform.WeaponRoot).normalized, EnemyTransform.LookDirection) >= DOT_THRESHOLD_LOOK_AT_ME;
+                    PointingWeaponAtMe = Enemy.IsShooter() && Vector3.Dot((Bot.Position - EnemyTransform.WeaponData.FirePort).normalized, EnemyTransform.WeaponData.PointDirection) < DOT_THRESHOLD_POINTWEAPON_AT_ME;
+                }
                 UpdateVulnerableState();
                 updateHealthStatus();
             }
@@ -49,13 +60,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
-            if (known)
+            if (!known)
             {
-                return;
+                SetVulnerableAction(EEnemyAction.None);
             }
-
-            EnemyHealthStatus = ETagStatus.Healthy;
-            SetVulnerableAction(EEnemyAction.None);
         }
 
         private EEnemyAction CheckVulnerableAction()
@@ -134,15 +142,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private void ResetActions()
         {
             HeardRecently = false;
-            _enemyLookAtMe = false;
+            EnemyLookAtMe = false;
+            PointingWeaponAtMe = false;
             ShotByEnemyRecently = false;
             EnemyUsingSurgery = false;
             EnemyIsLooting = false;
             EnemyHasGrenadeOut = false;
             EnemyIsHealing = false;
             EnemyIsReloading = false;
-            ShotByEnemy = false;
-            TimeFirstShot = 0f;
             LastShotPosition = null;
         }
 
@@ -150,8 +157,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Enemy.EnemyKnown &&
             Enemy.KnownPlaces.EnemyDistanceFromLastKnown < _maxDistFromPosFlareEnabled;
 
-        public bool HeardRecently
-        {
+        public bool HeardRecently {
             get
             {
                 return _heardRecently.Value;
@@ -162,24 +168,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool EnemyLookingAtMe
-        {
-            get
-            {
-                if (_nextCheckEnemyLookTime < Time.time)
-                {
-                    _nextCheckEnemyLookTime = Time.time + 0.2f;
-                    Vector3 directionToBot = (Bot.Position - EnemyCurrentPosition).normalized;
-                    Vector3 enemyLookDirection = EnemyTransform.LookDirection;
-                    float dot = Vector3.Dot(directionToBot, enemyLookDirection);
-                    _enemyLookAtMe = dot >= 0.8f;
-                }
-                return _enemyLookAtMe;
-            }
-        }
-
-        public bool ShotByEnemyRecently
-        {
+        public bool ShotByEnemyRecently {
             get
             {
                 return _shotByEnemy.Value;
@@ -188,8 +177,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 if (value)
                 {
-                    UpdateShotStatus();
-                    UpdateShotPos();
+                    if (!ShotMe)
+                    {
+                        ShotMe = true;
+                        TimeFirstShot = Time.time;
+                    }
                 }
                 _shotByEnemy.Value = value;
             }
@@ -197,24 +189,29 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void UpdateShotStatus()
         {
-            if (!ShotByEnemy)
+            if (!ShotMe)
             {
-                ShotByEnemy = true;
+                ShotMe = true;
                 TimeFirstShot = Time.time;
             }
         }
 
         private void UpdateShotPos()
         {
-            Vector3 random = UnityEngine.Random.onUnitSphere;
-            random.y = 0f;
-            random = random.normalized;
-            random *= UnityEngine.Random.Range(0.5f, Enemy.RealDistance / 5);
-            LastShotPosition = Enemy.EnemyPosition + random;
         }
 
-        public bool EnemyUsingSurgery
-        {
+        public bool PointingWeaponAtMe {
+            get
+            {
+                return _pointWeaponAtMe.Value;
+            }
+            private set
+            {
+                _pointWeaponAtMe.Value = value;
+            }
+        }
+
+        public bool EnemyUsingSurgery {
             get
             {
                 return _enemySurgery.Value;
@@ -225,8 +222,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool EnemyIsLooting
-        {
+        public bool EnemyIsLooting {
             get
             {
                 return _enemyLooting.Value;
@@ -239,8 +235,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool SearchingBecauseLooting { get; set; }
 
-        public bool EnemyIsSuppressed
-        {
+        public bool EnemyIsSuppressed {
             get
             {
                 return _enemyIsSuppressed.Value;
@@ -251,8 +246,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool ShotAtMeRecently
-        {
+        public bool ShotAtMeRecently {
             get
             {
                 return _enemyShotAtMe.Value;
@@ -263,8 +257,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool EnemyIsReloading
-        {
+        public bool EnemyIsReloading {
             get
             {
                 return _enemyIsReloading.Value;
@@ -275,8 +268,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool EnemyHasGrenadeOut
-        {
+        public bool EnemyHasGrenadeOut {
             get
             {
                 return _enemyHasGrenade.Value;
@@ -287,8 +279,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool EnemyIsHealing
-        {
+        public bool EnemyIsHealing {
             get
             {
                 return _enemyIsHealing.Value;
@@ -299,37 +290,72 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
+        public bool EnemyLookAtMe {
+            get
+            {
+                return _lookAtMe.Value;
+            }
+            set
+            {
+                _lookAtMe.Value = value;
+            }
+        }
+
         public int NumberOfSearchesStarted { get; set; }
 
         public void GetHit(DamageInfoStruct DamageInfoStruct)
         {
             IPlayer player = DamageInfoStruct.Player?.iPlayer;
-            if (player != null &&
-                player.ProfileId == Enemy.EnemyProfileId)
+            if (player != null && (object)player == Enemy.EnemyPlayer)
             {
+                if (!ShotMe)
+                {
+                    ShotMe = true;
+                    TimeFirstShot = Time.time;
+                }
+                TimeLastShotMe = Time.time;
                 ShotByEnemyRecently = true;
                 Enemy.Events.ShotByEnemy();
             }
         }
 
-        public bool ShotByEnemy { get; private set; }
-        public float TimeFirstShot { get; private set; }
+        public bool ShotMe { get; private set; }
+        public float TimeFirstShot { get; private set; } = -1f;
+        public float TimeLastShotMe { get; private set; } = -1f;
         public Vector3? LastShotPosition { get; private set; }
+
+        public bool ShotAtMe { get; private set; }
+        public float TimeFirstShotAtMe { get; private set; } = -1f;
+        public float TimeLastShotAtMe { get; private set; } = -1f;
 
         public SAINEnemyStatus(EnemyData enemy) : base(enemy)
         {
         }
 
-        private readonly ExpirableBool _heardRecently = new(2f, 0.85f, 1.15f);
-        private readonly ExpirableBool _enemyIsReloading = new(4f, 0.75f, 1.25f);
-        private readonly ExpirableBool _enemyHasGrenade = new(4f, 0.75f, 1.25f);
-        private readonly ExpirableBool _enemyIsHealing = new(4f, 0.75f, 1.25f);
-        private readonly ExpirableBool _enemyShotAtMe = new(30f, 0.75f, 1.25f);
-        private readonly ExpirableBool _enemyIsSuppressed = new(4f, 0.85f, 1.15f);
-        private readonly ExpirableBool _enemyLooting = new(30f, 0.85f, 1.15f);
-        private readonly ExpirableBool _enemySurgery = new(8f, 0.85f, 1.15f);
-        private readonly ExpirableBool _shotByEnemy = new(2f, 0.75f, 1.25f);
-        private bool _enemyLookAtMe;
+        public void RegisterEnemyFlyBy()
+        {
+            float time = Time.time;
+            if (!ShotAtMe)
+            {
+                TimeFirstShotAtMe = time;
+                ShotAtMe = true;
+            }
+            ShotAtMeRecently = true;
+            TimeLastShotAtMe = time;
+            OnEnemyShotAtMe?.Invoke(Enemy);
+        }
+
+        private readonly ExpirableBool _heardRecently = new(2f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyIsReloading = new(4f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyHasGrenade = new(4f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyIsHealing = new(4f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyShotAtMe = new(5f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyIsSuppressed = new(4f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyLooting = new(15f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemySurgery = new(8f, 0.5f, 1.5f);
+        private readonly ExpirableBool _shotByEnemy = new(15f, 0.5f, 1.5f);
+        private readonly ExpirableBool _lookAtMe = new(2f, 0.5f, 2f);
+        private readonly ExpirableBool _pointWeaponAtMe = new(2f, 0.5f, 2f);
         private float _nextCheckEnemyLookTime;
         private const float _maxDistFromPosFlareEnabled = 10f;
         private float _nextCheckHealthTime;

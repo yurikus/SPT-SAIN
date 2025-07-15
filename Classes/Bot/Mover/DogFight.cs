@@ -81,7 +81,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies);
+            Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.KnownEnemies);
 
             if (_backingUp && Bot.Mover.Moving)
             {

@@ -169,7 +169,7 @@ namespace SAIN.Components.CoverFinder
 
         private void updateTarget()
         {
-            Enemy targetEnemy = Bot.CurrentTarget.CurrentTargetEnemy ?? Bot.GoalEnemy;
+            Enemy targetEnemy = Bot.GoalEnemy ?? Bot.GoalEnemy;
             if (targetEnemy == null)
             {
                 TargetData = null;
@@ -201,7 +201,7 @@ namespace SAIN.Components.CoverFinder
                 botPosition = Bot.Transform.NavData.NavMeshPosition;
             }
 
-            if (TargetData == null || TargetData.TargetEnemy.IsDifferent(enemy))
+            if (TargetData == null || TargetData.TargetEnemy != enemy)
             {
                 TargetData = new TargetData(enemy);
             }
@@ -395,13 +395,11 @@ namespace SAIN.Components.CoverFinder
         {
             switch (decision)
             {
-                case ECombatDecision.MoveToCover:
-                case ECombatDecision.RunToCover:
+                case ECombatDecision.SeekCover:
                 case ECombatDecision.Retreat:
                 case ECombatDecision.RunAway:
                     return false;
 
-                case ECombatDecision.HoldInCover:
                 case ECombatDecision.Search:
                     return true;
 

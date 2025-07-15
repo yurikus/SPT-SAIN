@@ -68,7 +68,7 @@ namespace SAIN.Layers.Combat.Solo
                 Bot.Steering.SteerByPriority(_enemy, false);
                 return;
             }
-            if (Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.EnemyLists.KnownEnemies))
+            if (Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.KnownEnemies))
             {
                 Bot.Steering.SteerByPriority(_enemy, false);
             }

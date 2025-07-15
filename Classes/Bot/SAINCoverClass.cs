@@ -4,10 +4,8 @@ using SAIN.Components.CoverFinder;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.Classes.Mover;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,9 +19,9 @@ namespace SAIN.SAINComponent.Classes
 
     public enum ECoverSeekingState
     {
-        None = 0,
-        WalkingTo,
-        RunningTo,
+        None,
+        MoveTo,
+        Shift,
         HoldInCover,
     }
 
@@ -68,22 +66,13 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        /// <summary>
-        /// Toggles between walking and running to cover without interupting the coroutine
-        /// </summary>
-        /// <param name="value"></param>
-        private void SetShallSprint(bool value)
-        {
-            CoverSeekingState = value ? ECoverSeekingState.RunningTo : ECoverSeekingState.WalkingTo;
-        }
-
         private CoverPoint FindCoverPoint()
         {
             CoverPoints.Sort((x, y) => x.PathData.PathLength.CompareTo(y.PathData.PathLength));
             for (int i = 0; i < CoverPoints.Count; i++)
             {
                 CoverPoint coverPoint = CoverPoints[i];
-                if (CheckMoveToCover(coverPoint, CoverSeekingState == ECoverSeekingState.RunningTo))
+                if (CheckMoveToCover(coverPoint, _shallSprint))
                 {
                     return coverPoint;
                 }
@@ -91,61 +80,103 @@ namespace SAIN.SAINComponent.Classes
             return null;
         }
 
-        public void UpdateCover()
+        private bool CheckStartRun(Enemy enemy, out string reason)
         {
-            if (CoverInUse == null && CoverPoint_MovingTo == null)
+            if (CoverInUse != null)
             {
-                CoverPoint_MovingTo = FindCoverPoint();
+                reason = "inCover";
+                return false;
+            }
+            if (!Player.MovementContext.CanSprint)
+            {
+                reason = "cantSprint";
+                return false;
+            }
+            if (Bot.Cover.CoverPoints.Count == 0)
+            {
+                reason = "noCoverPoints";
+                return false;
+            }
+
+            if (enemy.IsSniper && GlobalSettings.Mind.ENEMYSNIPER_ALWAYS_SPRINT_COVER)
+            {
+                reason = "EnemySniperRun";
+                return true;
+            }
+
+            if (StartRunCoverTimer < Time.time)
+            {
+                reason = "timeToRun";
+                return true;
+            }
+
+            reason = "dontRunYet";
+            return false;
+        }
+
+        public bool SprintingToCover => _shallSprint && Bot.Mover.Moving;
+        private bool _shallSprint;
+
+        public void UpdateCover(Enemy enemy)
+        {
+            _shallSprint = CheckStartRun(enemy, out _);
+            CheckUpdateSprint();
+
+            if (CoverInUse == null)
+            {
                 if (CoverPoint_MovingTo == null)
                 {
-                    Bot.Mover.DogFight.DogFightMove(false, Bot.GoalEnemy);
-                    return;
+                    CoverPoint_MovingTo = FindCoverPoint();
+                    if (CoverPoint_MovingTo == null)
+                    {
+                        Bot.Mover.DogFight.DogFightMove(false, enemy);
+                        _shallSprint = false;
+                        return;
+                    }
                 }
             }
 
             if (Time.time - _timeLastUpdate > GetInterval()) return;
+            _timeLastUpdate = Time.time;
 
             if (CoverSeekingState == ECoverSeekingState.None)
             {
                 Logger.LogDebug("cover status none");
+                _shallSprint = false;
                 return;
             }
             if (CoverInUse != null)
             {
                 if (CheckMoveToCover(CoverInUse, false))
                 {
+                    _shallSprint = false;
                     return;
                 }
                 CoverInUse = null;
             }
             if (CoverPoint_MovingTo != null)
             {
-                if (!Bot.Mover.Moving)
+                if (CoverPoint_MovingTo.StraightDistanceStatus == CoverStatus.InCover ||
+                    CoverPoint_MovingTo.PathDistanceStatus == CoverStatus.InCover)
+                {
+                    CoverInUse = CoverPoint_MovingTo;
+                    CoverPoint_MovingTo = null;
+                    _shallSprint = false;
+                }
+                else if (!CheckMoveToCover(CoverPoint_MovingTo, _shallSprint))
                 {
                     CoverPoint_MovingTo = null;
                 }
-                else
-                {
-                    var status = CoverPoint_MovingTo.StraightDistanceStatus;
-                    if (status == CoverStatus.InCover)
-                    {
-                        CoverInUse = CoverPoint_MovingTo;
-                        CoverPoint_MovingTo = null;
-                    }
-                    else if (status == CoverStatus.CloseToCover)
-                    {
-                        return;
-                    }
-                    else if (CheckMoveToCover(CoverPoint_MovingTo, CoverSeekingState == ECoverSeekingState.RunningTo))
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        CoverPoint_MovingTo = null;
-                    }
-                }
             }
+        }
+
+        private void CheckUpdateSprint()
+        {
+            if (CoverPoint_MovingTo != null && _shallSprint)
+            {
+                Bot.Mover.ActivePath?.RequestStartSprint(Mover.ESprintUrgency.High, "runToCover");
+            }
+            Bot.Mover.ActivePath?.RequestEndSprint(Mover.ESprintUrgency.High, "noRunToCover");
         }
 
         private float GetInterval()
@@ -171,12 +202,15 @@ namespace SAIN.SAINComponent.Classes
         {
             switch (behavior)
             {
-                case ECoverSeekingState.RunningTo:
-                    SetShallSprint(true);
-                    return;
+                case ECoverSeekingState.Shift:
+                    throw new NotImplementedException();
 
-                case ECoverSeekingState.WalkingTo:
-                    SetShallSprint(false);
+                case ECoverSeekingState.MoveTo:
+                    if (CoverSeekingState != ECoverSeekingState.None)
+                    {
+                        OnStartMoveToCover();
+                    }
+                    CoverSeekingState = ECoverSeekingState.MoveTo;
                     return;
 
                 case ECoverSeekingState.None:
@@ -190,6 +224,16 @@ namespace SAIN.SAINComponent.Classes
                     return;
             }
         }
+
+        private void OnStartMoveToCover()
+        {
+            StartRunCoverTimer = Time.time + RunToCoverTime * UnityEngine.Random.Range(RunToCoverTimeRandomMin, RunToCoverTimeRandomMax);
+        }
+
+        private const float RunToCoverTime = 1.5f;
+        private const float RunToCoverTimeRandomMin = 0.66f;
+        private const float RunToCoverTimeRandomMax = 1.33f;
+        private float StartRunCoverTimer;
 
         public CoverPoint CoverPoint_MovingTo { get; private set; }
 
@@ -316,14 +360,14 @@ namespace SAIN.SAINComponent.Classes
                 var myMoveSettings = Bot.Info.FileSettings.Move;
                 var globalMoveSettings = GlobalSettingsClass.Instance.Move;
 
+                if (move.Pose.SetPoseToCover(enemy))
+                {
+                    return true;
+                }
                 bool shallProne = myMoveSettings.PRONE_TOGGLE && globalMoveSettings.PRONE_TOGGLE && prone.ShallProneHide(enemy);
                 if (shallProne && (Bot.Decision.CurrentSelfDecision != ESelfDecision.None || (myMoveSettings.PRONE_SUPPRESS_TOGGLE && Bot.Suppression.IsHeavySuppressed)))
                 {
                     prone.SetProne(true);
-                    return true;
-                }
-                if (move.Pose.SetPoseToCover())
-                {
                     return true;
                 }
                 if (shallProne &&
@@ -364,6 +408,5 @@ namespace SAIN.SAINComponent.Classes
         }
 
         private DebugLabel debugCoverObject;
-        private GameObject debugCoverLine;
     }
 }

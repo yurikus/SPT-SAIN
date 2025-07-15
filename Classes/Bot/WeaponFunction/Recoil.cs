@@ -11,13 +11,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
     public class Recoil : BotBase
     {
-        public Vector3 CurrentRecoilOffset { get; private set; } = Vector3.zero;
-        public Vector3 CurrentRecoilOffsetDirection { get; private set; } = Vector3.zero;
-
         public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
         private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
         private static float _recoilDecayCoef => SAINPlugin.LoadedPreset.GlobalSettings.Shoot.RECOIL_DECAY_COEF;
-        private float _barrelRecoveryTime;
         private bool _recoilFinished;
         private bool _armsInjured => Bot.Medical.HitReaction.ArmsInjured;
         private float RecoilMultiplier => Mathf.Round(Bot.Info.FileSettings.Shoot.RecoilMultiplier * GlobalSettings.Shoot.RecoilMultiplier * 100f) / 100f;
@@ -46,23 +42,16 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private void calcDecay()
         {
-            if (_recoilFinished)
+            if (!_recoilFinished)
             {
-                return;
+                float decayTime = GameWorldComponent.WorldTickDeltaTime * _recoilDecayCoef;
+                _currentRecoilHorizAngle = Mathf.LerpAngle(0, _currentRecoilHorizAngle, 1f - decayTime);
+                _currentRecoilVertAngle = Mathf.LerpAngle(0, _currentRecoilVertAngle, 1f - decayTime);
+                if (_currentRecoilHorizAngle <= 0.001f && _currentRecoilVertAngle < 0.001f)
+                {
+                    _recoilFinished = true;
+                }
             }
-
-            float decayTime = GameWorldComponent.WorldTickDeltaTime * _recoilDecayCoef;
-            _barrelRecoveryTime += decayTime;
-
-            if (_barrelRecoveryTime >= 1)
-            {
-                _barrelRecoveryTime = 0;
-                _recoilFinished = true;
-                CurrentRecoilOffset = Vector3.zero;
-                return;
-            }
-
-            CurrentRecoilOffset = Vector3.Lerp(CurrentRecoilOffset, Vector3.zero, _barrelRecoveryTime);
         }
 
         public void WeaponShot(WeaponInfo WeaponInfo, Vector3 force)
@@ -73,6 +62,14 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return;
             }
             calculateRecoil(WeaponInfo.Weapon);
+        }
+
+        private float _currentRecoilHorizAngle;
+        private float _currentRecoilVertAngle;
+
+        public Vector3 ApplyRecoil(Vector3 lookdirection)
+        {
+            return Vector.Rotate(lookdirection, _currentRecoilHorizAngle, _currentRecoilVertAngle, 0f);
         }
 
         private void calculateRecoil(Weapon weapon)
@@ -90,22 +87,15 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             float recoilNum = calcRecoilNum(recoilTotal) + addRecoil;
             float calcdRecoil = recoilNum * recoilMod;
 
-            float randomvertRecoil = Random.Range(calcdRecoil / 2f, calcdRecoil);// * randomSign();
-            float randomHorizRecoil = Random.Range(calcdRecoil / 2f, calcdRecoil) * randomSign();
-
-            Vector3 dir = Bot.Transform.LookDirection;
-            Vector3 result = Vector.Rotate(dir, randomHorizRecoil, randomvertRecoil, 0f);
-            result -= dir;
-            CurrentRecoilOffset += result;
+            _currentRecoilVertAngle += Random.Range(calcdRecoil / 2f, calcdRecoil);// * randomSign();
+            _currentRecoilHorizAngle += Random.Range(calcdRecoil / 2f, calcdRecoil) * randomSign();
 
             if (_debugRecoilLogs)
-                Logger.LogDebug($"Recoil! New Recoil: [{result.magnitude}] " +
-                $"Current Total Recoil Magnitude: [{CurrentRecoilOffset.magnitude}] " +
+                Logger.LogDebug($"Recoil! New Recoil: [{_currentRecoilVertAngle}:{_currentRecoilHorizAngle}] " +
                 $"recoilNum: [{recoilNum}] calcdRecoil: [{calcdRecoil}] : " +
-                $"Randomized Vert [{randomvertRecoil}] : Randomized Horiz [{randomHorizRecoil}] " +
                 $"Modifiers [ Add: [{addRecoil}] Multi: [{recoilMod}] Weapon RecoilTotal [{recoilTotal}]] Shoot Modifier: [{Bot.Info.WeaponInfo.FinalModifier}]");
         }
-
+         
         private float randomSign()
         {
             return EFTMath.RandomBool() ? -1 : 1;

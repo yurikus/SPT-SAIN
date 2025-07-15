@@ -27,8 +27,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 {
                     case ECombatDecision.Retreat:
                     case ECombatDecision.RunAway:
-                    case ECombatDecision.RunToCover:
                         return true;
+                    case ECombatDecision.SeekCover:
+                        return Bot.Cover.CoverInUse == null && Bot.Cover.SprintingToCover;
 
                     default:
                         return false;

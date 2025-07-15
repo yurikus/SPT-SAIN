@@ -187,7 +187,7 @@ namespace SAIN.Patches.Shoot.Aim
                 return false;
             }
 
-            Enemy enemy = bot.Shoot.LastShotEnemy ?? bot.GoalEnemy ?? bot.CurrentTarget.CurrentTargetEnemy;
+            Enemy enemy = bot.Shoot.LastShotEnemy ?? bot.GoalEnemy ?? bot.GoalEnemy;
             if (enemy == null)
             {
                 return true;
@@ -195,7 +195,7 @@ namespace SAIN.Patches.Shoot.Aim
 
             float aimUpgradeByTime = __instance.float_13;
             Vector3 badShootOffset = __instance.vector3_5;
-            Vector3 recoilOffset = bot.Info.WeaponInfo.Recoil.CurrentRecoilOffset;
+            Vector3 recoilOffset = Vector3.zero;
 
             // Applies aiming offset, recoil offset, and scatter offsets
             // Default Setup :: Vector3 finalTarget = __instance.RealTargetPoint + badShootOffset + (AimUpgradeByTime * (AimOffset + ___botOwner_0.RecoilData.RecoilOffset));
@@ -480,6 +480,10 @@ namespace SAIN.Patches.Shoot.Aim
             }
             playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection);
             __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
+            if (playerComponent.BotComponent != null)
+            {
+                __instance._lookDirection = playerComponent.BotComponent.Info.WeaponInfo.Recoil.ApplyRecoil(__instance._lookDirection);
+            }
             __instance.Speed = float.MaxValue;
             __instance.SetXAngle(float.MaxValue);
             __instance.SetYByDir(__instance._lookDirection);

@@ -247,7 +247,7 @@ namespace SAIN.SAINComponent.Classes
                 IgnoreUnderFire = false;
                 return;
             }
-            if (Bot.EnemyController.EnemyLists.GetEnemyList(EEnemyListType.Visible)?.Count > 0)
+            if (Bot.EnemyController.VisibleEnemies.Count > 0)
             {
                 IgnoreHearing = false;
                 IgnoreUnderFire = false;

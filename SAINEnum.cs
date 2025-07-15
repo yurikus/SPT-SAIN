@@ -4,12 +4,10 @@
     {
         None,
         Retreat,
-        RunToCover,
         Search,
-        HoldInCover,
         RunAway,
         DogFight,
-        MoveToCover,
+        SeekCover,
         StandAndShoot,
         ThrowGrenade,
         ShiftCover,

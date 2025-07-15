@@ -26,68 +26,46 @@ namespace SAIN.Layers.Combat.Solo
             switch (_lastDecision)
             {
                 case ECombatDecision.MoveToEngage:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(MoveToEngageAction), $"{_lastDecision}");
 
                 case ECombatDecision.MeleeAttack:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(MeleeAttackAction), $"{_lastDecision}");
 
                 case ECombatDecision.FightZombies:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(FightZombiesAction), $"{_lastDecision}");
 
                 case ECombatDecision.RushEnemy:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(RushEnemyAction), $"{_lastDecision}");
 
                 case ECombatDecision.ThrowGrenade:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(ThrowGrenadeAction), $"{_lastDecision}");
 
                 case ECombatDecision.ShiftCover:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(ShiftCoverAction), $"{_lastDecision}");
 
-                case ECombatDecision.RunToCover:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.RunningTo);
-                    return new Action(typeof(RunToCoverAction), $"{_lastDecision}");
-
+                case ECombatDecision.SeekCover:
                 case ECombatDecision.Retreat:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.RunningTo);
-                    return new Action(typeof(RunToCoverAction), $"{_lastDecision} + {_lastSelfDecision}");
-
-                case ECombatDecision.MoveToCover:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.WalkingTo);
-                    return new Action(typeof(WalkToCoverAction), $"{_lastDecision}");
-
-                case ECombatDecision.DogFight:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
-                    return new Action(typeof(DogFightAction), $"{_lastDecision}");
-
-                case ECombatDecision.ShootDistantEnemy:
-                case ECombatDecision.StandAndShoot:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
-                    return new Action(typeof(StandAndShootAction), $"{_lastDecision}");
-
-                case ECombatDecision.HoldInCover:
                     string label;
                     if (_lastSelfDecision != ESelfDecision.None)
                         label = $"{_lastDecision} + {_lastSelfDecision}";
                     else
                         label = $"{_lastDecision}";
-                    return new Action(typeof(HoldinCoverAction), label);
+                    return new Action(typeof(SeekCoverAction), label);
+
+                case ECombatDecision.DogFight:
+                    return new Action(typeof(DogFightAction), $"{_lastDecision}");
+
+                case ECombatDecision.ShootDistantEnemy:
+                case ECombatDecision.StandAndShoot:
+                    return new Action(typeof(StandAndShootAction), $"{_lastDecision}");
 
                 case ECombatDecision.Search:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(SearchAction), $"{_lastDecision}");
 
                 case ECombatDecision.Freeze:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(FreezeAction), $"{_lastDecision}");
 
                 default:
-                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     return new Action(typeof(StandAndShootAction), $"DEFAULT! {_lastDecision}");
             }
         }

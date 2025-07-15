@@ -19,7 +19,7 @@ namespace SAIN.Layers
             switch (_lastActionDecision)
             {
                 case ECombatDecision.DogFight:
-                    if (Bot.Decision.DogFightDecision.DogFightTarget != null)
+                    if (Bot.Decision.DogFightDecision.DogFightActive)
                     {
                         return new Action(typeof(DogFightAction), $"Dog Fight - Enemy Close!");
                     }

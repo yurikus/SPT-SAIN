@@ -192,7 +192,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                 _begTimer = Time.time + 10f;
                 return false;
             }
-            Vector3? currentTarget = Bot.CurrentTargetPosition;
+            Vector3? currentTarget = Bot.GoalEnemy?.LastKnownPosition;
             if (currentTarget == null)
             {
                 _begTimer = Time.time + 10f;

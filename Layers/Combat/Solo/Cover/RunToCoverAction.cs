@@ -23,18 +23,18 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Update(CustomLayer.ActionData data)
         {
-            Bot.Cover.UpdateCover();
+            Enemy enemy = Bot.GoalEnemy;
+            Bot.Cover.UpdateCover(enemy);
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.Mover.SetTargetPose(1f);
             checkJumpToCover();
-            Enemy enemy = Bot.GoalEnemy;
 
             if (!Bot.Mover.Running &&
                 !Bot.Steering.SteeringLocked &&
                 !Shoot.ShootAnyVisibleEnemies(enemy) &&
-                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies) &&
+                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies) &&
                 !Bot.Steering.SteerByPriority(enemy, false) && 
-                !Bot.Steering.SteerByPriority(Bot.CurrentTarget.CurrentTargetEnemy, false))
+                !Bot.Steering.SteerByPriority(Bot.GoalEnemy, false))
             {
                 Bot.Steering.LookToMovingDirection();
                 //Bot.Steering.LookToLastKnownEnemyPosition(enemy);

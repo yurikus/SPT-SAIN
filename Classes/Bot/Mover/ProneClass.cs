@@ -75,7 +75,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return false;
             }
-            if (Bot.CurrentTargetDistance < mindist)
+            if (Bot.DistanceToAimTarget < mindist)
             {
                 return false;
             }

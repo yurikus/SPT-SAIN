@@ -65,13 +65,13 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        public bool SetPoseToCover()
+        public bool SetPoseToCover(Enemy enemy)
         {
             if (!Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE)
             {
                 return false;
             }
-            FindObjectsInFront();
+            FindObjectsInFront(enemy);
             return SetTargetPose(ObjectTargetPoseCover);
         }
 
@@ -96,13 +96,13 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool ObjectInFront => ObjectTargetPoseCover != null;
         public float? ObjectTargetPoseCover { get; private set; }
 
-        private void FindObjectsInFront()
+        private void FindObjectsInFront(Enemy enemy)
         {
             if (UpdateFindObjectTimer < Time.time)
             {
-                UpdateFindObjectTimer = Time.time + 0.5f;
+                UpdateFindObjectTimer = Time.time + 0.33f;
 
-                if (FindCrouchFromCover(out float pose1))
+                if (FindCrouchFromCover(enemy, out float pose1))
                 {
                     ObjectTargetPoseCover = pose1;
                 }
@@ -116,12 +116,10 @@ namespace SAIN.SAINComponent.Classes.Mover
         private float UpdateFindObjectTimer { get; set; }
         private float UpdateFindObjectInCoverTimer { get; set; }
 
-        private bool FindCrouchFromCover(out float targetPose, bool useCollider = false)
+        private bool FindCrouchFromCover(Enemy enemy, out float targetPose, bool useCollider = false)
         {
             targetPose = 1f;
-            if ((Bot.AILimit.CurrentAILimit == AILimitSetting.None || Bot.GoalEnemy?.IsAI == false))
-            {
-                Enemy enemy = Bot.CurrentTarget.CurrentTargetEnemy;
+            //if ((Bot.AILimit.CurrentAILimit == AILimitSetting.None || Bot.GoalEnemy?.IsAI == false))
                 if (enemy.FindLookPoint(out Vector3 position, out _))
                 {
                     if (useCollider)
@@ -133,7 +131,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                         targetPose = FindCrouchHeightRaycast(position);
                     }
                 }
-            }
+            //}
             return targetPose < 1f;
         }
 

@@ -22,8 +22,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Update(CustomLayer.ActionData data)
         {
-            Bot.Cover.UpdateCover();
             Enemy Enemy = Bot.GoalEnemy;
+            Bot.Cover.UpdateCover(Enemy);
             CoverPoint coverInUse = CoverInUse;
             if (coverInUse != null)
             {
@@ -174,14 +174,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
             stringBuilder.AppendLabeledValue("Current Cover Value", $"{CoverInUse?.HardData.Value}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("CoverFinder State", $"{cover.CurrentCoverFinderState}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Cover Count", $"{cover.CoverPoints.Count}", Color.white, Color.yellow, true);
-            if (Bot.CurrentTargetPosition != null)
-            {
-                stringBuilder.AppendLabeledValue("Current Target Position", $"{Bot.CurrentTargetPosition.Value}", Color.white, Color.yellow, true);
-            }
-            else
-            {
-                stringBuilder.AppendLabeledValue("Current Target Position", null, Color.white, Color.yellow, true);
-            }
 
             if (CoverInUse != null)
             {

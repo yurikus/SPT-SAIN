@@ -101,7 +101,7 @@ namespace SAIN.SAINComponent.Classes
                 enemy.SetEnemyAsSniper(enemy.RealDistance > GlobalSettings.Mind.ENEMYSNIPER_DISTANCE);
             }
             Bot.Suppression.CheckAddSuppression(enemy, ProjectionPointDistance);
-            enemy.Status.ShotAtMeRecently = true;
+            enemy.Status.RegisterEnemyFlyBy();
             Bot.Squad.SquadInfo?.AddPointToSearch(enemy, EstimatedPosition, sound, Bot);
             CheckCalcGoal();
         }

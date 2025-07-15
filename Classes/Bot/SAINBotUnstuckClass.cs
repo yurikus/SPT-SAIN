@@ -77,7 +77,6 @@ namespace SAIN.SAINComponent.Classes.Debug
 
         private bool _botStuckAfterVault;
 
-        private Coroutine postVaultTracker;
 
         private bool tryVault()
         {
@@ -168,12 +167,12 @@ namespace SAIN.SAINComponent.Classes.Debug
         {
             while (true)
             {
-                if (Bot.BotActive
-                && !Bot.GameEnding)
-                {
-                    tryAutoVault();
-                    checkResetPathFromVault();
-                }
+                //if (Bot.BotActive
+                //&& !Bot.GameEnding)
+                //{
+                //    tryAutoVault();
+                //    checkResetPathFromVault();
+                //}
                 yield return null;
             }
         }
@@ -368,6 +367,5 @@ namespace SAIN.SAINComponent.Classes.Debug
 
         public bool BotHasChangedPosition { get; private set; }
 
-        private float JumpTimer = 0f;
     }
 }

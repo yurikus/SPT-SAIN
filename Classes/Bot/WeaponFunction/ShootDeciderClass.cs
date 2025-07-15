@@ -81,7 +81,7 @@ namespace SAIN.SAINComponent.Classes
                 UpdateADS(priorityEnemy);
                 return priorityEnemy;
             }
-            Enemy targetEnemy = CheckEnemiesForShootableTargets(Bot.EnemyController.EnemyLists.GetEnemyList(Models.Enums.EEnemyListType.Visible));
+            Enemy targetEnemy = CheckEnemiesForShootableTargets(Bot.EnemyController.VisibleEnemies);
             if (targetEnemy != null)
             {
                 UpdateADS(targetEnemy);
@@ -94,7 +94,8 @@ namespace SAIN.SAINComponent.Classes
 
         public bool ShootAnyVisibleEnemies(Enemy priorityEnemy = null)
         {
-            return GetEnemyToShoot(priorityEnemy) != null;
+
+            return !Bot.Steering.SteeringLocked && GetEnemyToShoot(priorityEnemy) != null;
         }
 
         private void UpdateADS(Enemy enemy)

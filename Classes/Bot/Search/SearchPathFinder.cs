@@ -22,7 +22,7 @@ namespace SAIN.SAINComponent.Classes.Search
     {
         public EnemyPlace TargetPlace { get; private set; }
         public BotPeekPlan? PeekPoints { get; private set; }
-        public bool SearchedTargetPosition => TargetPlace != null && TargetPlace.HasArrivedPersonal || TargetPlace.HasArrivedSquad;
+        public bool SearchedTargetPosition => TargetPlace == null || TargetPlace.HasArrivedPersonal || TargetPlace.HasArrivedSquad;
         public bool FinishedPeeking { get; set; }
 
         public SearchPathFinder(SAINSearchClass searchClass) : base(searchClass)

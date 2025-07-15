@@ -19,7 +19,7 @@ namespace SAIN.Layers.Combat.Squad
         public override void Update(CustomLayer.ActionData data)
         {
             this.StartProfilingSample("Update");
-            Enemy enemy = Bot.CurrentTarget.CurrentTargetEnemy;
+            Enemy enemy = Bot.GoalEnemy;
             var SquadLeadPos = Bot.Squad.LeaderComponent?.Position;
             if (SquadLeadPos != null)
             {
@@ -53,7 +53,7 @@ namespace SAIN.Layers.Combat.Squad
 
             if (!Bot.Mover.Running && 
                 !Shoot.ShootAnyVisibleEnemies(enemy) && 
-                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies) && 
+                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies) && 
                 !Bot.Steering.SteerByPriority(enemy) && 
                 !Bot.Steering.SteeringLocked)
             {

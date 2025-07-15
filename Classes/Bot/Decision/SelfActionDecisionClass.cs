@@ -362,7 +362,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 return true;
             }
-            foreach (Enemy enemy in Bot.EnemyController.EnemyLists.KnownEnemies)
+            foreach (Enemy enemy in Bot.EnemyController.KnownEnemies)
                 if (!ShallUseStimsCheckEnemy(enemy))
                     return false;
             return true;
@@ -386,7 +386,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 return true;
             }
-            foreach (Enemy enemy in Bot.EnemyController.EnemyLists.KnownEnemies)
+            foreach (Enemy enemy in Bot.EnemyController.KnownEnemies)
                 if (!ShallFirstAidCheckEnemy(enemy))
                     return false;
 
