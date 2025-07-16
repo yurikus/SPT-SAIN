@@ -5,37 +5,29 @@ using System.Text;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class DogFightAction : CombatAction, ISAINAction
+    internal class DogFightAction(BotOwner bot) : BotAction(bot, "Dog Fight"), IBotAction
     {
-        public DogFightAction(BotOwner bot) : base(bot, "Dog Fight")
-        {
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
             Enemy Enemy = Bot.GoalEnemy;
-            Bot.Mover.SetTargetPose(1f);
-            Shoot.ShootAnyVisibleEnemies(Enemy);
-            Bot.Steering.SteerByPriority(Enemy);
+            Bot.Mover.SetTargetPose(0.9f);
             Bot.Mover.DogFight.DogFightMove(true, Enemy);
-            this.EndProfilingSample();
         }
 
-        public override void Start()
+        public override void OnSteeringTicked()
         {
-            Toggle(true);
+            Enemy enemy = Bot.GoalEnemy;
+            if (!TryShootAnyTarget(enemy) && !Bot.Steering.SteerByPriority(enemy, false))
+            {
+                Bot.Steering.LookToLastKnownEnemyPosition(enemy);
+            }
+            Logger.LogDebug($"DogFightAction: {Bot.name} Tick DogFight Steering: {enemy?.EnemyName ?? "Unknown Enemy"} at distance {enemy?.RealDistance ?? 0f}");
         }
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
             Bot.Mover.DogFight.ResetDogFightStatus();
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)

@@ -36,7 +36,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 MaxVisionAngle = Enemy.Bot.Info.FileSettings.Core.VisibleAngle / 2f;
 
-                Vector3 lookDir = Enemy.Bot.LookDirection;
+                Vector3 lookDir = Enemy.Bot.PlayerComponent.CharacterController.CurrentControlLookDirection;
                 Vector3 enemyDirNormal = Enemy.EnemyDirectionNormal;
 
                 AngleToEnemy = Vector3.Angle(enemyDirNormal, lookDir);

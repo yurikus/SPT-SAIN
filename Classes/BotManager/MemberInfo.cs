@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 
 namespace SAIN.BotController.Classes
 {
@@ -28,7 +29,7 @@ namespace SAIN.BotController.Classes
             _squad?.RemoveMember(ProfileId);
         }
 
-        private void UpdateDecisions(ECombatDecision solo, ESquadDecision squad, ESelfDecision self, BotComponent member)
+        private void UpdateDecisions(ECombatDecision solo, ESquadDecision squad, ESelfActionType self, Enemy enemy, BotComponent member)
         {
             SoloDecision = solo;
             SquadDecision = squad;
@@ -63,7 +64,7 @@ namespace SAIN.BotController.Classes
 
         public ECombatDecision SoloDecision { get; private set; }
         public ESquadDecision SquadDecision { get; private set; }
-        public ESelfDecision SelfDecision { get; private set; }
+        public ESelfActionType SelfDecision { get; private set; }
         public float PowerLevel { get; private set; }
 
         public void Dispose()

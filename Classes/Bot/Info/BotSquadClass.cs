@@ -6,9 +6,15 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Info
 {
-    public class SAINSquadClass : BotComponentClassBase
+    public class BotSquadContainer : BotComponentClassBase
     {
-        public SAINSquadClass(BotComponent bot) : base(bot)
+        public float HUMAN_FRIEND_CLOSE_DISTANCE = 50f;
+        public float HUMAN_FRIEND_CLOSE_DISTANCE_INTERVAL = 1f;
+        public float CHECK_VISIBLE_MEMBERS_INTERVAL = 1f;
+        public float CHECK_VISIBLE_MEMBERS_DISTANCE = 75f;
+
+
+        public BotSquadContainer(BotComponent bot) : base(bot)
         {
             TickRequirement = ESAINTickState.OnlyNoSleep;
             getSquad();
@@ -47,12 +53,13 @@ namespace SAIN.SAINComponent.Classes.Info
             {
                 if (_nextCheckhumantime < Time.time)
                 {
-                    _nextCheckhumantime = Time.time + 3f;
-                    _humanFriendclose = humanFriendClose(50f * 50f);
+                    _nextCheckhumantime = Time.time + HUMAN_FRIEND_CLOSE_DISTANCE_INTERVAL;
+                    _humanFriendclose = humanFriendClose(HUMAN_FRIEND_CLOSE_DISTANCE);
                 }
                 return _humanFriendclose;
             }
         }
+
 
         private bool _humanFriendclose;
 
@@ -65,7 +72,7 @@ namespace SAIN.SAINComponent.Classes.Info
                 if (playerComponent != null &&
                     !playerComponent.IsAI &&
                     Bot?.EnemyController?.IsPlayerAnEnemy(playerComponent.ProfileId) == false &&
-                    (playerComponent.Position - Bot.Position).sqrMagnitude < distToCheck)
+                    playerComponent.GetDistanceToPlayer(Bot.ProfileId) < distToCheck)
                 {
                     return true;
                 }
@@ -79,7 +86,7 @@ namespace SAIN.SAINComponent.Classes.Info
                 SquadInfo != null &&
                 _updateMemberTime < Time.time)
             {
-                _updateMemberTime = Time.time + 0.5f;
+                _updateMemberTime = Time.time + CHECK_VISIBLE_MEMBERS_INTERVAL;
 
                 checkVisibleMembers();
 
@@ -97,16 +104,10 @@ namespace SAIN.SAINComponent.Classes.Info
             Vector3 eyePos = Bot.Transform.EyePosition;
             foreach (var member in Members.Values)
             {
-                if (member != null &&
-                    member.ProfileId != Bot.ProfileId)
+                if (member != null && member.GetDistanceToPlayer(Bot.ProfileId) <= CHECK_VISIBLE_MEMBERS_DISTANCE)
                 {
                     Vector3 direction = member.Transform.BodyPosition - eyePos;
-                    float magnitude = direction.magnitude;
-                    if (magnitude > 100)
-                    {
-                        continue;
-                    }
-                    if (!Physics.Raycast(eyePos, direction, magnitude, LayerMaskClass.HighPolyWithTerrainMask))
+                    if (!Physics.Raycast(eyePos, direction.normalized, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask))
                     {
                         VisibleMembers.Add(member);
                     }

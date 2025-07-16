@@ -57,7 +57,8 @@ namespace SAIN.SAINComponent.Classes
 
             bool wasActive = SAINLayersActiveToggle.Value;
             SAINLayersActiveToggle.CheckToggle(ActiveLayer != ESAINLayer.None);
-            if (wasActive && !SAINLayersActiveToggle.Value)
+            bool activeNow = SAINLayersActiveToggle.Value;
+            if (wasActive && !activeNow)
             {
                 Bot.Mover.Stop();
             }

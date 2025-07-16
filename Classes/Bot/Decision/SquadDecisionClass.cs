@@ -14,7 +14,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             CanEverTick = false;
         }
 
-        private SAINSquadClass Squad => Bot.Squad;
+        private BotSquadContainer Squad => Bot.Squad;
 
         public bool GetDecision(out ESquadDecision Decision, Enemy enemy)
         {

@@ -1,40 +1,33 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Components;
+using SAIN.SAINComponent.Classes;
+using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.SAINComponent.Classes.Mover;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SAIN.Layers
 {
-    public abstract class BotAction : CustomLogic
+    public interface IBotAction
     {
-        public string Name { get; private set; }
+        public string Name { get; }
+        void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners);
+        void OnSteeringTicked();
+    }
 
-        public BotAction(BotOwner botOwner, string name) : base(botOwner)
-        {
-            Name = name;
-        }
+    public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(botOwner)
+    {
+        protected SAINShootData Shoot => Bot.Shoot;
 
-        protected void ToggleAction(bool value)
-        {
-            switch (value)
-            {
-                case true:
-                    BotOwner.PatrollingData?.Pause();
-                    break;
-
-                case false:
-                    BotOwner.PatrollingData?.Unpause();
-                    break;
-            }
-        }
+        public string Name { get; private set; } = name;
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {
             DebugOverlay.AddBaseInfo(Bot, BotOwner, stringBuilder);
         }
 
-        public BotComponent Bot
-        {
+        public BotComponent Bot {
             get
             {
                 if (_bot == null &&
@@ -46,24 +39,45 @@ namespace SAIN.Layers
                 {
                     _bot = BotOwner.GetComponent<BotComponent>();
                 }
+                if (_bot != null)
+                {
+                    KnownEnemies = _bot.EnemyController.KnownEnemies;
+                }
                 return _bot;
             }
         }
 
-        protected void StartProfilingSample(string functionName)
+        protected EnemyList KnownEnemies { get; private set; }
+
+        public virtual void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners)
         {
-            if (SAINPlugin.ProfilingMode)
+            // Default implementation does nothing, can be overridden by derived classes
+        }
+
+        public virtual void OnSteeringTicked()
+        {
+            Enemy enemy = Bot.GoalEnemy;
+            if (!TryShootAnyTarget(enemy))
             {
-                UnityEngine.Profiling.Profiler.BeginSample(this.Name + "_" + functionName);
+                Bot.Steering.SteerByPriority(enemy);
             }
         }
 
-        protected void EndProfilingSample()
+        protected bool TryShootAnyTarget(Enemy priorityEnemy)
         {
-            if (SAINPlugin.ProfilingMode)
-            {
-                UnityEngine.Profiling.Profiler.EndSample();
-            }
+            return Shoot.ShootAnyVisibleEnemies(priorityEnemy) || Bot.Suppression.TrySuppressAnyEnemy(priorityEnemy, Bot.EnemyController.KnownEnemies);
+        }
+
+        public override void Start()
+        {
+            Bot.Mover.OnSteeringTicked += OnSteeringTicked;
+            //Bot.Mover.OnPathSteeringTicked += OnPathSteeringTicked;
+        }
+
+        public override void Stop()
+        {
+            Bot.Mover.OnSteeringTicked -= OnSteeringTicked;
+            //Bot.Mover.OnPathSteeringTicked -= OnPathSteeringTicked;
         }
 
         private BotComponent _bot;

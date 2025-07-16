@@ -6,17 +6,8 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Run
 {
-    internal class RunningAction : CombatAction, ISAINAction
+    internal class RunningAction(BotOwner bot) : BotAction(bot, nameof(RunningAction)), IBotAction
     {
-        public RunningAction(BotOwner bot) : base(bot, nameof(RunningAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
             Bot.Mover.SetTargetPose(1f);
@@ -42,11 +33,6 @@ namespace SAIN.Layers.Combat.Run
         private Vector3 _runDestination;
         private float nextRandomRunTime;
 
-        public override void Start()
-        {
-            Toggle(true);
-        }
-
         private bool findRandomPlace(out NavMeshPath path)
         {
             for (int i = 0; i < 10; i++)
@@ -64,11 +50,6 @@ namespace SAIN.Layers.Combat.Run
             }
             path = null;
             return false;
-        }
-
-        public override void Stop()
-        {
-            Toggle(false);
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)

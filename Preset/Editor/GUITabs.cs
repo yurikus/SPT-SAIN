@@ -147,13 +147,13 @@ namespace SAIN.Editor
                     Space(spacing / 2f);
 
                     if (Button("Reset"))
-                        SAINPlugin.ForceSelfDecision = ESelfDecision.None;
+                        SAINPlugin.ForceSelfDecision = ESelfActionType.None;
 
                     Space(spacing / 2f);
 
                     SAINPlugin.ForceSelfDecision = BuilderClass.SelectionGrid(
                         SAINPlugin.ForceSelfDecision,
-                        EnumValues.GetEnum<ESelfDecision>());
+                        EnumValues.GetEnum<ESelfActionType>());
                 }
             }
         }

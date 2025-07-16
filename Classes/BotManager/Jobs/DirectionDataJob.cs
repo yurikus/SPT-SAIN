@@ -115,7 +115,7 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
                 OtherPlayerData otherPlayer = OtherPlayers[j];
                 if (otherPlayer != null)
                 {
-                    OtherPlayerDirectionData.Add(otherPlayer.DistanceData.GetUpdatedDirectionData(Owner, otherPlayer.OtherPlayerComponent));
+                    OtherPlayerDirectionData.Add(PlayerDirectionData.GetUpdatedDirectionData(otherPlayer.DistanceData.Data, Owner, otherPlayer.OtherPlayerComponent));
                     OtherPlayerData.Add(otherPlayer);
                 }
             }

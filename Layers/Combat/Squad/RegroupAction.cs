@@ -5,20 +5,11 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Squad
 {
-    internal class RegroupAction : CombatAction, ISAINAction
+    internal class RegroupAction(BotOwner bot) : BotAction(bot, nameof(RegroupAction)), IBotAction
     {
-        public RegroupAction(BotOwner bot) : base(bot, nameof(RegroupAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
+            
             Enemy enemy = Bot.GoalEnemy;
             var SquadLeadPos = Bot.Squad.LeaderComponent?.Position;
             if (SquadLeadPos != null)
@@ -50,28 +41,21 @@ namespace SAIN.Layers.Combat.Squad
 
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
+            
+        }
 
-            if (!Bot.Mover.Running && 
-                !Shoot.ShootAnyVisibleEnemies(enemy) && 
+        public override void OnSteeringTicked()
+        {
+            Enemy enemy = Bot.GoalEnemy;
+            if (!Shoot.ShootAnyVisibleEnemies(enemy) && 
                 !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies) && 
-                !Bot.Steering.SteerByPriority(enemy) && 
-                !Bot.Steering.SteeringLocked)
+                !Bot.Steering.SteerByPriority(enemy))
             {
                 Bot.Steering.LookToMovingDirection();
             }
-            this.EndProfilingSample();
         }
 
-        public override void Start()
-        {
-            Toggle(true);
-        }
 
         private float _nextChangeSprintTime;
-
-        public override void Stop()
-        {
-            Toggle(false);
-        }
     }
 }

@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class SearchAction : CombatAction, ISAINAction
+    internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
     {
         private Enemy _searchTarget => Search?.SearchTarget;
         private bool _subscribed;
@@ -23,43 +23,25 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Start()
         {
+            base.Start();
             subscribeToBotEvents();
             setSearchTarget(Bot.GoalEnemy);
-            Toggle(true);
         }
 
         public override void Stop()
         {
+            base.Stop();
             clearSearchTarget();
-            Toggle(false);
-            Bot.Mover.Stop();
             _haveTalked = false;
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
         }
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
+            
             setTargetEnemy();
-            updateSearch();
-            this.EndProfilingSample();
-        }
-
-        private void updateSearch()
-        {
-            var enemy = _searchTarget;
-            if (enemy != null)
+            if (_searchTarget != null)
             {
-                if (Shoot.ShootAnyVisibleEnemies(enemy))
-                {
-                    Bot.Steering.SteerByPriority(enemy);
-                    return;
-                }
-                bool isBeingStealthy = enemy.Hearing.EnemyHeardFromPeace;
+                bool isBeingStealthy = _searchTarget.Hearing.EnemyHeardFromPeace;
                 if (isBeingStealthy)
                 {
                     _sprintEnabled = false;
@@ -69,22 +51,31 @@ namespace SAIN.Layers.Combat.Solo
                     checkShouldSprint();
                     talk();
                 }
+                Search.Search(_sprintEnabled, _searchTarget);
+            }
+            
+        }
 
-                steer();
-
-                Search.Search(_sprintEnabled, enemy);
-
-                if (!_sprintEnabled)
+        public override void OnSteeringTicked()
+        {
+            if (Shoot.ShootAnyVisibleEnemies(_searchTarget))
+            {
+                _sprintEnabled = false;
+                return;
+            }
+            if (_searchTarget != null)
+            {
+                bool isBeingStealthy = _searchTarget.Hearing.EnemyHeardFromPeace;
+                if (isBeingStealthy)
                 {
-                    if (!isBeingStealthy)
-                    {
-                        if (Bot.Decision.SelfActionDecisions.AmmoRatio > 0.5f)
-                            Bot.Suppression.TrySuppressEnemy(enemy);
-                        else
-                            Bot.Suppression.ResetSuppressing();
+                    _sprintEnabled = false;
+                }
 
-                        checkWeapon();
-                    }
+                if (!isBeingStealthy &&
+                    !Bot.Suppression.TrySuppressAnyEnemy(_searchTarget, KnownEnemies))
+                {
+                    checkWeapon();
+                    Bot.Steering.LookToLastKnownEnemyPosition(_searchTarget);
                 }
             }
         }
@@ -227,14 +218,6 @@ namespace SAIN.Layers.Combat.Solo
             }
         }
 
-        private void steer()
-        {
-            if (!Bot.Steering.SteerByPriority(_searchTarget, false))
-            {
-                Bot.Steering.LookToLastKnownEnemyPosition(_searchTarget);
-            }
-        }
-
         private void subscribeToBotEvents()
         {
             if (!_subscribed)
@@ -243,10 +226,6 @@ namespace SAIN.Layers.Combat.Solo
                 Bot.EnemyController.Events.OnEnemyChanged += enemyChanged;
                 _subscribed = true;
             }
-        }
-
-        public SearchAction(BotOwner bot) : base(bot, "Search")
-        {
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)

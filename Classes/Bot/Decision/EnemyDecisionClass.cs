@@ -38,7 +38,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 result = ECombatDecision.None;
                 return false;
             }
-            DecisionReasons.Clear();
+            if (SAINPlugin.DebugMode) DecisionReasons.Clear();
 
             BotWeaponManager weaponManager = BotOwner.WeaponManager;
             if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
@@ -48,14 +48,84 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
 
             string reason = string.Empty;
-            DecisionReasons.AppendLine($"1. I've Got Bullets.");
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"1. I've Got Bullets.");
 
-            if (shallDogFight(enemy, out reason))
+            bool canTakeAggressiveAction = CanBeAggressive(ref reason);
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]");
+
+            bool shallShoot = shallStandAndShoot(enemy, out reason, knownEnemies);
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
+            if (shallShoot)
             {
-                result = ECombatDecision.DogFight;
+                if (Bot.Decision.CurrentCombatDecision != ECombatDecision.StandAndShoot)
+                {
+                    Bot.Info.CalcHoldGroundDelay();
+                }
+                result = ECombatDecision.StandAndShoot;
+                return true;
+            }
+            bool shallShootDistant = shallShootDistantEnemy(enemy, out reason);
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
+            if (shallShootDistant)
+            {
+                result = ECombatDecision.ShootDistantEnemy;
                 return true;
             }
 
+            if (canTakeAggressiveAction)
+            {
+                bool shallRush = shallRushEnemy(enemy, out reason);
+                if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
+                if (shallRush)
+                {
+                    result = ECombatDecision.RushEnemy;
+                    return true;
+                }
+
+                bool shallThrowNade = shallThrowGrenade(enemy, out reason);
+                if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
+                if (shallThrowNade)
+                {
+                    result = ECombatDecision.ThrowGrenade;
+                    return true;
+                }
+
+                bool search = shallSearch(enemy, out reason);
+                if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
+                if (search)
+                {
+                    if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Search)
+                    {
+                        enemy.Status.NumberOfSearchesStarted++;
+                    }
+                    result = ECombatDecision.Search;
+                    return true;
+                }
+            }
+
+            bool freeze = shallFreezeAndWait(enemy, out reason);
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"7. Shall Freeze: [{freeze}, {reason}]");
+            if (freeze)
+            {
+                result = ECombatDecision.Freeze;
+                return true;
+            }
+
+            bool shift = shallShiftCover(enemy, out reason);
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"8. Shall Shift Cover: [{shift}, {reason}]");
+            if (shift)
+            {
+                result = ECombatDecision.ShiftCover;
+                return true;
+            }
+
+            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"8. Seek Cover: [{true}, {Bot.Cover.CoverSeekingState}]");
+            result = ECombatDecision.SeekCover;
+            return true;
+        }
+
+        private bool CanBeAggressive(ref string reason)
+        {
             bool canTakeAggressiveAction = true;
             var suppState = Bot.Suppression.CurrentState;
             switch (suppState)
@@ -70,77 +140,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     break;
             }
 
-            DecisionReasons.AppendLine($"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]");
-            if (canTakeAggressiveAction)
-            {
-                bool shallShoot = shallStandAndShoot(enemy, out reason, knownEnemies);
-                DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
-                if (shallShoot)
-                {
-                    if (Bot.Decision.CurrentCombatDecision != ECombatDecision.StandAndShoot)
-                    {
-                        Bot.Info.CalcHoldGroundDelay();
-                    }
-                    result = ECombatDecision.StandAndShoot;
-                    return true;
-                }
-
-                bool shallShootDistant = shallShootDistantEnemy(enemy, out reason);
-                DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
-                if (shallShootDistant)
-                {
-                    result = ECombatDecision.ShootDistantEnemy;
-                    return true;
-                }
-
-                bool shallRush = shallRushEnemy(enemy, out reason);
-                DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
-                if (shallRush)
-                {
-                    result = ECombatDecision.RushEnemy;
-                    return true;
-                }
-
-                bool shallThrowNade = shallThrowGrenade(enemy, out reason);
-                DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
-                if (shallThrowNade)
-                {
-                    result = ECombatDecision.ThrowGrenade;
-                    return true;
-                }
-
-                bool search = shallSearch(enemy, out reason);
-                DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
-                if (search)
-                {
-                    if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Search)
-                    {
-                        enemy.Status.NumberOfSearchesStarted++;
-                    }
-                    result = ECombatDecision.Search;
-                    return true;
-                }
-            }
-
-            bool freeze = shallFreezeAndWait(enemy, out reason);
-            DecisionReasons.AppendLine($"7. Shall Freeze: [{freeze}, {reason}]");
-            if (freeze)
-            {
-                result = ECombatDecision.Freeze;
-                return true;
-            }
-
-            bool shift = shallShiftCover(enemy, out reason);
-            DecisionReasons.AppendLine($"8. Shall Shift Cover: [{shift}, {reason}]");
-            if (shift)
-            {
-                result = ECombatDecision.ShiftCover;
-                return true;
-            }
-
-            DecisionReasons.AppendLine($"8. Seek Cover: [{true}, {Bot.Cover.CoverSeekingState}]");
-            result = ECombatDecision.SeekCover;
-            return true;
+            return canTakeAggressiveAction;
         }
 
         private bool shallFreezeAndWait(Enemy enemy, out string reason)
@@ -288,9 +288,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return true;
             }
 
-            if (Bot.Cover.CoverInUse != null && 
-                Bot.Info.PersonalitySettings.Cover.CanShiftCoverPosition && 
-                Bot.Decision.TimeSinceChangeDecision > ShiftCoverChangeDecisionTime && 
+            if (Bot.Cover.CoverInUse != null &&
+                Bot.Info.PersonalitySettings.Cover.CanShiftCoverPosition &&
+                Bot.Decision.TimeSinceChangeDecision > ShiftCoverChangeDecisionTime &&
                 TimeForNewShift < Time.time)
             {
                 if (enemy != null)
@@ -348,7 +348,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool shallDogFight(Enemy enemy, out string reason)
         {
-            if (Bot.Decision.CurrentSelfDecision != ESelfDecision.None || BotOwner.WeaponManager.Reload.Reloading)
+            if (Bot.Decision.CurrentSelfDecision != ESelfActionType.None || BotOwner.WeaponManager.Reload.Reloading)
             {
                 reason = "selfDecisionOrReloading";
                 return false;

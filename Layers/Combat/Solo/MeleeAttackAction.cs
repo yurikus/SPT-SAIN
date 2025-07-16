@@ -4,12 +4,8 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class FightZombiesAction : CombatAction, ISAINAction
+    internal class FightZombiesAction(BotOwner bot) : BotAction(bot, "Fight Zombies"), IBotAction
     {
-        public FightZombiesAction(BotOwner bot) : base(bot, "Fight Zombies")
-        {
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
             Enemy priorityEnemy = Bot.GoalEnemy;
@@ -29,50 +25,24 @@ namespace SAIN.Layers.Combat.Solo
                 return;
             }
             Bot.Mover.DogFight.DogFightMove(true, priorityEnemy);
-            Bot.Steering.SteerByPriority(priorityEnemy, true, false);
-        }
-
-        public override void Start()
-        {
-            Toggle(true);
-        }
-
-        public override void Stop()
-        {
-            Toggle(false);
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
         }
     }
-    internal class MeleeAttackAction : CombatAction, ISAINAction
+
+    internal class MeleeAttackAction : BotAction
     {
         public MeleeAttackAction(BotOwner bot) : base(bot, "Melee Attack")
         {
         }
 
+        public override void OnSteeringTicked()
+        {
+        }
+
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
+            
             BotOwner.WeaponManager.Melee.RunToEnemyUpdate();
-            this.EndProfilingSample();
-        }
-
-        public override void Start()
-        {
-            Toggle(true);
-        }
-
-        public override void Stop()
-        {
-            Toggle(false);
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
+            
         }
     }
 }

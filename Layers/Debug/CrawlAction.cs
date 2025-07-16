@@ -6,17 +6,8 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Run
 {
-    internal class CrawlAction : CombatAction, ISAINAction
+    internal class CrawlAction(BotOwner bot) : BotAction(bot, nameof(CrawlAction)), IBotAction
     {
-        public CrawlAction(BotOwner bot) : base(bot, nameof(CrawlAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
             //Bot.Mover.SetTargetPose(1f);
@@ -35,13 +26,13 @@ namespace SAIN.Layers.Combat.Run
             }
         }
 
+        public override void OnSteeringTicked()
+        {
+            Bot.Steering.LookToMovingDirection();
+        }
+
         private Vector3 _runDestination;
         private float nextRandomRunTime;
-
-        public override void Start()
-        {
-            Toggle(true);
-        }
 
         private bool FindRandomPlace(out NavMeshPath path)
         {
@@ -60,11 +51,6 @@ namespace SAIN.Layers.Combat.Run
             }
             path = null;
             return false;
-        }
-
-        public override void Stop()
-        {
-            Toggle(false);
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)

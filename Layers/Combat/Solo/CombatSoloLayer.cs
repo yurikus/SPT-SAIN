@@ -4,13 +4,9 @@ using SAIN.Models.Enums;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class CombatSoloLayer : SAINLayer
+    internal class CombatSoloLayer(BotOwner bot, int priority) : SAINLayer(bot, priority, Name, ESAINLayer.Combat)
     {
         public static readonly string Name = BuildLayerName("Combat Layer");
-
-        public CombatSoloLayer(BotOwner bot, int priority) : base(bot, priority, Name, ESAINLayer.Combat)
-        {
-        }
 
         public override Action GetNextAction()
         {
@@ -46,14 +42,11 @@ namespace SAIN.Layers.Combat.Solo
                 case ECombatDecision.SeekCover:
                 case ECombatDecision.Retreat:
                     string label;
-                    if (_lastSelfDecision != ESelfDecision.None)
+                    if (_lastSelfDecision != ESelfActionType.None)
                         label = $"{_lastDecision} + {_lastSelfDecision}";
                     else
                         label = $"{_lastDecision}";
                     return new Action(typeof(SeekCoverAction), label);
-
-                case ECombatDecision.DogFight:
-                    return new Action(typeof(DogFightAction), $"{_lastDecision}");
 
                 case ECombatDecision.ShootDistantEnemy:
                 case ECombatDecision.StandAndShoot:
@@ -72,46 +65,40 @@ namespace SAIN.Layers.Combat.Solo
 
         public override bool IsActive()
         {
-            base.IsActive();
-            if (Bot == null)
-            {
-                return false;
-            }
-            bool active = _currentDecision != ECombatDecision.None;
-            setLayer(active);
+            bool active = GetBotComponent() && _currentDecision != ECombatDecision.None;
+            CheckActiveChanged(active);
             return active;
         }
 
         public override bool IsCurrentActionEnding()
         {
-            if (ResetAction)
+            if (base.IsCurrentActionEnding())
             {
-                ResetAction = false;
                 return true;
             }
+
             // this is dumb im sorry
             if (!_doSurgeryAction
-                && _currentSelfDecision == ESelfDecision.Surgery
+                && _currentSelfDecision == ESelfActionType.Surgery
                 && Bot.Cover.CoverInUse != null)
             {
                 _doSurgeryAction = true;
                 return true;
             }
 
-            if (_lastSelfDecision == ESelfDecision.Surgery &&
-                _currentSelfDecision != ESelfDecision.Surgery)
+            if (_lastSelfDecision == ESelfActionType.Surgery &&
+                _currentSelfDecision != ESelfActionType.Surgery)
             {
                 return true;
             }
-
             return _currentDecision != _lastDecision;
         }
 
         private bool _doSurgeryAction;
 
         private ECombatDecision _lastDecision = ECombatDecision.None;
-        private ESelfDecision _lastSelfDecision = ESelfDecision.None;
+        private ESelfActionType _lastSelfDecision = ESelfActionType.None;
         public ECombatDecision _currentDecision => Bot.Decision.CurrentCombatDecision;
-        public ESelfDecision _currentSelfDecision => Bot.Decision.CurrentSelfDecision;
+        public ESelfActionType _currentSelfDecision => Bot.Decision.CurrentSelfDecision;
     }
 }

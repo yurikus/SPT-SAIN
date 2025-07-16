@@ -11,37 +11,27 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers
 {
-    internal class ExtractAction : CombatAction, ISAINAction
+    internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotAction
     {
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public static float MinDistanceToStartExtract { get; } = 6f;
-
-        public ExtractAction(BotOwner bot) : base(bot, "Extract")
-        {
-        }
 
         private Vector3? Exfil => Bot.Memory.Extract.ExfilPosition;
 
         public override void Start()
         {
-            Toggle(true);
+            base.Start();
             Bot.Memory.Extract.ExtractStatus = EExtractStatus.Extracting;
         }
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
             Bot.Memory.Extract.ExtractStatus = EExtractStatus.None;
             BotOwner.Mover.MovementResume();
         }
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
             bool fightingEnemy = IsFightingEnemy();
             // Environment id of 0 means a bot is outside.
             if (Bot.Player.AIData.EnvironmentId != 0)
@@ -101,12 +91,6 @@ namespace SAIN.Layers
                 Bot.Mover.SetTargetPose(1f);
                 Bot.Mover.SetTargetMoveSpeed(1f);
             }
-
-            if (!Bot.Shoot.ShootAnyVisibleEnemies(Bot.GoalEnemy))
-            {
-                Bot.Steering.SteerByPriority(Bot.GoalEnemy);
-            }
-            this.EndProfilingSample();
         }
 
         private void SetStatus(EExtractStatus status)

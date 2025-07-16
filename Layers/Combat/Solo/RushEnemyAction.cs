@@ -1,5 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using MonoMod.Cil;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
@@ -9,24 +10,21 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class RushEnemyAction : CombatAction, ISAINAction
+    internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAction)), IBotAction
     {
-        public RushEnemyAction(BotOwner bot) : base(bot, nameof(RushEnemyAction))
-        {
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
+            
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
             updateRushBehavior();
-            this.EndProfilingSample();
+            
         }
 
         private void updateRushBehavior()
         {
-            if (!checkHasEnemy())
+            _enemy = Bot.GoalEnemy;
+            if (_enemy == null)
             {
                 Bot.Steering.SteerByPriority(null, true);
             }
@@ -41,36 +39,20 @@ namespace SAIN.Layers.Combat.Solo
             }
         }
 
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
-        private bool checkHasEnemy()
-        {
-            _enemy = Bot.GoalEnemy;
-            return _enemy != null;
-        }
-
         private void enemyInSight()
         {
             checkJumpEnemyInSight();
-
-            if (Bot.Mover.Moving)
-            {
-                Bot.Mover.ActivePath?.RequestEndSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
-            }
-
+            if (Bot.Mover.Running) Bot.Mover.ActivePath?.RequestEndSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
             Bot.Mover.DogFight.DogFightMove(true, _enemy);
+        }
 
-            if (Shoot.ShootAnyVisibleEnemies(_enemy))
+        public override void OnSteeringTicked()
+        {
+            if (!Shoot.ShootAnyVisibleEnemies(_enemy) && 
+                !Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.KnownEnemies) && 
+                !Bot.Steering.SteerByPriority(_enemy, false))
             {
-                Bot.Steering.SteerByPriority(_enemy, false);
-                return;
-            }
-            if (Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.KnownEnemies))
-            {
-                Bot.Steering.SteerByPriority(_enemy, false);
+                Bot.Steering.LookToLastKnownEnemyPosition(_enemy);
             }
         }
 
@@ -177,9 +159,7 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Start()
         {
-            checkHasEnemy();
-            Toggle(true);
-
+            base.Start();
             _shallTryJump = Bot.Info.PersonalitySettings.Rush.CanJumpCorners
                 //&& Bot.Decision.CurrentSquadDecision != SquadDecision.PushSuppressedEnemy
                 && EFTMath.RandomBool(Bot.Info.PersonalitySettings.Rush.JumpCornerChance);
@@ -192,9 +172,8 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
             Bot.Mover.DogFight.ResetDogFightStatus();
-            //Bot.Mover.PathWalker.CancelRun(0.25f);
         }
     }
 }

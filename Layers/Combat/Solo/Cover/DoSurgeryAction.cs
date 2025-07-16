@@ -6,19 +6,12 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover
 {
-    internal class DoSurgeryAction(BotOwner botOwner) : CombatAction(botOwner, "Surgery"), ISAINAction
+    internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery") , IBotAction
     {
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
+            
             checkDoSurgery();
-            handleSteering();
-            this.EndProfilingSample();
         }
 
         private void checkDoSurgery()
@@ -55,12 +48,11 @@ namespace SAIN.Layers.Combat.Solo.Cover
             }
         }
 
-        private void handleSteering()
+        public override void OnSteeringTicked()
         {
-            if (!Bot.Steering.SteerByPriority(null, false) &&
-                !Bot.Steering.LookToLastKnownEnemyPosition(Bot.GoalEnemy))
+            if (!TryShootAnyTarget(Bot.GoalEnemy))
             {
-                Bot.Steering.LookToRandomPosition();
+                Bot.Steering.SteerByPriority(Bot.GoalEnemy, true);
             }
         }
 
@@ -84,7 +76,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Start()
         {
-            Toggle(true);
+            base.Start();   
             Bot.Mover.PauseMovement(3f);
             _startSurgeryTime = Time.time + 1f;
             _actionStartedTime = Time.time;
@@ -95,7 +87,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
             Bot.Medical.Surgery.SurgeryStarted = false;
             BotOwner.MovementResume();
         }

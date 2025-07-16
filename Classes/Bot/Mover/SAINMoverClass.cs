@@ -8,24 +8,8 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover
 {
-    public class SAINMoverClass : BotComponentClassBase
+    public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
     {
-        public bool Moving => _activePath != null && _activePath.Moving;
-        public bool Running => _activePath != null && _activePath.Running;
-
-        public SAINMoverClass(BotComponent sain) : base(sain)
-        {
-            TickRequirement = ESAINTickState.OnlyNoSleep;
-            BlindFire = new BlindFireController(sain);
-            SideStep = new SideStepClass(sain);
-            Lean = new LeanClass(sain);
-            Prone = new ProneClass(sain);
-            Pose = new PoseClass(sain);
-            DogFight = new DogFight(sain);
-        }
-
-        public DogFight DogFight { get; private set; }
-
         public IBotPathData ActivePath {
             get
             {
@@ -33,32 +17,116 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
-        private void PathComplete(OperationResult result, IBotPathData path)
+        public bool Moving => _activePath != null && _activePath.Moving;
+        public bool Running => _activePath != null && _activePath.Running;
+        public bool Crawling => _activePath != null && _activePath.Crawling;
+
+        public event Action<OperationResult, IBotPathData> OnPathComplete;
+
+        public event Action<BotPathCorner, int, int> OnPathCornerSet;
+
+        public event Action<BotPathCorner, int, int> OnPathCornerComplete;
+
+        public event Action<BotPathCorner, int, int> OnPathSteeringTicked;
+
+        public event Action OnSteeringTicked;
+
+        public SAINMoverClass(BotComponent bot) : base(bot)
         {
-            if (path != _activePath)
+            TickRequirement = ESAINTickState.OnlyNoSleep;
+            BlindFire = new BlindFireController(bot);
+            SideStep = new SideStepClass(bot);
+            Lean = new LeanClass(bot);
+            Prone = new ProneClass(bot);
+            Pose = new PoseClass(bot);
+            DogFight = new DogFight(bot);
+            _preparedPath1 = new BotPathDataManual(bot, this);
+            _preparedPath2 = new BotPathDataManual(bot, this);
+        }
+
+        public override void ManualUpdate()
+        {
+            Pose.ManualUpdate();
+            Lean.ManualUpdate();
+            BlindFire.ManualUpdate();
+
+            if (!CheckTickPath())
             {
-                Logger.LogWarning("uh oh, paths are diffent");
-                return;
+                OnSteeringTicked?.Invoke();
+                Bot.Steering.TickPlayerSteering();
             }
-            _activePath = null;
-            if (_preparedPath != null)
+            UpdateStance(Time.time);
+            base.ManualUpdate();
+        }
+
+        private bool CheckTickPath()
+        {
+            if (_activePath == null)
             {
-                _activePath = _preparedPath;
-                _preparedPath = null;
-                _activePath.OnPathComplete += PathComplete;
-                _activePath.Start();
+                return false;
+            }
+            if (_activePath.PathRecalcRequested && !_activePath.CancelRequested)
+            {
+                _activePath.PathRecalcRequested = false;
+                if (!TriggerRecalcPath())
+                {
+                    Logger.LogWarning("Failed to recalculate path, cancelling active path.");
+                    _activePath.Cancel();
+                    return false;
+                }
+                return true;
+            }
+            _activePath.TickPath(GameWorldComponent.WorldTickDeltaTime, Time.time);
+            return true;
+        }
+
+        public DogFight DogFight { get; private set; }
+
+        public void PathComplete(OperationResult result, IBotPathData pathData)
+        {
+            // We are swapping between two preallocated paths, so we need to check which one is active and check if the other one is prepared.
+            if (pathData == _preparedPath1)
+            {
+                Logger.LogDebug($"[{Bot.name}] Path 1 Completed");
+                _preparedPath1.Dispose();
+                if (_preparedPath2.Status == EBotMoveStatus.ReadyToMove)
+                {
+                    _activePath = _preparedPath2;
+                    _activePath.Start();
+                    return;
+                }
+            }
+            else if (pathData == _preparedPath2)
+            {
+                Logger.LogDebug($"[{Bot.name}] Path 2 Completed");
+                _preparedPath2.Dispose();
+                if (_preparedPath1.Status == EBotMoveStatus.ReadyToMove)
+                {
+                    _activePath = _preparedPath1;
+                    _activePath.Start();
+                    return;
+                }
+            }
+            else
+            {
+                Logger.LogError($"[{Bot.name}] what"); // This should never happen, but if it does...
+            }
+            if (pathData == _activePath)
+            {
+                _activePath = null;
             }
         }
 
         private BotPathDataManual _activePath;
-        private BotPathDataManual _preparedPath;
+        private readonly BotPathDataManual _preparedPath1;
+        private readonly BotPathDataManual _preparedPath2;
 
         public bool RunToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, ESprintUrgency urgency = ESprintUrgency.Low, bool checkSameWay = true)
         {
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
-            if (checkSameWay && TryUpdatePath(point, null))
+            if (checkSameWay && TryUpdatePath(point))
             {
                 if (!_activePath.WantToSprint)
                 {
@@ -70,7 +138,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
             {
-                TriggerNewMove(path.corners, point, true, urgency, path, null);
+                TriggerNewMove(path.corners, point, true, urgency, path);
                 _activePath.SetDestinationReachDistance(reachDist);
                 _activePath.PathStatus = path.status;
                 return true;
@@ -83,20 +151,20 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (path == null) return false;
             if (path.status == NavMeshPathStatus.PathInvalid) return false;
             if (mustHaveCompletePath && path.status != NavMeshPathStatus.PathComplete) return false;
-            
+
             Vector3[] pathCorners = path.corners;
             if (pathCorners.Length <= 1) return false;
             Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
-            if (checkSameWay && TryUpdatePath(lastCorner, null))
+            if (checkSameWay && TryUpdatePath(lastCorner))
             {
                 if (!_activePath.WantToSprint) _activePath.RequestStartSprint(urgency, "path updated");
                 _activePath.SetDestinationReachDistance(reachDist);
                 return true;
             }
-            TriggerNewMove(path.corners, lastCorner, true, urgency, path, null);
+            TriggerNewMove(path.corners, lastCorner, true, urgency, path);
             _activePath.SetDestinationReachDistance(reachDist);
             return false;
         }
@@ -108,14 +176,14 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
-            if (checkSameWay && TryUpdatePath(point, null))
+            if (checkSameWay && TryUpdatePath(point))
             {
                 if (_activePath.WantToSprint) _activePath.RequestEndSprint(ESprintUrgency.None, "path updated");
                 return true;
             }
             if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
             {
-                TriggerNewMove(path.corners, point, false, ESprintUrgency.None, path, null);
+                TriggerNewMove(path.corners, point, false, ESprintUrgency.None, path);
                 _activePath.SetDestinationReachDistance(reachDist);
             }
             return false;
@@ -133,7 +201,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
-            if (checkSameWay && TryUpdatePath(lastCorner, null))
+            if (checkSameWay && TryUpdatePath(lastCorner))
             {
                 if (_activePath.WantToSprint)
                 {
@@ -142,36 +210,41 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return true;
             }
 
-            TriggerNewMove(pathCorners, lastCorner, false, ESprintUrgency.None, path, null);
+            TriggerNewMove(pathCorners, lastCorner, false, ESprintUrgency.None, path);
             _activePath.SetDestinationReachDistance(-1);
             return true;
         }
 
-        private bool TryUpdatePath(Vector3 point, Action<OperationResult, IBotPathData> onComplete)
+        private bool TryUpdatePath(Vector3 point)
         {
-            if (_preparedPath != null)
+            if ((_preparedPath1.Status == EBotMoveStatus.Moving || _preparedPath1.Status == EBotMoveStatus.ReadyToMove) && _preparedPath1.TryUpdatePath(point))
             {
-                return _preparedPath.TryUpdatePath(point);
+                return true;
             }
-            return _activePath != null && _activePath.TryUpdatePath(point);
+            if ((_preparedPath2.Status == EBotMoveStatus.Moving || _preparedPath2.Status == EBotMoveStatus.ReadyToMove) && _preparedPath2.TryUpdatePath(point))
+            {
+                return true;
+            }
+            return false;
         }
 
-        private void TriggerNewMove(Vector3[] pathCorners, Vector3 point, bool shallSprint, ESprintUrgency urgency, NavMeshPath path, Action<OperationResult, IBotPathData> onComplete = null)
+        private void TriggerNewMove(Vector3[] pathCorners, Vector3 point, bool shallSprint, ESprintUrgency urgency, NavMeshPath path)
         {
-            BotPathDataManual newPath = new(Bot, Bot.Transform.NavData.Position, point, shallSprint, urgency, pathCorners, path, onComplete);
-            //if (_activePath != null)
-            //{
-            //    _activePath.Cancel();
-            //    _preparedPath = newPath;
-            //}
             if (_activePath != null)
             {
                 _activePath.Cancel();
-                _preparedPath = newPath;
+                if (_activePath == _preparedPath1)
+                {
+                    _preparedPath2.Initialize(Bot.NavMeshPosition, point, shallSprint, urgency, pathCorners, path);
+                }
+                else
+                {
+                    _preparedPath1.Initialize(Bot.NavMeshPosition, point, shallSprint, urgency, pathCorners, path);
+                }
                 return;
             }
-            _activePath = newPath;
-            _activePath.OnPathComplete += PathComplete;
+            _activePath = _preparedPath1;
+            _activePath.Initialize(Bot.NavMeshPosition, point, shallSprint, urgency, pathCorners, path);
             _activePath.Start();
         }
 
@@ -181,31 +254,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (_activePath.WantToSprint)
                 return RunToPoint(_activePath.Destination, true, -1, _activePath.SprintUrgency, true);
             return WalkToPoint(_activePath.Destination, true, -1, false);
-        }
-
-        public override void ManualUpdate()
-        {
-            Pose.ManualUpdate();
-            Lean.ManualUpdate();
-            BlindFire.ManualUpdate();
-
-            if (_activePath != null)
-            {
-                if ( _activePath.PathRecalcRequested && !_activePath.CancelRequested)
-                {
-                    _activePath.PathRecalcRequested = false;
-                    TriggerRecalcPath();
-                }
-                else
-                {
-                    _activePath.TickPath(GameWorldComponent.WorldTickDeltaTime, Time.time);
-                }
-            }
-            if (_activePath == null || !_activePath.WantToSprint)
-            {
-                UpdateStance(Time.time);
-            }
-            base.ManualUpdate();
         }
 
         private bool CanSetPatrol()
@@ -229,10 +277,8 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public override void Dispose()
         {
-            _activePath?.Dispose();
-            _activePath = null;
-            _preparedPath?.Dispose();
-            _preparedPath = null;
+            _preparedPath1?.Dispose();
+            _preparedPath2?.Dispose();
             base.Dispose();
         }
 
@@ -284,7 +330,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 Logger.LogDebug("cant go to point");
             }
-                return false;
+            return false;
         }
 
         private static bool CanGoToCoverPoint(CoverPoint point, PlayerNavData navData)
@@ -330,7 +376,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             BotOwner?.Mover?.Stop();
             _activePath?.Cancel();
-            _preparedPath = null;
         }
 
         public void PauseMovement(float forDuration)
@@ -437,6 +482,23 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (_ungroundedTime < Time.time)
             {
             }
+        }
+
+        public void PathCornerSet(BotPathCorner corner, int index, int totalCorners)
+        {
+            OnPathCornerSet?.Invoke(corner, index, totalCorners);
+        }
+
+        public void PathCornerComplete(BotPathCorner corner, int index, int totalCorners)
+        {
+            OnPathCornerComplete?.Invoke(corner, index, totalCorners);
+        }
+
+        public void PathSteeringTicked(BotPathCorner corner, int index, int totalCorners)
+        {
+            OnSteeringTicked?.Invoke();
+            OnPathSteeringTicked?.Invoke(corner, index, totalCorners);
+            Bot.Steering.TickPlayerSteering();
         }
 
         private float _ungroundedTime;

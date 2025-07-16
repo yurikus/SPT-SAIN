@@ -17,7 +17,7 @@ namespace SAIN.BotController.Classes
 {
     public class Squad
     {
-        public event Action<ECombatDecision, ESquadDecision, ESelfDecision, BotComponent> OnMemberDecisionMade;
+        public event Action<ECombatDecision, ESquadDecision, ESelfActionType, string, BotComponent> OnMemberDecisionMade;
 
         public event Action<EnemyPlace, Enemy, SAINSoundType> OnMemberHeardEnemy;
 
@@ -374,7 +374,7 @@ namespace SAIN.BotController.Classes
             return false;
         }
 
-        public bool MemberHasDecision(params ESelfDecision[] decisionsToCheck)
+        public bool MemberHasDecision(params ESelfActionType[] decisionsToCheck)
         {
             foreach (var member in MemberInfos.Values)
             {
@@ -665,9 +665,9 @@ namespace SAIN.BotController.Classes
             }
         }
 
-        private void memberMadeDecision(ECombatDecision solo, ESquadDecision squad, ESelfDecision self, BotComponent member)
+        private void memberMadeDecision(ECombatDecision solo, ESquadDecision squad, ESelfActionType self, Enemy enemy, BotComponent member)
         {
-            OnMemberDecisionMade?.Invoke(solo, squad, self, member);
+            OnMemberDecisionMade?.Invoke(solo, squad, self, enemy?.EnemyProfileId, member);
         }
 
         public void RemoveMember(BotComponent sain)

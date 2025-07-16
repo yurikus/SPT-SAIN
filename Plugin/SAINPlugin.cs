@@ -42,7 +42,7 @@ namespace SAIN
 
         public static ESquadDecision ForceSquadDecision = ESquadDecision.None;
 
-        public static ESelfDecision ForceSelfDecision = ESelfDecision.None;
+        public static ESelfActionType ForceSelfDecision = ESelfActionType.None;
 
         public void Awake()
         {

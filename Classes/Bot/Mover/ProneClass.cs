@@ -80,7 +80,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return false;
             }
 
-            bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfDecision.None || Bot.Suppression.IsHeavySuppressed;
+            bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
             bool shallProne = isUnderDuress || !CheckShootProne(lastKnownPos.Value, enemy);
             if (shallProne)
             {

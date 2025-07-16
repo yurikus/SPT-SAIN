@@ -29,15 +29,18 @@ namespace SAIN.Layers.Combat.Run
 
         public override bool IsActive()
         {
-            base.IsActive();
-            bool active = SAINPlugin.DebugSettings.Logs.ForceBotsToRunAround || SAINPlugin.DebugSettings.Logs.ForceBotsToTryCrawl;
-            setLayer(active);
+            bool active = GetBotComponent() && SAINPlugin.DebugSettings.Logs.ForceBotsToRunAround || SAINPlugin.DebugSettings.Logs.ForceBotsToTryCrawl;
+            CheckActiveChanged(active);
             return active;
         }
 
         public override bool IsCurrentActionEnding()
         {
             if (Bot == null) return true;
+            if (base.IsCurrentActionEnding())
+            {
+                return true;
+            }
 
             return false;
         }

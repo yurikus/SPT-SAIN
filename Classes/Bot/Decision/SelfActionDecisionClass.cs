@@ -13,13 +13,13 @@ namespace SAIN.SAINComponent.Classes.Decision
             CanEverTick = false;
         }
 
-        public ESelfDecision CurrentSelfAction => Bot.Decision.CurrentSelfDecision;
+        public ESelfActionType CurrentSelfAction => Bot.Decision.CurrentSelfDecision;
 
-        public bool GetDecision(out ESelfDecision Decision, Enemy enemy)
+        public bool GetDecision(out ESelfActionType Decision, Enemy enemy)
         {
             if (enemy == null)
             {
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 return false;
             }
 
@@ -34,13 +34,13 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (botOwner.ShootData.Shooting)
             {
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 return false;
             }
             if (CheckDoReload(enemy, Bot))
             {
                 botOwner.ShootData.BlockFor(0.7f);
-                Decision = ESelfDecision.Reload;
+                Decision = ESelfActionType.Reload;
                 return true;
             }
             return StartBotHeal(ref Decision);
@@ -55,6 +55,12 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             if (Time.time - _lastReloadTime < 1f)
                 return false;
+
+            if (Player.HandsController is Player.FirearmController firearmController &&
+                (firearmController.IsInReloadOperation() || firearmController.IsInInteraction()))
+            {
+                return false;
+            }
 
             BotOwner botOwner = bot.BotOwner;
             if (botOwner.Medecine?.Using == true) return false;
@@ -157,7 +163,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             return true;
         }
 
-        private bool StartBotHeal(ref ESelfDecision Decision)
+        private bool StartBotHeal(ref ESelfActionType Decision)
         {
             if (_nextCheckHealTime < Time.time)
             {
@@ -172,17 +178,17 @@ namespace SAIN.SAINComponent.Classes.Decision
                 _nextCheckHealTime = Time.time + 1f;
                 if (startUseStims())
                 {
-                    Decision = ESelfDecision.Stims;
+                    Decision = ESelfActionType.Stims;
                     return true;
                 }
                 if (startFirstAid())
                 {
-                    Decision = ESelfDecision.FirstAid;
+                    Decision = ESelfActionType.FirstAid;
                     return true;
                 }
                 if (Bot.Medical.Surgery.CheckCanStartUsingKit())
                 {
-                    Decision = ESelfDecision.Surgery;
+                    Decision = ESelfActionType.Surgery;
                     return true;
                 }
             }
@@ -191,30 +197,30 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private float _nextCheckHealTime;
 
-        private bool CheckContinueSelfAction(out ESelfDecision Decision, Enemy enemy)
+        private bool CheckContinueSelfAction(out ESelfActionType Decision, Enemy enemy)
         {
-            Decision = ESelfDecision.None;
+            Decision = ESelfActionType.None;
             switch (CurrentSelfAction)
             {
-                case ESelfDecision.FirstAid:
+                case ESelfActionType.FirstAid:
                     return checkContinueFirstAid(_timeSinceChangeDecision, out Decision, enemy);
 
-                case ESelfDecision.Reload:
+                case ESelfActionType.Reload:
                     if (checkContinueReload(_timeSinceChangeDecision, enemy))
                     {
-                        Decision = ESelfDecision.Reload;
+                        Decision = ESelfActionType.Reload;
                         return true;
                     }
                     return false;
 
-                case ESelfDecision.Surgery:
+                case ESelfActionType.Surgery:
                     return checkContinueSurgery(out Decision);
 
-                case ESelfDecision.Stims:
+                case ESelfActionType.Stims:
                     return checkContinueStims(_timeSinceChangeDecision, out Decision);
 
                 default:
-                    Decision = ESelfDecision.None;
+                    Decision = ESelfActionType.None;
                     return false;
             }
         }
@@ -222,7 +228,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         private bool checkContinueReload(float timeSinceChange, Enemy enemy)
         {
             BotComponent bot = Bot;
-            if (bot.Decision.CurrentSelfDecision != ESelfDecision.Reload)
+            if (bot.Decision.CurrentSelfDecision != ESelfActionType.Reload)
                 return false;
             BotWeaponManager weaponManager = bot.BotOwner.WeaponManager;
             if (weaponManager == null) return false;
@@ -259,11 +265,11 @@ namespace SAIN.SAINComponent.Classes.Decision
             return true;
         }
 
-        private bool checkContinueSurgery(out ESelfDecision Decision)
+        private bool checkContinueSurgery(out ESelfActionType Decision)
         {
             if (BotOwner?.Medecine == null)
             {
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 return false;
             }
             var medical = Bot.Medical;
@@ -271,47 +277,47 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (medical.Surgery.AreaClearForSurgery &&
                 !checkDecisionTooLong())
             {
-                Decision = ESelfDecision.Surgery;
+                Decision = ESelfActionType.Surgery;
                 return true;
             }
             Bot.Medical.TryCancelHeal();
-            Decision = ESelfDecision.None;
+            Decision = ESelfActionType.None;
             return false;
         }
 
-        private bool checkContinueFirstAid(float timeSinceChange, out ESelfDecision Decision, Enemy enemy)
+        private bool checkContinueFirstAid(float timeSinceChange, out ESelfActionType Decision, Enemy enemy)
         {
             if (BotOwner?.Medecine == null)
             {
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 return false;
             }
             if (timeSinceChange > 6f)
             {
                 Bot.Medical.TryCancelHeal();
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 //TryFixBusyHands();
                 return false;
             }
-            Decision = ESelfDecision.FirstAid;
+            Decision = ESelfActionType.FirstAid;
             return true;
         }
 
-        private bool checkContinueStims(float timeSinceChange, out ESelfDecision Decision)
+        private bool checkContinueStims(float timeSinceChange, out ESelfActionType Decision)
         {
             if (BotOwner?.Medecine == null)
             {
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 return false;
             }
             if (timeSinceChange > 3f)
             {
                 Bot.Medical.TryCancelHeal();
                 //TryFixBusyHands();
-                Decision = ESelfDecision.None;
+                Decision = ESelfActionType.None;
                 return false;
             }
-            Decision = ESelfDecision.Stims;
+            Decision = ESelfActionType.Stims;
             return true;
         }
 
@@ -322,7 +328,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             return Time.time - Bot.Decision.ChangeDecisionTime > 60f;
         }
 
-        public bool UsingMeds => BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfDecision.None;
+        public bool UsingMeds => BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfActionType.None;
 
         public bool CanUseStims {
             get

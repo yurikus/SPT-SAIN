@@ -31,12 +31,12 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return;
             }
             var decision = Bot.Decision.CurrentSelfDecision;
-            if (decision == ESelfDecision.None)
+            if (decision == ESelfActionType.None)
             {
                 _nextCheckTime = Time.time + 1f;
                 return;
             }
-            if (decision == ESelfDecision.Reload)
+            if (decision == ESelfActionType.Reload)
             {
                 _nextCheckTime = Time.time + 1f;
                 return;
@@ -72,13 +72,13 @@ namespace SAIN.SAINComponent.Classes.Decision
             bool didAction = false;
             switch (decision)
             {
-                case ESelfDecision.FirstAid:
+                case ESelfActionType.FirstAid:
                     didAction = DoFirstAid();
                     break;
-                case ESelfDecision.Surgery:
+                case ESelfActionType.Surgery:
                     didAction = true; // surgery calls are handled by the brain layer action
                     break;
-                case ESelfDecision.Stims:
+                case ESelfActionType.Stims:
                     didAction = DoStims();
                     break;
 

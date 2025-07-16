@@ -21,14 +21,17 @@ namespace SAIN.Layers
 
         public override bool IsActive()
         {
-            base.IsActive();
-            bool active = Bot != null && allowedToExtract() && hasExtractReason() && hasExtractLocation();
-            setLayer(active);
+            bool active = GetBotComponent() && allowedToExtract() && hasExtractReason() && hasExtractLocation();
+            CheckActiveChanged(active);
             return active;
         }
 
         public override bool IsCurrentActionEnding()
         {
+            if (base.IsCurrentActionEnding())
+            {
+                return true;
+            }
             return false;
         }
 

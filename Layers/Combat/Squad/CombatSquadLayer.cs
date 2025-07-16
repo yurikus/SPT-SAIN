@@ -44,28 +44,29 @@ namespace SAIN.Layers.Combat.Squad
 
         public override bool IsActive()
         {
-            base.IsActive();
-            BotComponent bot = Bot;
-            if (bot != null && bot.BotActive)
+            if (GetBotComponent())
             {
-                SAINDecisionClass decisions = bot.Decision;
-                if (decisions.CurrentSelfDecision == ESelfDecision.None &&
-                    decisions.CurrentCombatDecision != ECombatDecision.DogFight &&
-                    decisions.CurrentSquadDecision != ESquadDecision.None)
+                BotComponent bot = Bot;
+                if (bot != null && bot.BotActive)
                 {
-                    setLayer(true);
-                    return true;
+                    SAINDecisionClass decisions = bot.Decision;
+                    if (decisions.CurrentSelfDecision == ESelfActionType.None &&
+                        decisions.CurrentCombatDecision != ECombatDecision.DogFight &&
+                        decisions.CurrentSquadDecision != ESquadDecision.None)
+                    {
+                        CheckActiveChanged(true);
+                        return true;
+                    }
                 }
             }
-            setLayer(false);
+            CheckActiveChanged(false);
             return false;
         }
 
         public override bool IsCurrentActionEnding()
         {
-            if (ResetAction)
+            if (base.IsCurrentActionEnding())
             {
-                ResetAction = false;
                 return true;
             }
             BotComponent bot = Bot;

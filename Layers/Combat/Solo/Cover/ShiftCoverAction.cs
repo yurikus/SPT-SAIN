@@ -1,5 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Collections.Generic;
 using System.Text;
@@ -7,22 +8,11 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover
 {
-    internal class ShiftCoverAction : CombatAction, ISAINAction
+    internal class ShiftCoverAction(BotOwner bot) : BotAction(bot, nameof(ShiftCoverAction)), IBotAction
     {
-        public ShiftCoverAction(BotOwner bot) : base(bot, nameof(ShiftCoverAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
-            Shoot.ShootAnyVisibleEnemies(Bot.GoalEnemy);
-            Bot.Steering.SteerByPriority(Bot.GoalEnemy);
+            
             if (NewPoint == null
                 && FindPointToGo())
             {
@@ -43,7 +33,15 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 Bot.Decision.EnemyDecisions.ShiftCoverComplete = true;
             }
-            this.EndProfilingSample();
+            
+        }
+        public override void OnSteeringTicked()
+        {
+            Enemy enemy = Bot.GoalEnemy;
+            if (!Shoot.ShootAnyVisibleEnemies(enemy) && !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies))
+            {
+                Bot.Steering.SteerByPriority(enemy);
+            }
         }
 
         private float GetSpeed()
@@ -106,7 +104,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Start()
         {
-            Toggle(true);
+            base.Start();
             Bot.Decision.EnemyDecisions.ShiftCoverComplete = false;
         }
 
@@ -115,7 +113,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
             NewPoint = null;
             UsedPoints.Clear();
         }

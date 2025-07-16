@@ -14,16 +14,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
     public interface IBotPathData : IDisposable
     {
-        public event Action<OperationResult, IBotPathData> OnPathComplete;
-        //public event Action<BotPathCorner, int> OnPathCornerSet;
-        //public event Action OnSteeringTicked;
         public bool Moving { get; }
         public bool Running { get; }
 
-        /// <summary>
-        /// Is bot steering and turning locked because of trying to sprint?
-        /// </summary>
-        public bool IsSteeringLocked { get; }
+        public IBotPathFinder PathFinder { get; }
 
         /// <summary>
         /// Reasons for sprinting or not if the bot wants to sprint

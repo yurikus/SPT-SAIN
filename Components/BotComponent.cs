@@ -29,9 +29,20 @@ namespace SAIN.Components
     //    Disposed,
     //}
 
-    public class BotComponent : BotComponentBase , ISPlayer
+    public class BotComponent : BotComponentBase, ISPlayer
     {
         public Vector3 NavMeshPosition => Transform.NavData.Position;
+
+        public float GetDistanceToPlayer(string ProfileId)
+        {
+            return PlayerComponent.GetDistanceToPlayer(ProfileId);
+        }
+
+        public bool IsPlayerInRange(string ProfileId, float maxDistance, out float playerDistance)
+        {
+            return PlayerComponent.IsPlayerInRange(ProfileId, maxDistance, out playerDistance);
+        }
+
         public void ActivateIfBotActive(BotOwner botOwner)
         {
             if (botOwner.BotState == EBotState.Active)
@@ -108,7 +119,7 @@ namespace SAIN.Components
         public SAINDecisionClass Decision { get; private set; }
         public SAINCoverClass Cover { get; private set; }
         public SAINBotInfoClass Info { get; private set; }
-        public SAINSquadClass Squad { get; private set; }
+        public BotSquadContainer Squad { get; private set; }
         public SAINSelfActionClass SelfActions { get; private set; }
         public BotGrenadeManager Grenade { get; private set; }
         public SAINSteeringClass Steering { get; private set; }
@@ -231,7 +242,7 @@ namespace SAIN.Components
 
                 NoBushESP = gameObject.AddComponent<SAINNoBushESP>();
 
-                Squad = new SAINSquadClass(this);
+                Squad = new BotSquadContainer(this);
                 BusyHandsDetector = new BotBusyHandsDetector(this);
                 GlobalEvents = new BotGlobalEventsClass(this);
                 Shoot = new SAINShootData(this);

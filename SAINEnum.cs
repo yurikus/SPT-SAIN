@@ -22,7 +22,7 @@
         DebugNoDecision
     }
 
-    public enum ESelfDecision
+    public enum ESelfActionType
     {
         None = 0,
         Reload = 1,

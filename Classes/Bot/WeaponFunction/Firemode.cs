@@ -20,6 +20,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (_nextSwapTime < Time.time)
             {
                 _nextSwapTime = Time.time + _swapFreq;
+                if (Player.HandsController is Player.FirearmController firearmController && 
+                    (firearmController.IsInReloadOperation() || firearmController.IsInInteraction()))
+                {
+                    return;
+                }
                 var manager = BotOwner?.WeaponManager;
                 if (manager.Selector?.IsWeaponReady == true)
                 {

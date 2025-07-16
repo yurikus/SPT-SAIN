@@ -1,16 +1,13 @@
 ﻿using EFT;
+using SAIN.Components;
 using SAIN.Layers.Combat.Solo;
 using SAIN.Layers.Combat.Solo.Cover;
 using SAIN.Models.Enums;
 
 namespace SAIN.Layers
 {
-    internal class SAINAvoidThreatLayer : SAINLayer
+    internal class SAINAvoidThreatLayer(BotOwner bot, int priority) : SAINLayer(bot, priority, Name, ESAINLayer.AvoidThreat)
     {
-        public SAINAvoidThreatLayer(BotOwner bot, int priority) : base(bot, priority, Name, ESAINLayer.AvoidThreat)
-        {
-        }
-
         public static readonly string Name = BuildLayerName("Avoid Threat");
 
         public override Action GetNextAction()
@@ -46,21 +43,25 @@ namespace SAIN.Layers
 
         public override bool IsActive()
         {
-            base.IsActive();
-            bool active =
-                Bot?.BotActive == true &&
-                (CurrentDecision == ECombatDecision.DogFight ||
-                CurrentDecision == ECombatDecision.AvoidGrenade);
-
-            setLayer(active);
+            bool active = GetBotComponent() && CheckDecisionsForBot(Bot);
+            CheckActiveChanged(active);
             return active;
+        }
+
+        private static bool CheckDecisionsForBot(BotComponent bot)
+        {
+            if (bot == null || !bot.BotActive)
+            {
+                return false;
+            }
+            var decision = bot.Decision.CurrentCombatDecision;
+            return decision == ECombatDecision.DogFight || decision == ECombatDecision.AvoidGrenade;
         }
 
         public override bool IsCurrentActionEnding()
         {
-            if (ResetAction)
+            if (base.IsCurrentActionEnding())
             {
-                ResetAction = false;
                 return true;
             }
             return Bot?.BotActive == true && _lastActionDecision != CurrentDecision;

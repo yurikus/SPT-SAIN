@@ -1,94 +1,85 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Components;
+using SAIN.Components.BotController;
 using SAIN.Models.Enums;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Text;
 
 namespace SAIN.Layers
 {
-    public abstract class SAINLayer : CustomLayer
+    public abstract class SAINLayer(BotOwner botOwner, int priority, string layerName, ESAINLayer eSAINLayer) : CustomLayer(botOwner, priority)
     {
         public static string BuildLayerName(string name)
         {
             return $"SAIN : {name}";
         }
 
-        public SAINLayer(BotOwner botOwner, int priority, string layerName, ESAINLayer eSAINLayer) : base(botOwner, priority)
+        protected virtual bool GetBotComponent()
         {
-            LayerName = layerName;
-            ELayer = eSAINLayer;
-            tryGetBot(botOwner);
+            if (Bot == null)
+            {
+                Bot = BotSpawnController.Instance.GetSAIN(BotOwner);
+                if (Bot != null)
+                {
+                    Bot.Decision.DecisionManager.OnDecisionMade += BotDecisionMade;
+                }
+            }
+            return Bot != null;
         }
 
-        /// <summary>
-        /// Contains a check to get SAIN Bot Component, its annoying but there isn't really a better way to do this with big brain. always returns false.
-        /// </summary>
-        /// <returns>false</returns>
-        public override bool IsActive()
+        public override bool IsCurrentActionEnding()
         {
-            if (!foundBot)
+            if (_actionReset)
             {
-                tryGetBot(BotOwner);
+                _actionReset = false;
+                return true;
             }
             return false;
         }
 
-        private void tryGetBot(BotOwner botOwner)
+        protected void CheckActiveChanged(bool isActiveNow)
         {
-            if (!foundBot)
+            if (_wasActive == isActiveNow) return;
+            if (isActiveNow)
             {
-                if (_bot == null)
+                SetLayer(true);
+                BotOwner.PatrollingData.Pause();
+            }
+            else
+            {
+                SetLayer(false);
+            }
+            _wasActive = isActiveNow;
+        }
+
+        private bool _wasActive = false;
+
+        private void BotDecisionMade(ECombatDecision combatDecision, ESquadDecision squadDecision, ESelfActionType selfDecision, Enemy targetEnemy, BotComponent bot)
+        {
+            if (_wasActive)
+            {
+                _actionReset = true;
+            }
+        }
+
+        private bool _actionReset = false;
+
+        private readonly string LayerName = layerName;
+        private readonly ESAINLayer ELayer = eSAINLayer;
+
+        private void SetLayer(bool active)
+        {
+            if (Bot != null)
+            {
+                if (active)
                 {
-                    _bot = botOwner.GetComponent<BotComponent>();
+                    Bot.ActiveLayer = ELayer;
                 }
-                if (_bot != null)
+                else if (_wasActive)
                 {
-                    foundBot = true;
-                    if (_bot.Decision == null || _bot.Decision.DecisionManager == null)
-                    {
-                        _bot.OnBotActivated += OnBotActivated;
-                    }
-                    else
-                    {
-                        OnBotActivated(_bot);
-                    }
+                    Bot.ActiveLayer = ESAINLayer.None;
                 }
-            }
-        }
-
-        protected virtual void OnBotActivated(BotComponent bot)
-        {
-            bot.Decision.DecisionManager.OnDecisionMade += BotDecisionMade;
-        }
-
-        private bool foundBot = false;
-
-        protected void BotDecisionMade(ECombatDecision combatDecision, ESquadDecision squadDecision, ESelfDecision selfDecision, BotComponent bot)
-        {
-            if (Bot.ActiveLayer == ELayer)
-            {
-                ResetAction = true;
-            }
-        }
-
-        protected bool ResetAction = false;
-
-        private readonly string LayerName;
-        private readonly ESAINLayer ELayer;
-
-        protected void setLayer(bool active)
-        {
-            if (Bot == null)
-            {
-                return;
-            }
-            if (active)
-            {
-                Bot.ActiveLayer = ELayer;
-            }
-            else if (Bot != null && Bot.ActiveLayer == ELayer)
-            {
-                Bot.ActiveLayer = ESAINLayer.None;
             }
         }
 
@@ -96,9 +87,7 @@ namespace SAIN.Layers
 
         public static BotManagerComponent BotController => BotManagerComponent.Instance;
 
-        public BotComponent Bot => _bot;
-
-        private BotComponent _bot;
+        public BotComponent Bot { get; private set; }
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {

@@ -23,6 +23,23 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
     {
         public Vector3 NavMeshPosition => EnemyTransform.NavData.Position;
 
+        /// <summary>
+        /// Enemy player to ProfileId player
+        /// </summary>
+        public float GetDistanceToPlayer(string ProfileId)
+        {
+            return EnemyPlayerComponent.GetDistanceToPlayer(ProfileId);
+        }
+        
+        /// <summary>
+        /// Enemy player to ProfileId player
+        /// </summary>
+        public bool IsPlayerInRange(string ProfileId, float maxDistance, out float playerDistance)
+        {
+            playerDistance = GetDistanceToPlayer(ProfileId);
+            return playerDistance <= maxDistance;
+        }
+
         public override void ManualUpdate()
         {
             CalcFrequencyCoef();

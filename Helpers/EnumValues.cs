@@ -88,7 +88,7 @@ namespace SAIN.Helpers
 
         public static readonly ECombatDecision[] SoloDecisions = GetEnum<ECombatDecision>();
         public static readonly ESquadDecision[] SquadDecisions = GetEnum<ESquadDecision>();
-        public static readonly ESelfDecision[] SelfDecisions = GetEnum<ESelfDecision>();
+        public static readonly ESelfActionType[] SelfDecisions = GetEnum<ESelfActionType>();
 
         public static ECaliber ParseCaliber(string caliber)
         {

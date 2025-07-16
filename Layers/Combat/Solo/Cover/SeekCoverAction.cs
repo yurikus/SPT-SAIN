@@ -9,17 +9,8 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover
 {
-    internal class SeekCoverAction : CombatAction, ISAINAction
+    internal class SeekCoverAction(BotOwner bot) : BotAction(bot, nameof(SeekCoverAction)), IBotAction
     {
-        public SeekCoverAction(BotOwner bot) : base(bot, nameof(SeekCoverAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
             Enemy enemy = Bot.GoalEnemy;
@@ -28,30 +19,16 @@ namespace SAIN.Layers.Combat.Solo.Cover
             if (Bot.Cover.CoverInUse == null)
             {
                 if (!Bot.Mover.Running && !Bot.Mover.ActivePath?.Crawling != true) Bot.Mover.Pose.SetPoseToCover(enemy);
-                Bot.Mover.SetTargetMoveSpeed(1f);
-                if (!Bot.Steering.SteeringLocked && 
-                    !Shoot.ShootAnyVisibleEnemies(enemy) &&
-                    !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies) &&
-                    !Bot.Steering.SteerByPriority(enemy, false))
-                {
-                    Bot.Steering.LookToRandomPosition();
-                }
-                //bool shallCrawl =
-                //    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
-                //    Bot.Player.MovementContext.CanProne &&
-                //    (_wasCrawling || (coverPoint.StraightDistanceStatus == CoverStatus.FarFromCover && Bot.Mover.Prone.ShallProneHide(enemy)));
-                //
                 return;
             }
 
-
             if (Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
             {
-                if (!Bot.Cover.TrySetProneConditional(enemy) && 
-                    enemy != null && 
-                    enemy.IsVisible && 
-                    Bot.Player.MovementContext.CanProne && 
-                    Bot.Player.PoseLevel <= 0.1 && 
+                if (!Bot.Cover.TrySetProneConditional(enemy) &&
+                    enemy != null &&
+                    enemy.IsVisible &&
+                    Bot.Player.MovementContext.CanProne &&
+                    Bot.Player.PoseLevel <= 0.1 &&
                     BotOwner.WeaponManager.Reload.Reloading)
                 {
                     Bot.Mover.Prone.SetProne(true);
@@ -61,11 +38,18 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 Bot.Mover.Pose.SetPoseToCover(enemy);
             }
-            checkSetLean();
-            if (!Shoot.ShootAnyVisibleEnemies(enemy) && !Bot.Suppression.TrySuppressEnemy(enemy))
+        }
+
+        public override void OnSteeringTicked()
+        {
+            Enemy enemy = Bot.GoalEnemy;
+            if (!Shoot.ShootAnyVisibleEnemies(enemy) &&
+                !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies) &&
+                !Bot.Steering.SteerByPriority(enemy, false))
             {
-                Bot.Steering.SteerByPriority(enemy);
+                Bot.Steering.LookToLastKnownEnemyPosition(enemy);
             }
+            checkSetLean();
         }
 
         private void checkSetLean()
@@ -73,7 +57,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             if (!Bot.Info.FileSettings.Move.LEAN_INCOVER_TOGGLE
                 || !GlobalSettingsClass.Instance.Move.LEAN_INCOVER_TOGGLE
                 || Bot.Suppression.IsSuppressed
-                || Bot.Decision.CurrentSelfDecision != ESelfDecision.None)
+                || Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
             {
                 Bot.Mover.Lean.FastLean(LeanSetting.None);
                 CurrentLean = LeanSetting.None;
@@ -164,17 +148,16 @@ namespace SAIN.Layers.Combat.Solo.Cover
         private LeanSetting CurrentLean;
         private float ChangeLeanTimer;
 
-        private CoverPoint CoverInUse => Bot.Cover.CoverInUse;
-
         public override void Start()
         {
-            Toggle(true);
+            base.Start();
             ChangeLeanTimer = Time.time + 2f;
+            Bot.Mover.SetTargetMoveSpeed(1f);
         }
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
             Bot.Mover.DogFight.ResetDogFightStatus();
             Bot.Suppression.ResetSuppressing();
             Bot.Cover.StopSeekingCover();

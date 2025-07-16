@@ -1,8 +1,5 @@
 ﻿using EFT;
 using SAIN.Models.Enums;
-using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent.Classes.Memory;
-using UnityEngine;
 
 namespace SAIN.Layers.Peace
 {
@@ -21,13 +18,17 @@ namespace SAIN.Layers.Peace
 
         public override bool IsActive()
         {
-            base.IsActive();
-            setLayer(false);
+            GetBotComponent();
+            CheckActiveChanged(false);
             return false;
         }
 
         public override bool IsCurrentActionEnding()
         {
+            if (base.IsCurrentActionEnding())
+            {
+                return true;
+            }
             return false;
         }
     }

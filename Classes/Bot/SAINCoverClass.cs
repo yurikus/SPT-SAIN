@@ -178,6 +178,12 @@ namespace SAIN.SAINComponent.Classes
                 return true;
             }
 
+            if (Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
+            {
+                reason = "doing self operation";
+                return true;
+            }
+
             if (StartRunCoverTimer < Time.time)
             {
                 reason = "timeToRun";
@@ -444,7 +450,7 @@ namespace SAIN.SAINComponent.Classes
             var myMoveSettings = Bot.Info.FileSettings.Move;
 
             bool shallProne = myMoveSettings.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE && Bot.Mover.Prone.ShallProneHide(enemy);
-            if (shallProne && (Bot.Decision.CurrentSelfDecision != ESelfDecision.None || (myMoveSettings.PRONE_SUPPRESS_TOGGLE && Bot.Suppression.IsHeavySuppressed)))
+            if (shallProne && (Bot.Decision.CurrentSelfDecision != ESelfActionType.None || (myMoveSettings.PRONE_SUPPRESS_TOGGLE && Bot.Suppression.IsHeavySuppressed)))
             {
                 Bot.Mover.Prone.SetProne(true);
                 return true;

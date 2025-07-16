@@ -10,30 +10,15 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    public class StandAndShootAction : CombatAction, ISAINAction
+    public class StandAndShootAction(BotOwner bot) : BotAction(bot, nameof(StandAndShootAction)), IBotAction
     {
-        public StandAndShootAction(BotOwner bot) : base(bot, nameof(StandAndShootAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
             Enemy enemy = Bot.GoalEnemy;
-            if (!Shoot.ShootAnyVisibleEnemies(enemy))
-            {
-                Bot.Steering.SteerByPriority(enemy);
-            }
             //if (!shallMoveShoot)
             //{
                 Bot.Mover.Pose.SetPoseToCover(enemy);
             //}
-            this.EndProfilingSample();
         }
 
         private bool shallMoveShoot = false;
@@ -41,8 +26,7 @@ namespace SAIN.Layers.Combat.Solo
         public override void Start()
         {
             const float STAND_AND_SHOOT_HOLDLEAN_DURATION = 0.66f;
-
-            Toggle(true);
+            base.Start();
             shallMoveShoot = moveShoot(Bot.GoalEnemy);
             if (!shallMoveShoot)
             {
@@ -100,7 +84,7 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Stop()
         {
-            Toggle(false);
+            base.Stop();
         }
     }
 }

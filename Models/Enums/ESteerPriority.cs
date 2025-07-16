@@ -3,7 +3,6 @@
     public enum ESteerPriority
     {
         None,
-        Shooting,
         ManualShooting,
         Aiming,
         EnemyVisible,
@@ -13,9 +12,7 @@
         LastHit,
         UnderFire,
         MoveDirection,
-        Sprinting,
         EnemyLastKnown,
-        Search,
         RunningPath,
     }
 }

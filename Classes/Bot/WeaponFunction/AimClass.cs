@@ -188,13 +188,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
             currentAiming.NodeUpdate();
             CheckAimToEnemy(enemy);
-            if (TurningWeaponToAimPoint)
-            {
-                AimComplete = false;
-                // return true because we want to aim at this enemy, but haven't turned to do so yet.
-                return true;
-            }
-            AimComplete = currentAiming.IsReady;
+            AimComplete = !TurningWeaponToAimPoint && currentAiming.IsReady;
             return true;
         }
 
@@ -213,7 +207,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (TurningWeaponToAimPoint)
             {
                 const float STARTAIMANGLE = 10f;
-                if (enemy.Vision.Angles.AngleToEnemyHorizontal <= STARTAIMANGLE)
+                if (enemy.Vision.Angles.AngleToEnemy <= STARTAIMANGLE)
                 {
                     TurningWeaponToAimPoint = false;
                 }

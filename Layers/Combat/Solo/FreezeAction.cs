@@ -4,42 +4,18 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class FreezeAction : CombatAction
+    internal class FreezeAction(BotOwner bot) : BotAction(bot, nameof(FreezeAction)), IBotAction
     {
-        public FreezeAction(BotOwner bot) : base(bot, nameof(FreezeAction))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
-            Bot.Mover.SetTargetPose(0f);
             Enemy Enemy = Bot.GoalEnemy;
-            if (Enemy != null)
-            {
-                Shoot.ShootAnyVisibleEnemies(Enemy);
-                if (!Bot.Steering.SteerByPriority(Enemy, false))
-                {
-                    Bot.Steering.LookToLastKnownEnemyPosition(Enemy);
-                }
-            }
-            this.EndProfilingSample();
+            Bot.Mover.Pose.SetPoseToCover(Enemy);
         }
 
         public override void Start()
         {
-            Toggle(true);
+            base.Start();
             Bot.Mover.Stop();
-        }
-
-        public override void Stop()
-        {
-            Toggle(false);
         }
     }
 }

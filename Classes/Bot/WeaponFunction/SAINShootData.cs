@@ -94,8 +94,7 @@ namespace SAIN.SAINComponent.Classes
 
         public bool ShootAnyVisibleEnemies(Enemy priorityEnemy = null)
         {
-
-            return !Bot.Steering.SteeringLocked && GetEnemyToShoot(priorityEnemy) != null;
+            return GetEnemyToShoot(priorityEnemy) != null;
         }
 
         private void UpdateADS(Enemy enemy)

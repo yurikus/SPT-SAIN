@@ -207,6 +207,12 @@ namespace SAIN.Components.PlayerComponentSpace
             return float.MaxValue;
         }
 
+        public bool IsPlayerInRange(string ProfileId, float maxDistance, out float playerDistance)
+        {
+            playerDistance = GetDistanceToPlayer(ProfileId);
+            return playerDistance <= maxDistance;
+        }
+
         public void ManualUpdate(float currentTime, float deltaTime)
         {
             ActivationClass.CheckActive(this);

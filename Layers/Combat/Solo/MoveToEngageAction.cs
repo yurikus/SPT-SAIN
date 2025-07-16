@@ -5,27 +5,18 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo
 {
-    internal class MoveToEngageAction : CombatAction, ISAINAction
+    internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEngageAction)), IBotAction
     {
-        public MoveToEngageAction(BotOwner bot) : base(bot, nameof(MoveToEngageAction))
-        {
-        }
-
         private float RecalcPathTimer;
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-        }
 
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
+            
             Enemy enemy = Bot.GoalEnemy;
             if (enemy == null)
             {
                 Bot.Steering.SteerByPriority();
-                this.EndProfilingSample();
+                
                 return;
             }
 
@@ -36,7 +27,7 @@ namespace SAIN.Layers.Combat.Solo
             {
                 Shoot.ShootAnyVisibleEnemies(enemy);
                 Bot.Steering.SteerByPriority(enemy);
-                this.EndProfilingSample();
+                
                 return;
             }
 
@@ -59,7 +50,7 @@ namespace SAIN.Layers.Combat.Solo
             {
                 Shoot.ShootAnyVisibleEnemies(enemy);
                 Bot.Steering.SteerByPriority(enemy);
-                this.EndProfilingSample();
+                
                 return;
             }
 
@@ -78,7 +69,7 @@ namespace SAIN.Layers.Combat.Solo
                     BotOwner.BotRun.Run(movePos, false, SAINPlugin.LoadedPreset.GlobalSettings.General.SprintReachDistance);
                     Bot.Steering.LookToMovingDirection(true);
                 }
-                this.EndProfilingSample();
+                
                 return;
             }
 
@@ -98,7 +89,14 @@ namespace SAIN.Layers.Combat.Solo
                 Bot.Steering.LookToMovingDirection();
                 //SAIN.Steering.LookToPoint(movePos + Vector3.up * 1f);
             }
-            this.EndProfilingSample();
+            
+        }
+
+        public override void OnSteeringTicked()
+        {
+            if (!TryShootAnyTarget(Bot.GoalEnemy) && !Bot.Steering.LookToMovingDirection()) {
+                Bot.Steering.LookToLastKnownEnemyPosition(Bot.GoalEnemy);
+            }
         }
 
         private bool CheckShoot(Enemy enemy)
@@ -119,16 +117,6 @@ namespace SAIN.Layers.Combat.Solo
                 }
             }
             return false;
-        }
-
-        public override void Start()
-        {
-            Toggle(true);
-        }
-
-        public override void Stop()
-        {
-            Toggle(false);
         }
     }
 }

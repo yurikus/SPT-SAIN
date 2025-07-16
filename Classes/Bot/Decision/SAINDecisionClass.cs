@@ -13,8 +13,8 @@ namespace SAIN.SAINComponent.Classes.Decision
         public ESquadDecision CurrentSquadDecision => DecisionManager.CurrentSquadDecision;
         public ESquadDecision PreviousSquadDecision => DecisionManager.PreviousSquadDecision;
 
-        public ESelfDecision CurrentSelfDecision => DecisionManager.CurrentSelfDecision;
-        public ESelfDecision PreviousSelfDecision => DecisionManager.PreviousSelfDecision;
+        public ESelfActionType CurrentSelfDecision => DecisionManager.CurrentSelfDecision;
+        public ESelfActionType PreviousSelfDecision => DecisionManager.PreviousSelfDecision;
 
         public float ChangeDecisionTime => DecisionManager.ChangeDecisionTime;
         public float TimeSinceChangeDecision => DecisionManager.TimeSinceChangeDecision;

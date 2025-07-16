@@ -15,6 +15,21 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public DirectionData MainData;
         public BodyPartDirectionData[] BodyParts;
+
+        public static PlayerDirectionData GetUpdatedDirectionData(PlayerDirectionData data, PlayerComponent Owner, PlayerComponent OtherPlayer)
+        {
+            // Prepare the owner's positions
+            var Transform = Owner.Transform;
+            data.OwnerPosition = Transform.Position;
+            data.OwnerLookDirection = Transform.LookDirection;
+            data.OwnerViewPosition = Transform.EyePosition;
+
+            // Prepare the new positions for the other player, and each body part.
+            DirectionData mainData = data.MainData;
+            mainData.Position = OtherPlayer.Position;
+            data.MainData = mainData;
+            return data;
+        }
     }
     
     public struct DirectionCache
@@ -102,44 +117,12 @@ namespace SAIN.Components.PlayerComponentSpace
             }
         }
 
-        public PlayerDirectionData GetPlayerDirectionData() => Data;
-
         public void SetPlayerDirectionData(PlayerDirectionData data)
         {
             Data = data;
             //foreach (var part in data.BodyParts)
             //    if (BodyPartDirectionData.ContainsKey(part.BodyPart))
             //        BodyPartDirectionData[part.BodyPart] = part;
-        }
-
-        public PlayerDirectionData GetUpdatedDirectionData(PlayerComponent Owner, PlayerComponent OtherPlayer)
-        {
-            PlayerDirectionData data = Data;
-
-            // Prepare the owner's positions
-            var Transform = Owner.Transform;
-            data.OwnerPosition = Transform.Position;
-            data.OwnerLookDirection = Transform.LookDirection;
-            data.OwnerViewPosition = Transform.EyePosition;
-
-            // Prepare the new positions for the other player, and each body part.
-            data.MainData.Position = OtherPlayer.Position;
-            //PartDictionary otherPlayerParts = OtherPlayer.BodyParts.Parts;
-            //var otherPlayerPartDirections = data.BodyParts;
-            //for (int i = 0; i < otherPlayerPartDirections.Length; i++)
-            //{
-            //    if (otherPlayerParts.TryGetValue(otherPlayerPartDirections[i].BodyPart, out SAINBodyPart value))
-            //    {
-            //        otherPlayerPartDirections[i].DirectionData.Position = value.Transform.position;
-            //    }
-            //    else
-            //    {
-            //        otherPlayerPartDirections[i].DirectionData.Position = Vector3.zero;
-            //    }
-            //}
-
-            Data = data;
-            return Data;
         }
 
         public PlayerDirectionData Data { get; private set; }

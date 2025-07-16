@@ -6,34 +6,15 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Squad
 {
-    internal class FollowSearchParty : CombatAction, ISAINAction
+    internal class FollowSearchParty(BotOwner bot) : BotAction(bot, nameof(FollowSearchParty)), IBotAction
     {
-        public FollowSearchParty(BotOwner bot) : base(bot, nameof(FollowSearchParty))
-        {
-        }
-
-        public void Toggle(bool value)
-        {
-            ToggleAction(value);
-            Bot.Search.ToggleSearch(true, _enemy);
-        }
-
         public override void Update(CustomLayer.ActionData data)
         {
-            this.StartProfilingSample("Update");
             if (_enemy == null || !Enemy.IsEnemyActive(_enemy) || !_enemy.CheckValid())
             {
                 if (_enemy != null) Bot.Search.ToggleSearch(false, _enemy);
                 _enemy = Bot.GoalEnemy;
                 if (_enemy != null) Bot.Search.ToggleSearch(true, _enemy);
-            }
-            if (!Bot.Mover.Running && 
-                !Bot.Steering.SteeringLocked &&
-                    !Shoot.ShootAnyVisibleEnemies(_enemy) &&
-                    !Bot.Steering.SteerByPriority(_enemy, false) &&
-                    !Bot.Steering.LookToLastKnownEnemyPosition(_enemy))
-            {
-                Bot.Steering.LookToMovingDirection();
             }
 
             if (_nextUpdatePosTime < Time.time)
@@ -41,7 +22,16 @@ namespace SAIN.Layers.Combat.Squad
                 MoveToLead(out float nextTime);
                 _nextUpdatePosTime = Time.time + nextTime;
             }
-            this.EndProfilingSample();
+        }
+
+        public override void OnSteeringTicked()
+        {
+            if (!Shoot.ShootAnyVisibleEnemies(_enemy) && 
+                !Bot.Steering.SteerByPriority(_enemy, false) && 
+                !Bot.Steering.LookToLastKnownEnemyPosition(_enemy))
+            {
+                Bot.Steering.LookToMovingDirection();
+            }
         }
 
         private void MoveToLead(out float nextUpdateTime)
@@ -112,18 +102,17 @@ namespace SAIN.Layers.Combat.Squad
 
         public override void Start()
         {
-            Toggle(true);
+            base.Start();
             _nextUpdatePosTime = 0f;
             _LastLeadPos = Vector3.zero;
-            Bot.Search.ToggleSearch(true, Bot.GoalEnemy);
         }
 
         private Enemy _enemy;
 
         public override void Stop()
         {
-            Toggle(false);
-            Bot.Search.ToggleSearch(false, null);
+            base.Stop();
+            Bot.Search.ToggleSearch(false, _enemy);
             _enemy = null;
         }
     }

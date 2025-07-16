@@ -123,7 +123,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 resetLean = false;
                 return false;
             }
-            if (enemy.IsVisible && Bot.Decision.CurrentSelfDecision != ESelfDecision.None)
+            if (enemy.IsVisible && Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
             {
                 return false;
             }
