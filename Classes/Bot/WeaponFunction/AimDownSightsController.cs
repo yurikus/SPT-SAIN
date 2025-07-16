@@ -91,12 +91,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 aim.HardAim = value;
             }
-            var shootController = BotOwner.WeaponManager.ShootController;
-            if (shootController != null && shootController.IsAiming != value)
-            {
-                shootController.SetAim(value);
-            }
-            AimingDownSights = value;
+            AimingDownSights = value; 
         }
 
         public BotAimingClass BotAimingClass

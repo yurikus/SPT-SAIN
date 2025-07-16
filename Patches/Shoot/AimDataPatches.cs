@@ -94,19 +94,33 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 return false;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out var bot))
+            if (SAINEnableClass.GetSAIN(___botOwner_0, out var bot) && bot.HasEnemy)
             {
                 ___aimStatus_0 = value;
-                //bool flag;
-                //if ((flag = (((this.bool_0 && __instance.botOwner_0.Tactic.IsCurTactic(BotsGroup.BotCurrentTactic.Attack)) || __instance.botOwner_0.Memory.IsInCover || this.method_1()) && this.aimStatus_0 != AimStatus.NoTarget && this.method_0())) != __instance.botOwner_0.WeaponManager.ShootController.IsAiming)
-                //{
-                //	__instance.botOwner_0.WeaponManager.ShootController.SetAim(flag);
-                //}
-                //this.HardAim = flag;
+                __instance.HardAim = bot.AimDownSightsController.AimingDownSights;
                 if (value == AimStatus.AimComplete)
                 {
                     ___botOwner_0.BotPersonalStats.Aim(__instance.EndTargetPoint, ___float_7);
                 }
+                return false;
+            }
+            return true;
+        }
+    }
+
+    internal class LoseTargetPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotAimingClass), nameof(BotAimingClass.LoseTarget));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(BotAimingClass __instance, BotOwner ___botOwner_0)
+        {
+            if (SAINEnableClass.IsBotInCombat(___botOwner_0))
+            {
+                __instance.aimStatus_0 = AimStatus.NoTarget;
                 return false;
             }
             return true;

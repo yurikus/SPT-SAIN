@@ -188,6 +188,8 @@ namespace SAIN
             new Patches.Shoot.Aim.PlayerHitReactionDisablePatch(),
 
             new Patches.Shoot.Aim.SetAimStatusPatch(),
+            new Patches.Shoot.Aim.LoseTargetPatch(),
+
             new Patches.Shoot.Aim.AimOffsetPatch(),
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),

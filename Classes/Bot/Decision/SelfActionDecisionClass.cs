@@ -58,7 +58,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             BotOwner botOwner = bot.BotOwner;
             if (botOwner.Medecine?.Using == true) return false;
-            if (botOwner.GetPlayer.HandsController?.IsInInteractionStrictCheck() == true)
+            if (Player?.HandsController is Player.FirearmController firearmController && firearmController.IsInReloadOperation())
                 return false;
 
             var weaponManager = botOwner.WeaponManager;
@@ -91,7 +91,6 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (!weaponManager.IsReady) return false;
             if (weaponManager.ShootController?.CanStartReload() != true) return false;
 
-
             if (botOwner.WeaponManager.Malfunctions.HaveMalfunction() && botOwner.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
                 return false;
 
@@ -100,32 +99,27 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (_ammoRatio <= 0)
                 botOwner.ShootData.EndShoot();
 
-
             if (CheckReloadRatiosCanReload(enemy, RELOAD_AMMORATIO_MIN_PEACE, RELOAD_AMMORATIO_MAX, _ammoRatio))
             {
+                botOwner.ShootData.EndShoot();
                 if (reload.CanReload(true, out var MagazineItemClass, out var list))
                 {
-                    botOwner.ShootData.EndShoot();
+                    reload.Reloading = true;
+                    _lastReloadTime = Time.time;
                     if (MagazineItemClass != null)
                     {
                         reload.ReloadMagazine(MagazineItemClass);
-                        reload.Reloading = true;
-                        _lastReloadTime = Time.time;
-                        return true;
                     }
                     else if (list != null && list.Count > 0)
                     {
                         reload.ReloadAmmo(list);
-                        reload.Reloading = true;
-                        _lastReloadTime = Time.time;
-                        return true;
                     }
+                    return true;
                 }
-                if (enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
+                if (_ammoRatio <= 0 && enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
                 {
                     weaponManager.Selector.ChangeToMelee();
                 }
-
             }
             return false;
         }
