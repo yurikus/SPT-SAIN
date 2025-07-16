@@ -1,4 +1,5 @@
 ﻿using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Models.Structs;
 using System;
 using System.Collections.Generic;
@@ -8,8 +9,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public struct PlaceData
     {
-        public Enemy Enemy;
         public bool IsAI;
+        public Enemy OwnerEnemy;
         public BotComponent Owner;
         public string OwnerID;
     }
@@ -24,8 +25,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
     public class EnemyPlace : IDisposable
     {
-        public event Action<EnemyPlace> OnPositionUpdated;
-
         public event Action<EnemyPlace> OnDispose;
 
         public PlaceData PlaceData { get; }
@@ -52,15 +51,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool ShallClear {
             get
             {
-                if (Enemy.IsEnemyActive(this.PlaceData.Enemy) && PlaceData.Enemy.WasValid)
-                {
-                    if (PlayerLeftArea)
-                    {
-                        return true;
-                    }
-                    return false;
-                }
-                return true;
+                    return PlayerLeftArea;
             }
         }
 
@@ -140,10 +131,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private void SetPosition(Vector3 position)
         {
             BotPositionWhenUpdated = PlaceData.Owner.Position;
-            EnemyRealPositionWhenUpdated = PlaceData.Enemy.EnemyPosition;
+            EnemyRealPositionWhenUpdated = PlaceData.OwnerEnemy.EnemyPosition;
             _position = position;
             updateDistancesNow(position);
-            SetLastKnownPartPositions(PlaceData.Enemy);
+            SetLastKnownPartPositions(PlaceData.OwnerEnemy);
             _timeLastUpdated = Time.time;
         }
 
@@ -178,8 +169,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _timeLastUpdated = Time.time;
             BotPositionWhenUpdated = PlaceData.Owner.Position;
             Visible = false;
-            SetLastKnownPartPositions(PlaceData.Enemy);
-            OnPositionUpdated?.Invoke(this);
+            SetLastKnownPartPositions(PlaceData.OwnerEnemy);
             HasArrivedPersonal = false;
             HasArrivedSquad = false;
             HasSeenPersonal = false;
@@ -201,7 +191,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private void updateDistancesNow(Vector3 position)
         {
             DistanceToBot = (position - PlaceData.Owner.Position).magnitude;
-            DistanceToEnemyRealPosition = (position - PlaceData.Enemy.EnemyTransform.Position).magnitude;
+            DistanceToEnemyRealPosition = (position - PlaceData.OwnerEnemy.EnemyTransform.Position).magnitude;
         }
 
         public float Distance(Vector3 point)

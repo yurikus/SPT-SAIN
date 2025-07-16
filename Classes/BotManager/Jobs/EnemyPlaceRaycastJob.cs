@@ -43,7 +43,7 @@ namespace SAIN.Components
 
         private JobHandle EnemyPlaceJobHandle;
         private CalcEnemyPlaceJob EnemyPlaceJob;
-        private readonly List<EnemyPlace> PlacesToCheck = [];
+        private readonly List<EnemyPlace> PlacesToCheck = new();
 
         private IEnumerator EnemyPlaceJobLoop()
         {
@@ -107,7 +107,7 @@ namespace SAIN.Components
                     EnemyPlace Place = PlacesToCheck[i];
                     PlacePositions[i] = Place.Position;
                     BotPositions[i] = Place.PlaceData.Owner.Transform.EyePosition;
-                    EnemyPositions[i] = Place.PlaceData.Enemy.EnemyTransform.Position;
+                    EnemyPositions[i] = Place.PlaceData.OwnerEnemy.EnemyTransform.Position;
                 }
 
                 EnemyPlaceJob = new CalcEnemyPlaceJob {
@@ -173,4 +173,5 @@ namespace SAIN.Components
 
         private readonly LayerMask Mask = LayerMaskClass.HighPolyWithTerrainMaskAI;
     }
+
 }

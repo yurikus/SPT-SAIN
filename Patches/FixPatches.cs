@@ -59,7 +59,7 @@ namespace SAIN.Patches.Generic.Fixes
 
                 if (__instance.Running && goalEnemy.Distance > __instance.Single_1)
                 {
-                    bot.Mover.ActivePath.RequestStartSprint(ESprintUrgency.High, "melee");
+                    bot.Mover.ActivePath?.RequestStartSprint(ESprintUrgency.High, "melee");
                 }
                 if (__instance._nextTryHitTime < Time.time)
                 {

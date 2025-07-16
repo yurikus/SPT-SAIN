@@ -8,11 +8,11 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes
 {
-    public class ShootDeciderClass : BotComponentClassBase
+    public class SAINShootData : BotComponentClassBase
     {
         public Enemy LastShotEnemy { get; private set; }
 
-        public ShootDeciderClass(BotComponent bot) : base(bot)
+        public SAINShootData(BotComponent bot) : base(bot)
         {
             TickRequirement = ESAINTickState.OnlyBotInCombat;
         }
@@ -58,7 +58,7 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckClearEnemy(string profileId, Enemy enemy)
         {
-            if (LastShotEnemy != null && LastShotEnemy.EnemyProfileId == profileId)
+            if (LastShotEnemy == enemy)
             {
                 LastShotEnemy = null;
                 if (_shooting)

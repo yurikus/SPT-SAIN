@@ -398,7 +398,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.ShallISuppress));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.ShallKnowEnemy));
         }
 
         [PatchPostfix]

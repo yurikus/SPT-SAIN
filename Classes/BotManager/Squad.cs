@@ -87,6 +87,11 @@ namespace SAIN.BotController.Classes
             {
                 return;
             }
+            if (place == null)
+            {
+                Logger.LogError($"Tried to report enemy position for Squad [{Id}] but Place is null!");
+                return;
+            }
 
             float squadCoordination = 3f;
             if (SquadPersonalitySettings != null)

@@ -53,7 +53,6 @@ namespace SAIN.Layers.Combat.Squad
                     decisions.CurrentCombatDecision != ECombatDecision.DogFight &&
                     decisions.CurrentSquadDecision != ESquadDecision.None)
                 {
-                    bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                     setLayer(true);
                     return true;
                 }

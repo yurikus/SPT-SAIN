@@ -83,7 +83,7 @@ namespace SAIN.SAINComponent.Classes.Search
             }
 
             float destinationDistance = targetPlace.DistanceToBot;
-            if (destinationDistance > 0.75)
+            if (destinationDistance > 2f)
             {
                 return;
             }

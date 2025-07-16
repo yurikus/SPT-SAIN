@@ -160,13 +160,13 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void setLastVisSound(EnemyPlace place, Enemy enemy)
         {
-            if (place.Visible && place.PlaceData.OwnerID == Bot.ProfileId)
+            if (place.Visible && place.PlaceData.Owner == Bot)
             {
                 LastHeardVisibleDanger = new SoundStruct(enemy, place);
                 return;
             }
             var activeEnemy = Bot.GoalEnemy;
-            if (activeEnemy == null || enemy.IsDifferent(activeEnemy))
+            if (activeEnemy == null || enemy != activeEnemy)
             {
                 LastHeardDanger = new SoundStruct(enemy, place);
             }

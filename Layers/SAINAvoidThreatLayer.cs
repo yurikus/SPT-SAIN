@@ -37,7 +37,7 @@ namespace SAIN.Layers
                     }
 
                 case ECombatDecision.AvoidGrenade:
-                    return new Action(typeof(RunToCoverAction), $"Avoid Grenade");
+                    return new Action(typeof(SeekCoverAction), $"Avoid Grenade");
 
                 default:
                     return new Action(typeof(DogFightAction), $"NO DECISION - ERROR IN LOGIC");

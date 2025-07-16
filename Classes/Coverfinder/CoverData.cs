@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using SAIN.Components.PlayerComponentSpace;
+using UnityEngine;
 using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
@@ -12,6 +13,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         public bool IsBad { get; set; }
         public CoverStatus PathLengthStatus { get; set; }
         public CoverStatus StraightLengthStatus { get; set; }
+        public DirectionData DirectionData { get; set; } = new();
         public float TimeSinceUpdated => Time.time - TimeLastUpdated;
     }
 }

@@ -36,7 +36,6 @@ namespace SAIN.SAINComponent.Classes
                 ActiveLayer = ESAINLayer.None;
                 SAINLayersActiveToggle.CheckToggle(false);
                 Bot.Mover.Stop();
-                Bot.Cover.SetCoverSeekingState(ECoverSeekingState.None);
             }
         }
 
@@ -61,7 +60,6 @@ namespace SAIN.SAINComponent.Classes
             if (wasActive && !SAINLayersActiveToggle.Value)
             {
                 Bot.Mover.Stop();
-                Bot.Cover.SetCoverSeekingState(ECoverSeekingState.None);
             }
         }
 
@@ -103,7 +101,6 @@ namespace SAIN.SAINComponent.Classes
             if (standby)
             {
                 Bot.Mover.Stop();
-                Bot.Cover.SetCoverSeekingState(ECoverSeekingState.None);
             }
 
             BotStandByToggle.CheckToggle(standby);

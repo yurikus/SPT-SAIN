@@ -12,11 +12,11 @@ namespace SAIN.SAINComponent.Classes
 {
     public class BotBusyHandsDetector : BotComponentClassBase
     {
-        private const float CHECK_FREQ = 0.1f;
+        private const float CHECK_FREQ = 0.5f;
         private const float TIME_TO_RESET_GENERIC = 5f;
-        private const float TIME_TO_RESET_HEAL_FIRSTAID = 10f;
+        private const float TIME_TO_RESET_HEAL_FIRSTAID = 3f;
         private const float TIME_TO_RESET_HEAL_STIMS = 3f;
-        private const float TIME_TO_RESET_HEAL_SURGERY = 40f;
+        private const float TIME_TO_RESET_HEAL_SURGERY = 30f;
         private const float TIME_TO_RESET_WEAPONS_RELOAD = 10f;
         private const float TIME_TO_RESET_WEAPONS_SWAP = 3f;
         private const float TIME_TO_RESET_WEAPONS_GRENADE = 3f;
@@ -42,26 +42,28 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
+        private string _lastInteractionName;
+
         private void checkBusyHands()
         {
-            var handsController = Player.HandsController;
-            if (handsController != null)
+            if (Player.HandsController is ItemHandsController itemHandsController)
             {
-                _isInInteraction = handsController.IsInInteraction();
-                _isInInteractionStrictCheck = _isInInteraction || handsController.IsInInteractionStrictCheck();
-
+                string interactionName = itemHandsController.CurrentHandsOperationName;
+                if (interactionName != _lastInteractionName)
+                {
+                    Logger.LogWarning(interactionName);
+                }
+                _isInInteraction = itemHandsController.CurrentHandsOperation.State == EOperationState.Executing;
+                _isInInteractionStrictCheck = itemHandsController.IsInInteractionStrictCheck();
                 bool inInteraction = _isInInteraction || _isInInteractionStrictCheck;
                 if (inInteraction)
                 {
-                    logTimeSince();
-                    collectQueEvents();
                     if (_timeStartInteraction <= 0f)
                         _timeStartInteraction = Time.time;
                     return;
                 }
                 if (!inInteraction)
                 {
-                    _OngoingEvents.Clear();
                     if (_timeStartInteraction > 0f)
                         _timeStartInteraction = -1f;
                     return;
@@ -85,93 +87,33 @@ namespace SAIN.SAINComponent.Classes
         private bool botHasBusyHands(float startTime, out string reason)
         {
             float timeSinceStart = Time.time - startTime;
-            var meds = BotOwner.Medecine;
-            if (meds != null)
+            if (Player.HandsController is ItemHandsController itemController)
             {
-                if (meds.Stimulators?.Using == true)
+                Item item = itemController.Item;
+                if (item is StimulatorItemClass)
                 {
                     reason = "stims";
                     return timeSinceStart > TIME_TO_RESET_HEAL_STIMS;
                 }
-                if (meds.FirstAid?.Using == true)
+                if (item is MedKitItemClass)
                 {
                     reason = "firstAid";
                     return timeSinceStart > TIME_TO_RESET_HEAL_FIRSTAID;
                 }
-                if (meds.SurgicalKit?.Using == true)
+                if (item is MedicalItemClass medsItemClass && medsItemClass.HealthEffectsComponent.AffectsAny(EDamageEffectType.DestroyedPart))
                 {
                     reason = "surgery";
                     return timeSinceStart > TIME_TO_RESET_HEAL_SURGERY;
                 }
             }
-            var weaponManager = BotOwner.WeaponManager;
-            if (weaponManager != null)
-            {
-                if (weaponManager.Reload.Reloading)
-                {
-                    reason = "reloading";
-                    return timeSinceStart > TIME_TO_RESET_WEAPONS_RELOAD;
-                }
-                if (weaponManager.Selector.IsChanging)
-                {
-                    reason = "changingWeapon";
-                    return timeSinceStart > TIME_TO_RESET_WEAPONS_SWAP;
-                }
-                if (weaponManager.Grenades.ThrowindNow)
-                {
-                    reason = "throwingGrenade";
-                    return timeSinceStart > TIME_TO_RESET_WEAPONS_GRENADE;
-                }
-            }
             reason = "generic";
-            return timeSinceStart > TIME_TO_RESET_GENERIC;
+            return timeSinceStart > 20;
         }
 
         private void resetHands(string reason)
         {
             Logger.LogWarning($"[{BotOwner.name}] is resetting hands because [{reason}] too long!");
             resetHandsController(Player);
-        }
-
-        private void collectQueEvents()
-        {
-            InventoryController inventoryController = Player.InventoryController;
-            if (inventoryController == null)
-            {
-                Logger.LogError("FixHandsController: could not find '_inventoryController'");
-                return;
-            }
-            if (inventoryController.List_0.Count > 0)
-            {
-                _events.Clear();
-                _events.AddRange(inventoryController.List_0);
-                float time = Time.time;
-
-                foreach (HandEvent queuedEvent in _events)
-                    if (!_OngoingEvents.ContainsKey(queuedEvent))
-                        _OngoingEvents.Add(queuedEvent, time);
-
-                _eventsToRemove.Clear();
-
-                foreach (var queuedEvent in _OngoingEvents)
-                    if (!_events.Contains(queuedEvent.Key))
-                        _eventsToRemove.Add(queuedEvent.Key);
-
-                foreach (var queuedEvent in _eventsToRemove)
-                    _OngoingEvents.Remove(queuedEvent);
-
-                _events.Clear();
-                _eventsToRemove.Clear();
-            }
-        }
-
-        private void logTimeSince()
-        {
-            float time = Time.time;
-            foreach (var queuedEvent in _OngoingEvents)
-            {
-                Logger.LogDebug($"[{queuedEvent.Key.EventId}] : [{time - queuedEvent.Value}]");
-            }
         }
 
         private Dictionary<GEventArgs1, float> _OngoingEvents = new();
@@ -181,68 +123,72 @@ namespace SAIN.SAINComponent.Classes
         // Credit to Lacyway's "Hands are Not Busy" mod https://github.com/Lacyway/HandsAreNotBusy/blob/main/HANB_Component.cs
         private static void resetHandsController(Player player)
         {
-            InventoryController inventoryController = player.InventoryController;
-            if (inventoryController == null)
-            {
-                Logger.LogError("FixHandsController: could not find '_inventoryController'");
-                return;
-            }
-            int length = inventoryController.List_0.Count;
-            if (length > 0)
-            {
-                HandEvent[] args = new HandEvent[length];
-                inventoryController.List_0.CopyTo(args);
-                foreach (HandEvent queuedEvent in args)
-                {
-                    inventoryController.RemoveActiveEvent(queuedEvent);
-                }
-                Logger.LogInfo($"Cleared {length} stuck inventory operations.");
-            }
+            var hands = player.HandsController as Player.ItemHandsController;
+            Logger.LogWarning($"[{hands?.Item?.Name} :: {hands.CurrentHandsOperationName}]");
+            hands.FastForwardCurrentState();
 
-            AbstractHandsController handsController = player.HandsController;
-
-            if (handsController is FirearmController currentFirearmController)
-            {
-                player.MovementContext.OnStateChanged -= currentFirearmController.method_17;
-                player.Physical.OnSprintStateChangedEvent -= currentFirearmController.method_16;
-                currentFirearmController.RemoveBallisticCalculator();
-            }
-
-            try
-            {
-                player.SpawnController(player.method_156());
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning("Stopped exception when spawning controller. InnerException: " + ex.InnerException);
-            }
-
-            if (player.LastEquippedWeaponOrKnifeItem != null)
-            {
-                InteractionsHandlerClass.Discard(player.LastEquippedWeaponOrKnifeItem, inventoryController, true);
-
-                player.ProcessStatus = EProcessStatus.None;
-                player.TrySetLastEquippedWeapon();
-            }
-            else
-            {
-                player.ProcessStatus = EProcessStatus.None;
-                player.SetFirstAvailableItem(PlayerOwner.Class1667.class1667_0.method_0);
-            }
-
-            player.SetInventoryOpened(false);
-            handsController?.Destroy();
-
-            if (handsController != null)
-            {
-                GameObject.Destroy(handsController);
-            }
-
-            // This fixes a null ref error
-            if (player.HandsController is FirearmController firearmController && firearmController.Weapon != null)
-            {
-                Traverse.Create(player.ProceduralWeaponAnimation).Field("_firearmAnimationData").SetValue(firearmController);
-            }
+            //InventoryController inventoryController = player.InventoryController;
+            //if (inventoryController == null)
+            //{
+            //    Logger.LogError("FixHandsController: could not find '_inventoryController'");
+            //    return;
+            //}
+            //int length = inventoryController.List_0.Count;
+            //if (length > 0)
+            //{
+            //    HandEvent[] args = new HandEvent[length];
+            //    inventoryController.List_0.CopyTo(args);
+            //    foreach (HandEvent queuedEvent in args)
+            //    {
+            //        inventoryController.RemoveActiveEvent(queuedEvent);
+            //    }
+            //    Logger.LogInfo($"Cleared {length} stuck inventory operations.");
+            //}
+            //
+            //AbstractHandsController handsController = player.HandsController;
+            //
+            //if (handsController is FirearmController currentFirearmController)
+            //{
+            //    player.MovementContext.OnStateChanged -= currentFirearmController.method_17;
+            //    player.Physical.OnSprintStateChangedEvent -= currentFirearmController.method_16;
+            //    currentFirearmController.RemoveBallisticCalculator();
+            //}
+            //
+            //try
+            //{
+            //    player.SpawnController(player.method_156());
+            //}
+            //catch (Exception ex)
+            //{
+            //    Logger.LogWarning("Stopped exception when spawning controller. InnerException: " + ex.InnerException);
+            //}
+            //
+            //if (player.LastEquippedWeaponOrKnifeItem != null)
+            //{
+            //    InteractionsHandlerClass.Discard(player.LastEquippedWeaponOrKnifeItem, inventoryController, true);
+            //
+            //    player.ProcessStatus = EProcessStatus.None;
+            //    player.TrySetLastEquippedWeapon();
+            //}
+            //else
+            //{
+            //    player.ProcessStatus = EProcessStatus.None;
+            //    player.SetFirstAvailableItem(PlayerOwner.Class1667.class1667_0.method_0);
+            //}
+            //
+            //player.SetInventoryOpened(false);
+            //handsController?.Destroy();
+            //
+            //if (handsController != null)
+            //{
+            //    GameObject.Destroy(handsController);
+            //}
+            //
+            //// This fixes a null ref error
+            //if (player.HandsController is FirearmController firearmController && firearmController.Weapon != null)
+            //{
+            //    Traverse.Create(player.ProceduralWeaponAnimation).Field("_firearmAnimationData").SetValue(firearmController);
+            //}
         }
 
         private float _timeStartInteraction = -1f;

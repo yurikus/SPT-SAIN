@@ -27,12 +27,14 @@ namespace SAIN.Layers
                     //stringBuilder.AppendLabeledValue("Active", $"{bot.BotActive}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("Standby", $"{bot.BotInStandBy}", Color.white, Color.yellow);
                     //stringBuilder.AppendLabeledValue("SAIN Layers Active", $"{bot.SAINLayersActive}", Color.white, Color.yellow);
-                    stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("Steering", $"{bot.Steering.CurrentSteerPriority} : {bot.Steering.EnemySteerDir}", Color.white, Color.yellow);
+                    stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("DogFight Status", $"{bot.Mover.DogFight.Status}", Color.white, Color.yellow);
                     string poseInfo = $"Pose [{bot.Mover.Pose.PoseValue.LastSmoothedValue}:{bot.Mover.Pose.PoseValue.TargetValue}]";
                     string speedInfo = $"Speed [{bot.Mover.Pose.SpeedValue.LastSmoothedValue} : {bot.Mover.Pose.SpeedValue.TargetValue}]";
                     stringBuilder.AppendLine($"[{poseInfo}] [{speedInfo}]", Color.white);
+                    stringBuilder.AppendLabeledValue("NavMeshStatus", $"{bot.Transform.NavData.Status}", Color.white, Color.yellow);
+                    stringBuilder.AppendLabeledValue("TimeSinceOnNavMesh", $"{Time.time - bot.Transform.NavData.TimeLastOnNavMesh}", Color.white, Color.yellow);
 
                     if (debug.Overlay_Info_Expanded)
                     {

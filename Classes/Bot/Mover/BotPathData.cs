@@ -22,50 +22,30 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Logger.LogDebug($"path not set to move!");
                 return;
             }
-            if (CancelRequested && _cancelTime < Time.time)
-            {
-                Logger.LogDebug($"[{Bot?.name}]:[{Id}]: canceled");
-                Stop(false, "canceled");
-                return;
-            }
-            if (Bot == null)
-            {
-                Logger.LogDebug($"[{Id}]: bot null");
-                Stop(false, "bot null");
-                return;
-            }
+
             Vector3 botPosition = BotPosition();
-            if ((Destination - botPosition).sqrMagnitude < DestinationReachDistance * DestinationReachDistance)
-            {
-                Logger.LogDebug($"[{Bot.name}]:[{Id}]: Bot Arrived");
-                Stop(true, "arrived");
-                return;
-            }
-
-            BotPathCorner currentCorner = GetCurrentCorner();
-            if (InteractWithDoor(botPosition, currentCorner))
+            if (!CanProceedWithPath(botPosition))
             {
                 return;
             }
-
+            if (InteractWithDoor())
+            {
+                return;
+            }
             if (CheckPaused())
             {
                 return;
             }
-
             Move(botPosition);
 
+            BotPathCorner currentCorner = GetCurrentCorner();
             if (CheckStuck(true, currentCorner))
             {
                 return;
             }
-
             if (CurrentCornerMoveData.Magnitude <= CornerReachDist())
             {
-                if (CurrentIndex >= 0)
-                {
-                    CompleteCorner(CurrentIndex);
-                }
+                CompleteCorner(CurrentIndex);
                 CurrentIndex++;
                 if (CurrentIndex == PathCorners.Count)
                 {
@@ -74,6 +54,26 @@ namespace SAIN.SAINComponent.Classes.Mover
                 }
                 StartCorner(CurrentIndex);
             }
+        }
+
+        private bool CanProceedWithPath(Vector3 botPosition)
+        {
+            if (CancelRequested && _cancelTime < Time.time)
+            {
+                Stop(false, "canceled");
+                return false;
+            }
+            if (Bot == null)
+            {
+                Stop(false, "bot null");
+                return false;
+            }
+            if ((Destination - botPosition).sqrMagnitude < DestinationReachDistance * DestinationReachDistance)
+            {
+                Stop(true, "arrived");
+                return false;
+            }
+            return true;
         }
 
         public event Action<OperationResult, IBotPathData> OnPathComplete;
@@ -107,6 +107,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool Moving => Status == EBotMoveStatus.Moving;
         public bool Running => Moving && WantToSprint;
+        public bool IsSteeringLocked { get; private set; }
         public int CurrentIndex { get; private set; }
         public CornerMoveData CurrentCornerMoveData { get; private set; }
 
@@ -286,137 +287,44 @@ namespace SAIN.SAINComponent.Classes.Mover
             SetPlayerSteering(activeCorner.Position, Bot, Bot.GoalEnemy);
         }
 
-        private bool InteractWithDoor(Vector3 botPosition, BotPathCorner activeCorner)
+        private void ReversePathWalk()
         {
-            if (_activeDoorInteraction == null)
-            {
-                DoorData doorData = Util.SelectDoor(botPosition, Bot.DoorOpener, activeCorner.Position, out bool opening, out bool kicking);
-                if (doorData != null)
-                {
-                    CreateDoorInteraction(botPosition, doorData, opening);
-                }
-            }
-            if (_activeDoorInteraction != null)
-            {
-                var doorData = _activeDoorInteraction.doorData;
-                if (Time.time - _activeDoorInteraction.startTime > 5f)
-                {
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish - too long");
-                    _activeDoorInteraction = null;
-                    return false;
-                }
-                if (_activeDoorInteraction.interactionDone && Time.time - _activeDoorInteraction.timeInteractionDone > 3f)
-                {
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish - interacted 3 sec ago");
-                    _activeDoorInteraction = null;
-                    return false;
-                }
-                if (doorData.Door.DoorState == _activeDoorInteraction.desiredDoorState)
-                {
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish. door state changed");
-                    Bot.Steering.Unlock();
-                    _activeDoorInteraction = null;
-                    return false;
-                }
+            Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
+            Vector3 position = CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
+            unlockSteering(position);
+            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(position - Bot.Position, position, Bot.PlayerComponent);
+            Bot.Steering.SteerByPriority(Bot.GoalEnemy, false, true);
+        }
 
+        private bool InteractWithDoor()
+        {
+            if (Bot.DoorOpener.SelectDoor(out EInteractionType type, out DoorDataStruct data, this))
+            {
                 Bot.Mover.Prone.SetProne(false);
                 SetSprint(false, "door");
-
-                if (!_activeDoorInteraction.lookedAtHandle) _activeDoorInteraction.lookedAtHandle = Bot.Steering.IsLookingAtPoint(_activeDoorInteraction.doorHandleLook, out _);
-                if (_activeDoorInteraction.lookedAtHandle)
+                if (Bot.DoorOpener.Interacting || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data))
                 {
-                    DebugGizmos.DrawLine(Bot.Transform.WeaponData.WeaponRoot, _activeDoorInteraction.doorHandleLook, Color.green, 0.05f, 1f / 60f, true);
-                    //Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] looking at handle. DoorState: [{doorData.Door.DoorState}] Desired State: [{desiredDoorState}]");
-                    if (!_activeDoorInteraction.interactionDone)
-                    {
-                        _activeDoorInteraction.interactionDone = true;
-                        _activeDoorInteraction.timeInteractionDone = Time.time;
-                        if (!Bot.DoorOpener.InteractWithDoor(doorData, Bot.Position, false))
-                        {
-                            Logger.LogError($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] failed to interact");
-                            Bot.Steering.Unlock();
-                            _activeDoorInteraction = null;
-                            return false;
-                        }
-                        Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Interacted");
-                    }
-                    Bot.Steering.Unlock();
-                    if (_activeDoorInteraction.pullOpenDoor) BackUpFromDoor(doorData);
+                    DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();
+                    ReversePathWalk();
                     return true;
                 }
-                Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Look To Handle. DoorState: [{doorData.Door.DoorState}] Desired State: [{_activeDoorInteraction.desiredDoorState}]");
-                MoveToInteract(_activeDoorInteraction.doorHandleLook, _activeDoorInteraction.movePosition);
-                return true;
             }
-            Bot.Steering.Unlock();
+            //if (!_activeDoorInteraction.lookedAtHandle) _activeDoorInteraction.lookedAtHandle = Bot.Steering.IsLookingAtPoint(_activeDoorInteraction.doorHandleLook, out _);
+            //if (_activeDoorInteraction.lookedAtHandle)
+            //{
+            //DebugGizmos.DrawLine(Bot.Transform.WeaponData.WeaponRoot, _activeDoorInteraction.doorHandleLook, Color.green, 0.05f, 1f / 60f, true);
+            //Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] looking at handle. DoorState: [{doorData.Door.DoorState}] Desired State: [{desiredDoorState}]");
+
+            //Bot.Steering.Unlock();
+            //if (_activeDoorInteraction.pullOpenDoor) BackUpFromDoor(doorData);
+            //return true;
+            //}
+            //Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Look To Handle. DoorState: [{doorData.Door.DoorState}] Desired State: [{_activeDoorInteraction.desiredDoorState}]");
+            //MoveToInteract(_activeDoorInteraction.doorHandleLook, _activeDoorInteraction.movePosition);
+            //return true;
+
+            //Bot.Steering.Unlock();
             return false;
-        }
-
-        private void CreateDoorInteraction(Vector3 botPosition, DoorData doorData, bool opening)
-        {
-            _activeDoorInteraction = new() {
-                doorData = doorData
-            };
-            Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] DoorFound");
-            var locations = doorData.MoveLocations;
-            _activeDoorInteraction.doorHandleFloor = opening ? locations.DoorHandleOpenFloorPoint : locations.DoorHandleCloseFloorPoint;
-            _activeDoorInteraction.doorHandleLook = opening ? locations.DoorHandleOpenLookPoint : locations.DoorHandleCloseLookPoint;
-            Vector3 movePosition = _activeDoorInteraction.doorHandleFloor + (((Bot.Position - _activeDoorInteraction.doorHandleFloor).normalized) * 1.0f);
-            if (NavMesh.SamplePosition(movePosition, out var hit, 1f, -1))
-            {
-                movePosition = hit.position;
-            }
-            else if (NavMesh.SamplePosition(_activeDoorInteraction.doorHandleFloor, out hit, 1f, -1))
-            {
-                movePosition = hit.position;
-            }
-            else
-            {
-                movePosition = _activeDoorInteraction.doorHandleFloor;
-            }
-            _activeDoorInteraction.movePosition = movePosition;
-            _activeDoorInteraction.desiredDoorState = opening ? EDoorState.Open : EDoorState.Shut;
-            _activeDoorInteraction.startTime = Time.time;
-            _activeDoorInteraction.lookedAtHandle = false;
-            _activeDoorInteraction.interactionDone = false;
-            _activeDoorInteraction.timeInteractionDone = 0;
-            _activeDoorInteraction.pullOpenDoor = _activeDoorInteraction.desiredDoorState == EDoorState.Open && DoorOpener.IsDoorPullOpen(doorData.Door, botPosition);
-        }
-
-        private void BackUpFromDoor(DoorData doorData)
-        {
-            Vector3 doorPoint = doorData.MoveLocations.DoorBackupPoint;
-            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(doorPoint - Bot.Position, doorPoint, Bot.PlayerComponent);
-            DebugGizmos.DrawLine(Bot.Position + Vector3.up, doorPoint + Vector3.up, Color.yellow, 0.1f, 0.02f, true);
-            DebugGizmos.DrawSphere(doorPoint, 0.15f, Color.yellow, 0.02f);
-            Bot.Steering.SteerByPriority(Bot.GoalEnemy, false, true);
-            //Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Backing up from swing open door");
-        }
-
-        private void MoveToInteract(Vector3 doorHandleLook, Vector3 movePosition)
-        {
-            DebugGizmos.DrawLine(Bot.Transform.WeaponData.WeaponRoot, doorHandleLook, Color.magenta, 0.05f, 1f / 60f, true);
-            DebugGizmos.DrawLine(Bot.Position + Vector3.up, movePosition + Vector3.up, Color.magenta, 0.1f, 0.02f, true);
-            DebugGizmos.DrawSphere(movePosition, 0.15f, Color.magenta, 0.02f, "door move pos");
-            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(movePosition - Bot.Position, movePosition, Bot.PlayerComponent);
-            Bot.Steering.Lock();
-            Bot.Steering.LookToPoint(doorHandleLook);
-        }
-
-        private DoorInteraction _activeDoorInteraction;
-
-        private sealed class DoorInteraction
-        {
-            public float startTime;
-            public DoorData doorData;
-            public EDoorState desiredDoorState;
-            public Vector3 doorHandleFloor;
-            public Vector3 doorHandleLook;
-            public Vector3 movePosition;
-            public bool lookedAtHandle;
-            public bool interactionDone;
-            public float timeInteractionDone;
-            public bool pullOpenDoor;
         }
 
         private bool CheckPaused()
@@ -431,7 +339,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 else if (_pauseStartTime < Time.time)
                 {
                     Logger.LogDebug($"[{Bot.name}]:[{Id}]: paused");
-                    Bot.Steering.Unlock();
                     Bot.Steering.SteerByPriority(null, true, true);
                     SetSprint(false, "paused");
                     return true;
@@ -450,7 +357,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (Time.time - activeCorner.TimeStarted > 1f)
             {
                 var currentMoveData = CurrentCornerMoveData;
-                if (currentMoveData.Dot < 0.5f)
+                if (currentMoveData.Dot < 0.75f)
                 {
                     Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from Dot MoveData: " +
                         $"{currentMoveData.CornerDirectionFromBot}:" +
@@ -461,7 +368,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return true;
                 }
 
-                if (_lastCheckedMoveData.SqrMagnitude - currentMoveData.SqrMagnitude > 0.01f)
+                if (_lastCheckedMoveData.SqrMagnitude - currentMoveData.SqrMagnitude > 0f)
                 {
                     _timeNotMoving = -1f;
                 }
@@ -473,7 +380,8 @@ namespace SAIN.SAINComponent.Classes.Mover
                 if (_timeNotMoving > 0f)
                 {
                     float timeSinceNoMove = Time.time - _timeNotMoving;
-                    if (timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_RECALC_TIME)
+                    if (timeSinceNoMove > 2)
+                    //if (timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_RECALC_TIME)
                     {
                         Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from no move: " +
                             $"{currentMoveData.CornerDirectionFromBot}:" +
@@ -503,7 +411,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private Vector3 BotPosition()
         {
             var navData = Bot.Transform.NavData;
-            Vector3 botPosition = navData.IsOnNavMesh ? navData.NavMeshPosition : Bot.Transform.Position;
+            Vector3 botPosition = navData.IsOnNavMesh ? navData.Position : Bot.Transform.Position;
             return botPosition;
         }
 
@@ -602,21 +510,35 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void SetPlayerSteering(Vector3 corner, BotComponent bot, Enemy enemy)
         {
-            if (!WantToSprint)
+            switch (CurrentSprintStatus)
             {
-                bot.Steering.Unlock();
-                return;
-            }
-            if (CurrentSprintStatus == EBotSprintStatus.None ||
-                (CurrentSprintStatus != EBotSprintStatus.Turning && CurrentSprintStatus != EBotSprintStatus.Running))
-            {
-                bot.Steering.Unlock();
-                if (bot.Steering.SteerByPriority(enemy, false, true))
-                {
+                case EBotSprintStatus.Running:
+                case EBotSprintStatus.Turning:
+                    lookToMoveDir(corner, bot);
                     return;
-                }
+
+                case EBotSprintStatus.Canceling:
+                    if (bot.Player.IsSprintEnabled)
+                    {
+                        lookToMoveDir(corner, bot);
+                        return;
+                    }
+                    break;
+
+                default:
+                    break;
             }
-            bot.Steering.Lock();
+            unlockSteering(corner);
+        }
+
+        private void unlockSteering(Vector3 corner)
+        {
+            IsSteeringLocked = false;
+        }
+
+        private void lookToMoveDir(Vector3 corner, BotComponent bot)
+        {
+            IsSteeringLocked = true;
             bot.Steering.LookToFloorPoint(corner);
         }
 
@@ -710,109 +632,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 direction.y = 0;
                 return Vector3.Angle(lookDirection.normalized, direction.normalized);
             }
-
-            public static DoorData SelectDoor(Vector3 botPosition, DoorOpener doorOpener, Vector3 cornerPosition, out bool opening, out bool kicking)
-            {
-                doorOpener.DoorFinder.UpdateDoors(botPosition, cornerPosition);
-                List<DoorData> doors = doorOpener.FindDoorsToInteractWith(botPosition);
-                Vector3 cornerDir = cornerPosition - botPosition;
-                Ray ray = new() {
-                    origin = botPosition + Vector3.up,
-                    direction = cornerDir,
-                };
-                foreach (DoorData data in doors)
-                {
-                    Collider doorCollider = data?.Door?.Collider;
-                    if (doorCollider == null) continue;
-                    if (doorCollider.Raycast(ray, out RaycastHit hit, 1f))
-                    {
-                        Logger.LogDebug($"hit door  [Door.collider.Raycast]");
-                        DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
-                        if (data.Door.DoorState == EDoorState.Open)
-                        {
-                            opening = false;
-                            kicking = false;
-                            return data;
-                        }
-                        if (data.Door.DoorState == EDoorState.Shut)
-                        {
-                            opening = true;
-                            kicking = false;
-                            return data;
-                        }
-                    }
-                    if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.PlayerStaticDoorMask))
-                    {
-                        if (hit.collider != data.Door.Collider)
-                        {
-                            var hitDoor = hit.collider.gameObject.GetComponent<Door>();
-                            if (hitDoor != null)
-                            {
-                                Logger.LogDebug($"Found door from hit getcomp [PlayerStaticDoorMask] ");
-                                if (hitDoor == data.Door)
-                                {
-                                    Logger.LogDebug($"its the same door! [PlayerStaticDoorMask] ");
-                                }
-                            }
-                            Logger.LogDebug($"hit.collider != data.Door.Collider [PlayerStaticDoorMask] [{hit.collider.name}]");
-                            continue;
-                        }
-                        Logger.LogDebug($"hit door [LayerMaskClass.PlayerStaticDoorMask]");
-                        DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
-                        if (data.Door.DoorState == EDoorState.Open)
-                        {
-                            opening = false;
-                            kicking = false;
-                            return data;
-                        }
-                        if (data.Door.DoorState == EDoorState.Shut)
-                        {
-                            opening = true;
-                            kicking = false;
-                            return data;
-                        }
-                    }
-                    if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.DoorLayer))
-                    {
-                        if (hit.collider != data.Door.Collider)
-                        {
-                            var hitDoor = hit.collider.gameObject.GetComponent<Door>();
-                            if (hitDoor != null)
-                            {
-                                Logger.LogDebug($"Found door from hit getcomp [DoorLayer] ");
-                                if (hitDoor == data.Door)
-                                {
-                                    Logger.LogDebug($"its the same door! [DoorLayer] ");
-                                }
-                            }
-                            Logger.LogDebug($"hit.collider != data.Door.Collider [DoorLayer] [{hit.collider.name}]");
-                            continue;
-                        }
-                        Logger.LogDebug($"hit door [DoorLayer]");
-                        DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
-                        if (data.Door.DoorState == EDoorState.Open)
-                        {
-                            opening = false;
-                            kicking = false;
-                            return data;
-                        }
-                        if (data.Door.DoorState == EDoorState.Shut)
-                        {
-                            opening = true;
-                            kicking = false;
-                            return data;
-                        }
-                    }
-                }
-                opening = false;
-                kicking = false;
-                return null;
-            }
-
-            public static float ReachDist(bool sprinting)
-            {
-                return sprinting ? SAINPlugin.LoadedPreset.GlobalSettings.Move.BotSprintCornerReachDist : SAINPlugin.LoadedPreset.GlobalSettings.Move.BotWalkCornerReachDist;
-            }
         }
     }
 
@@ -821,6 +640,8 @@ namespace SAIN.SAINComponent.Classes.Mover
         public void ManualUpdate(float deltaTime, float CurrentTime)
         {
         }
+
+        public bool IsSteeringLocked { get { return false; } }
 
         private const float END_SPRINT_INTERVAL = 2f;
 
@@ -968,7 +789,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                         OnPathComplete += onComplete;
                     return true;
                 }
-                // If the destination is close enough to where the last corner is on the path, update the final destination, but dont recalc the path.
+                //// If the destination is close enough to where the last corner is on the path, update the final destination, but dont recalc the path.
                 //float distanceFromLastCornerSqr = (GetLastCorner().Position - possibleDestination).sqrMagnitude;
                 //if (distanceFromLastCornerSqr < MIN_DIST_UPDATE_DESTINATION)
                 //{
@@ -1036,7 +857,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (_coroutine == null)
             {
                 Util.PrepareBot(Bot, WantToSprint);
-                _coroutine = Bot.StartCoroutine(GoToPointCoroutine());
             }
         }
 
@@ -1089,174 +909,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             Stop(false, "Dispose");
         }
 
-        private IEnumerator GoToPointCoroutine()
-        {
-            Status = EBotMoveStatus.Moving;
-            Logger.LogDebug($"[{Bot.name}]:[{Id}]: Move Started at time [{Time.time}]");
-
-            //WaitForSeconds wait = new(1f / 60f);
-            for (int i = 0; i < PathCorners.Count; i++)
-            {
-                //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Corner [{i}] Start at time [{Time.time}]");
-                StartCorner(i);
-
-                while (true)
-                {
-                    BotPathCorner activeCorner = this.GetCurrentCorner();
-                    Vector3 botPosition = BotPosition();
-                    CurrentCornerMoveData = CalculateMoveData(botPosition, activeCorner);
-                    if (CurrentCornerMoveData.Magnitude <= ReachDistance()) break;
-
-                    DoorData doorData = Util.SelectDoor(botPosition, Bot.DoorOpener, activeCorner.Position, out bool opening, out bool kicking);
-                    if (doorData != null)
-                    {
-                        Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] DoorFound");
-                        FindMovePositionsAndLookPosition(doorData, opening, out Vector3 doorHandleLook, out Vector3 movePosition);
-                        EDoorState desiredDoorState = opening ? EDoorState.Open : EDoorState.Shut;
-                        float startTime = Time.time;
-                        bool lookedAtHandle = false;
-                        bool interactionDone = false;
-                        float timeInteractionDone = 0;
-                        Vector3 startPosition = botPosition;
-                        bool pullOpenDoor = desiredDoorState == EDoorState.Open && DoorOpener.IsDoorPullOpen(doorData.Door, botPosition);
-
-                        while (true)
-                        {
-                            if (!CheckContinueMove())
-                            {
-                                Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish - move stopped");
-                                break;
-                            }
-                            if (Time.time - startTime > 5f)
-                            {
-                                Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish - too long");
-                                break;
-                            }
-                            if (interactionDone && Time.time - timeInteractionDone > 3f)
-                            {
-                                Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish - interacted 3 sec ago");
-                                break;
-                            }
-                            if (doorData.Door.DoorState == desiredDoorState)
-                            {
-                                Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish. door state changed");
-                                Bot.Steering.Unlock();
-                                break;
-                            }
-
-                            Bot.Mover.Prone.SetProne(false);
-                            SetSprint(false, "door");
-
-                            if (!lookedAtHandle) lookedAtHandle = Bot.Steering.IsLookingAtPoint(doorHandleLook, out _);
-                            if (lookedAtHandle)
-                            {
-                                DebugGizmos.DrawLine(Bot.Transform.WeaponData.WeaponRoot, doorHandleLook, Color.green, 0.05f, 1f / 60f, true);
-                                //Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] looking at handle. DoorState: [{doorData.Door.DoorState}] Desired State: [{desiredDoorState}]");
-                                if (!interactionDone)
-                                {
-                                    interactionDone = true;
-                                    timeInteractionDone = Time.time;
-                                    if (!Bot.DoorOpener.InteractWithDoor(doorData, Bot.Position, kicking))
-                                    {
-                                        Logger.LogError($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] failed to interact");
-                                        Bot.Steering.Unlock();
-                                        break;
-                                    }
-                                    Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Interacted");
-                                    if (kicking)
-                                    {
-                                        yield return new WaitForSeconds(2f);
-                                        Bot.Steering.Unlock();
-                                        break;
-                                    }
-                                }
-                                Bot.Steering.Unlock();
-                                if (pullOpenDoor) BackUpFromDoor(doorData);
-                                yield return null;
-                                continue;
-                            }
-                            Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Look To Handle. DoorState: [{doorData.Door.DoorState}] Desired State: [{desiredDoorState}]");
-                            MoveToInteract(doorData, doorHandleLook, movePosition);
-                            yield return null;
-                        }
-                        Bot.Steering.Unlock();
-                        //startTime = Time.time;
-                        //while (Time.time - startTime < 1f && (startPosition - Bot.Position).sqrMagnitude > 0.5f)
-                        //{
-                        //    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(startPosition - Bot.Position, startPosition, Bot.PlayerComponent);
-                        //    Bot.Steering.SteerByPriority(Bot.GoalEnemy, false, true);
-                        //    DebugGizmos.DrawLine(Bot.Position, startPosition, Color.green, 0.05f, 1f / 60f, true);
-                        //    yield return null;
-                        //}
-                        Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] door finish");
-                    }
-
-                    if (PausedRequested)
-                    {
-                        if (_unpauseTime < Time.time)
-                        {
-                            Logger.LogDebug($"[{Bot.name}]:[{Id}]: unpaused");
-                            UnPause();
-                        }
-                        else if (_pauseStartTime < Time.time)
-                        {
-                            Logger.LogDebug($"[{Bot.name}]:[{Id}]: paused");
-                            Bot.Steering.Unlock();
-                            Bot.Steering.SteerByPriority(null, true, true);
-                            SetSprint(false, "paused");
-                            _timeNotMoving = -1f;
-                            yield return null;
-                            continue;
-                        }
-                    }
-
-                    Enemy enemy = Bot.GoalEnemy;
-                    //if (!Bot.Transform.NavData.IsOnNavMesh)
-                    //{
-                    //    if (Time.time - Bot.Transform.NavData.TimeLastOnNavMesh > 2f)
-                    //    {
-                    //        PathRecalcRequested = true;
-                    //        Logger.LogDebug($"[{Bot.name}]:[{Id}]: off navmesh, recalc");
-                    //        yield return null;
-                    //        continue;
-                    //    }
-                    //    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(Bot.Transform.NavData.NavMeshPosition - Bot.Position, Bot.Transform.NavData.NavMeshPosition, Bot.PlayerComponent);
-                    //    SetSprint(false, "off navmesh");
-                    //    Bot.Steering.Unlock();
-                    //    Bot.Steering.SteerByPriority(enemy, false, true);
-                    //    Logger.LogDebug($"[{Bot.name}]:[{Id}]: off navmesh, trying to fix");
-                    //    _timeNotMoving = -1f;
-                    //    yield return null;
-                    //    continue;
-                    //}
-
-                    Util.StopVanillaMover(Bot.BotOwner.Mover);
-                    Bot.Mover.Prone.SetProne(!WantToSprint && Crawling);
-                    Util.DrawMoverDebug(BotPosition(), activeCorner.Position);
-                    HandleSprinting(enemy);
-
-                    //if (CheckStuck(canTryVault, activeCorner))
-                    //{
-                    //    yield return null;
-                    //    continue;
-                    //}
-
-                    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(activeCorner.Position - BotPosition(), Destination, Bot.PlayerComponent);
-                    SetPlayerSteering(activeCorner.Position, Bot, enemy);
-                    //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Tick");
-                    yield return null;
-                }
-
-                CompleteCorner(i);
-                //Logger.LogDebug($"[{Bot.name}]: Corner [{i}] Complete at time [{Time.time}]");
-            }
-            Stop(true, "complete");
-        }
-
         private Vector3 BotPosition()
         {
             var navData = Bot.Transform.NavData;
-            Vector3 botPosition = navData.IsOnNavMesh ? navData.NavMeshPosition : Bot.Transform.Position;
+            Vector3 botPosition = navData.IsOnNavMesh ? navData.Position : Bot.Transform.Position;
             return botPosition;
         }
 
@@ -1319,26 +975,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         private float _lastCheckStuckTime;
         private CornerMoveData _lastCheckedMoveData = new();
 
-        private void BackUpFromDoor(DoorData doorData)
-        {
-            Vector3 doorPoint = doorData.MoveLocations.DoorBackupPoint;
-            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(doorPoint - Bot.Position, doorPoint, Bot.PlayerComponent);
-            DebugGizmos.DrawLine(Bot.Position + Vector3.up, doorPoint + Vector3.up, Color.yellow, 0.1f, 0.02f, true);
-            DebugGizmos.DrawSphere(doorPoint, 0.15f, Color.yellow, 0.02f);
-            Bot.Steering.SteerByPriority(Bot.GoalEnemy, false, true);
-            //Logger.LogDebug($"[{Bot.name}]:[{Id}]:[{doorData.Link.Id}] Backing up from swing open door");
-        }
-
-        private void MoveToInteract(DoorData doorData, Vector3 doorHandleLook, Vector3 movePosition)
-        {
-            DebugGizmos.DrawLine(Bot.Transform.WeaponData.WeaponRoot, doorHandleLook, Color.magenta, 0.05f, 1f / 60f, true);
-            DebugGizmos.DrawLine(Bot.Position + Vector3.up, movePosition + Vector3.up, Color.magenta, 0.1f, 0.02f, true);
-            DebugGizmos.DrawSphere(movePosition, 0.15f, Color.magenta, 0.02f, "door move pos");
-            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(movePosition - Bot.Position, movePosition, Bot.PlayerComponent);
-            Bot.Steering.Lock();
-            Bot.Steering.LookToPoint(doorHandleLook);
-        }
-
         private float ReachDistance()
         {
             if (OnLastCorner) return DestinationReachDistance;
@@ -1387,32 +1023,12 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Logger.LogDebug($"[{Bot.name}]:[{Id}]: Bot Arrived");
                 return false;
             }
-            if ((Destination - Bot.Transform.NavData.NavMeshPosition).sqrMagnitude < reachDist * reachDist)
+            if ((Destination - Bot.Transform.NavData.Position).sqrMagnitude < reachDist * reachDist)
             {
                 Logger.LogDebug($"[{Bot.name}]:[{Id}]: Bot Arrived");
                 return false;
             }
             return true;
-        }
-
-        private void FindMovePositionsAndLookPosition(DoorData doorData, bool opening, out Vector3 doorHandleLook, out Vector3 movePosition)
-        {
-            var locations = doorData.MoveLocations;
-            Vector3 doorHandleFloor = opening ? locations.DoorHandleOpenFloorPoint : locations.DoorHandleCloseFloorPoint;
-            doorHandleLook = opening ? locations.DoorHandleOpenLookPoint : locations.DoorHandleCloseLookPoint;
-            movePosition = doorHandleFloor + (((Bot.Position - doorHandleFloor).normalized) * 1.0f);
-            if (NavMesh.SamplePosition(movePosition, out var hit, 1f, -1))
-            {
-                movePosition = hit.position;
-            }
-            else if (NavMesh.SamplePosition(doorHandleFloor, out hit, 1f, -1))
-            {
-                movePosition = hit.position;
-            }
-            else
-            {
-                movePosition = doorHandleFloor;
-            }
         }
 
         private void SetSprint(bool value, string reason)
@@ -1461,20 +1077,17 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (!WantToSprint)
             {
-                bot.Steering.Unlock();
                 return;
             }
             if (!_shallSprintNow &&
                 CurrentSprintStatus != EBotSprintStatus.Turning &&
                 CurrentSprintStatus != EBotSprintStatus.Running)
             {
-                bot.Steering.Unlock();
                 if (bot.Steering.SteerByPriority(enemy, false, true))
                 {
                     return;
                 }
             }
-            bot.Steering.Lock();
             bot.Steering.LookToFloorPoint(corner);
         }
 
@@ -1639,42 +1252,6 @@ namespace SAIN.SAINComponent.Classes.Mover
                 lookDirection.y = 0;
                 direction.y = 0;
                 return Vector3.Angle(lookDirection.normalized, direction.normalized);
-            }
-
-            public static DoorData SelectDoor(Vector3 botPosition, DoorOpener doorOpener, Vector3 cornerPosition, out bool opening, out bool kicking)
-            {
-                doorOpener.DoorFinder.UpdateDoors(botPosition, cornerPosition);
-                List<DoorData> doors = doorOpener.FindDoorsToInteractWith(botPosition);
-                Vector3 cornerDir = cornerPosition - botPosition;
-                foreach (DoorData data in doors)
-                {
-                    Collider doorCollider = data?.Door?.Collider;
-                    if (doorCollider == null) continue;
-                    Ray ray = new() {
-                        origin = botPosition + Vector3.up,
-                        direction = cornerDir,
-                    };
-                    if (doorCollider.Raycast(ray, out RaycastHit hit, 1f))
-                    {
-                        Logger.LogDebug($"hit door");
-                        DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
-                        if (data.Door.DoorState == EDoorState.Open)
-                        {
-                            opening = false;
-                            kicking = false;
-                            return data;
-                        }
-                        if (data.Door.DoorState == EDoorState.Shut)
-                        {
-                            opening = true;
-                            kicking = false;
-                            return data;
-                        }
-                    }
-                }
-                opening = false;
-                kicking = false;
-                return null;
             }
 
             public static float ReachDist(bool sprinting)

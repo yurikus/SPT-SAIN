@@ -131,7 +131,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool BackUpFromEnemy(Enemy Enemy)
         {
             if (Enemy == null) return false;
-            if (Bot.Transform.NavData.PlayerNavMeshStatus != SAIN.Classes.Transform.EPlayerNavMeshDistance.OnNavMesh) return false;
+            if (Bot.Transform.NavData.Status != SAIN.Classes.Transform.EPlayerNavMeshDistance.OnNavMesh) return false;
             if (findStrafePoint(out Vector3 backupPoint, Enemy))
             {
                 return true;
@@ -172,7 +172,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Vector3? target = findBackupTarget(Enemy);
             if (target != null)
             {
-                Vector3 BotPosition = Bot.Transform.NavData.NavMeshPosition;
+                Vector3 BotPosition = Bot.Transform.NavData.Position;
                 Vector3 targetDirection = target.Value - BotPosition;
                 targetDirection.y = 0;
                 Vector3 directionAwayFromTargetNormal = -Vector.NormalizeFastSelf(targetDirection);
@@ -205,7 +205,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Vector3? LastKnown = Enemy.LastKnownPosition;
                 if (LastKnown != null)
                 {
-                    Vector3 botNavPos = Bot.Transform.NavData.NavMeshPosition;
+                    Vector3 botNavPos = Bot.Transform.NavData.Position;
                     Vector3 direction = (botNavPos - LastKnown.Value).normalized;
                     Vector3 random = Random.onUnitSphere * Random.Range(1.25f, 2f);
                     random.y = 0f;

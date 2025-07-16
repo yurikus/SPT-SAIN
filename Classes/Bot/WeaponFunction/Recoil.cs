@@ -13,11 +13,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
     {
         public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
         private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
-        private static float _recoilDecayCoef => SAINPlugin.LoadedPreset.GlobalSettings.Shoot.RECOIL_DECAY_COEF;
+        private static float _recoilDecayCoef => SAINPlugin.LoadedPreset.GlobalSettings.Shoot.BOT_RECOIL_DECAY_COEF;
         private bool _recoilFinished;
         private bool _armsInjured => Bot.Medical.HitReaction.ArmsInjured;
-        private float RecoilMultiplier => Mathf.Round(Bot.Info.FileSettings.Shoot.RecoilMultiplier * GlobalSettings.Shoot.RecoilMultiplier * 100f) / 100f;
-
+        private float RecoilMultiplier => Mathf.Round(Bot.Info.FileSettings.Shoot.RecoilMultiplier * GlobalSettings.Shoot.BOT_RECOIL_COEF * 100f) / 100f;
+ 
         public Recoil(BotComponent sain) : base(sain)
         {
         }
@@ -81,14 +81,14 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
             
             _recoilFinished = false;
-            float addRecoil = SAINPlugin.LoadedPreset.GlobalSettings.Shoot.AddRecoil;
+            float addRecoil = SAINPlugin.LoadedPreset.GlobalSettings.Shoot.BOT_RECOIL_ADD;
             float recoilMod = calcRecoilMod();
             float recoilTotal = weapon.RecoilTotal;
             float recoilNum = calcRecoilNum(recoilTotal) + addRecoil;
             float calcdRecoil = recoilNum * recoilMod;
 
-            _currentRecoilVertAngle += Random.Range(calcdRecoil / 2f, calcdRecoil);// * randomSign();
-            _currentRecoilHorizAngle += Random.Range(calcdRecoil / 2f, calcdRecoil) * randomSign();
+            _currentRecoilVertAngle += Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
+            _currentRecoilHorizAngle += Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
 
             if (_debugRecoilLogs)
                 Logger.LogDebug($"Recoil! New Recoil: [{_currentRecoilVertAngle}:{_currentRecoilHorizAngle}] " +
@@ -150,10 +150,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private float calcRecoilNum(float recoilVal)
         {
-            float result = recoilVal / _shootSettings.RECOIL_BASELINE;
+            float result = recoilVal / _shootSettings.BOT_RECOIL_BASELINE;
             if (ModDetection.RealismLoaded)
             {
-                result = recoilVal / _shootSettings.RECOIL_BASELINE_REALISM;
+                result = recoilVal / _shootSettings.BOT_RECOIL_BASELINE_REALISM;
             }
             result *= shootModClamped();
             result *= UnityEngine.Random.Range(0.8f, 1.2f);

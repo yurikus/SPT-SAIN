@@ -27,7 +27,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             CoverPoint coverInUse = CoverInUse;
             if (coverInUse != null)
             {
-                Bot.Cover.DuckInCover(Enemy);
+                Bot.Cover.TrySetProneConditional(Enemy);
                 checkSetProne();
                 checkSetLean();
             }

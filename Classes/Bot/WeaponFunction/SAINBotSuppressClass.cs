@@ -30,7 +30,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public override void Init()
         {
-            Bot.EnemyController.Events.OnEnemyRemoved += clearLastSuppEnemy;
+            Bot.EnemyController.Events.OnEnemyRemoved += EnemyRemoved;
             base.Init();
         }
 
@@ -58,7 +58,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public override void Dispose()
         {
-            Bot.EnemyController.Events.OnEnemyRemoved -= clearLastSuppEnemy;
+            Bot.EnemyController.Events.OnEnemyRemoved -= EnemyRemoved;
             base.Dispose();
         }
 
@@ -344,14 +344,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return Mathf.Lerp(value, 0f, resistance);
         }
 
-        private void clearLastSuppEnemy(string profileId, Enemy enemy)
+        private void EnemyRemoved(string profileId, Enemy enemy)
         {
-            if (LastSuppressByEnemy != null && LastSuppressByEnemy.IsSame(enemy))
+            if (LastSuppressByEnemy == enemy)
             {
                 LastSuppressByEnemy = null;
-            }
-            if (EnemyBeingSuppressed != null && EnemyBeingSuppressed == enemy)
-            {
                 ResetSuppressing();
             }
         }

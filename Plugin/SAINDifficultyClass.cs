@@ -104,7 +104,7 @@ namespace SAIN.Plugin
             var preset = new SAINPresetClass(SAINDifficulty.easy);
 
             var global = preset.GlobalSettings;
-            global.Shoot.RecoilMultiplier = 3f;
+            global.Shoot.BOT_RECOIL_COEF = 3f;
             global.Difficulty.ScatteringCoef = 5f;
             global.Difficulty.PrecisionSpeedCoef = 2f;
             global.Difficulty.AccuracySpeedCoef = 2f;
@@ -195,7 +195,7 @@ namespace SAIN.Plugin
             var preset = new SAINPresetClass(SAINDifficulty.lesshard);
 
             var global = preset.GlobalSettings;
-            global.Shoot.RecoilMultiplier = 1.6f;
+            global.Shoot.BOT_RECOIL_COEF = 1.6f;
             global.Difficulty.ScatteringCoef = 1.25f;
             global.Difficulty.PrecisionSpeedCoef = 1.25f;
             global.Difficulty.AccuracySpeedCoef = 1.25f;
@@ -447,7 +447,7 @@ namespace SAIN.Plugin
             var preset = new SAINPresetClass(SAINDifficulty.veryhard);
 
             var global = preset.GlobalSettings;
-            global.Shoot.RecoilMultiplier = 0.66f;
+            global.Shoot.BOT_RECOIL_COEF = 0.66f;
             global.Difficulty.ScatteringCoef = 0.85f;
             global.Aiming.AimCenterMassGlobal = false;
             global.Difficulty.VisibleDistCoef = 1.33f;
@@ -525,7 +525,7 @@ namespace SAIN.Plugin
             var preset = new SAINPresetClass(SAINDifficulty.deathwish);
 
             var global = preset.GlobalSettings;
-            global.Shoot.RecoilMultiplier = 0.25f;
+            global.Shoot.BOT_RECOIL_COEF = 0.25f;
 
             global.Difficulty.ScatteringCoef = 0.01f;
             global.Difficulty.VisibleDistCoef = 3f;

@@ -5,7 +5,7 @@ namespace SAIN.Layers
 {
     public abstract class CombatAction : BotAction
     {
-        protected ShootDeciderClass Shoot => Bot.Shoot;
+        protected SAINShootData Shoot => Bot.Shoot;
 
         public CombatAction(BotOwner botOwner, string name) : base(botOwner, name)
         {

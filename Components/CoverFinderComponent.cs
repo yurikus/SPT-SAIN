@@ -15,7 +15,6 @@ using System.Text;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace SAIN.Components.CoverFinder
 {
@@ -23,10 +22,10 @@ namespace SAIN.Components.CoverFinder
     {
         private const int COLLIDER_ARRAY_SIZE = 300;
 
-        private const int TARGET_COVER_COUNT_AI = 4;
-        private const int TARGET_COVER_COUNT_AI_PERF_MODE = 2;
-        private const int TARGET_COVER_COUNT_HUMAN = 8;
-        private const int TARGET_COVER_COUNT_HUMAN_PERF_MODE = 5;
+        private const int TARGET_COVER_COUNT_AI = 20;
+        private const int TARGET_COVER_COUNT_AI_PERF_MODE = 4;
+        private const int TARGET_COVER_COUNT_HUMAN = 20;
+        private const int TARGET_COVER_COUNT_HUMAN_PERF_MODE = 6;
 
         private const float UPDATE_TARGET_FREQUENCY = 0.25f;
         private const float SAMPLE_POINT_ORIGIN_RANGE = 1f;
@@ -52,40 +51,11 @@ namespace SAIN.Components.CoverFinder
         public ECoverFinderStatus CurrentStatus { get; private set; }
 
         public TargetData TargetData {
-            get
-            {
+            get {
                 return _targetData;
             }
-            private set
-            {
-                var oldEnemy = _targetData?.TargetEnemy;
-
-                if (value == null)
-                {
-                    if (_targetData == null)
-                        return;
-
-                    subOrUnsub(false, oldEnemy);
-                    _targetData = null;
-                    return;
-                }
-
-                // we previously had no target, subscribe and assign the value
-                var newEnemy = value.TargetEnemy;
-                if (_targetData == null)
-                {
-                    _targetData = value;
-                    subOrUnsub(true, newEnemy);
-                    return;
-                }
-
-                // we have an old target, check if the new target is the same or not
-                if (oldEnemy.IsDifferent(newEnemy))
-                {
-                    _targetData = value;
-                    subOrUnsub(false, oldEnemy);
-                    subOrUnsub(true, newEnemy);
-                }
+            private set {
+                _targetData = value;
             }
         }
 
@@ -169,44 +139,23 @@ namespace SAIN.Components.CoverFinder
 
         private void updateTarget()
         {
-            Enemy targetEnemy = Bot.GoalEnemy ?? Bot.GoalEnemy;
+            Enemy targetEnemy = Bot.GoalEnemy;
             if (targetEnemy == null)
             {
                 TargetData = null;
                 return;
             }
-            if (_updateTargetTime < Time.time && targetEnemy.LastKnownPosition != null)
+            if (TargetData == null || TargetData.TargetEnemy != targetEnemy)
             {
-                CalcTargetPoint(targetEnemy, targetEnemy.LastKnownPosition.Value);
+                TargetData = new TargetData(targetEnemy, Bot);
             }
+            TargetData.Update();
         }
 
         public void ClearTarget()
         {
             TargetData = null;
             updateTarget();
-        }
-
-        public void CalcTargetPoint(Enemy enemy, Vector3 target)
-        {
-            _updateTargetTime = Time.time + UPDATE_TARGET_FREQUENCY;
-
-            if (NavMesh.SamplePosition(target, out var targetHit, SAMPLE_POINT_TARGET_RANGE, -1))
-            {
-                target = targetHit.position;
-            }
-            Vector3 botPosition = Bot.Position;
-            if (Bot.Transform.NavData.PlayerNavMeshStatus == Classes.Transform.EPlayerNavMeshDistance.OnNavMesh)
-            {
-                botPosition = Bot.Transform.NavData.NavMeshPosition;
-            }
-
-            if (TargetData == null || TargetData.TargetEnemy != enemy)
-            {
-                TargetData = new TargetData(enemy);
-            }
-
-            TargetData.Update(target, botPosition);
         }
 
         private int targetCoverCount(TargetData targetData)
@@ -218,15 +167,6 @@ namespace SAIN.Components.CoverFinder
             else
                 targetCount = isAI ? TARGET_COVER_COUNT_AI : TARGET_COVER_COUNT_HUMAN;
             return targetCount;
-        }
-
-        private void targetEnemyPosUpdated(Enemy enemy, EnemyPlace place)
-        {
-            if (place == null || enemy == null)
-            {
-                return;
-            }
-            CalcTargetPoint(enemy, place.Position);
         }
 
         private void botInStandBy(bool value)
@@ -286,8 +226,6 @@ namespace SAIN.Components.CoverFinder
                 _recheckCoverPointsCoroutine = null;
 
                 CoverPoints.Clear();
-
-                Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
 
                 FallBackPoint = null;
                 ClearTarget();
@@ -479,8 +417,6 @@ namespace SAIN.Components.CoverFinder
             return false;
         }
 
-
-
         private IEnumerator CheckDistanceToAllColliders(Collider[] colliders)
         {
             if (colliders == null || colliders.Length == 0)
@@ -522,7 +458,7 @@ namespace SAIN.Components.CoverFinder
                 var outputData = _coverJob.Output;
                 StringBuilder stringBuilder = new();
                 stringBuilder.AppendLine($"[{BotOwner?.name}] Completed Cover Job Count: [{count}]");
-                for (int i = 0;i < count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     ColliderCoverData coverData = outputData[i];
                     GameWorldComponent.Instance.CoverManager.CreateCover(coverData.Collider);
@@ -674,7 +610,7 @@ namespace SAIN.Components.CoverFinder
                 return false;
             }
             // if we are checking against the same enemy, and the delay for updating the coverpoint hasn't elapsed, this point is still good.
-            if (!coverPoint.ShallUpdate(targetData.TargetProfileID))
+            if (!coverPoint.ShallUpdate(targetData.TargetEnemy.EnemyProfileId))
             {
                 reason = "notTimeToUpdate";
                 return true;
@@ -691,16 +627,6 @@ namespace SAIN.Components.CoverFinder
                 return false;
             }
             return true;
-        }
-
-        private void subOrUnsub(bool value, Enemy enemy)
-        {
-            if (value)
-            {
-                enemy.Events.OnPositionUpdated += targetEnemyPosUpdated;
-                return;
-            }
-            enemy.Events.OnPositionUpdated -= targetEnemyPosUpdated;
         }
 
         private void clearSpotted()

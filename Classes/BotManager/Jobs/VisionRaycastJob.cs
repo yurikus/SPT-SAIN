@@ -1,6 +1,7 @@
-﻿using SAIN.Components.BotController;
+﻿using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Models.Structs;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections;
 using System.Collections.Generic;
@@ -160,6 +161,39 @@ namespace SAIN.Components
                     hits++;
                     part.SetLineOfSight(castPoint, colliderType, raycastHits[hits], ERaycastCheck.Shoot, time);
                     hits++;
+                }
+            }
+            if (DebugSettings.Instance.Gizmos.DrawLineOfSightGizmos)
+            {
+                hits = 0;
+
+                for (int i = 0; i < enemyCount; i++)
+                {
+                    var enemy = _enemies[i];
+                    var parts = enemy.Vision.EnemyParts.PartsArray;
+
+                    for (int j = 0; j < partCount; j++)
+                    {
+                        var part = parts[j];
+                        EBodyPartColliderType colliderType = _colliderTypes[colliderTypeCount];
+                        Vector3 castPoint = _castPoints[colliderTypeCount];
+                        colliderTypeCount++;
+
+                        part.SetLineOfSight(castPoint, colliderType, raycastHits[hits], ERaycastCheck.LineofSight, time);
+                        if (raycastHits[hits].collider == null)
+                        {
+                            DebugGizmos.DrawLine(_commands[hits].from, _commands[hits].from + _commands[hits].direction, Color.red, 0.025f, 0.02f);
+                        }
+                        hits++;
+                        //if (raycastHits[hits].collider == null)
+                        //{
+                        //}
+                        hits++;
+                        //if (raycastHits[hits].collider == null)
+                        //{
+                        //}
+                        hits++;
+                    }
                 }
             }
         }

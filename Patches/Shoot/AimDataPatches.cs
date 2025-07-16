@@ -1,4 +1,5 @@
 ﻿using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using RootMotion.FinalIK;
 
@@ -20,13 +21,16 @@ namespace SAIN.Patches.Shoot.Aim
 {
     internal class WeaponMoAModificationPatch : ModulePatch
     {
+        private const float MIN_START_MOA_AI = 4f;
+        private const float MOA_FULLAUTO_COEF = 2f;
+
         protected override MethodBase GetTargetMethod()
         {
             return AccessTools.Method(typeof(Player.FirearmController), "method_54", null, null);
         }
 
         [PatchPostfix]
-        public static void Patch(Player ____player, ref float __result)
+        public static void Patch(Player.FirearmController __instance, Player ____player, ref float __result)
         {
             // this method was lost due to a VS crash, so I grabbed from a decompiled build
             BotOwner botOwner;
@@ -42,8 +46,12 @@ namespace SAIN.Patches.Shoot.Aim
             BotOwner botOwner2 = botOwner;
             if (botOwner2 != null)
             {
-                __result = Mathf.Min(__result, 4f);
+                __result = Mathf.Min(__result, MIN_START_MOA_AI);
                 __result *= botOwner2.Settings.Current.CurrentScattering;
+                if (__instance.Weapon?.FireMode?.FireMode == EFT.InventoryLogic.Weapon.EFireMode.fullauto)
+                {
+                    __result *= MOA_FULLAUTO_COEF;
+                }
                 BotOwner botOwner3;
                 if (____player == null)
                 {
@@ -62,6 +70,88 @@ namespace SAIN.Patches.Shoot.Aim
                         __result /= lastShotEnemy.Aim.AimAndScatterMultiplier;
                     }
                 }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// This method is usually called by NodeUpdate, we want to remove a few function calls from the original method.
+    /// </summary>
+    internal class BotAimSteerPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotAimingClass), nameof(BotAimingClass.method_11));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotAimingClass __instance, Vector3 dir)
+        {
+            if (SAINEnableClass.IsBotExcluded(__instance.botOwner_0)) return true;
+            __instance.botOwner_0.Steering.LookToDirection(dir, float.MaxValue);
+            return false;
+        }
+    }
+
+    internal class HardAimDisablePatch1 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotAimingClass), nameof(BotAimingClass.LoseTarget));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotAimingClass __instance)
+        {
+            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
+            {
+                __instance.Status = AimStatus.NoTarget;
+                return false;
+            }
+            return true;
+        }
+    }
+
+    internal class HardAimDisablePatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.PropertySetter(typeof(BotAimingClass), nameof(BotAimingClass.Status));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotAimingClass __instance, AimStatus value)
+        {
+            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
+            {
+                if (__instance.aimStatus_0 != value && __instance.botOwner_0.BotState == EBotState.Active)
+                {
+                    __instance.aimStatus_0 = value;
+                    if (__instance.aimStatus_0 == AimStatus.AimComplete)
+                    {
+                        __instance.botOwner_0.BotPersonalStats.Aim(__instance.EndTargetPoint, __instance.float_7);
+                    }
+                }
+                return false;
+            }
+            return true;
+        }
+    }
+
+    internal class DisableMalfunctionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.GetMalfunctionState));
+        }
+
+        [PatchPostfix]
+        public static void Patch(Player ____player, ref Weapon.EMalfunctionState __result)
+        {
+            if (____player.IsAI && __result != Weapon.EMalfunctionState.None)
+            {
+                SAIN.Logger.LogError(__result);
+                __result = Weapon.EMalfunctionState.None;
             }
         }
     }
@@ -429,10 +519,8 @@ namespace SAIN.Patches.Shoot.Aim
         public static bool Patch(BotSteering __instance)
         {
             BotOwner botOwner = __instance.botOwner_0;
-            if (!GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent))
-            {
-                return true;
-            }
+            if (!GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent)) return true;
+            if (playerComponent.BotComponent?.SAINLayersActive == true) return false;
 
             Vector3 newTargetLookDirection;
             if (botOwner.Mover.Sprinting && botOwner.Mover.HasPathAndNoComplete)
@@ -478,15 +566,8 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 newTargetLookDirection.y = 0;
             }
-            playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection);
-            __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
-            if (playerComponent.BotComponent != null)
-            {
-                __instance._lookDirection = playerComponent.BotComponent.Info.WeaponInfo.Recoil.ApplyRecoil(__instance._lookDirection);
-            }
-            __instance.Speed = float.MaxValue;
-            __instance.SetXAngle(float.MaxValue);
-            __instance.SetYByDir(__instance._lookDirection);
+            playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection, botOwner, playerComponent.BotComponent);
+            __instance._lookDirection = playerComponent.CharacterController.ControlLookDirection.Current;
             return false;
         }
 

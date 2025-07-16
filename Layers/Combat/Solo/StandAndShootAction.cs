@@ -82,14 +82,14 @@ namespace SAIN.Layers.Combat.Solo
                 rotated.y = 0;
                 rotated *= 6f;
                 rotated += Random.insideUnitSphere;
-                if (NavMesh.SamplePosition(navData.NavMeshPosition + rotated, out var hit, 3f, -1))
+                if (NavMesh.SamplePosition(navData.Position + rotated, out var hit, 3f, -1))
                 {
                     movePosition = hit.position;
-                    if (NavMesh.Raycast(navData.NavMeshPosition, movePosition, out var rayHit, -1))
+                    if (NavMesh.Raycast(navData.Position, movePosition, out var rayHit, -1))
                     {
                         movePosition = rayHit.position;
                     }
-                    if ((movePosition - navData.NavMeshPosition).sqrMagnitude > 0.75f)
+                    if ((movePosition - navData.Position).sqrMagnitude > 0.75f)
                     {
                         return true;
                     }

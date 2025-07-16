@@ -58,7 +58,7 @@ namespace SAIN.Patches.Movement
             return false;
         }
     }
-    
+
     /// <summary>
     /// for debug purposes
     /// </summary>
@@ -76,9 +76,9 @@ namespace SAIN.Patches.Movement
             Logger.LogWarning("stop sprinting");
             if (target == __instance.bool_2) return true;
             IPlayer player = __instance.iobserverToPlayerBridge_0.iPlayer;
-            if (player?.IsAI == true && 
-                __instance.bool_2 && 
-                GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent comp) && 
+            if (player?.IsAI == true &&
+                __instance.bool_2 &&
+                GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent comp) &&
                 comp.BotComponent?.Mover.Moving == true)
             {
                 SAIN.Logger.LogError("WHO DID IT");
@@ -245,20 +245,6 @@ namespace SAIN.Patches.Movement
         }
     }
 
-    public class GlobalLookPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotGlobalLookData), nameof(BotGlobalLookData.Update));
-        }
-
-        [PatchPostfix]
-        public static void PatchPrefix(BotGlobalLookData __instance)
-        {
-            __instance.SHOOT_FROM_EYES = false;
-        }
-    }
-
     public class GlobalShootSettingsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -269,7 +255,7 @@ namespace SAIN.Patches.Movement
         [PatchPostfix]
         public static void PatchPrefix(BotGlobalShootData __instance)
         {
-            __instance.CAN_STOP_SHOOT_CAUSE_ANIMATOR = false;
+            //__instance.CAN_STOP_SHOOT_CAUSE_ANIMATOR = true;
             __instance.MAX_DIST_COEF = 100f;
         }
     }
@@ -281,27 +267,11 @@ namespace SAIN.Patches.Movement
             return AccessTools.Method(typeof(ShootData), nameof(ShootData.method_1));
         }
 
-        [PatchPostfix]
-        public static bool PatchPostfix(EPlayerState nextstate, ShootData __instance)
+        [PatchPrefix]
+        public static bool PatchPostfix(ShootData __instance)
         {
-            switch (nextstate)
-            {
-                case EPlayerState.Jump:
-                case EPlayerState.FallDown:
-                case EPlayerState.Pickup:
-                case EPlayerState.Open:
-                case EPlayerState.Close:
-                case EPlayerState.Unlock:
-                case EPlayerState.DoorInteraction:
-                case EPlayerState.Prone2Stand:
-                case EPlayerState.Transit2Prone:
-                    __instance.CanShootByState = true;
-                    return false;
-
-                default:
-                    break;
-            }
-            return true;
+            __instance.CanShootByState = true;
+            return false;
         }
     }
 
@@ -459,11 +429,8 @@ namespace SAIN.Patches.Movement
             }
 
             // Copy Pasted from original EFT code, there is a check to not enable weight limits for AI
-            var stamina = Singleton<BackendConfigSettingsClass>.Instance.Stamina;
-            float d = ___iobserverToPlayerBridge_0.Skills.CarryingWeightRelativeModifier * ___iobserverToPlayerBridge_0.iPlayer.HealthController.CarryingWeightRelativeModifier;
-            Vector2 b = new Vector2(___iobserverToPlayerBridge_0.iPlayer.HealthController.CarryingWeightAbsoluteModifier, ___iobserverToPlayerBridge_0.iPlayer.HealthController.CarryingWeightAbsoluteModifier);
             BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>.Instance.Inertia;
-            Vector3 b2 = new Vector3(inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, 0f);
+            Vector3 b2 = new(inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, 0f);
             __instance.BaseInertiaLimits = inertia.InertiaLimits + b2;
             //__instance.WalkOverweightLimits = stamina.WalkOverweightLimits * d + b;
             //__instance.BaseOverweightLimits = stamina.BaseOverweightLimits * d + b;

@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
@@ -111,19 +112,13 @@ namespace SAIN.SAINComponent.Classes.Mover
             var pathFollower = Bot.Mover;
             if (pathFollower.Moving)
             {
-                LookToPoint(pathFollower.ActivePath.GetCurrentCorner().Position);
+                LookToFloorPoint(pathFollower.ActivePath.GetCurrentCorner().Position);
                 return true;
             }
             if (BotOwner?.Mover?.HasPathAndNoComplete == true)
             {
-                Vector3 CurrentCorner = BotOwner.Mover.CurrentCornerPoint;
-                Vector3 WeaponRoot = BotOwner.WeaponRoot.position;
-                Vector3 Dir = CurrentCorner + WeaponRootOffset - WeaponRoot;
-                if (Dir.sqrMagnitude > 0.25f * 0.25f)
-                {
-                    BotOwner.Steering?.LookToDirection(Dir);
-                    return true;
-                }
+                LookToFloorPoint(BotOwner.Mover.CurrentCornerPoint);
+                return true;
             }
             return false;
         }
@@ -147,8 +142,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void LookToDirection(Vector3 direction, bool flat = false)
         {
+            if (SteeringLocked)
+            {
+                return;
+            }
             if (flat) direction.y = 0;
-            BotOwner.Steering.LookToDirection(direction.normalized, float.MaxValue);
+            PlayerComponent.CharacterController.SetTargetLookDirection(direction, BotOwner, Bot);
         }
 
         public void LookToEnemy(Enemy enemy)
@@ -249,17 +248,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             return dotResult >= dotProductThreshold;
         }
 
-        internal void Lock()
-        {
-            SteeringLocked = true;
-        }
-
-        internal void Unlock()
-        {
-            SteeringLocked = false;
-        }
-
-        public bool SteeringLocked { get; private set; }
+        public bool SteeringLocked => Bot.Mover.ActivePath?.IsSteeringLocked == true;
 
         public HeardSoundSteeringClass HeardSoundSteering { get; }
         private readonly RandomLookClass _randomLook;

@@ -67,6 +67,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public bool SetPoseToCover(Enemy enemy)
         {
+            if (enemy == null)
+            {
+                return false;
+            }
             if (!Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE)
             {
                 return false;

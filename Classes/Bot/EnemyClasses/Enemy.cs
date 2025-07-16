@@ -19,8 +19,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         ShallDogFight,
     }
 
-    public class Enemy : BotBase
+    public class Enemy : BotBase, ISPlayer
     {
+        public Vector3 NavMeshPosition => EnemyTransform.NavData.Position;
+
         public override void ManualUpdate()
         {
             CalcFrequencyCoef();
@@ -62,6 +64,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool IsShooter()
         {
             return !IsZombie && EnemyPlayer.HandsController is Player.FirearmController;
+        }
+
+        public bool IsSamePlayer(string profileId)
+        {
+            return EnemyProfileId == profileId;
         }
 
         public EnemyEvents Events { get; }
@@ -471,6 +478,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void UpdateLastSeenPosition(Vector3 position)
         {
             var place = KnownPlaces.UpdateSeenPlace(position);
+            if (place == null)
+            {
+                Logger.LogError($"Failed to update last seen position for {EnemyName} at {position}");
+                return;
+            }
             Bot.Squad.SquadInfo?.ReportEnemyPosition(this, place, true);
         }
 

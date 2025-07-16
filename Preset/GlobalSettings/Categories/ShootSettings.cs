@@ -16,21 +16,21 @@ namespace SAIN.Preset.GlobalSettings
         [Description("Higher = more recoil. Modifies SAIN's recoil scatter feature. 1.5 = 1.5x more recoilfrom a single gunshot")]
         [Category("Bot Recoil")]
         [MinMax(0.01f, 3f, 100f)]
-        public float RecoilMultiplier = 1f;
+        public float BOT_RECOIL_COEF = 0.5f;
 
         [Name("Add or Subtract Recoil")]
         [Description("Linearly add or subtract from the final recoil result")]
         [Category("Bot Recoil")]
         [MinMax(-20f, 20f, 100f)]
         [Advanced]
-        public float AddRecoil = 5f;
+        public float BOT_RECOIL_ADD = 0f;
 
         [Name("Recoil Decay Coefficient")]
         [Description("Controls the speed that bots will recover from a weapon's recoil. Higher = faster decay")]
         [Category("Bot Recoil")]
-        [MinMax(0.01f, 3f, 100f)]
+        [MinMax(0.01f, 1f, 100f)]
         [Advanced]
-        public float RECOIL_DECAY_COEF = 0.2f;
+        public float BOT_RECOIL_DECAY_COEF = 0.3f;
 
         [Name("Bot Weapon Recoil Baseline")]
         [Description("A Bot's weapon's recoil will get divided by this to calculate how much to rotate their view on each shot, so, for example, " +
@@ -39,28 +39,14 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Bot Recoil")]
         [MinMax(25f, 300f, 1f)]
         [Advanced]
-        public float RECOIL_BASELINE = 100;
+        public float BOT_RECOIL_BASELINE = 100;
 
         [Name("Bot Weapon Recoil Baseline - Realism Mod")]
         [Description("A Bot's weapon's recoil will get divided by this to calculate how much to rotate their view on each shot. This value is used if Realism mod is on to reflect different recoil numbers.")]
         [Category("Bot Recoil")]
         [MinMax(25f, 300f, 1f)]
         [Advanced]
-        public float RECOIL_BASELINE_REALISM = 125f;
-
-        [Name("Recoil Randomization - Min")]
-        [Description("Randomizes Bot Recoil. this is the min value, so the number that gets picked to multiply a bot's recoil by will be randomly picked between this and the Max")]
-        [Category("Bot Recoil")]
-        [Advanced]
-        [MinMax(0.0f, 2f, 100f)]
-        public float RECOIL_RANDOM_MIN = 0.8f;
-
-        [Name("Recoil Randomization - Max")]
-        [Description("Randomizes Bot Recoil. this is the max value, so the number that gets picked to multiply a bot's recoil by will be randomly picked between this and the min")]
-        [Category("Bot Recoil")]
-        [Advanced]
-        [MinMax(0.0f, 2f, 100f)]
-        public float RECOIL_RANDOM_MAX = 1.2f;
+        public float BOT_RECOIL_BASELINE_REALISM = 125f;
 
         [Name("Ammo Shootability")]
         [Description(
@@ -271,16 +257,16 @@ namespace SAIN.Preset.GlobalSettings
         [DefaultDictionary(nameof(WeaponPerMeterDefaults))]
         public Dictionary<EWeaponClass, float> WeaponPerMeter = new()
         {
-            { EWeaponClass.Default, 120f },
-            { EWeaponClass.assaultCarbine, 140 },
-            { EWeaponClass.assaultRifle, 130 },
-            { EWeaponClass.machinegun, 135 },
+            { EWeaponClass.Default, 130f },
+            { EWeaponClass.assaultCarbine, 150 },
+            { EWeaponClass.assaultRifle, 140 },
+            { EWeaponClass.machinegun, 180 },
             { EWeaponClass.smg, 160 },
-            { EWeaponClass.pistol, 65 },
-            { EWeaponClass.marksmanRifle, 75 },
-            { EWeaponClass.sniperRifle, 50 },
-            { EWeaponClass.shotgun, 60 },
-            { EWeaponClass.grenadeLauncher, 75 },
+            { EWeaponClass.pistol, 75 },
+            { EWeaponClass.marksmanRifle, 85 },
+            { EWeaponClass.sniperRifle, 60 },
+            { EWeaponClass.shotgun, 80 },
+            { EWeaponClass.grenadeLauncher, 90 },
             { EWeaponClass.specialWeapon, 80 },
         };
 
@@ -288,16 +274,16 @@ namespace SAIN.Preset.GlobalSettings
         [Hidden]
         public static readonly Dictionary<EWeaponClass, float> WeaponPerMeterDefaults = new()
         {
-            { EWeaponClass.Default, 120f },
-            { EWeaponClass.assaultCarbine, 140 },
-            { EWeaponClass.assaultRifle, 130 },
-            { EWeaponClass.machinegun, 135 },
+            { EWeaponClass.Default, 130f },
+            { EWeaponClass.assaultCarbine, 150 },
+            { EWeaponClass.assaultRifle, 140 },
+            { EWeaponClass.machinegun, 180 },
             { EWeaponClass.smg, 160 },
-            { EWeaponClass.pistol, 65 },
-            { EWeaponClass.marksmanRifle, 75 },
-            { EWeaponClass.sniperRifle, 50 },
-            { EWeaponClass.shotgun, 60 },
-            { EWeaponClass.grenadeLauncher, 75 },
+            { EWeaponClass.pistol, 75 },
+            { EWeaponClass.marksmanRifle, 85 },
+            { EWeaponClass.sniperRifle, 60 },
+            { EWeaponClass.shotgun, 80 },
+            { EWeaponClass.grenadeLauncher, 90 },
             { EWeaponClass.specialWeapon, 80 },
         };
 

@@ -187,10 +187,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     if (value.LastKnownPosition == null)
                     {
-                        Logger.LogError("cant set enemy with null last known!");
+                        Logger.LogError($"Bot: [{Bot.name}] cant set enemy [{value.EnemyName}] with null last known![Timesinceseen {value.TimeSinceSeen}: timesinceheard{value.TimeSinceHeard}] [IsAlive:{value.EnemyPlayer?.HealthController.IsAlive} : IsSainBot:[{value.EnemyPlayerComponent?.IsSAINBot}]]");
                         return;
                     }
-                    Bot.Cover.CoverFinder.CalcTargetPoint(value, value.LastKnownPosition.Value);
                 }
 
                 LastGoalEnemy = _goalEnemy;
@@ -264,6 +263,21 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return _goalEnemy;
             }
 
+            List<Enemy> seenEnemies = _preAllocList;
+            KnownEnemies.FilterByPredicateNonAlloc(seenEnemies, x => x.Seen);
+            if (seenEnemies.Count > 0)
+            {
+                seenEnemies.Sort((x, y) => x.TimeSinceSeen.CompareTo(y.TimeSinceSeen));
+                foreach (Enemy seenEnemy in seenEnemies)
+                {
+                    if (seenEnemy.IsShooter() && (seenEnemy.Status.ShotAtMe || seenEnemy.Status.ShotMe))
+                    {
+                        return seenEnemy;
+                    }
+                }
+                return seenEnemies[0];
+            }
+
             KnownEnemies.SortBy(EnemyList.EBotListSortType.ByLastKnownDistance);
             Enemy closestKnownEnemy = KnownEnemies[0];
             if (_goalEnemy == null) return closestKnownEnemy;
@@ -274,7 +288,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 if (knownEnemy.KnownPlaces.BotDistanceFromLastKnown <= MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST) return knownEnemy;
                 if (knownEnemy.KnownPlaces.EnemyDistanceFromLastKnown < CHANGE_ENEMY_KNOWN_KNOWN_DIST_RATIO * _goalEnemy.RealDistance) return closestKnownEnemy;
             }
-
+            
             List<Enemy> enemiesWhoEngagedMe = _preAllocList;
             KnownEnemies.FilterByPredicateNonAlloc(enemiesWhoEngagedMe, x => x.Status.ShotAtMe || x.Status.ShotMe);
             if (enemiesWhoEngagedMe.Count > 0)

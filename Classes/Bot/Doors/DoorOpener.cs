@@ -2,8 +2,6 @@
 using EFT.Interactive;
 using SAIN.Components;
 using SAIN.Helpers;
-using SAIN.Preset.GlobalSettings;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,174 +11,302 @@ namespace SAIN.SAINComponent.Classes.Mover
     {
         public bool Interacting { get; private set; }
 
-        public bool BreachingDoor { get; private set; }
-
-        public DoorFinder DoorFinder { get; }
+        public EInteractionType InteractionType { get; private set; }
 
         public DoorOpener(BotComponent sain) : base(sain)
         {
             TickRequirement = ESAINTickState.OnlyNoSleep;
-            DoorFinder = new DoorFinder(this);
         }
 
-        public override void Init()
-        {
-            DoorFinder.Init();
-            base.Init();
-        }
+        private const float DOOR_UPDATE_INTERVAL = 0.5f;
 
-        public override void ManualUpdate()
+        private List<DoorDataStruct> _interactionDoors { get; } = [];
+        private List<DoorDataStruct> _allDoors { get; } = [];
+        public NavGraphVoxelSimple CurrentVoxel { get; private set; }
+
+        public bool TryInteractWithDoor(EInteractionType interactionType, float time, DoorDataStruct data)
         {
-            if (!_debugMode && _debugObjects.Count > 0)
+            if (!InteractWithDoor(ref data, interactionType))
             {
-                foreach (var obj in _debugObjects.Values)
+                Logger.LogDebug($"[{Bot.name}]:[{data.Door.Id}] failed to interact with door");
+                Clear();
+                return false;
+            }
+            _interactionDoors[_interactionDoorIndex] = data;
+            Interacting = true;
+            ActiveDoor = data;
+            InteractionType = interactionType;
+            _doorInteractStartTime = time;
+            return true;
+        }
+
+        public DoorDataStruct GetActiveDoor()
+        {
+            if (_interactionDoors.Count > 0 && _interactionDoorIndex < _interactionDoors.Count)
+            {
+                return _interactionDoors[_interactionDoorIndex];
+            }
+            return ActiveDoor;
+        }
+
+        public bool SelectDoor(out EInteractionType interactionType, out DoorDataStruct currentDoor, IBotPathData pathData)
+        {
+            const float RAY_LENGTH = 3f;
+            Vector3 botPosition = Bot.Position;
+            float time = Time.time;
+
+            if (Interacting)
+            {
+                if (time - _doorInteractStartTime > 1f)
                 {
-                    GameObject.Destroy(obj.link);
-                    GameObject.Destroy(obj.midClose);
-                    GameObject.Destroy(obj.midOpen);
+                    Clear();
+
+                    interactionType = EInteractionType.Open; // Default to open if interaction is done
+                    currentDoor = default;
+                    return false;
                 }
-                _debugObjects.Clear();
+                else
+                {
+                    interactionType = InteractionType;
+                    currentDoor = _interactionDoors[_interactionDoorIndex];
+                    return true;
+                }
             }
-            base.ManualUpdate();
-        }
 
-        public override void Dispose()
-        {
-            DoorFinder.Dispose();
-            base.Dispose();
-        }
+            SearchForDoors(botPosition, time);
 
-        private void drawLink(NavMeshDoorLink link)
-        {
-            if (_debugMode &&
-                SAINPlugin.DebugSettings.Gizmos.DrawDebugGizmos &&
-                !_debugObjects.ContainsKey(link))
+            if (_interactionDoors.Count == 0)
             {
-                Vector3 linkPosition = link.transform.position + Vector3.down;
-                var objects = new linkObjects {
-                    link = DebugGizmos.DrawLine(linkPosition, linkPosition + Vector3.up * 2f, Color.white, 0.2f),
-                    midOpen = DebugGizmos.DrawLine(linkPosition, link.MidOpen + Vector3.down, Color.blue, 0.2f),
-                    midClose = DebugGizmos.DrawLine(linkPosition, link.MidClose + Vector3.down, Color.green, 0.2f),
-                };
-                _debugObjects.Add(link, objects);
+                interactionType = EInteractionType.Open; // Default to open if no doors found
+                currentDoor = ActiveDoor;
+                return false;
+            }
+
+            CornerMoveData moveData = pathData.CurrentCornerMoveData;
+            Ray ray = new() {
+                origin = botPosition + Vector3.up,
+                direction = moveData.CornerDirectionFromBotNormal * RAY_LENGTH,
+            };
+
+            DoorDataStruct data = ActiveDoor;
+            if (!RaycastToDoors(out interactionType, ref data, out int index, RAY_LENGTH, ray, _interactionDoors))
+            {
+                currentDoor = ActiveDoor;
+                return false;
+            }
+            _interactionDoorIndex = index;
+            _interactionDoors[index] = data;
+             //bool value = TryInteractWithDoor(interactionType, time, ref data);
+            currentDoor = data;
+            return true;
+        }
+
+        private void Clear()
+        {
+            Interacting = false;
+            _interactionDoorIndex = 0;
+            ActiveDoor = new();
+            _doorInteractStartTime = 0;
+            InteractionType = EInteractionType.Open;
+        }
+
+
+        private int _interactionDoorIndex;
+
+        private void SearchForDoors(Vector3 botPosition, float time)
+        {
+            if (_nextDoorUpdateTime < time)
+            {
+                _nextDoorUpdateTime = time + DOOR_UPDATE_INTERVAL;
+                BotOwner.AIData.SetPosToVoxel(botPosition);
+
+                var lastVoxel = CurrentVoxel;
+                CurrentVoxel = BotOwner.VoxelesPersonalData.CurVoxel;
+
+                if (lastVoxel != CurrentVoxel)
+                {
+                    _allDoors.Clear();
+                    if (CurrentVoxel != null)
+                    {
+                        //Logger.LogDebug($"{CurrentVoxel.DoorLinks.Count} doors in voxel");
+                        foreach (var link in CurrentVoxel.DoorLinks)
+                        {
+                            if (IsDoorOpenable(link.Door))
+                            {
+                                _allDoors.Add(new DoorDataStruct(link));
+                            }
+                        }
+                    }
+                    //Logger.LogDebug($"{AllDoors.Count} door data created");
+                }
+
+                _interactionDoors.Clear();
+                for (int i = 0; i < _allDoors.Count; i++)
+                {
+                    DoorDataStruct door = _allDoors[i];
+                    door.ManualUpdate(botPosition);
+                    if (door.InRangeToInteract(door.Door) && door.CanInteractByTime(time))
+                    {
+                        _interactionDoors.Add(door);
+                    }
+                    _allDoors[i] = door;
+                }
             }
         }
 
-        private struct linkObjects
+        private static bool RaycastToDoors(out EInteractionType interactionType, ref DoorDataStruct data, out int index, float RAY_LENGTH, Ray ray, List<DoorDataStruct> doors)
         {
-            public GameObject link;
-            public GameObject midOpen;
-            public GameObject midClose;
+            for (index = 0; index < doors.Count; index++)
+            {
+                data = doors[index];
+                if (data.CurrentSqrMagnitude > RAY_LENGTH * RAY_LENGTH) continue;
+                if (!CanInteract(data.Link)) continue;
+                Collider doorCollider = data.Door.Collider;
+                if (doorCollider == null) continue;
+                if (doorCollider.Raycast(ray, out RaycastHit hit, 1f))
+                {
+                    Logger.LogDebug($"hit door  [Door.collider.Raycast]");
+                    DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                    if (data.Door.DoorState == EDoorState.Open)
+                    {
+                        interactionType = EInteractionType.Close;
+                        return true;
+                    }
+                    if (data.Door.DoorState == EDoorState.Shut)
+                    {
+                        interactionType = EInteractionType.Open;
+                        return true;
+                    }
+                }
+                if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.PlayerStaticDoorMask))
+                {
+                    if (hit.collider != data.Door.Collider)
+                    {
+                        var hitDoor = hit.collider.gameObject.GetComponent<Door>();
+                        if (hitDoor != null)
+                        {
+                            Logger.LogDebug($"Found door from hit getcomp [PlayerStaticDoorMask] ");
+                            if (hitDoor == data.Door)
+                            {
+                                Logger.LogDebug($"its the same door! [PlayerStaticDoorMask] ");
+                            }
+                        }
+                        Logger.LogDebug($"hit.collider != data.Door.Collider [PlayerStaticDoorMask] [{hit.collider.name}]");
+                        continue;
+                    }
+                    Logger.LogDebug($"hit door [LayerMaskClass.PlayerStaticDoorMask]");
+                    DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                    if (data.Door.DoorState == EDoorState.Open)
+                    {
+                        interactionType = EInteractionType.Close;
+                        return true;
+                    }
+                    if (data.Door.DoorState == EDoorState.Shut)
+                    {
+                        interactionType = EInteractionType.Open;
+                        return true;
+                    }
+                }
+                if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.DoorLayer))
+                {
+                    if (hit.collider != data.Door.Collider)
+                    {
+                        var hitDoor = hit.collider.gameObject.GetComponent<Door>();
+                        if (hitDoor != null)
+                        {
+                            Logger.LogDebug($"Found door from hit getcomp [DoorLayer] ");
+                            if (hitDoor == data.Door)
+                            {
+                                Logger.LogDebug($"its the same door! [DoorLayer] ");
+                            }
+                        }
+                        Logger.LogDebug($"hit.collider != data.Door.Collider [DoorLayer] [{hit.collider.name}]");
+                        continue;
+                    }
+                    Logger.LogDebug($"hit door [DoorLayer]");
+                    DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                    if (data.Door.DoorState == EDoorState.Open)
+                    {
+                        interactionType = EInteractionType.Close;
+                        return true;
+                    }
+                    if (data.Door.DoorState == EDoorState.Shut)
+                    {
+                        interactionType = EInteractionType.Open;
+                        return true;
+                    }
+                }
+            }
+            interactionType = EInteractionType.Open; // Default to open if no doors found
+            return false;
         }
 
-        private bool CanInteract(NavMeshDoorLink link)
+        private static bool IsDoorOpenable(Door door)
+        {
+            if (!door.enabled || !door.gameObject.activeInHierarchy || !door.Operatable)
+            {
+                return false;
+            }
+            //if (!ModDetection.ProjectFikaLoaded &&
+            //    GlobalSettingsClass.Instance.General.Doors.DisableAllDoors &&
+            //    GameWorldComponent.Instance.Doors.DisableDoor(door))
+            //{
+            //    return false;
+            //}
+            return true;
+        }
+
+        private float _nextDoorUpdateTime;
+
+        private static bool CanInteract(NavMeshDoorLink link)
         {
             if (!link.ShallInteract())
             {
-                //Logger.LogDebug($"Link {link.Id} shall not interact!");
                 return false;
             }
-            if (!link.Door.enabled || !link.Door.gameObject.activeInHierarchy)
+            if (!link.Door.enabled || !link.Door.gameObject.activeInHierarchy || !link.Door.Operatable)
             {
-                return false;
-            }
-            //if (CheckIfDoorLast(link))
-            //{
-            //    //Logger.LogDebug($"Link {link.Id} is last!");
-            //    return false;
-            //}
-            if (!link.Door.Operatable || !link.Door.enabled)
-            {
-                //Logger.LogDebug($"Link {link.Id} door not operable!");
                 return false;
             }
             return true;
         }
 
-        public List<DoorData> FindDoorsToInteractWith(Vector3 botPosition)
+        private bool InteractWithDoor(ref DoorDataStruct data, EInteractionType type)
         {
-            findPossibleInteractDoors(DoorFinder.InteractionDoors, botPosition);
-            return _possibleInteractDoors;
-        }
+            if (data.Door == null) return false;
+            switch (data.Door.DoorState)
+            {
+                case EDoorState.Shut:
+                    data.LastCloseTime = Time.time;
+                    break;
 
-        public bool InteractWithDoor(DoorData data, Vector3 botPosition, bool shallKick)
-        {
-            if (data?.Door == null) return false;
-            return data.Door.DoorState switch {
-                EDoorState.Shut => OpenDoor(data, botPosition, shallKick),
-                EDoorState.Open => CloseDoor(data, botPosition),
-                _ => false,
-            };
-        }
+                case EDoorState.Open:
+                    data.LastOpenTime = Time.time;
+                    break;
 
-        public bool CloseDoor(DoorData data, Vector3 botPosition)
-        {
-            if (data == null || data.Door.DoorState != EDoorState.Open) return false;
+                default:
+                    return false;
+            }
             data.LastInteractTime = Time.time;
-            data.LastCloseTime = Time.time;
-            Interact(data, EInteractionType.Close, botPosition);
-            return true;
-        }
-
-        public bool OpenDoor(DoorData data, Vector3 botPosition, bool shallKick)
-        {
-            if (data == null || data.Door.DoorState != EDoorState.Shut) return false;
-            data.LastInteractTime = Time.time;
-            data.LastOpenTime = Time.time;
-            Interact(data, shallKick ? EInteractionType.Breach : EInteractionType.Open, botPosition);
-            return true;
-        }
-
-        private void findPossibleInteractDoors(List<DoorData> list, Vector3 botPosition)
-        {
-            _possibleInteractDoors.Clear();
-            foreach (var data in list)
+            Player.MovementContext.ResetCanUsePropState();
+            var gstruct = Door.Interact(Player, type);
+            if (gstruct.Succeeded)
             {
-                NavMeshDoorLink link = data.Link;
-                if (!CanInteract(link))
+                //Logger.LogDebug("Success");
+                switch (type)
                 {
-                    //Logger.LogDebug($"Cant Interact [{link.Id}]");
-                    continue;
-                }
+                    case EInteractionType.Breach:
+                        Player.vmethod_0(data.Door, gstruct.Value, null);
+                        break;
 
-                if (!data.CanInteractByTime())
-                {
-                    //Logger.LogDebug($"Cant Interact by time [{link.Id}]");
-                    continue;
+                    default:
+                        Player.vmethod_1(data.Door, gstruct.Value);
+                        break;
                 }
-
-                Door door = data.Door;
-                //drawLink(link);
-                //float maxDistance;
-                //
-                //switch (door.DoorState)
-                //{
-                //    case EDoorState.Open:
-                //        maxDistance = 3f * 3f;
-                //        break;
-                //
-                //    case EDoorState.Shut:
-                //        maxDistance = 3f * 3f;
-                //        break;
-                //
-                //    default:
-                //        continue;
-                //}
-                //if (data.CurrentSqrMagnitude > maxDistance)
-                //{
-                //    //Logger.LogDebug($"Toofar [{link.Id}] Dist: [{data.CurrentSqrMagnitude.Sqrt()}] maxDist: [{maxDistance.Sqrt()}]");
-                //    continue;
-                //}
-                //if (!CheckWantToInteract(data, botPosition))
-                //{
-                //    //Logger.LogDebug($"Dont want to interact with [{link.Id}]");
-                //    continue;
-                //}
-                _possibleInteractDoors.Add(data);
+                return true;
             }
+            return false;
         }
-
-        private readonly List<DoorData> _possibleInteractDoors = [];
 
         public bool ShallKickOpen(Door door, EInteractionType Etype)
         {
@@ -225,105 +351,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        public void Interact(DoorData data, EInteractionType Etype, Vector3 botPosition, System.Action onInteractionDone = null)
-        {
-            Door door = data.Door;
-            //switch (Etype)
-            //{
-            //    case EInteractionType.Breach:
-            //        break;
-            //
-            //    case EInteractionType.Open:
-            //        door.Snap = EDoorState.None;
-            //        break;
-            //
-            //    case EInteractionType.Close:
-            //        door.Snap = EDoorState.None;
-            //        break;
-            //
-            //    default:
-            //        return;
-            //}
-
-            if (Etype == EInteractionType.Breach ||
-                ModDetection.ProjectFikaLoaded ||
-                !GlobalSettingsClass.Instance.General.Doors.NoDoorAnimations)
-            {
-                //Logger.LogDebug($"{BotOwner.name} Executing [{Etype}] door interaction on {doorInfo.Link.Id}");
-                method_0(door, Etype);
-                return;
-            }
-
-            //Logger.LogDebug($"{BotOwner.name} Auto Opening Door on {doorInfo.Link.Id}");
-
-            EDoorState state;
-            switch (Etype)
-            {
-                case EInteractionType.Open:
-                    state = EDoorState.Open;
-                    break;
-
-                case EInteractionType.Close:
-                    state = EDoorState.Shut;
-                    break;
-
-                default:
-                    Logger.LogError($"Door open type set wrong! {Etype}");
-                    return;
-            }
-
-            bool shallInvert = ShallInvertDoorAngle(door, botPosition);
-            GameWorldComponent.Instance.Doors.ChangeDoorState(door, state, shallInvert);
-            BotManagerComponent.Instance.BotHearing.PlayAISound(PlayerComponent, SAINSoundType.Door, data.Link.MidClose, 30f, 1f, true);
-            onInteractionDone?.Invoke();
-        }
-
-        private void method_0(Door door, EInteractionType type)
-        {
-            Player.MovementContext.ResetCanUsePropState();
-            var gstruct = Door.Interact(Player, type);
-            if (gstruct.Succeeded)
-            {
-                //Logger.LogDebug("Success");
-                switch (type)
-                {
-                    case EInteractionType.Breach:
-                        Player.vmethod_0(door, gstruct.Value, null);
-                        break;
-
-                    default:
-                        Player.vmethod_1(door, gstruct.Value);
-                        break;
-                }
-            }
-            //Logger.LogDebug("Fail");
-        }
-
-        private static bool ShallInvertDoorAngle(Door door, Vector3 botPosition)
-        {
-            return GlobalSettingsClass.Instance.General.Doors.InvertDoors && IsDoorPullOpen(door, botPosition);
-        }
-
         public static bool IsDoorPullOpen(Door door, Vector3 botPosition)
         {
             return door.GetInteractionParameters(botPosition).AnimationId == (int)EInteraction.DoorPullBackward;
         }
 
-        public static bool CheckWantToInteract(DoorData data, Vector3 botPosition)
-        {
-            botPosition += Vector3.up;
-            if (Mathf.Abs(botPosition.y - data.Link.MidClose.y) > 2f)
-            {
-                return false;
-            }
-            return data.Door.DoorState switch {
-                EDoorState.Open => data.DotProduct < 0.25f,
-                EDoorState.Shut => data.DotProduct > 0.25f,
-                _ => false,
-            };
-        }
-
-        private static bool _debugMode => SAINPlugin.DebugSettings.Gizmos.DrawDoorLinks;
-        private static readonly Dictionary<NavMeshDoorLink, linkObjects> _debugObjects = new();
+        public DoorDataStruct ActiveDoor = new();
+        private float _doorInteractStartTime;
     }
 }

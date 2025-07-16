@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent.Classes.EnemyClasses;
@@ -327,17 +328,18 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
         }
 
-        public float Distance {
-            get
-            {
-                if (_nextGetDistTime < Time.time)
-                {
-                    float dist = (Position - Bot.Position).magnitude;
-                    CoverData.BotDistance = dist;
-                    _nextGetDistTime = Time.time + calcMagnitudeDelay(dist);
-                }
-                return CoverData.BotDistance;
-            }
+        public DirectionData DirectionData => CoverData.DirectionData;
+
+        public float DistanceToBot { get; set; }
+
+        public float GetDistance(Vector3 from)
+        {
+            return (Position - from).magnitude;
+        }
+
+        public float GetDistanceSqr(Vector3 from)
+        {
+            return (Position - from).sqrMagnitude;
         }
 
         public bool Spotted {
@@ -366,15 +368,32 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         public CoverStatus StraightDistanceStatus {
             get
             {
-                float distance = Distance;
-                if (CoverData.StraightLengthStatus == CoverStatus.InCover &&
-                    distance <= DIST_COVER_INCOVER_STAY)
-                {
-                    return CoverStatus.InCover;
-                }
-                CoverData.StraightLengthStatus = checkStatus(distance);
-                return CoverData.StraightLengthStatus;
+                float distance = UpdateDist(Bot.Transform.NavData.Position);
+                return GetStraightDistanceStatus(distance);
             }
+        }
+
+        public CoverStatus GetStraightDistanceStatus(float distance)
+        {
+            _nextGetDistTime = Time.time + 0.25f;
+            DistanceToBot = distance;
+            if (CoverData.StraightLengthStatus == CoverStatus.InCover && distance <= DIST_COVER_INCOVER_STAY)
+            {
+                CoverData.StraightLengthStatus = CoverStatus.InCover;
+                return CoverStatus.InCover;
+            }
+            CoverData.StraightLengthStatus = checkStatus(distance);
+            return CoverData.StraightLengthStatus;
+        }
+
+        private float UpdateDist(Vector3 from)
+        {
+            if (_nextGetDistTime < Time.time)
+            {
+                _nextGetDistTime = Time.time + 0.25f;
+                DistanceToBot = GetDistance(from);
+            }
+            return DistanceToBot;
         }
 
         public CoverStatus PathDistanceStatus {
@@ -384,6 +403,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 if (CoverData.PathLengthStatus == CoverStatus.InCover &&
                     pathLength <= DIST_COVER_INCOVER_STAY)
                 {
+                    CoverData.PathLengthStatus = CoverStatus.InCover;
                     return CoverStatus.InCover;
                 }
                 CoverData.PathLengthStatus = checkStatus(pathLength);

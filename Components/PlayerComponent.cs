@@ -19,8 +19,10 @@ using UnityEngine.AI;
 
 namespace SAIN.Components.PlayerComponentSpace
 {
-    public class PlayerComponent : MonoBehaviour, IDisposable
+    public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
     {
+        public Vector3 NavMeshPosition => Transform.NavData.Position;
+
         private const int MaxCachedSounds = 4;
 
         public event Action<WeaponInfo, Vector3> OnShoot;

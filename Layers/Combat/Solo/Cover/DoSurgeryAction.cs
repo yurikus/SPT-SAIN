@@ -29,7 +29,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 bot.Mover.ActivePath?.Cancel(0.1f);
                 bot.Mover.SetTargetMoveSpeed(0f);
-                bot.Cover.DuckInCover(bot.GoalEnemy);
+                bot.Cover.TrySetProneConditional(bot.GoalEnemy);
                 var eftSurgery = bot.BotOwner.Medecine.SurgicalKit;
                 if (_startSurgeryTime < Time.time
                     && !eftSurgery.Using

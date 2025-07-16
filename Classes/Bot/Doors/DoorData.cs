@@ -1,5 +1,6 @@
 ﻿using EFT.Interactive;
 using SAIN.Helpers;
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -24,7 +25,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             const float backupPointDistCoef = 1.25f;
             Vector3 openDir = DoorHandleOpenFloorPoint - DoorPivotPoint;
             Vector3 closeDir = DoorHandleCloseFloorPoint - DoorPivotPoint;
-            Vector3 backupPoint = DoorPivotPoint + ((openDir + closeDir)  * backupPointDistCoef);
+            Vector3 backupPoint = DoorPivotPoint + ((openDir + closeDir) * backupPointDistCoef);
             if (NavMesh.SamplePosition(backupPoint, out NavMeshHit hit, 0.5f, -1))
             {
                 backupPoint = hit.position;
@@ -40,6 +41,74 @@ namespace SAIN.SAINComponent.Classes.Mover
         public readonly Vector3 DoorBackupPoint;
         public readonly Vector3 NeutralDoorPoint;
     }
+
+    public struct DoorDataStruct(NavMeshDoorLink link)
+    {
+        private const float DOORS_POSSIBLE_OPEN_DISTANCE_SQR = 3f * 3f;
+        private const float DOORS_POSSIBLE_CLOSE_DISTANCE_SQR = 3f * 3f;
+        private const float DOOR_INTERACTION_INTERVAL = 2.5f;
+        private const float DOOR_OPEN_INTERVAL = 5f;
+        private const float DOOR_CLOSE_INTERVAL = 5f;
+
+        public readonly bool CanInteractByTime(float time)
+        {
+            if (time - LastInteractTime < DOOR_INTERACTION_INTERVAL)
+            {
+                return false;
+            }
+            if (time - LastOpenTime < DOOR_OPEN_INTERVAL)
+            {
+                return false;
+            }
+            if (time - LastCloseTime < DOOR_CLOSE_INTERVAL)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public void OnInteract(EDoorState desiredState)
+        {
+            LastInteractTime = Time.time;
+            switch (desiredState)
+            {
+                case EDoorState.Open:
+                    LastOpenTime = Time.time;
+                    break;
+                case EDoorState.Shut:
+                    LastCloseTime = Time.time;
+                    break;
+            }
+        }
+
+        public readonly int Id => Link.Id;
+        public float LastInteractTime;
+        public float LastOpenTime;
+        public float LastCloseTime;
+        public NavMeshDoorLink Link = link;
+        public Door Door = link.Door;
+        public float CurrentSqrMagnitude;
+        public Vector3 Direction;
+        public Vector3 DirectionNormal;
+
+        public void ManualUpdate(Vector3 botPosition)
+        {
+            Direction = Link.MidClose - botPosition;
+            //Direction = CenterPoint - from;
+            DirectionNormal = Direction.normalized;
+            CurrentSqrMagnitude = Direction.sqrMagnitude;
+        }
+
+        public readonly bool InRangeToInteract(Door door)
+        {
+            return door != null && door.DoorState switch {
+                EDoorState.Open => CurrentSqrMagnitude < DOORS_POSSIBLE_CLOSE_DISTANCE_SQR,
+                EDoorState.Shut => CurrentSqrMagnitude < DOORS_POSSIBLE_OPEN_DISTANCE_SQR,
+                _ => false,
+            };
+        }
+    }
+
     public class DoorData
     {
         private const float DOOR_INTERACTION_INTERVAL = 2.5f;
@@ -51,21 +120,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Link = link;
             LinkPosition = link.transform.position;
             Door = link.Door;
-            MoveLocations = new(link);
-            //DebugGizmos.DrawSphere(MoveLocations.NeutralDoorPoint, 0.15f, Color.gray);
-            //
-            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleCloseLookPoint, 0.1f, Color.blue);
-            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleCloseFloorPoint, 0.1f, Color.blue);
-            //
-            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleOpenLookPoint, 0.1f, Color.green);
-            //DebugGizmos.DrawSphere(MoveLocations.DoorHandleOpenFloorPoint, 0.1f, Color.green);
-            //
-            //DebugGizmos.DrawSphere(MoveLocations.DoorPivotPoint, 0.15f, Color.white);
-            //DebugGizmos.DrawLine(MoveLocations.DoorPivotPoint, MoveLocations.DoorBackupPoint, Color.red, 0.1f);
-            //DebugGizmos.DrawSphere(MoveLocations.DoorBackupPoint, 0.15f, Color.red);
         }
-
-        public DoorLocations MoveLocations { get; }
 
         public bool CanInteractByTime()
         {

@@ -64,12 +64,14 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void HandleLightForSearch(float distanceToCurrentCornerSqr)
         {
-            if (distanceToCurrentCornerSqr < 30f * 30f)
+            const float DISTANCE_TO_CORNER_TURN_LIGHT_ON = 15f;
+            const float TURN_LIGHT_OFF_AFTER = 1f;
+            if (distanceToCurrentCornerSqr < DISTANCE_TO_CORNER_TURN_LIGHT_ON * DISTANCE_TO_CORNER_TURN_LIGHT_ON)
             {
                 _timeWithinDistanceSearch = Time.time;
                 ToggleLight(true);
             }
-            else if (_timeWithinDistanceSearch + 0.66f < Time.time)
+            else if (_timeWithinDistanceSearch + TURN_LIGHT_OFF_AFTER < Time.time)
             {
                 ToggleLight(false);
             }
@@ -95,7 +97,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                     return;
                 }
 
-                float maxTurnOnrange = 50f;
+                float maxTurnOnrange = 40f;
                 ECombatDecision decision = Bot.Decision.CurrentCombatDecision;
 
                 if (enemy.EnemyNotLooking && enemy.RealDistance <= maxTurnOnrange * 0.9f)

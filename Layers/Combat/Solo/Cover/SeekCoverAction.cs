@@ -24,16 +24,17 @@ namespace SAIN.Layers.Combat.Solo.Cover
         {
             Enemy enemy = Bot.GoalEnemy;
             Bot.Cover.UpdateCover(enemy);
+
             if (Bot.Cover.CoverInUse == null)
             {
+                if (!Bot.Mover.Running && !Bot.Mover.ActivePath?.Crawling != true) Bot.Mover.Pose.SetPoseToCover(enemy);
                 Bot.Mover.SetTargetMoveSpeed(1f);
-                Bot.Mover.SetTargetPose(1f);
                 if (!Bot.Steering.SteeringLocked && 
                     !Shoot.ShootAnyVisibleEnemies(enemy) &&
                     !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies) &&
                     !Bot.Steering.SteerByPriority(enemy, false))
                 {
-                    Bot.Steering.LookToLastKnownEnemyPosition(enemy);
+                    Bot.Steering.LookToRandomPosition();
                 }
                 //bool shallCrawl =
                 //    Bot.Decision.CurrentSelfDecision != ESelfDecision.None &&
@@ -43,28 +44,27 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 return;
             }
 
-            Bot.Cover.DuckInCover(enemy);
-            checkSetProne();
+
+            if (Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
+            {
+                if (!Bot.Cover.TrySetProneConditional(enemy) && 
+                    enemy != null && 
+                    enemy.IsVisible && 
+                    Bot.Player.MovementContext.CanProne && 
+                    Bot.Player.PoseLevel <= 0.1 && 
+                    BotOwner.WeaponManager.Reload.Reloading)
+                {
+                    Bot.Mover.Prone.SetProne(true);
+                }
+            }
+            if (!Bot.Player.IsInPronePose)
+            {
+                Bot.Mover.Pose.SetPoseToCover(enemy);
+            }
             checkSetLean();
             if (!Shoot.ShootAnyVisibleEnemies(enemy) && !Bot.Suppression.TrySuppressEnemy(enemy))
             {
                 Bot.Steering.SteerByPriority(enemy);
-            }
-        }
-
-        private void checkSetProne()
-        {
-            if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
-            {
-                return;
-            }
-            if (Bot.GoalEnemy != null
-                && Bot.Player.MovementContext.CanProne
-                && Bot.Player.PoseLevel <= 0.1
-                && Bot.GoalEnemy.IsVisible
-                && BotOwner.WeaponManager.Reload.Reloading)
-            {
-                Bot.Mover.Prone.SetProne(true);
             }
         }
 
@@ -169,7 +169,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
         public override void Start()
         {
             Toggle(true);
-            Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.MoveTo);
             ChangeLeanTimer = Time.time + 2f;
         }
 
@@ -178,12 +177,13 @@ namespace SAIN.Layers.Combat.Solo.Cover
             Toggle(false);
             Bot.Mover.DogFight.ResetDogFightStatus();
             Bot.Suppression.ResetSuppressing();
-            Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
+            Bot.Cover.StopSeekingCover();
         }
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {
             stringBuilder.AppendLine("Cover Info");
+            if (Bot == null) return;
             var cover = Bot.Cover;
             stringBuilder.AppendLabeledValue("Cover Seeking State", $"{cover.CoverSeekingState}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Running To Cover", $"{cover.SprintingToCover}", Color.white, Color.yellow, true);
@@ -196,9 +196,9 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 stringBuilder.AppendLine($"Holding In Cover [{point.HardData.Id}]");
                 stringBuilder.AppendLabeledValue("Path Length Status", $"{point.PathDistanceStatus}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Straight Distance Status", $"{point.StraightDistanceStatus}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Height / Value", $"{point.CoverHeight} {Bot.Cover.CoverPoint_MovingTo.HardData.Value}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Height / Value", $"{point.CoverHeight} {point.HardData.Value}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Path Length", $"{point.PathData.PathLength}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Distance", $"{point.Distance}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Distance", $"{point.GetDistance(Bot.Transform.NavData.Position)}", Color.white, Color.yellow, true);
             }
             point = Bot.Cover.CoverPoint_MovingTo;
             if (point != null)
@@ -206,9 +206,9 @@ namespace SAIN.Layers.Combat.Solo.Cover
                 stringBuilder.AppendLine($"Moving To Cover [{point.HardData.Id}]");
                 stringBuilder.AppendLabeledValue("Path Length Status", $"{point.PathDistanceStatus}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Status", $"{point.StraightDistanceStatus}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Height / Value", $"{point.CoverHeight} {Bot.Cover.CoverPoint_MovingTo.HardData.Value}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Height / Value", $"{point.CoverHeight} {point.HardData.Value}", Color.white, Color.yellow, true);
                 stringBuilder.AppendLabeledValue("Path Length", $"{point.PathData.PathLength}", Color.white, Color.yellow, true);
-                stringBuilder.AppendLabeledValue("Distance", $"{point.Distance}", Color.white, Color.yellow, true);
+                stringBuilder.AppendLabeledValue("Distance", $"{point.GetDistance(Bot.Transform.NavData.Position)}", Color.white, Color.yellow, true);
             }
         }
     }

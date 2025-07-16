@@ -21,16 +21,17 @@ using UnityEngine;
 
 namespace SAIN.Components
 {
-    public enum EBotActiveState
-    {
-        Active,
-        Combat,
-        Sleep,
-        Disposed,
-    }
+    //public enum EBotActiveState
+    //{
+    //    Active,
+    //    Combat,
+    //    Sleep,
+    //    Disposed,
+    //}
 
-    public class BotComponent : BotComponentBase
+    public class BotComponent : BotComponentBase , ISPlayer
     {
+        public Vector3 NavMeshPosition => Transform.NavData.Position;
         public void ActivateIfBotActive(BotOwner botOwner)
         {
             if (botOwner.BotState == EBotState.Active)
@@ -80,7 +81,7 @@ namespace SAIN.Components
 
         public BotGlobalEventsClass GlobalEvents { get; private set; }
         public BotBusyHandsDetector BusyHandsDetector { get; private set; }
-        public ShootDeciderClass Shoot { get; private set; }
+        public SAINShootData Shoot { get; private set; }
         public BotWeightManagement WeightManagement { get; private set; }
         public SAINBotMedicalClass Medical { get; private set; }
         public SAINActivationClass BotActivation { get; private set; }
@@ -233,7 +234,7 @@ namespace SAIN.Components
                 Squad = new SAINSquadClass(this);
                 BusyHandsDetector = new BotBusyHandsDetector(this);
                 GlobalEvents = new BotGlobalEventsClass(this);
-                Shoot = new ShootDeciderClass(this);
+                Shoot = new SAINShootData(this);
                 WeightManagement = new BotWeightManagement(this);
                 Memory = new SAINMemoryClass(this);
                 BotStuck = new SAINBotUnstuckClass(this);

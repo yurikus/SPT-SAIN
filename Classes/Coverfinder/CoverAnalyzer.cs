@@ -84,8 +84,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 return false;
             }
 
-            if (coverPoint.StraightDistanceStatus == CoverStatus.InCover && 
-                CheckPath(coverPosition, coverPoint.PathData, targetData, false))
+            if (coverPoint.StraightDistanceStatus == CoverStatus.InCover) //&& CheckPath(coverPosition, coverPoint.PathData, targetData, false))
             {
                 coverPoint.Position = coverPosition;
                 reason = "inCover";

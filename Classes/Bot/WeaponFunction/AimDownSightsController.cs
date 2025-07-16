@@ -16,6 +16,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public override void ManualUpdate()
         {
+            if (Bot.Mover.Running)
+            {
+                AimingDownSights = false;
+            }
             SetADS(AimingDownSights);
             base.ManualUpdate();
         }
@@ -97,24 +101,12 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void SetADS(bool value)
         {
-            if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aim)
-            {
-                aim.HardAim = value;
-            }
             var shootController = BotOwner.WeaponManager.ShootController;
             if (shootController != null && shootController.IsAiming != value)
             {
                 shootController.SetAim(value);
             }
             AimingDownSights = value;
-        }
-
-        public BotAimingClass BotAimingClass
-        {
-            get
-            {
-                return BotOwner.AimingManager.CurrentAiming as BotAimingClass;
-            }
         }
 
         public EAimDownSightsStatus CurrentADSstatus { get; private set; }

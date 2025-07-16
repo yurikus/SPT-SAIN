@@ -1,5 +1,6 @@
 ﻿using SAIN.Helpers;
 using SAIN.Models.Enums;
+using SAIN.Preset.GlobalSettings;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -150,15 +151,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void CalcPathDistanceAndCreateVisionCheckSegments()
         {
-            const float DistToCheckVision = 50.0f;
             const float CharacterHeight = 1.5f;
-            const int GeneratePointStackHeight = 4;
-            const int MaxPathPoints = 512;
-            const int MaxPathPoints_AI = 128;
-            const float DistanceBetweenPoints = 0.25f;
-            const float DistanceBetweenPoints_AI = 0.5f;
+            var settings = GlobalSettingsClass.Instance.Steering;
 
-            float distanceBetweenPoints = Enemy.IsAI ? DistanceBetweenPoints_AI : DistanceBetweenPoints;
+            float distanceBetweenPoints = Enemy.IsAI ? settings.DistanceBetweenPoints_AI : settings.DistanceBetweenPoints;
 
             PathVisionSegments.Clear();
             VisionPathCheckPoints.Clear();
@@ -168,7 +164,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 Vector3 Corner = PathCorners[i];
                 Vector3 End = PathCorners[i + 1];
-                //Vector3 Direction = Corner - End; OLD
                 Vector3 Direction = End - Corner;
                 float Magnitude = Direction.magnitude;
                 PathLength += Magnitude;
@@ -181,7 +176,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     if (firstCorner)
                         VisionPathCheckPoints.Add(Corner);
                     bool lastCorner = i == CornerCount - 2;
-                    if (PathLength <= DistToCheckVision)
+                    if (PathLength <= settings.DistToCheckVision)
                     {
                         // Create Equal dist points along the line between two corners.
                         if (Magnitude > distanceBetweenPoints)
@@ -204,11 +199,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 }
             }
 
-            int max = Enemy.IsAI ? MaxPathPoints_AI : MaxPathPoints;
+            int max = Mathf.RoundToInt(Enemy.IsAI ? settings.MaxPathPoints_AI : settings.MaxPathPoints);
             VisionPathPoints.Clear();
             for (int i = 0; i < VisionPathCheckPoints.Count; i++)
             {
-                Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / GeneratePointStackHeight);
+                Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / settings.GeneratePointStackHeight);
                 if (VisionPathPoints.Count >= max)
                 {
                     break;

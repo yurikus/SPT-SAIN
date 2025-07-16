@@ -38,16 +38,6 @@ namespace SAIN.Helpers
             return result;
         }
 
-        public static bool IsSame([NotNull] this Enemy enemy, [NotNull] Enemy other)
-        {
-            return enemy.EnemyProfileId == other.EnemyProfileId;
-        }
-
-        public static bool IsDifferent([NotNull] this Enemy enemy, [NotNull] Enemy other)
-        {
-            return !enemy.IsSame(other);
-        }
-
         public static Vector3? Position(this EnemyPlace place)
         {
             if (place == null) return null;

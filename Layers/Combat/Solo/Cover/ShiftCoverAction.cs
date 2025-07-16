@@ -89,7 +89,6 @@ namespace SAIN.Layers.Combat.Solo.Cover
                                 if ((UsedPoints[j].Position - shiftCoverTarget.Position).sqrMagnitude > 5f
                                     && Bot.Mover.GoToCoverPoint(shiftCoverTarget, false))
                                 {
-                                    Bot.Cover.SetCoverSeekingState(SAINComponent.Classes.ECoverSeekingState.None);
                                     NewPoint = shiftCoverTarget;
                                     return true;
                                 }

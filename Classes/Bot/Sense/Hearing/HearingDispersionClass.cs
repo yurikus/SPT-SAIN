@@ -3,11 +3,9 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using Sirenix.Serialization;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.LowLevel;
 
 namespace SAIN.SAINComponent.Classes
 {
@@ -61,29 +59,33 @@ namespace SAIN.SAINComponent.Classes
 
         public static bool GetRandomReachablePointInBoxAroundPlayer(PlayerComponent playerComp, Vector3 size, out Vector3 result, out NavMeshPath path, float navSampleRange = 2f, int maxTries = 10)
         {
-            for (int i = _preAlocPathList.Count - 1; i < maxTries; i++)
-            {
-                _preAlocPathList.Add(new());
-            }
+            //for (int i = _preAlocPathList.Count - 1; i < maxTries; i++)
+            //{
+            //    _preAlocPathList.Add(new());
+            //}
             PlayerNavData navData = playerComp.Transform.NavData;
             Vector3 minSize = size * 0.5f;
-            Vector3 origin = navData.PlayerNavMeshStatus == EPlayerNavMeshDistance.OffNavMesh ? playerComp.Position : playerComp.Transform.NavData.NavMeshPosition;
+            Vector3 origin = navData.Status == EPlayerNavMeshDistance.OffNavMesh ? playerComp.Position : playerComp.Transform.NavData.Position;
             for (int i = 0; i < maxTries; i++)
             {
-                Vector3 randomDirection = RandomPointInBox(origin, size);
-                Vector3 clampedDirection = randomDirection.Clamp(minSize, randomDirection);
-                path = _preAlocPathList[i];
-                path.ClearCorners();
-                if (NavMesh.SamplePosition(origin + clampedDirection, out NavMeshHit hit, navSampleRange, -1) && 
-                    NavMesh.CalculatePath(origin, hit.position, -1, path))
+                Vector3 randomPoint = RandomPointInBox(origin, size);
+                if (!NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navSampleRange, -1))
                 {
-                    Vector3[] corners = path.corners;
-                    int length = corners.Length;
-                    if (length > 1)
-                    {
-                        result = corners[length - 1];
-                        return true;
-                    }
+                    Logger.LogDebug($"Failed nav sample [randomDir magnitude: {(randomPoint - origin).magnitude}] [Box Size magnitude {size.magnitude}]");
+                    continue; // No valid point found
+                }
+                path = new NavMeshPath();
+                if (!NavMesh.CalculatePath(origin, hit.position, -1, path))
+                {
+                    Logger.LogDebug($"Failed nav path");
+                    continue;
+                }
+                Vector3[] corners = path.corners;
+                int length = corners.Length;
+                if (length > 1)
+                {
+                    result = corners[length - 1];
+                    return true;
                 }
             }
 

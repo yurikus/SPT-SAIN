@@ -39,9 +39,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                         GameObject pathObject = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.red, 0.1f, 0.02f);
                         DebugGizmos.SetLinePositions(pathObject, enemy.Path.PathCorners);
                     }
-                    DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
-                    if (enemy.LastKnownPosition != null)
-                        DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
+                    //DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
+                    //if (enemy.LastKnownPosition != null)
+                    //    DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.red, 0.025f, 0.02f);
                 }
                 foreach (Enemy enemy in Bot.EnemyController.EnemiesInLineOfSight)
                 {
@@ -50,9 +50,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                         GameObject pathObject = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.yellow, 0.1f, 0.02f);
                         DebugGizmos.SetLinePositions(pathObject, enemy.Path.PathCorners);
                     }
-                    DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
-                    if (enemy.LastKnownPosition != null)
-                        DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
+                    //DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
+                    //if (enemy.LastKnownPosition != null)
+                    //    DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.yellow, 0.025f, 0.02f);
                 }
                 foreach (Enemy enemy in Bot.EnemyController.KnownEnemies)
                 {
@@ -61,9 +61,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                         GameObject pathObject = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.blue, 0.1f, 0.02f);
                         DebugGizmos.SetLinePositions(pathObject, enemy.Path.PathCorners);
                     }
-                    DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
-                    if (enemy.LastKnownPosition != null)
-                        DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
+                    //DebugGizmos.DrawLine(Bot.Transform.EyePosition, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
+                    //if (enemy.LastKnownPosition != null)
+                    //    DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
                 }
             }
 
@@ -385,7 +385,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 if (failedMyAdds > 0 || failedGroupAdds > 0)
                 {
-                    Logger.LogDebug($"Failed to add [{failedGroupAdds}] enemies from botsgroup and [{failedMyAdds}] enemies from enemyInfos");
+                    //Logger.LogDebug($"Failed to add [{failedGroupAdds}] enemies from botsgroup and [{failedMyAdds}] enemies from enemyInfos");
                 }
             }
         }

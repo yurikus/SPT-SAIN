@@ -56,7 +56,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool RunToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, ESprintUrgency urgency = ESprintUrgency.Low, bool checkSameWay = true)
         {
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
-            if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(point, null))
             {
@@ -88,7 +88,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (pathCorners.Length <= 1) return false;
             Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
-            if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(lastCorner, null))
             {
@@ -101,12 +101,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        private const float BASE_DESTINATION_REACH_DIST = 0.33f;
+        private const float BASE_DESTINATION_REACH_DIST = 0.5f;
 
         public bool WalkToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, bool checkSameWay = true)
         {
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
-            if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(point, null))
             {
@@ -131,7 +131,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (pathCorners.Length <= 1) return false;
             Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
-            if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(lastCorner, null))
             {
@@ -158,7 +158,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void TriggerNewMove(Vector3[] pathCorners, Vector3 point, bool shallSprint, ESprintUrgency urgency, NavMeshPath path, Action<OperationResult, IBotPathData> onComplete = null)
         {
-            BotPathDataManual newPath = new(Bot, Bot.Transform.NavData.NavMeshPosition, point, shallSprint, urgency, pathCorners, path, onComplete);
+            BotPathDataManual newPath = new(Bot, Bot.Transform.NavData.Position, point, shallSprint, urgency, pathCorners, path, onComplete);
             //if (_activePath != null)
             //{
             //    _activePath.Cancel();
@@ -258,7 +258,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (NavMesh.SamplePosition(point, out NavMeshHit targetHit, navSampleRange, -1))
             {
                 path = new NavMeshPath();
-                if (NavMesh.CalculatePath(navData.NavMeshPosition, targetHit.position, -1, path) && path.corners.Length > 1)
+                if (NavMesh.CalculatePath(navData.Position, targetHit.position, -1, path) && path.corners.Length > 1)
                 {
                     if (mustHaveCompletePath
                         && path.status != NavMeshPathStatus.PathComplete)
@@ -280,12 +280,16 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return RunToPointByWay(point.PathData.Path, true, -1, urgency);
                 return WalkToPointByWay(point.PathData.Path);
             }
-            return false;
+            else
+            {
+                Logger.LogDebug("cant go to point");
+            }
+                return false;
         }
 
         private static bool CanGoToCoverPoint(CoverPoint point, PlayerNavData navData)
         {
-            if (point.Distance < 0.25f * 0.25f) return false;
+            if (point.GetDistance(navData.Position) < BASE_DESTINATION_REACH_DIST * BASE_DESTINATION_REACH_DIST) return false;
             if (navData.IsOnNavMesh)
             {
                 PathData coverPathData = point.PathData;
@@ -304,7 +308,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private static bool TryRecalcCoverPointPath(CoverPoint point, PlayerNavData navData, PathData coverPathData)
         {
             coverPathData.Path.ClearCorners();
-            if (NavMesh.CalculatePath(navData.NavMeshPosition, point.Position, -1, coverPathData.Path) &&
+            if (NavMesh.CalculatePath(navData.Position, point.Position, -1, coverPathData.Path) &&
                 coverPathData.Path.status == NavMeshPathStatus.PathComplete)
             {
                 return true;

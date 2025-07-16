@@ -186,12 +186,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 Bot.Aim.LoseAimTarget();
                 return false;
             }
-            //if (bot.NoBushESP.NoBushESPActive)
-            //{
-            //    AimComplete = false;
-            //    return false;
-            //}
-
+            currentAiming.NodeUpdate();
             CheckAimToEnemy(enemy);
             if (TurningWeaponToAimPoint)
             {
@@ -199,8 +194,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 // return true because we want to aim at this enemy, but haven't turned to do so yet.
                 return true;
             }
-            // Tick aim
-            currentAiming.NodeUpdate();
             AimComplete = currentAiming.IsReady;
             return true;
         }
@@ -262,9 +255,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass &&
                 aimClass.aimStatus_0 != AimStatus.NoTarget)
             {
-                // Should prevent bots jerking their look point when losing aiming status
-                Bot.Steering.LookToDirection(Bot.LookDirection);
-
                 aimClass.aimStatus_0 = AimStatus.NoTarget;
                 TurningWeaponToAimPoint = false;
                 _lastAimEnemy = null;
