@@ -2,7 +2,6 @@
 using EFT.InventoryLogic;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using Sirenix.Serialization;
 using System;
 using UnityEngine;
 
@@ -186,9 +185,31 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 Bot.Aim.LoseAimTarget();
                 return false;
             }
+
             currentAiming.NodeUpdate();
+            Bot.Steering.LookToPoint(currentAiming.EndTargetPoint);
+
+            if (enemy != _lastAimEnemy)
+            {
+                TurningWeaponToAimPoint = true;
+                _lastAimEnemy = enemy;
+            }
+            if (TurningWeaponToAimPoint)
+            {
+                const float STARTAIMANGLE = 20f;
+                if (enemy.Vision.Angles.AngleToEnemy <= STARTAIMANGLE)
+                {
+                    TurningWeaponToAimPoint = false;
+                }
+            }
+
             CheckAimToEnemy(enemy);
-            AimComplete = !TurningWeaponToAimPoint && currentAiming.IsReady;
+            if (!Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.75f))
+            {
+                AimComplete = false;
+                return true;
+            }
+            AimComplete = currentAiming.IsReady;
             return true;
         }
 
@@ -206,7 +227,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
             if (TurningWeaponToAimPoint)
             {
-                const float STARTAIMANGLE = 10f;
+                const float STARTAIMANGLE = 20f;
                 if (enemy.Vision.Angles.AngleToEnemy <= STARTAIMANGLE)
                 {
                     TurningWeaponToAimPoint = false;

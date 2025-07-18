@@ -36,7 +36,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Interacting = true;
             ActiveDoor = data;
             InteractionType = interactionType;
-            _doorInteractStartTime = time;
+            _doorInteractionEndTime = time + (IsDoorPullOpen(data, Bot.NavMeshPosition) ? 1.2f : 0.6f);
             return true;
         }
 
@@ -57,7 +57,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (Interacting)
             {
-                if (time - _doorInteractStartTime > 1f)
+                if (_doorInteractionEndTime < time)
                 {
                     Clear();
 
@@ -96,7 +96,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             _interactionDoorIndex = index;
             _interactionDoors[index] = data;
-             //bool value = TryInteractWithDoor(interactionType, time, ref data);
+            //bool value = TryInteractWithDoor(interactionType, time, ref data);
             currentDoor = data;
             return true;
         }
@@ -106,10 +106,9 @@ namespace SAIN.SAINComponent.Classes.Mover
             Interacting = false;
             _interactionDoorIndex = 0;
             ActiveDoor = new();
-            _doorInteractStartTime = 0;
+            _doorInteractionEndTime = 0;
             InteractionType = EInteractionType.Open;
         }
-
 
         private int _interactionDoorIndex;
 
@@ -154,8 +153,79 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
         }
 
+        private static bool FindDoorFromCollider(Collider collider, out DoorDataStruct data, out int index, List<DoorDataStruct> doors)
+        {
+            if (collider == null)
+            {
+                data = default;
+                index = -1;
+                return false;
+            }
+            data = default;
+            for (index = 0; index < doors.Count; index++)
+            {
+                data = doors[index];
+                if (data.Door.Collider == collider)
+                {
+                    return true;
+                }
+                if (collider.GetComponent<NavMeshDoorLink>() == data.Link)
+                {
+                    Logger.LogDebug($"Found NavMeshDoorLink from collider");
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private static bool RaycastToDoors(out EInteractionType interactionType, ref DoorDataStruct data, out int index, float RAY_LENGTH, Ray ray, List<DoorDataStruct> doors)
         {
+            const float SPHERECAST_RADIUS = 0.25f;
+            const float SPHERECAST_DISTANCE = 1.5f;
+            if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out RaycastHit hit, SPHERECAST_DISTANCE, LayerMaskClass.PlayerStaticDoorMask))
+            {
+                DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                if (FindDoorFromCollider(hit.collider, out data, out index, doors))
+                {
+                    Logger.LogDebug($"Found door from hit collider [PlayerStaticDoorMask] [{hit.collider.name}]");
+                    if (data.Door.DoorState == EDoorState.Open)
+                    {
+                        interactionType = EInteractionType.Close;
+                        return true;
+                    }
+                    if (data.Door.DoorState == EDoorState.Shut)
+                    {
+                        interactionType = EInteractionType.Open;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.LogDebug($"Failed to find door, but we hit something on [PlayerStaticDoorMask] [{hit.collider.name}]");
+                }
+            }
+            if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out hit, SPHERECAST_DISTANCE, LayerMaskClass.DoorLayer))
+            {
+                DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+                if (FindDoorFromCollider(hit.collider, out data, out index, doors))
+                {
+                    Logger.LogDebug($"Found door from hit collider [DoorLayer] [{hit.collider.name}]");
+                    if (data.Door.DoorState == EDoorState.Open)
+                    {
+                        interactionType = EInteractionType.Close;
+                        return true;
+                    }
+                    if (data.Door.DoorState == EDoorState.Shut)
+                    {
+                        interactionType = EInteractionType.Open;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.LogDebug($"Failed to find door, but we hit something on [DoorLayer] [{hit.collider.name}]");
+                }
+            }
             for (index = 0; index < doors.Count; index++)
             {
                 data = doors[index];
@@ -163,67 +233,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 if (!CanInteract(data.Link)) continue;
                 Collider doorCollider = data.Door.Collider;
                 if (doorCollider == null) continue;
-                if (doorCollider.Raycast(ray, out RaycastHit hit, 1f))
+                if (doorCollider.Raycast(ray, out hit, SPHERECAST_DISTANCE))
                 {
                     Logger.LogDebug($"hit door  [Door.collider.Raycast]");
-                    DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
-                    if (data.Door.DoorState == EDoorState.Open)
-                    {
-                        interactionType = EInteractionType.Close;
-                        return true;
-                    }
-                    if (data.Door.DoorState == EDoorState.Shut)
-                    {
-                        interactionType = EInteractionType.Open;
-                        return true;
-                    }
-                }
-                if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.PlayerStaticDoorMask))
-                {
-                    if (hit.collider != data.Door.Collider)
-                    {
-                        var hitDoor = hit.collider.gameObject.GetComponent<Door>();
-                        if (hitDoor != null)
-                        {
-                            Logger.LogDebug($"Found door from hit getcomp [PlayerStaticDoorMask] ");
-                            if (hitDoor == data.Door)
-                            {
-                                Logger.LogDebug($"its the same door! [PlayerStaticDoorMask] ");
-                            }
-                        }
-                        Logger.LogDebug($"hit.collider != data.Door.Collider [PlayerStaticDoorMask] [{hit.collider.name}]");
-                        continue;
-                    }
-                    Logger.LogDebug($"hit door [LayerMaskClass.PlayerStaticDoorMask]");
-                    DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
-                    if (data.Door.DoorState == EDoorState.Open)
-                    {
-                        interactionType = EInteractionType.Close;
-                        return true;
-                    }
-                    if (data.Door.DoorState == EDoorState.Shut)
-                    {
-                        interactionType = EInteractionType.Open;
-                        return true;
-                    }
-                }
-                if (Physics.SphereCast(ray, 0.25f, out hit, 1f, LayerMaskClass.DoorLayer))
-                {
-                    if (hit.collider != data.Door.Collider)
-                    {
-                        var hitDoor = hit.collider.gameObject.GetComponent<Door>();
-                        if (hitDoor != null)
-                        {
-                            Logger.LogDebug($"Found door from hit getcomp [DoorLayer] ");
-                            if (hitDoor == data.Door)
-                            {
-                                Logger.LogDebug($"its the same door! [DoorLayer] ");
-                            }
-                        }
-                        Logger.LogDebug($"hit.collider != data.Door.Collider [DoorLayer] [{hit.collider.name}]");
-                        continue;
-                    }
-                    Logger.LogDebug($"hit door [DoorLayer]");
                     DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
                     if (data.Door.DoorState == EDoorState.Open)
                     {
@@ -351,12 +363,17 @@ namespace SAIN.SAINComponent.Classes.Mover
             return false;
         }
 
-        public static bool IsDoorPullOpen(Door door, Vector3 botPosition)
+        public static bool IsDoorPullOpen(DoorDataStruct doorData, Vector3 botPosition)
         {
-            return door.GetInteractionParameters(botPosition).AnimationId == (int)EInteraction.DoorPullBackward;
+            Vector3 doorOpenPos = doorData.Link.Open2;
+            Vector3 doorPos = doorData.Link.transform.position;
+            Vector3 openDirection = (doorOpenPos - doorPos).normalized;
+            Vector3 botDirection = (botPosition - doorPos).normalized;
+            float dotProduct = Vector3.Dot(openDirection, botDirection);
+            return dotProduct > 0;
         }
 
         public DoorDataStruct ActiveDoor = new();
-        private float _doorInteractStartTime;
+        private float _doorInteractionEndTime;
     }
 }

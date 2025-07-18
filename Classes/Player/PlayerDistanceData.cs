@@ -14,20 +14,14 @@ namespace SAIN.Components.PlayerComponentSpace
         public Vector3 OwnerLookDirection;
 
         public DirectionData MainData;
-        public BodyPartDirectionData[] BodyParts;
 
         public static PlayerDirectionData GetUpdatedDirectionData(PlayerDirectionData data, PlayerComponent Owner, PlayerComponent OtherPlayer)
         {
-            // Prepare the owner's positions
             var Transform = Owner.Transform;
             data.OwnerPosition = Transform.Position;
             data.OwnerLookDirection = Transform.LookDirection;
             data.OwnerViewPosition = Transform.EyePosition;
-
-            // Prepare the new positions for the other player, and each body part.
-            DirectionData mainData = data.MainData;
-            mainData.Position = OtherPlayer.Position;
-            data.MainData = mainData;
+            data.MainData.Position = OtherPlayer.Position;
             return data;
         }
     }
@@ -106,15 +100,9 @@ namespace SAIN.Components.PlayerComponentSpace
     {
         public PlayerDistanceData(PlayerComponent OtherPlayer)
         {
-            var bodyParts = OtherPlayer.BodyParts.PartsArray;
             Data = new() {
                 MainData = new(),
-                BodyParts = new BodyPartDirectionData[bodyParts.Length]
             };
-            for (int i = 0; i < bodyParts.Length; i++)
-            {
-                Data.BodyParts[i] = new(bodyParts[i].Type);
-            }
         }
 
         public void SetPlayerDirectionData(PlayerDirectionData data)

@@ -5,6 +5,7 @@ using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Plugin;
 using SAIN.Preset;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System.Collections;
@@ -15,6 +16,7 @@ using System.Text;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using static GClass1943;
 
 namespace SAIN.Components.CoverFinder
 {
@@ -51,10 +53,12 @@ namespace SAIN.Components.CoverFinder
         public ECoverFinderStatus CurrentStatus { get; private set; }
 
         public TargetData TargetData {
-            get {
+            get
+            {
                 return _targetData;
             }
-            private set {
+            private set
+            {
                 _targetData = value;
             }
         }
@@ -84,12 +88,12 @@ namespace SAIN.Components.CoverFinder
         }
 
         public BotComponent Bot { get; private set; }
-        public List<CoverPoint> CoverPoints { get; } = new List<CoverPoint>();
+        public List<CoverPoint> CoverPoints { get; } = [];
         private CoverAnalyzer CoverAnalyzer { get; set; }
         private ColliderFinder ColliderFinder { get; set; }
         public bool ProcessingLimited { get; private set; }
         public CoverPoint FallBackPoint { get; private set; }
-        public List<SpottedCoverPoint> SpottedCoverPoints { get; private set; } = new List<SpottedCoverPoint>();
+        public List<SpottedCoverPoint> SpottedCoverPoints { get; private set; } = [];
 
         public void Init(BotComponent bot)
         {
@@ -102,6 +106,8 @@ namespace SAIN.Components.CoverFinder
             bot.BotActivation.BotActiveToggle.OnToggle += botEnabled;
             bot.BotActivation.BotStandByToggle.OnToggle += botInStandBy;
             bot.OnDispose += botDisposed;
+
+            StartCoroutine(findCoverLoopNew());
         }
 
         public void Update()
@@ -232,6 +238,49 @@ namespace SAIN.Components.CoverFinder
                 DisposeJobs();
             }
         }
+
+        private IEnumerator findCoverLoopNew()
+        {
+            WaitForSeconds wait = new(1f / 4f);
+            ColliderFinderParams config = new() {
+                OriginPoint = OriginPoint,
+                HitThreshold = 100,
+                StartBoxWidth = 3f,
+                StartBoxHeight = 0.25f,
+                HeightIncreasePerIncrement = 1f,
+                HeightDecreasePerIncrement = 1f,
+                LengthIncreasePerIncrement = 4f,
+                MaxIterations = 10,
+            };
+
+            while (true)
+            {
+                if (_nextGetCollidersTime < Time.time)
+                {
+                    _nextGetCollidersTime = Time.time + 4;
+                    //yield return ColliderFinder.GetNewColliders(CoverData, colliderFinderParams);
+                    Vector3 boxOrigin = OriginPoint + Vector3.up * config.StartBoxHeight;
+                    SainBotCoverData.BotColliderQueryParams queryParams = new() {
+                        origin = boxOrigin,
+                        halfExtents = new Vector3(25, 5, 25),
+                        mask = LayerMaskClass.HighPolyWithTerrainNoGrassMask,
+                        minColliderSize = new(0.25f, GlobalSettingsClass.Instance.General.Cover.CoverMinHeight, 0.25f),
+                        maxColliderSize = new(50f, 50f, 50f)
+                    };
+                    int hits = CoverData.OverlapBoxAndFilter(queryParams);
+                    if (hits < config.HitThreshold)
+                    {
+
+                    }
+                        Logger.LogDebug(hits + " colliders found");
+                }
+                CoverData.HandleLists(OriginPoint);
+                yield return wait;
+            }
+        }
+
+        private float _nextGetCollidersTime;
+        private SainBotCoverData CoverData = new();
 
         private IEnumerator findCoverLoop()
         {

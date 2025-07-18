@@ -27,10 +27,6 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public event Action<BotPathCorner, int, int> OnPathCornerComplete;
 
-        public event Action<BotPathCorner, int, int> OnPathSteeringTicked;
-
-        public event Action OnSteeringTicked;
-
         public SAINMoverClass(BotComponent bot) : base(bot)
         {
             TickRequirement = ESAINTickState.OnlyNoSleep;
@@ -50,10 +46,14 @@ namespace SAIN.SAINComponent.Classes.Mover
             Lean.ManualUpdate();
             BlindFire.ManualUpdate();
 
-            if (!CheckTickPath())
+            if (Bot.SAINLayersActive)
             {
-                OnSteeringTicked?.Invoke();
-                Bot.Steering.TickPlayerSteering();
+                Bot.CurrentAction?.UpdateMovement();
+                if (!CheckTickPath())
+                {
+                    Bot.CurrentAction?.OnSteeringTicked();
+                    Bot.Steering.TickPlayerSteering();
+                }
             }
             UpdateStance(Time.time);
             base.ManualUpdate();
@@ -72,9 +72,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     Logger.LogWarning("Failed to recalculate path, cancelling active path.");
                     _activePath.Cancel();
-                    return false;
                 }
-                return true;
             }
             _activePath.TickPath(GameWorldComponent.WorldTickDeltaTime, Time.time);
             return true;
@@ -125,6 +123,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(point))
             {
@@ -157,6 +156,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(lastCorner))
             {
@@ -175,6 +175,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(point))
             {
@@ -200,6 +201,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
             if (reachDist <= 0) reachDist = BASE_DESTINATION_REACH_DIST;
             if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist) return true;
+            if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist) return true;
 
             if (checkSameWay && TryUpdatePath(lastCorner))
             {
@@ -211,7 +213,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             TriggerNewMove(pathCorners, lastCorner, false, ESprintUrgency.None, path);
-            _activePath.SetDestinationReachDistance(-1);
+            _activePath.SetDestinationReachDistance(reachDist);
             return true;
         }
 
@@ -496,8 +498,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void PathSteeringTicked(BotPathCorner corner, int index, int totalCorners)
         {
-            OnSteeringTicked?.Invoke();
-            OnPathSteeringTicked?.Invoke(corner, index, totalCorners);
+            Bot.CurrentAction?.OnPathSteeringTicked(corner, index, totalCorners);
             Bot.Steering.TickPlayerSteering();
         }
 

@@ -38,6 +38,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Bot.Mover.SetTargetMoveSpeed(1f);
                 Bot.Mover.Prone.SetProne(false);
                 BotOwner.WeaponManager.Melee.RunToEnemyUpdate();
+                Bot.Steering.TickPlayerSteering();
                 if (BotOwner.WeaponManager.Melee.ShallEndRun)
                 {
                     BotOwner.WeaponManager.Selector.TryChangeToMain();
@@ -80,8 +81,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return;
             }
-
-            Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.KnownEnemies);
 
             if (_backingUp && Bot.Mover.Moving)
             {

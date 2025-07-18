@@ -1,5 +1,6 @@
 ﻿using SAIN.Components.CoverFinder;
 using SAIN.Helpers;
+using SAIN.Preset.GlobalSettings;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,6 +23,45 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         private CoverFinderComponent CoverFinderComponent;
         private Vector3 OriginPoint => CoverFinderComponent.OriginPoint;
 
+
+        /// <summary>
+        /// Find colliders in a box that expands in size until there are enough colliders to begin cover analysis
+        /// </summary>
+        public static IEnumerator GetNewColliders(SainBotCoverData coverData, ColliderFinderParams config)
+        {
+            Vector3 boxOrigin = config.OriginPoint + Vector3.up * config.StartBoxHeight;
+            Vector3 minColliderSize = new(0.25f, GlobalSettingsClass.Instance.General.Cover.CoverMinHeight, 0.25f);
+            Vector3 maxColliderSize = new(50f, 50f, 50f);
+            int layerCount = _masks.Count;
+            for (int i = 0; i < layerCount; i++)
+            {
+                LayerMask mask = _masks[i];
+
+                float boxLength = config.StartBoxWidth;
+                float boxHeight = config.StartBoxHeight;
+                for (int j = 0; j < config.MaxIterations; j++)
+                {
+                    SainBotCoverData.BotColliderQueryParams queryParams = new() {
+                        origin = boxOrigin,
+                        halfExtents = new Vector3(boxLength, boxHeight, boxLength),
+                        mask = mask,
+                        minColliderSize = minColliderSize,
+                        maxColliderSize = maxColliderSize
+                    };
+                    int hits = coverData.OverlapBoxAndFilter(queryParams);
+                    if (hits >= config.HitThreshold)
+                    {
+                        Logger.LogDebug(hits + " colliders found in Layer: [" + mask.MaskToString() + "] after " + (j + 1) + " iterations");
+                        yield break;
+                    }
+                    boxOrigin += Vector3.down * config.HeightDecreasePerIncrement;
+                    boxHeight += config.HeightIncreasePerIncrement + config.HeightDecreasePerIncrement;
+                    boxLength += config.LengthIncreasePerIncrement;
+                    yield return null;
+                }
+            }
+        }
+
         /// <summary>
         /// Find colliders in a box that expands in size until there are enough colliders to being cover analysis
         /// </summary>
@@ -42,10 +82,10 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             int hits = 0;
             int totalIterations = 0;
             bool foundEnough = false;
-            int layerCount = _layersToCheck.Count;
+            int layerCount = _masks.Count;
             for (int l = 0; l < layerCount; l++)
             {
-                var layer = _layersToCheck[l];
+                var layer = _masks[l];
 
                 for (int i = 0; i < iterationMax; i++)
                 {
@@ -76,12 +116,12 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             HitCount = hits;
         }
 
-        private static readonly List<LayerMask> _layersToCheck = new()
+        private static readonly List<LayerMask> _masks = new()
         {
-            //LayerMaskClass.HighPolyCollider,
+            LayerMaskClass.PlayerStaticCollisionsMask,
             //LayerMaskClass.TerrainLayer,
-            LayerMaskClass.HighPolyWithTerrainMask,
-            LayerMaskClass.LowPolyColliderLayerMask,
+            //LayerMaskClass.HighPolyWithTerrainMask,
+            //LayerMaskClass.LowPolyColliderLayerMask,
         };
 
         private static int GetCollidersInBox(float x, float y, float z, Vector3 boxOrigin, Collider[] array, LayerMask colliderMask)
@@ -105,7 +145,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         private List<GameObject> debugObjects = new();
 
-        private void clearColliders(Collider[] array)
+        private static void clearColliders(Collider[] array)
         {
             for (int i = 0; i < array.Length; i++)
             {
@@ -114,7 +154,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         }
 
         /// <summary>
-        /// Sorts an array of Colliders based on their Distance from bot's Position. 
+        /// Sorts an array of Colliders based on their Distance from bot's Position.
         /// </summary>
         /// <param value="array">The array of Colliders to be sorted.</param>
         public void SortArrayBotDist(Collider[] array)
@@ -128,10 +168,18 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             const float minX = 0.25f;
             const float minZ = 0.25f;
 
+            Vector3 maxSize = new(50f, 50f, 50f);
+
             int hitReduction = 0;
             for (int i = 0; i < hits; i++)
             {
                 Vector3 size = array[i].bounds.size;
+                if (size.x > maxSize.x || size.y > maxSize.y || size.z > maxSize.z)
+                {
+                    array[i] = null;
+                    hitReduction++;
+                    continue;
+                }
                 if (size.y < minY || (size.x < minX && size.z < minZ))
                 {
                     array[i] = null;

@@ -1,6 +1,7 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
+using SAIN.Layers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.Preset.GlobalSettings.Categories;
@@ -74,6 +75,8 @@ namespace SAIN.Components
                 Dispose();
             }
         }
+
+        public IBotAction CurrentAction => BotActivation.CurrentAction;
 
         public bool IsInCombat => BotActivation.BotInCombat;
 

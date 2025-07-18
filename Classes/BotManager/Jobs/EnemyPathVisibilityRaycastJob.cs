@@ -1,5 +1,4 @@
-﻿using SAIN.Helpers;
-using SAIN.SAINComponent.Classes.EnemyClasses;
+﻿using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.Types.Jobs;
 using System;
 using System.Collections;
@@ -16,7 +15,6 @@ namespace SAIN.Components
         {
         }
 
-        protected readonly List<NavMeshPathRaycastJob> RaycastJobs = [];
         protected readonly List<RaycastJob> Jobs = [];
 
         protected override IEnumerator PrimaryFunction()
@@ -57,41 +55,61 @@ namespace SAIN.Components
                 RaycastJob Job = Jobs[i];
                 Job.Complete();
                 NativeArray<RaycastHit> Hits = Job.Hits;
-                NativeArray<RaycastCommand> Commands = Job.Commands;
-                List<Vector3> Points = Job.Points;
-
-                //if (Points == null)
-                //{
-                //    Logger.LogWarning($"null points");
-                //    continue;
-                //}
-                //if (Points.Count != Hits.Length || Points.Count != Commands.Length || Commands.Length != Hits.Length)
-                //{
-                //    Logger.LogWarning($"P:[{Points.Count}] H:[{Hits.Length}] C:[{Commands.Length}]");
-                //}
 
                 if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
                 {
                     Enemy Enemy = Bot.EnemyController.GetEnemy(Job.Target?.ProfileId, false);
                     if (Enemy != null)
                     {
-                        bool PointFound = false;
-                        for (int j = Hits.Length - 1; j >= 0; j--)
+                        if (Hits.Length != Enemy.Path.VisionPathNodePoints.Count)
                         {
-                            if (Hits[j].collider == null)
+                            Logger.LogError($"Raycast Hits count does not match Vision Path Node Points count. Hits: [{Hits.Length}] : Nodes: [{Enemy.Path.VisionPathNodes.Count}] : Points: [{Enemy.Path.VisionPathNodePoints.Count}]");
+                            continue;
+                        }
+                        int hitIndex = 0;
+                        bool PointFound = false;
+
+                        // Update each node with results from raycasts
+                        List<BotVisiblePathNode> nodes = Enemy.Path.VisionPathNodes;
+                        for (int j = 0; j < nodes.Count; j++)
+                        {
+                            BotVisiblePathNode node = nodes[j];
+                            for (int k = 0; k < node.PointStack.Length; k++)
                             {
-                                Enemy.SetLastVisiblePathPoint(Points[j], j);
-                                PointFound = true;
+                                BotVisiblePathPoint Point = node.PointStack[k];
+                                Point.IsVisible = Hits[hitIndex].collider == null;
+                                hitIndex++;
+                                node.PointStack[k] = Point;
+                            }
+                            nodes[j] = node;
+                        }
+
+                        // find the first visible point.
+                        for (int j = nodes.Count - 1; j >= 0; j--)
+                        {
+                            BotVisiblePathNode node = nodes[j];
+                            for (int k = node.PointStack.Length - 1; k >= 0; k--)
+                            {
+                                BotVisiblePathPoint Point = node.PointStack[k];
+                                if (Point.IsVisible)
+                                {
+                                    PointFound = true;
+                                    Enemy.SetLastVisiblePathPoint(Point, k, node, j);
+                                    break;
+                                }
+                            }
+                            if (PointFound)
+                            {
                                 break;
                             }
                         }
+
                         if (!PointFound)
                         {
                             Enemy.ClearVisiblePathPoint();
                         }
                     }
-                }
-                Points.Clear();
+                } 
             }
         }
 
@@ -104,22 +122,22 @@ namespace SAIN.Components
             {
                 if (bot != null && bot.BotActive)
                 {
+                    Vector3 botEyePos = bot.Transform.EyePosition;
                     foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                     {
                         if (enemy == null) continue;
                         if (enemy.EnemyKnown)
                         {
+                            enemy.Path.CheckCalcPath();
                             Vector3[] corners = enemy.Path.PathCorners;
                             if (corners != null)
                             {
                                 int cornerCount = corners.Length;
-                                if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionPathPoints.Count > 0)
+                                if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionPathNodePoints.Count > 0)
                                 {
-                                    enemy.Path.VisionPathPoints_Cache.AddRange(enemy.Path.VisionPathPoints);
-                                    RaycastJob job = new(enemy.Path.VisionPathPoints_Cache, bot.Transform.EyePosition, Mask, bot.Player, enemy.EnemyPlayer);
+                                    RaycastJob job = new(enemy.Path.VisionPathNodePoints, botEyePos, Mask, bot.Player, enemy.EnemyPlayer);
                                     job.Schedule();
                                     Jobs.Add(job);
-                                    //RaycastJobs.Add(NavMeshPathRaycastJob.Create([.. enemy.Path.VisionPathCheckPoints], 5, Mask, bot.Player, enemy.EnemyPlayer));
                                     continue;
                                 }
                                 else if (cornerCount == 2)

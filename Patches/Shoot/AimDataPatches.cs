@@ -241,7 +241,7 @@ namespace SAIN.Patches.Shoot.Aim
                 //{
                 //	__instance.botOwner_0.WeaponManager.ShootController.SetAim(flag);
                 //}
-                //this.HardAim = flag;
+                __instance.HardAim = bot.AimDownSightsController.AimingDownSights;
                 if (value == AimStatus.AimComplete)
                 {
                     ___botOwner_0.BotPersonalStats.Aim(__instance.EndTargetPoint, ___float_7);

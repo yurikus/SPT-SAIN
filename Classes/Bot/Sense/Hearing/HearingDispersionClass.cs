@@ -36,14 +36,14 @@ namespace SAIN.SAINComponent.Classes
 
             HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;
             finalDispersion = Mathf.Clamp(finalDispersion, 0f, hearingSettings.HEAR_DISPERSION_MAX_DISPERSION);
-            Vector3 randomBox = getRandomizedDirection(finalDispersion, 1f, 0.15f, 1f);
-            if (GetRandomReachablePointInBoxAroundPlayer(Sound.HeardPlayerComponent, randomBox, out Vector3 result, out NavMeshPath path, 4f, 20))
+            //Vector3 randomBox = getRandomizedDirection(finalDispersion, 1f, 0.1f, 1f);
+            if (GetRandomReachablePointAroundPlayer(Sound.HeardPlayerComponent, finalDispersion, 0f, out Vector3 result, 4f, 20))
             {
                 if (Sound.HeardPlayer.IsYourPlayer)
                 {
-                    DebugGizmos.DrawBox(Sound.HeardPlayer.Position, randomBox * 0.5f, Color.magenta, 10f);
+                    //DebugGizmos.DrawBox(Sound.HeardPlayer.Position, randomBox * 0.5f, Color.magenta, 10f);
                     var line = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.magenta, 0.1f, 10f, false);
-                    DebugGizmos.SetLinePositions(line, path.corners);
+                    DebugGizmos.SetLinePositions(line, _randomPath.corners);
                 }
                 return result;
             }
@@ -93,6 +93,49 @@ namespace SAIN.SAINComponent.Classes
             path = null;
             return false; // No valid point found
         }
+
+        public static bool GetRandomReachablePointAroundPlayer(PlayerComponent playerComp, float radius, float height, out Vector3 result, float navSampleRange = 2f, int maxTries = 10)
+        {
+            //for (int i = _preAlocPathList.Count - 1; i < maxTries; i++)
+            //{
+            //    _preAlocPathList.Add(new());
+            //}
+            PlayerNavData navData = playerComp.Transform.NavData;
+            Vector3 origin = navData.Status == EPlayerNavMeshDistance.OffNavMesh ? playerComp.Position : playerComp.Transform.NavData.Position;
+            for (int i = 0; i < maxTries; i++)
+            {
+                Vector3 randomDir = new(
+                    Random.Range(-radius, radius),
+                    Random.Range(-height, height),
+                    Random.Range(-radius, radius)
+                );
+                Vector3 randomPoint = origin + randomDir;
+                if (!NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navSampleRange, -1))
+                {
+                    Logger.LogDebug($"Failed nav sample [randomDir magnitude: {randomDir.magnitude}] [Radius: {radius}]");
+                    continue; // No valid point found
+                }
+                _randomPath ??= new NavMeshPath();
+                _randomPath.ClearCorners();
+                if (!NavMesh.CalculatePath(origin, hit.position, -1, _randomPath))
+                {
+                    Logger.LogDebug($"Failed nav path");
+                    continue;
+                }
+                Vector3[] corners = _randomPath.corners;
+                int length = corners.Length;
+                if (length > 1)
+                {
+                    result = corners[length - 1];
+                    return true;
+                }
+            }
+
+            result = Vector3.zero;
+            return false; // No valid point found
+        }
+
+        private static NavMeshPath _randomPath;
 
         public static Vector3 RandomPointInBox(Vector3 center, Vector3 size)
         {

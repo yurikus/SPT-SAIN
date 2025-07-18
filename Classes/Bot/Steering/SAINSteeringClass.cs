@@ -41,7 +41,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return true;
 
                 case ESteerPriority.Aiming:
-                    LookToPoint(Bot.Aim.EndTargetPoint());
+                    //LookToPoint(Bot.Aim.EndTargetPoint());
                     return true;
 
                 case ESteerPriority.ManualShooting:
@@ -191,19 +191,22 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void LookToUnderFirePos()
         {
+            if (LookToLastKnownEnemyPosition(Bot.Memory.LastUnderFireEnemy))
+            {
+                return;
+            }
             LookToPoint(Bot.Memory.UnderFireFromPosition + WeaponRootOffset);
         }
 
         private void LookToLastHitPos()
         {
             var enemyWhoShotMe = _steerPriorityClass.EnemyWhoLastShotMe;
+            if (LookToLastKnownEnemyPosition(enemyWhoShotMe))
+            {
+                return;
+            }
             if (enemyWhoShotMe != null)
             {
-                if (FindLastKnownTarget(enemyWhoShotMe, out Vector3 Result))
-                {
-                    LookToPoint(Result);
-                    return;
-                }
                 var lastShotPos = enemyWhoShotMe.Status.LastShotPosition;
                 if (lastShotPos != null)
                 {

@@ -36,17 +36,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void PathCornerComplete(BotPathCorner corner, int index, int totalCorners);
 
-        /// <summary>
-        /// The Corner we are moving to, the index we are current at, and the total indexes in the path.
-        /// </summary>
-        public event Action<BotPathCorner, int, int> OnPathSteeringTicked;
-
         public void PathSteeringTicked(BotPathCorner corner, int index, int totalCorners);
-
-        /// <summary>
-        /// Steering Tick when not moving anywhere.
-        /// </summary>
-        public event Action OnSteeringTicked;
     }
 
     public class BotPathDataManual : IBotPathData
@@ -376,7 +366,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 if (Bot.DoorOpener.Interacting || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data))
                 {
                     DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
+                    //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
                     Vector3 position = CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
                     Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(position - Bot.Position, position, Bot.PlayerComponent);
                     return true;
@@ -406,12 +396,12 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 if (_unpauseTime < Time.time)
                 {
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]: unpaused");
+                    //Logger.LogDebug($"[{Bot.name}]:[{Id}]: unpaused");
                     UnPause();
                 }
                 else if (_pauseStartTime < Time.time)
                 {
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]: paused");
+                    //Logger.LogDebug($"[{Bot.name}]:[{Id}]: paused");
                     SetSprint(false, "paused");
                     return true;
                 }
@@ -440,7 +430,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return true;
                 }
 
-                if (_lastCheckedMoveData.SqrMagnitude - currentMoveData.SqrMagnitude > 0f)
+                if (_lastCheckedMoveData.SqrMagnitude - currentMoveData.SqrMagnitude > 0.01f)
                 {
                     _timeNotMoving = -1f;
                 }
@@ -451,6 +441,16 @@ namespace SAIN.SAINComponent.Classes.Mover
                 _lastCheckedMoveData = currentMoveData;
                 if (_timeNotMoving > 0f)
                 {
+                    if (CheckObjectInWay(BotPosition(), CurrentCornerMoveData.CornerDirectionFromBot, 1f, 0.2f, 1f))
+                    {
+                        Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from object in way: " +
+                            $"{currentMoveData.CornerDirectionFromBot}:" +
+                            $"{currentMoveData.CornerDirectionFromBotNormal}:" +
+                            $"{currentMoveData.Dot}:" +
+                            $"{currentMoveData.SqrMagnitude}");
+                        PathRecalcRequested = true;
+                        return true;
+                    }
                     float timeSinceNoMove = Time.time - _timeNotMoving;
                     if (timeSinceNoMove > 2)
                     //if (timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_RECALC_TIME)
@@ -472,6 +472,16 @@ namespace SAIN.SAINComponent.Classes.Mover
                         Bot.Mover.TryVault();
                     }
                 }
+            }
+            return false;
+        }
+
+        private static bool CheckObjectInWay(Vector3 botPosition, Vector3 direction, float height = 1f, float sphereCastRadius = 0.2f, float maxDist = 1f)
+        {
+            if (Physics.SphereCast(botPosition + (Vector3.up * height), sphereCastRadius, direction, out RaycastHit hit, maxDist, LayerMaskClass.PlayerStaticCollisionsMask))
+            {
+                DebugGizmos.DrawLine(botPosition + (Vector3.up * height), hit.point, Color.green, 0.1f, 3);
+                return true;
             }
             return false;
         }
@@ -593,12 +603,14 @@ namespace SAIN.SAINComponent.Classes.Mover
                 case EBotSprintStatus.Running:
                 case EBotSprintStatus.Turning:
                     Bot.Steering.LookToFloorPoint(corner.Position);
+                    Bot.Steering.TickPlayerSteering();
                     return;
 
                 case EBotSprintStatus.Canceling:
                     if (Bot.Player.IsSprintEnabled)
                     {
                         Bot.Steering.LookToFloorPoint(corner.Position);
+                        Bot.Steering.TickPlayerSteering();
                         return;
                     }
                     break;

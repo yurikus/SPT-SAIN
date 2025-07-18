@@ -45,7 +45,7 @@ namespace SAIN.Patches.Generic.Fixes
                 bool flag;
                 if (flag = (goalEnemy.Distance < __instance.Single_0))
                 {
-                    __instance.botOwner_0.Steering.LookToPoint(goalEnemy.BodyData().Key.Position);
+                    bot.Steering.LookToPoint(goalEnemy.BodyData().Key.Position);
                     if (goalEnemy.Person.AIData.Player.MovementContext.IsInPronePose)
                     {
                         bot.Mover.SetTargetPose(0f);
@@ -53,7 +53,6 @@ namespace SAIN.Patches.Generic.Fixes
                 }
                 else
                 {
-                    bot.Mover.SetTargetPose(1f);
                     bot.Steering.LookToMovingDirection(true);
                 }
 
@@ -112,23 +111,6 @@ namespace SAIN.Patches.Generic.Fixes
                 }
                 return false;
             }
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Test
-    /// </summary>
-    internal class InfiniteMagFixPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotReload), nameof(BotReload.TryUploadMagazine));
-        }
-
-        [PatchPrefix]
-        public static bool Patch(BotReload __instance)
-        {
             return false;
         }
     }

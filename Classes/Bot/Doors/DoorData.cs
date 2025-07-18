@@ -46,7 +46,7 @@ namespace SAIN.SAINComponent.Classes.Mover
     {
         private const float DOORS_POSSIBLE_OPEN_DISTANCE_SQR = 3f * 3f;
         private const float DOORS_POSSIBLE_CLOSE_DISTANCE_SQR = 3f * 3f;
-        private const float DOOR_INTERACTION_INTERVAL = 2.5f;
+        private const float DOOR_INTERACTION_INTERVAL = 3.5f;
         private const float DOOR_OPEN_INTERVAL = 5f;
         private const float DOOR_CLOSE_INTERVAL = 5f;
 

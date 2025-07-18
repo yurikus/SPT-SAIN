@@ -18,10 +18,10 @@ namespace SAIN.Layers.Combat.Squad
                     return;
                 }
 
-                if (Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies))
+                if (Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies, 0, 0, false))
                 {
                     _manualShooting = true;
-                    Bot.Mover.Stop();
+                    //Bot.Mover.Stop();
 
                     bool hasMachineGun = Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun;
                     if (hasMachineGun

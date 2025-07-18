@@ -1,5 +1,4 @@
 ﻿using EFT;
-using SAIN.BotController.Classes;
 using SAIN.Components;
 using SAIN.Helpers.Events;
 using SAIN.Models.Enums;
@@ -7,11 +6,9 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
 using UnityEngine;
-using static UnityEngine.UIElements.UIR.Implementation.UIRStylePainter;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-
     public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<SAINDecisionClass>(decisionClass), IBotClass
     {
         private const float DECISION_FREQUENCY = 1f / 10;
@@ -97,23 +94,23 @@ namespace SAIN.SAINComponent.Classes.Decision
                 SetDecisions(ECombatDecision.None, ESquadDecision.None, ESelfActionType.None, enemy);
                 return;
             }
-
             BaseClass.EnemyDecisions.DebugShallSearch = null;
-            if (Bot.Info.Profile.WildSpawnType == WildSpawnType.bossTagilla)
+            if (BaseClass.SelfActionDecisions.GetDecision(out ESelfActionType selfDecision, enemy))
             {
-                if (shallTagillaHammerAttack(enemy))
-                {
-                    SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
-                    return;
-                }
-                if (BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMain();
-            }
-
-            if (Bot.Decision.DogFightDecision.DogFightActive)
-            {
-                SetDecisions(ECombatDecision.DogFight, ESquadDecision.None, ESelfActionType.None, enemy);
+                SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, selfDecision, enemy);
                 return;
             }
+
+            // TODO: rework melee decisions
+            //if (Bot.Info.Profile.WildSpawnType == WildSpawnType.bossTagilla)
+            //{
+            //    if (shallTagillaHammerAttack(enemy))
+            //    {
+            //        SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
+            //        return;
+            //    }
+            //    if (BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMain();
+            //}
 
             if (enemy != null && enemy.IsZombie)
             {
@@ -129,17 +126,17 @@ namespace SAIN.SAINComponent.Classes.Decision
                     return;
                 }
             }
+            if (Bot.Decision.DogFightDecision.DogFightActive)
+            {
+                SetDecisions(ECombatDecision.DogFight, ESquadDecision.None, ESelfActionType.None, enemy);
+                return;
+            }
             if (BotOwner.WeaponManager.IsMelee)
             {
                 SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
                 return;
             }
-            if (BaseClass.SelfActionDecisions.GetDecision(out ESelfActionType selfDecision, enemy))
-            {
-                SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, selfDecision, enemy);
-                return;
-            }
-            if (CheckContinueRetreat())
+            if (ContinueMoveToCover())
             {
                 SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, Bot.Decision.CurrentSelfDecision, enemy);
                 return;
@@ -181,6 +178,11 @@ namespace SAIN.SAINComponent.Classes.Decision
                     solo != ECombatDecision.None ||
                     self != ESelfActionType.None ||
                     squad != ESquadDecision.None;
+
+                if (hasDecision)
+                {
+                    BotOwner.PatrollingData.Pause();
+                }
 
                 HasDecisionToggle.CheckToggle(hasDecision);
                 ChangeDecisionTime = Time.time;
@@ -271,7 +273,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
         }
 
-        private bool CheckContinueRetreat()
+        private bool ContinueMoveToCover()
         {
             bool runningToCover = Bot.Decision.RunningToCover;
             if (!runningToCover) return false;

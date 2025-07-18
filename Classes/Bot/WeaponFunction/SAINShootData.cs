@@ -99,11 +99,7 @@ namespace SAIN.SAINComponent.Classes
 
         private void UpdateADS(Enemy enemy)
         {
-            if (_changeAimTimer < Time.time)
-            {
-                _changeAimTimer = Time.time + 0.25f;
-                Bot.AimDownSightsController.UpdateADSstatus(enemy);
-            }
+            Bot.AimDownSightsController.UpdateADSstatus(enemy);
         }
 
         public Enemy CheckEnemiesForShootableTargets(EnemyList VisibleEnemies)

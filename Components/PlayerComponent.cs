@@ -220,10 +220,6 @@ namespace SAIN.Components.PlayerComponentSpace
             {
                 bool isAI = BotOwner != null;
                 Transform.ManualUpdate(Player, isAI);
-                if (isAI)
-                {
-                    CharacterController.UpdateBotMovement(currentTime, deltaTime, Player, BotOwner, BotComponent);
-                }
                 if (!isAI ||
                     (BotOwner.BotState == EBotState.Active && BotOwner.StandBy.StandByType == BotStandByType.active))
                 {

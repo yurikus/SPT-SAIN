@@ -68,6 +68,7 @@ namespace SAIN.SAINComponent.Classes
         }
 
         private readonly List<CoverPoint> _coverPoints = [];
+
         private CoverPoint FindCoverPoint()
         {
             if (CoverPoints.Count == 0)
@@ -90,7 +91,6 @@ namespace SAIN.SAINComponent.Classes
                     return coverPoint;
                 }
             }
-
 
             if (CoverPoints.Count == 1)
             {
@@ -199,6 +199,29 @@ namespace SAIN.SAINComponent.Classes
 
         public void UpdateCover(Enemy enemy)
         {
+            //if (_customNavPoint != null)
+            //{
+            //    if ((_customNavPoint.Position - Bot.Position).sqrMagnitude <= 2f)
+            //    {
+            //        _customNavPoint = null;
+            //    }
+            //    else if (!Bot.Mover.Moving)
+            //    {
+            //        _customNavPoint = null;
+            //    }
+            //    else
+            //    {
+            //        DebugGizmos.DrawLine(_customNavPoint.Position, Bot.Position + Vector3.up, Color.green, 0.075f, 0.02f, true);
+            //        return;
+            //    }
+            //}
+            //
+            //if (FindEFTBotCover(out var eftCover, enemy))
+            //{
+            //    _customNavPoint = eftCover;
+            //    return;
+            //}
+
             if (Time.time - _timeLastUpdate < GetInterval()) return;
             _timeLastUpdate = Time.time;
 
@@ -273,6 +296,87 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
+        private CustomNavigationPoint _customNavPoint;
+
+        private bool FindEFTBotCover(out CustomNavigationPoint result, Enemy priorityEnemy)
+        {
+            Vector3 botPosition = Bot.Position;
+            List<CustomNavigationPoint> points = BotOwner.Covers.GetClosePoints(botPosition, 75f);
+            if (points.Count > 1) points.Sort((x, y) => (x.Position - botPosition).sqrMagnitude.CompareTo((y.Position - botPosition).sqrMagnitude));
+            for (int i = 0; i < points.Count; i++)
+            {
+                result = points[i];
+                if (CheckCoverPoint(result, priorityEnemy))
+                {
+                    //if (Bot.Mover.RunToPoint(result.Position, false, -1, Mover.ESprintUrgency.High))
+                    //{
+                        //DebugGizmos.DrawSphere(result.Position, 0.25f, Color.green, 1f, $"[{Bot.name}] Selected Cover Point");
+                    //    return true;
+                    //}
+                    //DebugGizmos.DrawSphere(result.Position, 0.25f, Color.yellow, 1f, $"[{Bot.name}] Cant Move To Cover Point");
+                }
+                else
+                {
+                    //DebugGizmos.DrawSphere(result.Position, 0.25f, Color.red, 1f, $"[{Bot.name}] Bad Cover Point");
+                }
+            }
+            result = null;
+            return false;
+        }
+
+        private bool CheckCoverPoint(CustomNavigationPoint point, Enemy priorityEnemy)
+        {
+            const float SPHERE_RADIUS = 0.1f;
+            LayerMask mask = LayerMaskClass.PlayerStaticCollisionsMask;
+            RaycastHit hit;
+            EnemyPlace lastKnown;
+            Vector3 pointPosition = point.Position + Vector3.up;
+            if (priorityEnemy != null)
+            {
+                lastKnown = priorityEnemy.KnownPlaces.LastKnownPlace;
+                if (lastKnown != null)
+                {
+                    if (!Physics.SphereCast(pointPosition, SPHERE_RADIUS, lastKnown.Position + Vector3.up - pointPosition, out hit, 2f, mask))
+                    {
+                        DebugGizmos.DrawLine(pointPosition, lastKnown.Position + Vector3.up, Color.red, 0.1f, 0.02f, true);
+                        return false;
+                    }
+                    if (!Physics.SphereCast(pointPosition, SPHERE_RADIUS, lastKnown.BodyPartPositions[EBodyPart.Head] - pointPosition, out hit, 2f, mask))
+                    {
+                        DebugGizmos.DrawLine(pointPosition, lastKnown.Position + Vector3.up, Color.red, 0.15f, 0.02f, true);
+                        return false;
+                    }
+                    DebugGizmos.DrawLine(pointPosition, hit.point, Color.green, 0.075f, 0.02f, true);
+                }
+            }
+            List<Enemy> knownEnemies = Bot.EnemyController.KnownEnemies;
+            foreach (Enemy enemy in knownEnemies)
+            {
+                if (enemy == null) continue;
+                lastKnown = enemy.KnownPlaces.LastKnownPlace;
+                if (lastKnown == null) continue;
+
+                if ((lastKnown.Position - point.Position).sqrMagnitude < 3f * 3f)
+                {
+                    return false; // Enemy is too close to the cover point
+                }
+                Vector3 lastKnownPos = lastKnown.Position + Vector3.up;
+                if (!Physics.SphereCast(lastKnownPos, SPHERE_RADIUS, pointPosition - lastKnownPos, out hit, (pointPosition - lastKnownPos).magnitude, mask))
+                {
+                    DebugGizmos.DrawLine(lastKnownPos, pointPosition, Color.red, 0.075f, 0.02f, true);
+                    return false;
+                }
+                Vector3 lastKnownEyePos = lastKnown.BodyPartPositions[EBodyPart.Head];
+                if (!Physics.SphereCast(lastKnownEyePos, SPHERE_RADIUS, pointPosition - lastKnownEyePos, out hit, (pointPosition - lastKnownEyePos).magnitude, mask))
+                {
+                    DebugGizmos.DrawLine(lastKnownEyePos, pointPosition, Color.red, 0.075f, 0.02f, true);
+                    return false;
+                }
+            }
+            DebugGizmos.Ray(point.Position, Vector3.up, Color.green, 1f, 0.2f, 0.02f);
+            return true;
+        }
+
         private float GetInterval()
         {
             if (CoverInUse == null && CoverPoint_MovingTo == null)
@@ -308,6 +412,7 @@ namespace SAIN.SAINComponent.Classes
                     CoverInUse = null;
                     CoverPoint_MovingTo = null;
                     _shallSprint = false;
+                    _customNavPoint = null;
                     return;
 
                 default:

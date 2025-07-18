@@ -224,15 +224,24 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private Enemy SelectEnemy()
         {
+            if (Bot.Decision.DogFightDecision.CheckShallDogFight(KnownEnemies, out Enemy dogFightEnemy))
+            {
+                return dogFightEnemy;
+            }
             const float CHANGE_ENEMY_DIST_RATIO_SHOOTER = 0.66f;
             const float CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER = 0.33f;
             const float CHANGE_ENEMY_KNOWN_KNOWN_DIST_RATIO = 0.5f;
             const float CHANGE_ENEMY_KNOWN_SHOT_AT_ME_DIST_RATIO = 0.5f;
             const float MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST = 50f;
 
-            if (Bot.Decision.DogFightDecision.CheckShallDogFight(KnownEnemies, out Enemy dogFightEnemy))
+            if (_goalEnemy != null && (
+                !_goalEnemy.CheckValid() ||
+                !Enemy.IsEnemyActive(_goalEnemy) ||
+                !_goalEnemy.EnemyKnown
+                ))
             {
-                return dogFightEnemy;
+                LastGoalEnemy = _goalEnemy;
+                _goalEnemy = null;
             }
 
             if (VisibleEnemies.Count > 0)
@@ -240,7 +249,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return SelectVisibleEnemy(CHANGE_ENEMY_DIST_RATIO_SHOOTER, CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER);
             }
 
-            if (Bot.Medical.TimeSinceShot < 5f)
+            if (Bot.Medical.TimeSinceShot < 2f)
             {
                 Enemy enemy = Bot.Medical.HitByEnemy.EnemyWhoLastShotMe;
                 if (enemy != null && KnownEnemies.Contains(enemy))
@@ -248,19 +257,36 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     return enemy;
                 }
             }
+            //
+            //if (BotOwner.Memory.IsUnderFire)
+            //{
+            //    Enemy enemy = Bot.Memory.LastUnderFireEnemy;
+            //    if (enemy != null && KnownEnemies.Contains(enemy))
+            //    {
+            //        return enemy;
+            //    }
+            //}
 
-            if (BotOwner.Memory.IsUnderFire)
+            if (_goalEnemy != null)
             {
-                Enemy enemy = Bot.Memory.LastUnderFireEnemy;
-                if (enemy != null && KnownEnemies.Contains(enemy))
+                if (_goalEnemy.Events.OnSearch.Value)
                 {
-                    return enemy;
+                    return _goalEnemy;
                 }
-            }
+                var decision = Bot.Decision.CurrentCombatDecision;
+                switch (decision)
+                {
+                    case ECombatDecision.SeekCover:
+                    case ECombatDecision.Retreat:
+                    case ECombatDecision.RunAway:
+                    case ECombatDecision.ShiftCover:
+                    case ECombatDecision.FightZombies:
+                    case ECombatDecision.None:
+                        break;
 
-            if (_goalEnemy != null && _goalEnemy.Events.OnSearch.Value)
-            {
-                return _goalEnemy;
+                    default:
+                        return _goalEnemy;
+                }
             }
 
             List<Enemy> seenEnemies = _preAllocList;
@@ -288,7 +314,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 if (knownEnemy.KnownPlaces.BotDistanceFromLastKnown <= MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST) return knownEnemy;
                 if (knownEnemy.KnownPlaces.EnemyDistanceFromLastKnown < CHANGE_ENEMY_KNOWN_KNOWN_DIST_RATIO * _goalEnemy.RealDistance) return closestKnownEnemy;
             }
-            
+
             List<Enemy> enemiesWhoEngagedMe = _preAllocList;
             KnownEnemies.FilterByPredicateNonAlloc(enemiesWhoEngagedMe, x => x.Status.ShotAtMe || x.Status.ShotMe);
             if (enemiesWhoEngagedMe.Count > 0)

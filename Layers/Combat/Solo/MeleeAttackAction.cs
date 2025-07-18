@@ -36,6 +36,7 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void OnSteeringTicked()
         {
+            // handled in RunToEnemyUpdate
         }
 
         public override void Update(CustomLayer.ActionData data)

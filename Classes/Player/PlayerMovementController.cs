@@ -7,7 +7,6 @@ using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using UnityEngine;
-using static EFT.SpeedTree.TreeWind;
 
 namespace SAIN.Classes
 {
@@ -16,19 +15,6 @@ namespace SAIN.Classes
         public bool Moving { get; private set; }
         public Vector3 CurrentControlLookDirection => ControlLookDirection.Current;
         public SmoothDampVectorDirectionNormal ControlLookDirection { get; } = new();
-
-        public void UpdateBotMovement(float currentTime, float deltaTime, [NotNull] Player player, [NotNull] BotOwner botOwner, [CanBeNull] BotComponent botComponent)
-        {
-            //var settings = GlobalSettingsClass.Instance.Steering;
-            //UpdateRandomSway(deltaTime, player, botOwner, botComponent, settings);
-            //UpdateTurnSmoothing(deltaTime, botOwner, botComponent, settings);
-        }
-
-        private void UpdateTurnSmoothing(float deltaTime, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
-        {
-            TurnSettings turnSettings = GetTurnSettings(botOwner, botComponent);
-            ControlLookDirection.Calculate(deltaTime, turnSettings.SmoothingValue, turnSettings.MaxTurnSpeed, settings.TURN_PITCH_MAX);
-        }
 
         private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
         {
@@ -129,7 +115,7 @@ namespace SAIN.Classes
             TurnSettings turnSettings = GetTurnSettings(botOwner, bot);
             ControlLookDirection.Calculate(GameWorldComponent.WorldTickDeltaTime, turnSettings.SmoothingValue, turnSettings.MaxTurnSpeed, GlobalSettingsClass.Instance.Steering.TURN_PITCH_MAX);
             Vector3 dir = ControlLookDirection.Current;
-            botOwner.GetPlayer.CharacterController.SetSteerDirection(dir);
+            //botOwner.GetPlayer.CharacterController.SetSteerDirection(dir);
             SetXAngle(botOwner, dir);
             SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
         }
@@ -173,7 +159,8 @@ namespace SAIN.Classes
 
         public void SetTargetMoveDirection(Vector3 direction, Vector3 finalMoveDestination, PlayerComponent playerComp)
         {
-            //if (direction.sqrMagnitude < 0.001f) return;
+            if (direction.sqrMagnitude < 0.01f) return;
+
             Player player = playerComp.Player;
             float playerSpeed = player.Speed;
 
@@ -187,7 +174,7 @@ namespace SAIN.Classes
             player.EnableSprint(shallSprint);
 
             //direction.Normalize();
-            //player.CharacterController.SetSteerDirection(direction);
+            player.CharacterController.SetSteerDirection(direction.normalized);
             Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
             player.Move(moveDir);
             playerComp.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);

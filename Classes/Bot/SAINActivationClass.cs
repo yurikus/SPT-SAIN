@@ -2,6 +2,7 @@
 using EFT;
 using SAIN.Components;
 using SAIN.Helpers.Events;
+using SAIN.Layers;
 using SAIN.Models.Enums;
 using UnityEngine;
 
@@ -14,6 +15,12 @@ namespace SAIN.SAINComponent.Classes
         private const float ACTIVATE_STANDBY_CHECK_FREQ = 3f;
 
         public ESAINLayer ActiveLayer { get; private set; }
+        public IBotAction CurrentAction { get; private set; }
+
+        public void SetCurrentAction(IBotAction action)
+        {
+            CurrentAction = action;
+        }
 
         public bool BotActive => BotActiveToggle.Value;
         public ToggleEvent BotActiveToggle { get; } = new ToggleEvent();
@@ -36,6 +43,7 @@ namespace SAIN.SAINComponent.Classes
                 ActiveLayer = ESAINLayer.None;
                 SAINLayersActiveToggle.CheckToggle(false);
                 Bot.Mover.Stop();
+                CurrentAction = null;
             }
         }
 
@@ -61,6 +69,7 @@ namespace SAIN.SAINComponent.Classes
             if (wasActive && !activeNow)
             {
                 Bot.Mover.Stop();
+                CurrentAction = null;
             }
         }
 
@@ -102,6 +111,7 @@ namespace SAIN.SAINComponent.Classes
             if (standby)
             {
                 Bot.Mover.Stop();
+                CurrentAction = null;
             }
 
             BotStandByToggle.CheckToggle(standby);

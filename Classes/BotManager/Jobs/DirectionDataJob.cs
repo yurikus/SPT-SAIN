@@ -14,6 +14,7 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
         {
             Point = inPoint;
         }
+
         public Vector3 Point;
         public Vector3 Dir;
         public Vector3 DirNormal;
@@ -107,23 +108,20 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
             OwnerPosition = Owner.Position;
             OwnerLookDirection = Owner.LookDirection;
 
-            OtherPlayerDirectionData.Clear();
             OtherPlayerData.Clear();
             List<OtherPlayerData> OtherPlayers = Owner.OtherPlayersData.DataList;
+            OtherPlayerDirectionData = new NativeArray<PlayerDirectionData>(OtherPlayers.Count, Allocator.TempJob);
             for (int j = 0; j < OtherPlayers.Count; j++)
             {
                 OtherPlayerData otherPlayer = OtherPlayers[j];
-                if (otherPlayer != null)
-                {
-                    OtherPlayerDirectionData.Add(PlayerDirectionData.GetUpdatedDirectionData(otherPlayer.DistanceData.Data, Owner, otherPlayer.OtherPlayerComponent));
-                    OtherPlayerData.Add(otherPlayer);
-                }
+                OtherPlayerDirectionData[j] = PlayerDirectionData.GetUpdatedDirectionData(otherPlayer.DistanceData.Data, Owner, otherPlayer.OtherPlayerComponent);
+                OtherPlayerData.Add(otherPlayer);
             }
         }
 
         public void Execute()
         {
-            for (int i = 0; i < OtherPlayerDirectionData.Count; i++)
+            for (int i = 0; i < OtherPlayerDirectionData.Length; i++)
             {
                 var data = OtherPlayerDirectionData[i];
                 data.MainData.Update(OwnerPosition);
@@ -134,16 +132,16 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
 
         public void ReadData()
         {
-            for (int i = 0; i < OtherPlayerDirectionData.Count; i++)
+            for (int i = 0; i < OtherPlayerDirectionData.Length; i++)
             {
                 OtherPlayerData[i].DistanceData.SetPlayerDirectionData(OtherPlayerDirectionData[i]);
             }
             OtherPlayerData.Clear();
-            OtherPlayerDirectionData.Clear();
+            OtherPlayerDirectionData.Dispose();
         }
 
         public List<OtherPlayerData> OtherPlayerData = [];
-        public List<PlayerDirectionData> OtherPlayerDirectionData = [];
+        public NativeArray<PlayerDirectionData> OtherPlayerDirectionData = [];
     }
 
     public struct PlayerTickJob : IJobFor

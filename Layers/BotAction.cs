@@ -5,18 +5,18 @@ using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SAIN.Layers
 {
     public interface IBotAction
     {
         public string Name { get; }
-        void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners);
-        void OnSteeringTicked();
+        public void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners);
+        public void OnSteeringTicked();
+        public void UpdateMovement();
     }
 
-    public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(botOwner)
+    public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(botOwner), IBotAction
     {
         protected SAINShootData Shoot => Bot.Shoot;
 
@@ -49,9 +49,15 @@ namespace SAIN.Layers
 
         protected EnemyList KnownEnemies { get; private set; }
 
+        
+        public virtual void UpdateMovement()
+        {
+
+        }
+
         public virtual void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners)
         {
-            // Default implementation does nothing, can be overridden by derived classes
+            OnSteeringTicked();
         }
 
         public virtual void OnSteeringTicked()
@@ -70,14 +76,11 @@ namespace SAIN.Layers
 
         public override void Start()
         {
-            Bot.Mover.OnSteeringTicked += OnSteeringTicked;
-            //Bot.Mover.OnPathSteeringTicked += OnPathSteeringTicked;
+            Bot.BotActivation.SetCurrentAction(this);
         }
 
         public override void Stop()
         {
-            Bot.Mover.OnSteeringTicked -= OnSteeringTicked;
-            //Bot.Mover.OnPathSteeringTicked -= OnPathSteeringTicked;
         }
 
         private BotComponent _bot;

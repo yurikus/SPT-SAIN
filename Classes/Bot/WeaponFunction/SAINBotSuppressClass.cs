@@ -64,7 +64,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private Enemy EnemyBeingSuppressed;
 
-        public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 2)
+        public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 2, bool withBehaviorChecks = true)
         {
             if (SuppressingTarget && _suppressTime > Time.time)
             {
@@ -81,7 +81,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
             if (ratio >= minimumAmmoRatio && currentAmmo >= minimumBullets)
             {
-                if (TrySuppressEnemy(priorityEnemy))
+                if (TrySuppressEnemy(priorityEnemy, withBehaviorChecks))
                 {
                     return true;
                 }
@@ -98,13 +98,23 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return false;
         }
 
-        public bool TrySuppressEnemy(Enemy Enemy)
+
+        public float TimeSinceSeenToSuppress = 6f;
+        public float TimeSinceShotAtToSuppress = 2f;
+        public float TimeSinceShotToSuppress = 3f;
+
+        public bool TrySuppressEnemy(Enemy Enemy, bool withBehaviorChecks = true)
         {
-            if (Enemy != null && !Enemy.IsZombie && !Enemy.IsVisible &&
-                ((Enemy.Seen && Enemy.TimeSinceSeen < 4) ||
-                Enemy.Status.ShotAtMeRecently ||
-                Enemy.Status.ShotByEnemyRecently))
+            if (Enemy != null && !Enemy.IsZombie && !Enemy.IsVisible)
             {
+                if (withBehaviorChecks && (
+                    (Enemy.Seen && Enemy.TimeSinceSeen < TimeSinceSeenToSuppress) ||
+                    (Enemy.Status.ShotAtMe && Time.time - Enemy.Status.TimeLastShotAtMe < TimeSinceShotAtToSuppress) ||
+                    (Enemy.Status.ShotMe && Time.time - Enemy.Status.TimeLastShotMe < TimeSinceShotToSuppress)
+                    ))
+                {
+                    return false;
+                }
                 Vector3? suppressTarget = Enemy.SuppressionTarget;
                 if (suppressTarget != null)
                 {

@@ -1,6 +1,6 @@
 ﻿using SAIN.Helpers;
-using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
+using SAIN.Types.Jobs;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -55,24 +55,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public NavMeshPath PathToEnemy { get; } = new NavMeshPath();
         public NavMeshPathStatus PathToEnemyStatus { get; private set; }
-
-        protected List<PathSegment> PathVisionSegments = [];
         public Vector3[] PathCorners { get; private set; }
 
-        /// <summary>
-        /// Ground Positions
-        /// </summary>
-        public List<Vector3> VisionPathCheckPoints { get; } = [];
-
-        /// <summary>
-        /// Raycast Positions
-        /// </summary>
-        public List<Vector3> VisionPathPoints { get; } = [];
-
-        /// <summary>
-        /// Raycast Positions Cached, this list is used by the job so it should not be altered here.
-        /// </summary>
-        public List<Vector3> VisionPathPoints_Cache { get; } = [];
+        public List<BotVisiblePathNode> VisionPathNodes { get; } = [];
+        public List<Vector3> VisionPathNodePoints { get; } = [];
 
         public override void Init()
         {
@@ -90,30 +76,32 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void ManualUpdate()
         {
-            CheckCalcPath();
             base.ManualUpdate();
         }
 
         public override void Dispose()
         {
             Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
+            foreach (var node in VisionPathNodes)
+                node.Dispose();
+            VisionPathNodes.Clear();
+            VisionPathNodePoints.Clear();
+            PathLength = 0f;
             base.Dispose();
         }
 
         public void CheckCalcPath()
         {
-            if (!ShallCalcNewPath())
+            if (ShallCalcNewPath())
             {
-                return;
+                Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
+                PathToEnemy.ClearCorners();
+                NavMesh.CalculatePath(Bot.Position, enemyPosition, -1, PathToEnemy);
+                PathToEnemyStatus = PathToEnemy.status;
+                PathCorners = PathToEnemy.corners;
+                CalcPathDistanceAndCreateVisionCheckSegments();
+                Enemy.Events.PathUpdated(PathToEnemyStatus);
             }
-
-            Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
-            PathToEnemy.ClearCorners();
-            NavMesh.CalculatePath(Bot.Position, enemyPosition, -1, PathToEnemy);
-            PathToEnemyStatus = PathToEnemy.status;
-            PathCorners = PathToEnemy.corners;
-            CalcPathDistanceAndCreateVisionCheckSegments();
-            Enemy.Events.PathUpdated(PathToEnemyStatus);
         }
 
         public bool ShallCalcNewPath()
@@ -153,69 +141,74 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             const float CharacterHeight = 1.5f;
             var settings = GlobalSettingsClass.Instance.Steering;
-
             float distanceBetweenPoints = Enemy.IsAI ? settings.DistanceBetweenPoints_AI : settings.DistanceBetweenPoints;
+            int pointCount = Mathf.RoundToInt(settings.GeneratePointStackHeight);
 
-            PathVisionSegments.Clear();
-            VisionPathCheckPoints.Clear();
+            foreach (var node in VisionPathNodes)
+                node.Dispose();
+            VisionPathNodes.Clear();
+            VisionPathNodePoints.Clear();
             PathLength = 0f;
+
             int CornerCount = PathCorners.Length;
             for (int i = 0; i < CornerCount - 1; i++)
             {
-                Vector3 Corner = PathCorners[i];
-                Vector3 End = PathCorners[i + 1];
-                Vector3 Direction = End - Corner;
-                float Magnitude = Direction.magnitude;
+                Vector3 cornerA = PathCorners[i];
+                Vector3 cornerB = PathCorners[i + 1];
+                Vector3 cornerDir = cornerB - cornerA;
+                Vector3 cornerDirNormal = cornerDir.normalized;
+                float Magnitude = cornerDir.magnitude;
                 PathLength += Magnitude;
 
-                // Dont include the corner index 0, as it is what the bot's position is, we dont need to see if thats visible or not.
-                // Only add a segment if we are under our maximum length, or if we have no segments at all.
-                if (i > 0)
+                if (PathLength <= settings.DistToCheckVision)
                 {
-                    bool firstCorner = i == 1;
-                    if (firstCorner)
-                        VisionPathCheckPoints.Add(Corner);
-                    bool lastCorner = i == CornerCount - 2;
-                    if (PathLength <= settings.DistToCheckVision)
+                    Vector3 step = cornerDirNormal * distanceBetweenPoints;
+                    int count = Mathf.FloorToInt(Magnitude / distanceBetweenPoints);
+                    for (int j = 0; j <= count; j++)
                     {
-                        // Create Equal dist points along the line between two corners.
-                        if (Magnitude > distanceBetweenPoints)
-                        {
-                            if (Magnitude > distanceBetweenPoints * 2f)
-                            {
-                                Vector.GeneratePointsAlongDirection(VisionPathCheckPoints, Corner, Direction, Magnitude, distanceBetweenPoints);
-                            }
-                            else
-                            {
-                                VisionPathCheckPoints.Add(Corner + Direction * 0.5f);
-                            }
-                        }
-                        VisionPathCheckPoints.Add(End);
+                        Vector3 nodePosition = cornerA + step * j;
+                        VisionPathNodes.Add(new BotVisiblePathNode(nodePosition, cornerDirNormal, CharacterHeight, pointCount));
                     }
-                    else if (lastCorner)
-                    {
-                        VisionPathCheckPoints.Add(End);
-                    }
+                }
+                else if (i == CornerCount - 2) // Last corner?
+                {
+                    VisionPathNodes.Add(new BotVisiblePathNode(cornerB, cornerDirNormal, CharacterHeight, pointCount));
                 }
             }
 
-            int max = Mathf.RoundToInt(Enemy.IsAI ? settings.MaxPathPoints_AI : settings.MaxPathPoints);
-            VisionPathPoints.Clear();
-            for (int i = 0; i < VisionPathCheckPoints.Count; i++)
+            //int max = Mathf.RoundToInt(Enemy.IsAI ? GlobalSettingsClass.Instance.Steering.MaxPathPoints_AI : GlobalSettingsClass.Instance.Steering.MaxPathPoints);
+            for (int i = 0; i < VisionPathNodes.Count; i++)
             {
-                Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / settings.GeneratePointStackHeight);
-                if (VisionPathPoints.Count >= max)
+                BotVisiblePathNode node = VisionPathNodes[i];
+                for (int j = 0; j < node.PointStack.Length; j++)
                 {
-                    break;
+                    VisionPathNodePoints.Add(node.PointStack[j].Point);
                 }
+                //if (VisionPathNodePoints.Count >= max)
+                //{
+                //    break;
+                //}
             }
 
-            //if (EnemyPlayer.IsYourPlayer)
+            //Logger.LogDebug($"Found [{VisionPathNodePoints.Count}] Total Points in [{VisionPathNodes.Count}] Nodes");
+            //if (Enemy.Player.IsYourPlayer)
             //{
-            //    foreach (var point in VisionPathCheckPoints)
-            //    {
-            //        DebugGizmos.Sphere(point + Vector3.up * 0.5f, 0.025f, Color.white, true, 0.5f);
-            //    }
+            //foreach (var node in VisionPathNodes)
+            //{
+                //DebugGizmos.DrawSphere(node.GroundPosition, 0.075f, Color.yellow, 2f);
+                //foreach (var point in node.PointStack)
+                //{
+                //    DebugGizmos.DrawSphere(point.Point, 0.075f, Color.yellow, 2f);
+                //}
+            //}
+
+            //GameObject line = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.yellow, 0.1f, 2f);
+            //Vector3[] linePoints = new Vector3[VisionPathNodes.Count];
+            //for (int i = 0; i < linePoints.Length; i++)
+            //{
+            //    linePoints[i] = VisionPathNodes[i].GroundPosition;
+            //}
+            //DebugGizmos.SetLinePositions(line, linePoints);
             //}
 
             if (CornerCount > 0)
@@ -232,8 +225,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             PathLength = float.MaxValue;
             PathCorners = null;
             DistanceToEnemyPositionFromLastCorner = 0;
-            PathVisionSegments.Clear();
-            VisionPathCheckPoints.Clear();
+
+            foreach (var node in VisionPathNodes) node.Dispose();
+            VisionPathNodes.Clear();
+            VisionPathNodePoints.Clear();
         }
 
         private float calcDelayOnDistance()

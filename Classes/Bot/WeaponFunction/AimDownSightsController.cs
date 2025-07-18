@@ -9,6 +9,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
     public class AimDownSightsController : BotComponentClassBase
     {
+        private const float ADS_UPDATE_COOLDOWN = 0.2f;
+
         public AimDownSightsController(BotComponent sain) : base(sain)
         {
             TickRequirement = ESAINTickState.OnlyBotInCombat;
@@ -26,7 +28,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void UpdateADSstatus(Enemy Enemy)
         {
-            if (_timeLastChangedADS > Time.time)
+            if (_timeLastCheckedStatus + 0.1f > Time.time)
                 return;
 
             // If a bot is sneaky, don't change ADS if their enemy is close to avoid alerting them.
@@ -42,11 +44,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             AimingDownSights = ShallAimDownSights(Enemy?.KnownPlaces.LastKnownPosition, Enemy);
             if (AimingDownSights != wasAiming)
             {
-                _timeLastChangedADS = Time.time;
+                _timeLastCheckedStatus = Time.time;
             }
         }
 
-        private float _timeLastChangedADS;
+        private float _timeLastCheckedStatus;
 
         public bool AimingDownSights { get; private set; }
 
@@ -78,7 +80,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                     break;
 
                 case EAimDownSightsStatus.HoldInCover:
-                    result = timeSinceChangeDecision > 3f && 
+                    result = timeSinceChangeDecision > 3f &&
                         (EFTMath.RandomBool(60) || enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f));
                     break;
 
@@ -101,6 +103,14 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void SetADS(bool value)
         {
+            if (Time.time - _timeLastADSUpdate < ADS_UPDATE_COOLDOWN)
+            {
+                return; // Avoid rapid toggling of ADS
+            }
+            if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimingClass)
+            {
+                aimingClass.HardAim = value;
+            }
             var shootController = BotOwner.WeaponManager.ShootController;
             if (shootController != null && shootController.IsAiming != value)
             {
@@ -108,6 +118,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             }
             AimingDownSights = value;
         }
+
+        private float _timeLastADSUpdate;
 
         public EAimDownSightsStatus CurrentADSstatus { get; private set; }
         public EAimDownSightsStatus LastADSstatus { get; private set; }
