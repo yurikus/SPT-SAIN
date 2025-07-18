@@ -94,12 +94,8 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (botOwner.WeaponManager.Malfunctions.HaveMalfunction() && botOwner.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
                 return false;
 
-            _nextGetRatioTime = Time.time + 0.025f;
-            _ammoRatio = getAmmoRatio(reload);
-            if (_ammoRatio <= 0)
-                botOwner.ShootData.EndShoot();
-
-            if (CheckReloadRatiosCanReload(enemy, RELOAD_AMMORATIO_MIN_PEACE, RELOAD_AMMORATIO_MAX, _ammoRatio))
+            float ammoRatio = getAmmoRatio(reload);
+            if (CheckReloadRatiosCanReload(enemy, RELOAD_AMMORATIO_MIN_PEACE, RELOAD_AMMORATIO_MAX, ammoRatio))
             {
                 botOwner.ShootData.EndShoot();
                 if (reload.CanReload(true, out var MagazineItemClass, out var list))
@@ -116,7 +112,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     }
                     return true;
                 }
-                if (_ammoRatio <= 0 && enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
+                if (ammoRatio <= 0 && enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
                 {
                     weaponManager.Selector.ChangeToMelee();
                 }
@@ -253,7 +249,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             if (timeSinceChange > 8f)
             {
-                Bot.SelfActions.BotCancelReload();
+                //Bot.SelfActions.BotCancelReload();
                 return false;
             }
             return true;
@@ -505,12 +501,17 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             const float RELOAD_AMMORATIO_MINIMUM_TIMESINCESEEN = 2f;
 
-            if (enemy.IsVisible && enemy.CanShoot)
+            if (enemy.IsVisible)
             {
                 return false;
             }
-            float timeSinceSensed = enemy.TimeSinceLastKnownUpdated;
-            if (timeSinceSensed < 0.2f)
+            if (!enemy.Seen)
+            {
+                return ammoRatio <= 0.6f;
+            }
+
+            float timesinceSeen = enemy.TimeSinceSeen;
+            if (timesinceSeen < 2f)
             {
                 return false;
             }
@@ -519,32 +520,32 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             if (ammoRatio > RELOAD_AMMORATIO_UPPER)
             {
-                if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_TimeSinceSeen)
+                if (timesinceSeen > RELOAD_AMMORATIO_UPPER_TimeSinceSeen)
                     return true;
                 switch (distance)
                 {
                     case EPathDistance.VeryClose:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose)
+                        if (timesinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose)
                             return true;
                         break;
 
                     case EPathDistance.Close:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close)
+                        if (timesinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close)
                             return true;
                         break;
 
                     case EPathDistance.Mid:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid)
+                        if (timesinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid)
                             return true;
                         break;
 
                     case EPathDistance.Far:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far)
+                        if (timesinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far)
                             return true;
                         break;
 
                     case EPathDistance.VeryFar:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryFar)
+                        if (timesinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryFar)
                             return true;
                         break;
                 }
@@ -552,14 +553,14 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (ammoRatio > RELOAD_AMMORATIO_MID)
             {
-                if (timeSinceSensed > RELOAD_AMMORATIO_MID_TimeSinceSeen)
+                if (timesinceSeen > RELOAD_AMMORATIO_MID_TimeSinceSeen)
                     return true;
                 return distance switch {
-                    EPathDistance.VeryClose => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose,
-                    EPathDistance.Close => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_Close,
-                    EPathDistance.Mid => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid,
-                    EPathDistance.Far => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_Far,
-                    EPathDistance.VeryFar => timeSinceSensed > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar,
+                    EPathDistance.VeryClose => timesinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose,
+                    EPathDistance.Close => timesinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Close,
+                    EPathDistance.Mid => timesinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid,
+                    EPathDistance.Far => timesinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Far,
+                    EPathDistance.VeryFar => timesinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar,
                     _ => false,
                 };
             }
@@ -571,34 +572,34 @@ namespace SAIN.SAINComponent.Classes.Decision
                 switch (distance)
                 {
                     case EPathDistance.VeryClose:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose)
+                        if (timesinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose)
                             return true;
                         break;
 
                     case EPathDistance.Close:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close)
+                        if (timesinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close)
                             return true;
                         break;
 
                     case EPathDistance.Mid:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Mid)
+                        if (timesinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Mid)
                             return true;
                         break;
 
                     case EPathDistance.Far:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Far)
+                        if (timesinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Far)
                             return true;
                         break;
 
                     case EPathDistance.VeryFar:
-                        if (timeSinceSensed > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryFar)
+                        if (timesinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryFar)
                             return true;
                         break;
                 }
                 return false;
             }
 
-            if (timeSinceSensed > RELOAD_AMMORATIO_MINIMUM_TIMESINCESEEN)
+            if (timesinceSeen > RELOAD_AMMORATIO_MINIMUM_TIMESINCESEEN)
             {
                 return true;
             }
@@ -613,18 +614,13 @@ namespace SAIN.SAINComponent.Classes.Decision
         public float AmmoRatio {
             get
             {
-                if (_nextGetRatioTime < Time.time)
-                {
-                    _nextGetRatioTime = Time.time + 0.025f;
-                    _ammoRatio = getAmmoRatio(BotOwner.WeaponManager?.Reload);
-                }
-                return _ammoRatio;
+                return getAmmoRatio(BotOwner.WeaponManager?.Reload);
             }
         }
 
         private float getAmmoRatio(BotReload reload)
         {
-            float ratio = _ammoRatio;
+            float ratio = 0;
             try
             {
                 if (reload != null)
@@ -640,8 +636,5 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             return ratio;
         }
-
-        private float _ammoRatio;
-        private float _nextGetRatioTime;
     }
 }

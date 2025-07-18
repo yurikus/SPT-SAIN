@@ -64,7 +64,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private Enemy EnemyBeingSuppressed;
 
-        public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 2)
+        public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 4)
         {
             if (SuppressingTarget && _suppressTime > Time.time)
             {
@@ -100,10 +100,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public bool TrySuppressEnemy(Enemy Enemy)
         {
-            if (Enemy != null && !Enemy.IsZombie && !Enemy.IsVisible &&
-                ((Enemy.Seen && Enemy.TimeSinceSeen < 4) ||
+            if (Enemy != null && !Enemy.IsZombie && !Enemy.IsVisible && (
+                (Enemy.Seen && (Enemy.TimeSinceSeen < 6 || Enemy.Status.HeardRecently)) ||
                 Enemy.Status.ShotAtMeRecently ||
-                Enemy.Status.ShotByEnemyRecently))
+                Enemy.Status.ShotByEnemyRecently
+                ))
             {
                 Vector3? suppressTarget = Enemy.SuppressionTarget;
                 if (suppressTarget != null)

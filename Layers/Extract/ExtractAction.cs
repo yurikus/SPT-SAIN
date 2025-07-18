@@ -142,7 +142,7 @@ namespace SAIN.Layers
         {
             Enemy Enemy = Bot.Enemy;
 
-            if (Shoot.ShootAnyVisibleEnemies(Enemy) || Bot.Suppression.TrySuppressEnemy(Enemy))
+            if (Shoot.ShootAnyVisibleEnemies(Enemy) || Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies))
             {
                 return;
             }

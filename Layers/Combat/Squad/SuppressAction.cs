@@ -27,27 +27,9 @@ namespace SAIN.Layers.Combat.Squad
                     return;
                 }
 
-                if (Bot.ManualShoot.CanShoot(true) &&
-                    FindSuppressionTarget(out var target))
+                if (Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.EnemyLists.KnownEnemies, 0f, 0))
                 {
                     _manualShooting = true;
-                    Bot.Mover.StopMove();
-
-                    bool hasMachineGun = Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun;
-                    if (hasMachineGun
-                        && Bot.Mover.Prone.ShallProne(true))
-                    {
-                        Bot.Mover.Prone.SetProne(true);
-                    }
-
-                    bool shot = Bot.ManualShoot.TryShoot(enemy, target.Value, true, EShootReason.SquadSuppressing);
-
-                    if (shot)
-                    {
-                        enemy.Status.EnemyIsSuppressed = true;
-                        float waitTime = hasMachineGun ? 0.1f : 0.5f;
-                        _nextShotTime = Time.time + (waitTime * Random.Range(0.75f, 1.25f));
-                    }
                     return;
                 }
 
@@ -70,38 +52,11 @@ namespace SAIN.Layers.Combat.Squad
             if (_manualShooting)
             {
                 _manualShooting = false;
-                Bot.ManualShoot.Reset();
+                Bot.Suppression.ResetSuppressing();
             }
         }
 
         private bool _manualShooting;
-
-        private float _nextShotTime;
-
-        private bool FindSuppressionTarget(out Vector3? pos)
-        {
-            pos = Bot.Enemy?.SuppressionTarget;
-            return pos != null;
-        }
-
-        private bool CanSeeSuppressionTarget(Vector3? target)
-        {
-            if (target == null)
-            {
-                _canSeeSuppTarget = false;
-            }
-            else if (_nextCheckVisTime < Time.time)
-            {
-                _nextCheckVisTime = Time.time + 0.5f;
-                Vector3 myHead = Bot.Transform.HeadPosition;
-                _canSeeSuppTarget = !Physics.Raycast(myHead, target.Value - myHead, (target.Value - myHead).magnitude * 0.8f);
-            }
-            return _canSeeSuppTarget;
-        }
-
-        private bool _canSeeSuppTarget;
-
-        private float _nextCheckVisTime;
 
         public override void Start()
         {

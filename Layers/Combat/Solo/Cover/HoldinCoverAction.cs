@@ -25,7 +25,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             this.StartProfilingSample("Update");
             checkPositionAdjustments();
             Enemy Enemy = Bot.Enemy;
-            if (!Shoot.ShootAnyVisibleEnemies(Enemy) && !Bot.Suppression.TrySuppressEnemy(Enemy))
+            if (!Shoot.ShootAnyVisibleEnemies(Enemy) && !Bot.Suppression.TrySuppressAnyEnemy(Enemy, Bot.EnemyController.EnemyLists.KnownEnemies))
             {
                 Bot.Steering.SteerByPriority(Enemy);
             }
