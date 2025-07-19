@@ -143,30 +143,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EPathDistance EPathDistance => Path.EPathDistance;
         public Vector3? LastKnownPosition => KnownPlaces.LastKnownPosition;
 
-        public Vector3 EnemyMoveDirection {
-            get
-            {
-                if (_nextCalcMoveDirTime < Time.time)
-                {
-                    _nextCalcMoveDirTime = Time.time + 0.1f;
-                    Vector2 moveDirV2 = EnemyPlayer.MovementContext.MovementDirection;
-                    Vector3 moveDirection = new(moveDirV2.x, 0, moveDirV2.y);
-                    if (EnemyTransform.VelocityData.VelocityMagnitudeNormal > 0f)
-                    {
-                        LastMoveDirection = moveDirection;
-                        if (EnemyPlayer.IsSprintEnabled)
-                        {
-                            LastSprintDirection = moveDirection;
-                        }
-                    }
-                    _moveDirection = moveDirection;
-                }
-                return _moveDirection;
-            }
-        }
-
-        public Vector3 LastMoveDirection { get; private set; }
-        public Vector3 LastSprintDirection { get; private set; }
         public Vector3 EnemyPosition => EnemyTransform.Position;
         public Vector3 EnemyDirection => EnemyPlayerData.DistanceData.Direction;
         public Vector3 EnemyDirectionNormal => EnemyPlayerData.DistanceData.DirectionNormal;
@@ -543,8 +519,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private EnemyActiveThreatChecker ActiveThreatChecker { get; }
         private EnemyValidChecker ValidChecker { get; }
 
-        private Vector3 _moveDirection;
-        private float _nextCalcMoveDirTime;
         private bool _visPathPointIsCorner;
         public float NextCheckFlashLightTime;
         private float _nextUpdateCoefTime;

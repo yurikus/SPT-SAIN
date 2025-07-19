@@ -6,6 +6,6 @@
         Idle = 1,
         SearchingColliders = 1,
         RecheckingPointsWithLimit = 2,
-        RecheckingPointsNoLimit = 3,
+        RecheckingPoints = 3,
     }
 }

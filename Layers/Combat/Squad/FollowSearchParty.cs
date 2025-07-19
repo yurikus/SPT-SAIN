@@ -26,9 +26,11 @@ namespace SAIN.Layers.Combat.Squad
 
         public override void OnSteeringTicked()
         {
-            if (!Shoot.ShootAnyVisibleEnemies(_enemy) && 
-                !Bot.Steering.SteerByPriority(_enemy, false) && 
-                !Bot.Steering.LookToLastKnownEnemyPosition(_enemy))
+            if (!Shoot.ShootAnyVisibleEnemies(_enemy))
+            {
+                Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.KnownEnemies);
+            }
+            if (!Bot.Steering.SteerByPriority(_enemy, false))
             {
                 Bot.Steering.LookToMovingDirection();
             }

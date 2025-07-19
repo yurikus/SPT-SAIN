@@ -159,7 +159,7 @@ namespace SAIN.Classes
 
         public void SetTargetMoveDirection(Vector3 direction, Vector3 finalMoveDestination, PlayerComponent playerComp)
         {
-            if (direction.sqrMagnitude < 0.01f) return;
+            if (direction.sqrMagnitude < 0.001f) return;
 
             Player player = playerComp.Player;
             float playerSpeed = player.Speed;

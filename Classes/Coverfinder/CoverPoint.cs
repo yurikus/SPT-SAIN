@@ -413,8 +413,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         public NavMeshPath PathToPoint => PathData.Path;
         public float CoverHeight => HardData.Height;
-        public Collider Collider => HardColliderData.Collider;
-        public SAINHardColliderData HardColliderData { get; }
+        public Collider Collider { get; }
         public float LastHitInCoverTime { get; private set; }
         public bool IsCurrent => Bot.Cover.CoverInUse == this;
 
@@ -488,12 +487,12 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             _hitsInCover.Reset();
         }
 
-        public CoverPoint(BotComponent bot, SAINHardColliderData colliderData, PathData pathData, Vector3 coverPosition)
+        public CoverPoint(BotComponent bot, Collider collider, PathData pathData, Vector3 coverPosition)
         {
             Bot = bot;
-            HardColliderData = colliderData;
+            Collider = collider;
             PathData = pathData;
-            Vector3 size = colliderData.Collider.bounds.size;
+            Vector3 size = collider.bounds.size;
             HardData = new SAINHardCoverData {
                 Id = _count,
                 Height = size.y,
@@ -512,7 +511,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         private void updateDirAndPos(Vector3 coverPosition)
         {
             CoverData.Position = coverPosition;
-            Vector3 dir = HardColliderData.Position - coverPosition;
+            Vector3 dir = Collider.transform.position - coverPosition;
             dir.y = 0;
             CoverData.ProtectionDirection = dir.normalized;
             CoverData.TimeLastUpdated = Time.time;

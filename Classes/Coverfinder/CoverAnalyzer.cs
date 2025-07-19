@@ -2,320 +2,179 @@
 using EFT;
 using SAIN.Components;
 using SAIN.Components.CoverFinder;
-using SAIN.Helpers;
 using SAIN.Models.Structs;
-using SAIN.SAINComponent.Classes;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
-    public class CoverAnalyzer : BotBase
+    public class CoverAnalyzer(BotComponent bot, CoverFinderComponent coverFinder) : BotBase(bot)
     {
-        public CoverAnalyzer(BotComponent botOwner, CoverFinderComponent coverFinder) : base(botOwner)
+        private readonly CoverFinderComponent CoverFinder = coverFinder;
+
+        public bool CheckCreateNewCoverPoint(Collider collider, Vector3 targetPosition, Vector3 botPosition, Vector3 targetDirectionNormal, out CoverPoint coverPoint, out string reason)
         {
-            CoverFinder = coverFinder;
+            if (!CheckColliderForCover(targetPosition, targetDirectionNormal, out reason, collider, out NavMeshHit navMeshHit))
+            {
+                coverPoint = null;
+                return false;
+            }
+            PathData pathData = new();
+            if (!CheckPath(navMeshHit.position, pathData, botPosition, targetPosition, true))
+            {
+                reason = "badPath";
+                coverPoint = null;
+                return false;
+            }
+            reason = string.Empty;
+            coverPoint = new CoverPoint(Bot, collider, pathData, navMeshHit.position);
+            return true;
         }
 
-        private readonly CoverFinderComponent CoverFinder;
-
-        public bool CheckCollider(Collider collider, TargetData targetData, out CoverPoint coverPoint, out string reason)
+        public bool RecheckCoverPoint(CoverPoint coverPoint, Vector3 targetPosition, Vector3 targetDirectionNormal, Vector3 botPosition, out string reason)
         {
-            coverPoint = null;
-            SAINHardColliderData hardData = new(collider);
-            ColliderData colliderData = new(hardData, targetData);
-
-            if (!GetPlaceToMove(colliderData, hardData, targetData, out Vector3 coverPosition))
+            if (!CheckColliderForCover(targetPosition, targetDirectionNormal, out reason, coverPoint.Collider, out NavMeshHit navMeshHit))
             {
-                reason = "noPlaceToMove";
                 return false;
             }
-
-            if (!checkPositionVsOtherBots(coverPosition))
-            {
-                reason = "tooCloseToAnotherBot";
-                return false;
-            }
-
-            if (isPositionSpotted(coverPosition))
-            {
-                reason = "tooCloseToSpottedPoint";
-                return false;
-            }
-
-            if (!checkDistToTarget(coverPosition, targetData))
-            {
-                reason = "tooCloseToTarget";
-                return false;
-            }
-
-            if (!visibilityCheck(coverPosition, targetData, colliderData, hardData))
-            {
-                reason = "pointVisibleToTarget";
-                return false;
-            }
-
-            PathData pathData = new(new NavMeshPath());
-            if (!CheckPath(coverPosition, pathData, targetData))
+            if (!CheckPath(navMeshHit.position, coverPoint.PathData, botPosition, targetPosition, true))
             {
                 reason = "badPath";
                 return false;
             }
-
-            reason = string.Empty;
-            coverPoint = new CoverPoint(Bot, hardData, pathData, coverPosition);
-            return true;
-        }
-
-        public bool RecheckCoverPoint(CoverPoint coverPoint, TargetData targetData, out string reason)
-        {
-            var hardData = coverPoint.HardColliderData;
-            ColliderData colliderData = new(hardData, targetData);
-
-            if (!GetPlaceToMove(colliderData, hardData, targetData, out Vector3 coverPosition))
-            {
-                reason = "noPlaceToMove";
-                return false;
-            }
-
-            if (!checkPositionVsOtherBots(coverPosition))
-            {
-                reason = "tooCloseToAnotherBot";
-                return false;
-            }
-
-            if (coverPoint.StraightDistanceStatus == CoverStatus.InCover) //&& CheckPath(coverPosition, coverPoint.PathData, targetData, false))
-            {
-                coverPoint.Position = coverPosition;
-                reason = "inCover";
-                return true;
-            }
-
-            if (isPositionSpotted(coverPosition))
-            {
-                reason = "tooCloseToSpottedPoint";
-                return false;
-            }
-
-            if (!checkDistToTarget(coverPosition, targetData))
-            {
-                reason = "tooCloseToTarget";
-                return false;
-            }
-
-            if (!visibilityCheck(coverPosition, targetData, colliderData, hardData))
-            {
-                reason = "pointVisibleToTarget";
-                return false;
-            }
-
-            if (!CheckPath(coverPosition, coverPoint.PathData, targetData, true))
-            {
-                reason = "badPath";
-                return false;
-            }
-
-            coverPoint.Position = coverPosition;
+            coverPoint.Position = navMeshHit.position;
             reason = string.Empty;
             return true;
         }
 
-        public bool GetPlaceToMove(ColliderData colliderData, SAINHardColliderData hardData, TargetData targetDirections, out Vector3 place)
+        private static bool FindNavMesh(
+            Vector3 colliderSize, 
+            out string reason, 
+            Vector3 colliderPosition, 
+            Vector3 targetPosition, 
+            out NavMeshHit navMeshHit)
         {
-            if (!checkColliderDirectionvsTargetDirection(colliderData, targetDirections))
+
+            Vector3 target2ColliderNormal = (colliderPosition - targetPosition).normalized;
+            Vector3 colliderWidth = new(colliderSize.x, 0, colliderSize.z);
+            Vector3 oppositeDirectionToTarget = (target2ColliderNormal * (colliderWidth.magnitude + 0.5f));
+            if (!NavMesh.SamplePosition(colliderPosition + oppositeDirectionToTarget, out navMeshHit, 0.25f, -1))
             {
-                place = Vector3.zero;
-                return false;
-            }
-            if (!findSampledPosition(colliderData, hardData, POSITION_SAMPLE_RANGE, out place))
-            {
-                place = Vector3.zero;
-                return false;
-            }
-
-            return true;
-        }
-
-        private const float POSITION_FINAL_MIN_DOT = 0.5f;
-        private const float POSITION_EDGE_MIN_DOT = 0.5f;
-        private const float POSTIION_EDGE_SAMPLE_RANGE = 0.5f;
-        private const float POSITION_SAMPLE_RANGE = 1f;
-
-        private bool checkFinalPositionDirection(ColliderData colliderDirs, SAINHardColliderData hardData, TargetData targetDirs, Vector3 place)
-        {
-            Vector3 dirToPlace = place - hardData.Position;
-            Vector3 dirToPlaceNormal = dirToPlace.normalized;
-            Vector3 dirToColliderNormal = colliderDirs.dirTargetToColliderNormal;
-            float dot = Vector3.Dot(dirToPlaceNormal, dirToColliderNormal);
-            return dot > POSITION_FINAL_MIN_DOT;
-        }
-
-        private bool findSampledPosition(ColliderData colliderDirs, SAINHardColliderData hardData, float navSampleRange, out Vector3 coverPosition)
-        {
-            Vector3 samplePos = hardData.Position + colliderDirs.dirTargetToColliderNormal;
-            if (!NavMesh.SamplePosition(samplePos, out var hit, navSampleRange, -1))
-            {
-                coverPosition = Vector3.zero;
-                return false;
-            }
-            coverPosition = findEdge(hit.position, colliderDirs);
-            return true;
-        }
-
-        private Vector3 findEdge(Vector3 navMeshHit, ColliderData colliderDirs)
-        {
-            if (NavMesh.FindClosestEdge(navMeshHit, out var edge, -1))
-            {
-                Vector3 edgeNormal = edge.normal;
-                Vector3 targetNormal = colliderDirs.dirTargetToColliderNormal;
-                if (Vector3.Dot(edgeNormal, targetNormal) > POSITION_EDGE_MIN_DOT)
+                // Check for navmesh at point between collider's top and bottom
+                float colliderHeight = colliderSize.y;
+                Vector3 midPointColliderPosition = Vector3.Lerp(colliderPosition, colliderPosition + (Vector3.up * colliderHeight), 0.5f);
+                if (!NavMesh.SamplePosition(midPointColliderPosition + oppositeDirectionToTarget, out navMeshHit, 0.25f, -1))
                 {
-                    Vector3 edgeCover = edge.position + colliderDirs.dirTargetToColliderNormal;
-                    if (NavMesh.SamplePosition(edgeCover, out var edgeHit, POSTIION_EDGE_SAMPLE_RANGE, -1))
+                    // Raycast from the middle point between the collider's top and bottom to find ground
+                    if (!Physics.Raycast(midPointColliderPosition + oppositeDirectionToTarget, Vector3.down, out RaycastHit raycastHit, colliderHeight * 0.55f, LayerMaskClass.HighPolyWithTerrainNoGrassMask))
                     {
-                        return edgeHit.position;
+                        reason = "canFindGround";
+                        return false;
+                    }
+                    // We found ground, now check if there's a NavMesh at that point
+                    if (!NavMesh.SamplePosition(raycastHit.point, out navMeshHit, 0.25f, -1))
+                    {
+                        reason = "noNavMeshAtPosition";
+                        return false;
                     }
                 }
             }
-            return navMeshHit;
+            reason = string.Empty;
+            return true;
         }
 
-        private bool checkColliderDirectionvsTargetDirection(ColliderData colliderDirs, TargetData targetDirs)
-        {
-            float dot = Vector3.Dot(targetDirs.DirBotToTargetNormal, colliderDirs.dirBotToColliderNormal);
 
-            if (dot <= 0.33f)
+        private bool CheckColliderForCover(Vector3 targetPosition, Vector3 targetDirectionNormal, out string reason, Collider collider, out NavMeshHit navMeshHit)
+        {
+            if (!FindNavMesh(collider.bounds.size, out reason, collider.transform.position, targetPosition, out navMeshHit))
             {
-                return true;
+                return false;
             }
-            float colliderDist = colliderDirs.ColliderDistanceToBot;
-            float targetDist = targetDirs.TargetDistance;
-            if (dot <= 0.5f)
+            if (!checkDistToTarget(navMeshHit.position, targetPosition))
             {
-                return colliderDist < targetDist * 0.75f;
+                reason = "tooCloseToTarget";
+                return false;
             }
-            if (dot <= 0.66f)
+            if (isPositionSpotted(navMeshHit.position))
             {
-                return colliderDist < targetDist * 0.66f;
+                reason = "tooCloseToSpottedPoint";
+                return false;
             }
-            return colliderDist < targetDist * 0.5f;
+            if (!CheckCoverDirectionvsTargetDirection(targetDirectionNormal, targetPosition, navMeshHit.position))
+            {
+                reason = "coverBehindTarget";
+                return false;
+            }
+            if (!CheckLineOfSightToTarget(navMeshHit.position, targetPosition, collider, 5))
+            {
+                reason = "pointVisibleToTarget";
+                return false;
+            }
+            if (!checkPositionVsOtherBots(navMeshHit.position))
+            {
+                reason = "tooCloseToAnotherBot";
+                return false;
+            }
+            return true;
         }
 
-        private bool CheckPosition(Vector3 coverPosition, TargetData targetData, ColliderData colliderData, SAINHardColliderData hardData)
+        private static bool CheckCoverDirectionvsTargetDirection(Vector3 targetDirectionNormal, Vector3 targetPosition, Vector3 coverPosition)
         {
-            return (coverPosition - targetData.TargetPosition).sqrMagnitude > CoverMinEnemyDistSqr &&
-                !isPositionSpotted(coverPosition) &&
-                checkPositionVsOtherBots(coverPosition) &&
-                visibilityCheck(coverPosition, targetData, colliderData, hardData);
+            Vector3 dirTargetToBot = -targetDirectionNormal;
+            Vector3 dirTargetToCover = (coverPosition - targetPosition).normalized;
+            if (Vector3.Dot(dirTargetToBot, dirTargetToCover) < 0)
+            {
+                return false; // Cover is behind target
+            }
+            return true;
         }
 
-        private bool checkDistToTarget(Vector3 coverPosition, TargetData data)
+        private static bool checkDistToTarget(Vector3 coverPosition, Vector3 targetPosition)
         {
-            return (coverPosition - data.TargetPosition).sqrMagnitude > CoverMinEnemyDistSqr;
+            return (coverPosition - targetPosition).sqrMagnitude > CoverFinderComponent.CoverMinEnemyDistSqr;
         }
 
         private bool isPositionSpotted(Vector3 position)
         {
             foreach (var point in CoverFinder.SpottedCoverPoints)
-            {
-                Vector3 coverPos = point.CoverPoint.Position;
-                if (!point.IsValidAgain &&
-                    point.TooClose(coverPos, position))
-                {
+                if (!point.IsValidAgain && point.TooClose(position))
                     return true;
-                }
-            }
             return false;
         }
 
-        private bool CheckPath(Vector3 position, PathData pathData, TargetData targetData, bool checkEnemy = true)
+        private static bool CheckPath(Vector3 position, PathData pathData, Vector3 botPosition, Vector3 targetPosition, bool checkEnemy = true)
         {
-            var path = pathData.Path;
-            path.ClearCorners();
-            if (!NavMesh.CalculatePath(OriginPoint, position, -1, path))
-            {
-                pathData.PathLength = float.MaxValue;
-                return false;
-            }
-            if (path.status != NavMeshPathStatus.PathComplete)
-            {
-                pathData.PathLength = float.MaxValue;
-                return false;
-            }
-            float pathLength = path.CalculatePathLength();
-            if (pathLength > SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.MaxCoverPathLength)
-            {
-                pathData.PathLength = float.MaxValue;
-                return false;
-            }
-            pathData.PathLength = pathLength;
-
-            if (checkEnemy && !checkPathToEnemy(path, targetData))
-            {
-                return false;
-            }
+            pathData.CalcPath(botPosition, position);
+            if (pathData.Path.status != NavMeshPathStatus.PathComplete) return false;
+            if (pathData.PathLength > SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.MaxCoverPathLength) return false;
+            if (checkEnemy && !checkPathToEnemy(pathData.Path, targetPosition)) return false;
             return true;
         }
 
-        private const float PATH_SAME_DIST_MIN_RATIO = 0.66f;
-        private const float PATH_SAME_CHECK_DIST = 0.1f;
-        private const float PATH_NODE_MIN_DIST_SQR = 0.25f;
-        private const float PATH_NODE_FIRST_DOT_MAX = 0.5f;
-
-        private bool checkPathToEnemy(NavMeshPath path, TargetData targetData)
+        private static bool checkPathToEnemy(NavMeshPath path, Vector3 targetPosition)
         {
-            if (!SAINBotSpaceAwareness.ArePathsDifferent(path, targetData.TargetEnemy.Path.PathToEnemy, PATH_SAME_DIST_MIN_RATIO, PATH_SAME_CHECK_DIST))
-            {
-                return false;
-            }
-
-            Vector3 botToTargetNormal = targetData.DirBotToTargetNormal;
-
-            for (int i = 1; i < path.corners.Length - 1; i++)
-            {
-                var corner = path.corners[i];
-                Vector3 cornerToTarget = TargetPoint - corner;
-                Vector3 botToCorner = corner - OriginPoint;
-
-                if (cornerToTarget.sqrMagnitude < PATH_NODE_MIN_DIST_SQR)
-                {
-                    if (DebugCoverFinder)
-                    {
-                        //DrawDebugGizmos.Ray(OriginPoint, corner - OriginPoint, Color.red, (corner - OriginPoint).magnitude, 0.05f, true, 30f);
-                    }
+            const float PATH_NODE_MIN_DIST_SQR = 0.5f;
+            for (int i = 0; i < path.corners.Length - 1; i++)
+                if (IsPositionNearLineSegment(targetPosition, path.corners[i], path.corners[i + 1], PATH_NODE_MIN_DIST_SQR))
                     return false;
-                }
-
-                if (i == 1)
-                {
-                    if (Vector3.Dot(botToCorner.normalized, botToTargetNormal) > PATH_NODE_FIRST_DOT_MAX)
-                    {
-                        if (DebugCoverFinder)
-                        {
-                            //DrawDebugGizmos.Ray(corner, cornerToTarget, Color.red, cornerToTarget.magnitude, 0.05f, true, 30f);
-                        }
-                        return false;
-                    }
-                }
-                else if (i < path.corners.Length - 2)
-                {
-                    Vector3 cornerB = path.corners[i + 1];
-                    Vector3 directionToNextCorner = cornerB - corner;
-
-                    if (Vector3.Dot(cornerToTarget.normalized, directionToNextCorner.normalized) > 0.5f)
-                    {
-                        if (directionToNextCorner.sqrMagnitude > cornerToTarget.sqrMagnitude)
-                        {
-                            if (DebugCoverFinder)
-                            {
-                                //DrawDebugGizmos.Ray(corner, cornerToTarget, Color.red, cornerToTarget.magnitude, 0.05f, true, 30f);
-                            }
-                            return false;
-                        }
-                    }
-                }
-            }
             return true;
+        }
+
+        public static bool IsPositionNearLineSegment(Vector3 position, Vector3 start, Vector3 end, float maxDistanceSqr)
+        {
+            // Direction vector from start to end
+            Vector3 lineDir = end - start;
+            float lineLength = lineDir.sqrMagnitude;
+            if (lineLength < 0.01f) return (position - start).magnitude <= maxDistanceSqr;
+
+            // Project position onto the line (clamped to segment)
+            float t = Vector3.Dot(position - start, lineDir.normalized) / lineLength;
+            t = Mathf.Clamp01(t); // Clamp between 0 and 1 for segment
+
+            Vector3 closestPoint = start + t * lineDir;
+            float dist = (position - closestPoint).sqrMagnitude;
+
+            return dist <= maxDistanceSqr;
         }
 
         private bool checkPositionVsOtherBots(Vector3 position)
@@ -328,21 +187,12 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
 
             var members = Bot.Squad.Members;
-
             if (members != null)
-            {
                 foreach (var member in Bot.Squad.Members.Values)
-                {
-                    if (member == null || member.ProfileId == profileID) continue;
-                    var coverPoints = member.Cover.CoverPoints;
-                    foreach (var point in coverPoints)
-                    {
-                        if (isDistanceTooClose(point, position))
-                            return false;
-
-                    }
-                }
-            }
+                    if (member != null && member.ProfileId != profileID)
+                        foreach (var coverPoint in member.Cover.CoverPoints)
+                            if (isDistanceTooClose(coverPoint, position))
+                                return false;
 
             return true;
         }
@@ -387,69 +237,36 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         private static Collider[] _playerColliderArray = new Collider[5];
 
-        private bool isDistanceTooClose(CoverPoint point, Vector3 position)
+        private static bool isDistanceTooClose(CoverPoint point, Vector3 position)
         {
             const float DistanceToBotCoverThresh = 0.5f;
             const float distSqr = DistanceToBotCoverThresh * DistanceToBotCoverThresh;
             return point != null && (position - point.Position).sqrMagnitude < distSqr;
         }
 
-        private static bool visibilityCheck(Vector3 position, TargetData targetData, ColliderData colliderData, SAINHardColliderData hardColliderData)
+        /// <returns> false if the collider does not block LoS to the target Position</returns>
+        private static bool CheckLineOfSightToTarget(Vector3 position, Vector3 targetPosition, Collider collider, int maxIterations = 5)
         {
-            const float offset = 0.1f;
+            const float RANDOM_SPHERE_RADIUS = 0.25f;
+            const float RAY_MAX_DISTANCE = 3f;
 
-            float distanceToCollider = (hardColliderData.Position - position).magnitude * 1.25f;
-            //Logger.LogDebug($"visCheck: Dist To Collider: {distanceToCollider}");
+            float colliderHeight = collider.bounds.size.y;
+            float heightOffset = colliderHeight - RANDOM_SPHERE_RADIUS;
 
-            Vector3 target = targetData.TargetPosition;
-            if (!checkRaycastToCoverCollider(position, target, out RaycastHit hit, distanceToCollider))
+            Vector3 offset = Vector3.up * heightOffset;
+            Vector3 raisedTargetPosition = targetPosition + Vector3.up;
+
+            for (int i = 0; i < maxIterations; i++)
             {
-                return false;
+                Vector3 rayOrigin = position + offset + (Random.onUnitSphere * RANDOM_SPHERE_RADIUS);
+                Ray ray = new() {
+                    origin = rayOrigin,
+                    direction = raisedTargetPosition - rayOrigin
+                };
+                if (!collider.Raycast(ray, out _, RAY_MAX_DISTANCE))
+                    return false;
             }
-
-            Vector3 enemyDirection = targetData.DirBotToTargetNormal * offset;
-            Quaternion right = Quaternion.Euler(0f, 90f, 0f);
-            Vector3 rightPoint = right * enemyDirection;
-
-            if (!checkRaycastToCoverCollider(position + rightPoint, target, out hit, distanceToCollider))
-            {
-                return false;
-            }
-
-            if (!checkRaycastToCoverCollider(position - rightPoint, target, out hit, distanceToCollider))
-            {
-                return false;
-            }
-
             return true;
         }
-
-        private static bool checkRaycastToCoverCollider(Vector3 point, Vector3 target, out RaycastHit hit, float distance)
-        {
-            point.y += 0.5f;
-            target.y += 1.25f;
-            Vector3 direction = target - point;
-            bool hitObject = Physics.Raycast(point, direction.normalized, out hit, distance, LayerMaskClass.HighPolyWithTerrainMask);
-
-            if (DebugCoverFinder)
-            {
-                if (hitObject)
-                {
-                    DebugGizmos.DrawLine(point, hit.point, Color.white, 0.1f, 10f);
-                }
-                else
-                {
-                    Vector3 testPoint = direction.normalized * distance + point;
-                    DebugGizmos.DrawLine(point, testPoint, Color.red, 0.1f, 10f);
-                }
-            }
-            return hitObject;
-        }
-
-        private Vector3 OriginPoint => CoverFinder.OriginPoint;
-        private Vector3 TargetPoint => CoverFinder.TargetPoint;
-        private float CoverMinEnemyDistSqr => CoverFinderComponent.CoverMinEnemyDistSqr;
-        private static bool DebugCoverFinder => CoverFinderComponent.DebugCoverFinder;
-        private static float CoverMinHeight => CoverFinderComponent.CoverMinHeight;
     }
 }

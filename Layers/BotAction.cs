@@ -11,8 +11,11 @@ namespace SAIN.Layers
     public interface IBotAction
     {
         public string Name { get; }
+
         public void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners);
+
         public void OnSteeringTicked();
+
         public void UpdateMovement();
     }
 
@@ -49,10 +52,8 @@ namespace SAIN.Layers
 
         protected EnemyList KnownEnemies { get; private set; }
 
-        
         public virtual void UpdateMovement()
         {
-
         }
 
         public virtual void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners)
@@ -63,10 +64,8 @@ namespace SAIN.Layers
         public virtual void OnSteeringTicked()
         {
             Enemy enemy = Bot.GoalEnemy;
-            if (!TryShootAnyTarget(enemy))
-            {
-                Bot.Steering.SteerByPriority(enemy);
-            }
+            TryShootAnyTarget(enemy);
+            Bot.Steering.SteerByPriority(enemy);
         }
 
         protected bool TryShootAnyTarget(Enemy priorityEnemy)

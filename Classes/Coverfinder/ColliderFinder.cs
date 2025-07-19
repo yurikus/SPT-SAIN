@@ -21,8 +21,6 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         }
 
         private CoverFinderComponent CoverFinderComponent;
-        private Vector3 OriginPoint => CoverFinderComponent.OriginPoint;
-
 
         /// <summary>
         /// Find colliders in a box that expands in size until there are enough colliders to begin cover analysis
@@ -65,18 +63,18 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
         /// <summary>
         /// Find colliders in a box that expands in size until there are enough colliders to being cover analysis
         /// </summary>
-        public IEnumerator GetNewColliders(Collider[] preAllocArray, int iterationMax = 10, float startBoxWidth = 2f, int hitThreshold = 100)
+        public IEnumerator GetNewColliders(Collider[] preAllocArray, Vector3 originPoint, int iterationMax = 10, float startBoxWidth = 3f, int hitThreshold = 100)
         {
             const float StartBoxHeight = 0.25f;
             const float HeightIncreasePerIncrement = 0.5f;
             const float HeightDecreasePerIncrement = 0.5f;
-            const float LengthIncreasePerIncrement = 2f;
+            const float LengthIncreasePerIncrement = 5f;
 
             clearColliders(preAllocArray);
 
             float boxLength = startBoxWidth;
             float boxHeight = StartBoxHeight;
-            Vector3 boxOrigin = OriginPoint + Vector3.up * StartBoxHeight;
+            Vector3 boxOrigin = originPoint + Vector3.up * StartBoxHeight;
 
             HitCount = 0;
             int hits = 0;
@@ -104,11 +102,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 }
                 if (foundEnough)
                 {
-                    //if (_nextLogTime < Time.time)
-                    //{
-                    //    _nextLogTime = Time.time + 1f;
-                    //    Logger.LogInfo($"Found enough colliders in Layer: [{layer.MaskToString()}] after [{totalIterations}] total iterations");
-                    //}
+                    Logger.LogInfo($"Found [{hits}] colliders in Layer: [{layer.MaskToString()}] after [{totalIterations}] total iterations");
                     break;
                 }
             }
@@ -118,9 +112,8 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         private static readonly List<LayerMask> _masks = new()
         {
-            LayerMaskClass.PlayerStaticCollisionsMask,
             //LayerMaskClass.TerrainLayer,
-            //LayerMaskClass.HighPolyWithTerrainMask,
+            LayerMaskClass.HighPolyWithTerrainNoGrassMask,
             //LayerMaskClass.LowPolyColliderLayerMask,
         };
 
@@ -253,8 +246,9 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
             else
             {
-                float AMag = (OriginPoint - A.transform.position).sqrMagnitude;
-                float BMag = (OriginPoint - B.transform.position).sqrMagnitude;
+                Vector3 origin = CoverFinderComponent.Bot.NavMeshPosition;
+                float AMag = (origin - A.transform.position).sqrMagnitude;
+                float BMag = (origin - B.transform.position).sqrMagnitude;
                 return AMag.CompareTo(BMag);
             }
         }

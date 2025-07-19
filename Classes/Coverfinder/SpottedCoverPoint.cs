@@ -2,27 +2,20 @@
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
-    public class SpottedCoverPoint
+    public class SpottedCoverPoint(CoverPoint coverPoint)
     {
         public const float SPOTTED_PERIOD = 2f;
 
-        public SpottedCoverPoint(CoverPoint coverPoint)
+        public bool TooClose(Vector3 coverPosition, float minDistanceSqr = 2f)
         {
-            ExpireTime = SPOTTED_PERIOD;
-            CoverPoint = coverPoint;
-            TimeCreated = Time.time;
+            return (coverPosition - CoverPoint.Position).sqrMagnitude <= minDistanceSqr;
         }
 
-        public bool TooClose(Vector3 coverInfoPosition, Vector3 newPos, float sqrdist = 2f)
-        {
-            return (coverInfoPosition - newPos).sqrMagnitude > sqrdist;
-        }
-
-        public CoverPoint CoverPoint { get; private set; }
-        public float TimeCreated { get; private set; }
+        public CoverPoint CoverPoint { get; private set; } = coverPoint;
+        public float TimeCreated { get; private set; } = Time.time;
         public float TimeSinceCreated => Time.time - TimeCreated;
 
-        private readonly float ExpireTime;
+        private readonly float ExpireTime = SPOTTED_PERIOD;
         public bool IsValidAgain => TimeSinceCreated > ExpireTime;
     }
 }

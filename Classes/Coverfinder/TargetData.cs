@@ -5,27 +5,28 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder
 {
-    public class TargetData(Enemy enemy, BotComponent bot)
+    public struct TargetData(Enemy enemy)
     {
-        public Enemy TargetEnemy { get; private set; } = enemy;
+        public Enemy TargetEnemy { get; } = enemy;
 
-        public Vector3 BotPosition { get; private set; }
-        public Vector3 TargetPosition { get; private set; }
-        public Vector3 DirBotToTarget { get; private set; }
-        public Vector3 DirBotToTargetNormal { get; private set; }
-        public float TargetDistance { get; private set; }
-        public float TargetDistanceSqr { get; private set; }
+        public readonly Vector3 BotPosition => TargetEnemy.Bot.NavMeshPosition;
 
-        public void Update()
-        {
-            BotPosition = _bot.Transform.NavData.Position;
-            TargetPosition = TargetEnemy.LastKnownPosition.Value;
-            DirBotToTarget =  TargetPosition - BotPosition;
-            TargetDistanceSqr = DirBotToTarget.sqrMagnitude;;
-            TargetDistance = TargetEnemy.KnownPlaces.BotDistanceFromLastKnown;
-            DirBotToTargetNormal = DirBotToTarget.normalized;
+        public Vector3 TargetPosition {
+            get
+            {
+                Vector3? lastKnown = TargetEnemy?.KnownPlaces?.LastKnownPosition;
+                if (lastKnown != null)
+                {
+                    _targetPosition = lastKnown.Value;
+                }
+                return _targetPosition;
+            }
         }
 
-        private readonly BotComponent _bot = bot;
+        private Vector3 _targetPosition;
+
+        public readonly Vector3 DirBotToTarget => TargetEnemy.EnemyDirection;
+        public readonly Vector3 DirBotToTargetNormal => TargetEnemy.EnemyDirectionNormal;
+        public readonly float TargetDistance => TargetEnemy.KnownPlaces.BotDistanceFromLastKnown;
     }
 }

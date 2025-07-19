@@ -60,7 +60,7 @@ namespace SAIN.Layers.Combat.Solo
         {
             if (Shoot.ShootAnyVisibleEnemies(_searchTarget))
             {
-                _sprintEnabled = false;
+                Bot.Steering.SteerByPriority(_searchTarget, false);
                 return;
             }
             if (_searchTarget != null)
@@ -76,6 +76,10 @@ namespace SAIN.Layers.Combat.Solo
                 {
                     checkWeapon();
                     Bot.Steering.LookToLastKnownEnemyPosition(_searchTarget);
+                }
+                else
+                {
+                    Bot.Steering.SteerByPriority(_searchTarget, false);
                 }
             }
         }

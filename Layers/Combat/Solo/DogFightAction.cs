@@ -10,18 +10,18 @@ namespace SAIN.Layers.Combat.Solo
         public override void Update(CustomLayer.ActionData data)
         {
             Enemy Enemy = Bot.GoalEnemy;
-            Bot.Mover.SetTargetPose(0.9f);
+            Bot.Mover.SetTargetPose(1f);
             Bot.Mover.DogFight.DogFightMove(true, Enemy);
         }
 
         public override void OnSteeringTicked()
         {
             Enemy enemy = Bot.GoalEnemy;
-            if (!TryShootAnyTarget(enemy) && !Bot.Steering.SteerByPriority(enemy, false))
+            TryShootAnyTarget(enemy);
+            if (!Bot.Steering.SteerByPriority(enemy, false))
             {
                 Bot.Steering.LookToLastKnownEnemyPosition(enemy);
             }
-            Logger.LogDebug($"DogFightAction: {Bot.name} Tick DogFight Steering: {enemy?.EnemyName ?? "Unknown Enemy"} at distance {enemy?.RealDistance ?? 0f}");
         }
 
         public override void Stop()

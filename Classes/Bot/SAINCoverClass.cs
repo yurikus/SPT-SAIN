@@ -71,72 +71,19 @@ namespace SAIN.SAINComponent.Classes
 
         private CoverPoint FindCoverPoint()
         {
-            if (CoverPoints.Count == 0)
-            {
-                return null;
-            }
+            if (CoverPoints.Count == 0) return null;
             GetGoodCover(CoverPoints, _coverPoints, Bot.Transform.NavData.Position);
-            if (_coverPoints.Count == 0)
+            if (_coverPoints.Count == 0) return null;
+            _coverPoints.Sort((x, y) => x.PathData.PathLength.CompareTo(y.PathData.PathLength));
+            for (int i = 0; i < _coverPoints.Count; i++)
             {
-                return null;
-            }
-
-            _coverPoints.Sort((x, y) => x.DistanceToBot.CompareTo(y.DistanceToBot));
-            for (int i = 0; i < CoverPoints.Count; i++)
-            {
-                CoverPoint coverPoint = CoverPoints[i];
-                if (coverPoint.PathDistanceStatus >= CoverStatus.CloseToCover &&
-                    Bot.Mover.GoToCoverPoint(coverPoint, _shallSprint, Mover.ESprintUrgency.High))
-                {
-                    return coverPoint;
-                }
-            }
-
-            if (CoverPoints.Count == 1)
-            {
-                CoverPoint coverPoint = CoverPoints[0];
-                if (coverPoint != null && Bot.Mover.GoToCoverPoint(coverPoint, _shallSprint, Mover.ESprintUrgency.High))
-                {
-                    return coverPoint;
-                }
-                return null;
-            }
-            for (int i = 0; i < CoverPoints.Count; i++)
-            {
-                CoverPoint coverPoint = CoverPoints[i];
-                if (coverPoint == null || coverPoint.CoverData.IsBad)
-                {
-                    continue;
-                }
-                if (coverPoint.PathDistanceStatus >= CoverStatus.CloseToCover &&
-                    Bot.Mover.GoToCoverPoint(coverPoint, _shallSprint, Mover.ESprintUrgency.High))
-                {
-                    return coverPoint;
-                }
-            }
-            CoverPoints.Sort((x, y) => x.PathData.PathLength.CompareTo(y.PathData.PathLength));
-            for (int i = 0; i < CoverPoints.Count; i++)
-            {
-                CoverPoint coverPoint = CoverPoints[i];
-                if (coverPoint == null)
-                {
-                    continue;
-                }
-                if (coverPoint.CoverData.IsBad)
-                {
-                    continue;
-                }
+                CoverPoint coverPoint = _coverPoints[i];
                 if (Bot.Mover.GoToCoverPoint(coverPoint, _shallSprint, Mover.ESprintUrgency.High))
                 {
                     return coverPoint;
                 }
             }
-            CoverPoint lastResort = CoverPoints[0];
-            if (lastResort != null && Bot.Mover.GoToCoverPoint(lastResort, _shallSprint, Mover.ESprintUrgency.High))
-            {
-                return lastResort;
-            }
-            Logger.LogWarning($"[{Bot.name}] No Cover Point found, even though there are {CoverPoints.Count} cover points available.");
+            Logger.LogWarning($"[{Bot.name}] No Cover Point found, even though there are {_coverPoints.Count} cover points available.");
             return null;
         }
 
@@ -199,29 +146,6 @@ namespace SAIN.SAINComponent.Classes
 
         public void UpdateCover(Enemy enemy)
         {
-            //if (_customNavPoint != null)
-            //{
-            //    if ((_customNavPoint.Position - Bot.Position).sqrMagnitude <= 2f)
-            //    {
-            //        _customNavPoint = null;
-            //    }
-            //    else if (!Bot.Mover.Moving)
-            //    {
-            //        _customNavPoint = null;
-            //    }
-            //    else
-            //    {
-            //        DebugGizmos.DrawLine(_customNavPoint.Position, Bot.Position + Vector3.up, Color.green, 0.075f, 0.02f, true);
-            //        return;
-            //    }
-            //}
-            //
-            //if (FindEFTBotCover(out var eftCover, enemy))
-            //{
-            //    _customNavPoint = eftCover;
-            //    return;
-            //}
-
             if (Time.time - _timeLastUpdate < GetInterval()) return;
             _timeLastUpdate = Time.time;
 
@@ -229,7 +153,8 @@ namespace SAIN.SAINComponent.Classes
 
             if (CoverInUse != null)
             {
-                if (!CoverInUse.Spotted && !CoverInUse.CoverData.IsBad)
+                // Hold in cover
+                if (!CoverInUse.CoverData.IsBad && CoverPoints.Contains(CoverInUse))
                 {
                     Bot.Mover.GoToCoverPoint(CoverInUse, false, Mover.ESprintUrgency.High);
                     _shallSprint = false;
@@ -239,6 +164,7 @@ namespace SAIN.SAINComponent.Classes
                 CoverInUse = null;
             }
 
+            // Move to cover
             if (CoverPoint_MovingTo != null)
             {
                 if (_shallSprint)
@@ -256,22 +182,6 @@ namespace SAIN.SAINComponent.Classes
                     _shallSprint = false;
                     SetCoverSeekingState(ECoverSeekingState.HoldInCover);
                     return;
-                }
-                else
-                {
-                    switch (pathStatus)
-                    {
-                        case CoverStatus.InCover:
-                        case CoverStatus.CloseToCover:
-                            break;
-
-                        default:
-                            if (CoverPoint_MovingTo.Spotted || CoverPoint_MovingTo.CoverData.IsBad)
-                            {
-                                CoverPoint_MovingTo = null;
-                            }
-                            break;
-                    }
                 }
                 if (CoverPoint_MovingTo != null && Bot.Mover.GoToCoverPoint(CoverPoint_MovingTo, false, Mover.ESprintUrgency.High))
                 {
@@ -296,102 +206,21 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        private CustomNavigationPoint _customNavPoint;
-
-        private bool FindEFTBotCover(out CustomNavigationPoint result, Enemy priorityEnemy)
-        {
-            Vector3 botPosition = Bot.Position;
-            List<CustomNavigationPoint> points = BotOwner.Covers.GetClosePoints(botPosition, 75f);
-            if (points.Count > 1) points.Sort((x, y) => (x.Position - botPosition).sqrMagnitude.CompareTo((y.Position - botPosition).sqrMagnitude));
-            for (int i = 0; i < points.Count; i++)
-            {
-                result = points[i];
-                if (CheckCoverPoint(result, priorityEnemy))
-                {
-                    //if (Bot.Mover.RunToPoint(result.Position, false, -1, Mover.ESprintUrgency.High))
-                    //{
-                        //DebugGizmos.DrawSphere(result.Position, 0.25f, Color.green, 1f, $"[{Bot.name}] Selected Cover Point");
-                    //    return true;
-                    //}
-                    //DebugGizmos.DrawSphere(result.Position, 0.25f, Color.yellow, 1f, $"[{Bot.name}] Cant Move To Cover Point");
-                }
-                else
-                {
-                    //DebugGizmos.DrawSphere(result.Position, 0.25f, Color.red, 1f, $"[{Bot.name}] Bad Cover Point");
-                }
-            }
-            result = null;
-            return false;
-        }
-
-        private bool CheckCoverPoint(CustomNavigationPoint point, Enemy priorityEnemy)
-        {
-            const float SPHERE_RADIUS = 0.1f;
-            LayerMask mask = LayerMaskClass.PlayerStaticCollisionsMask;
-            RaycastHit hit;
-            EnemyPlace lastKnown;
-            Vector3 pointPosition = point.Position + Vector3.up;
-            if (priorityEnemy != null)
-            {
-                lastKnown = priorityEnemy.KnownPlaces.LastKnownPlace;
-                if (lastKnown != null)
-                {
-                    if (!Physics.SphereCast(pointPosition, SPHERE_RADIUS, lastKnown.Position + Vector3.up - pointPosition, out hit, 2f, mask))
-                    {
-                        DebugGizmos.DrawLine(pointPosition, lastKnown.Position + Vector3.up, Color.red, 0.1f, 0.02f, true);
-                        return false;
-                    }
-                    if (!Physics.SphereCast(pointPosition, SPHERE_RADIUS, lastKnown.BodyPartPositions[EBodyPart.Head] - pointPosition, out hit, 2f, mask))
-                    {
-                        DebugGizmos.DrawLine(pointPosition, lastKnown.Position + Vector3.up, Color.red, 0.15f, 0.02f, true);
-                        return false;
-                    }
-                    DebugGizmos.DrawLine(pointPosition, hit.point, Color.green, 0.075f, 0.02f, true);
-                }
-            }
-            List<Enemy> knownEnemies = Bot.EnemyController.KnownEnemies;
-            foreach (Enemy enemy in knownEnemies)
-            {
-                if (enemy == null) continue;
-                lastKnown = enemy.KnownPlaces.LastKnownPlace;
-                if (lastKnown == null) continue;
-
-                if ((lastKnown.Position - point.Position).sqrMagnitude < 3f * 3f)
-                {
-                    return false; // Enemy is too close to the cover point
-                }
-                Vector3 lastKnownPos = lastKnown.Position + Vector3.up;
-                if (!Physics.SphereCast(lastKnownPos, SPHERE_RADIUS, pointPosition - lastKnownPos, out hit, (pointPosition - lastKnownPos).magnitude, mask))
-                {
-                    DebugGizmos.DrawLine(lastKnownPos, pointPosition, Color.red, 0.075f, 0.02f, true);
-                    return false;
-                }
-                Vector3 lastKnownEyePos = lastKnown.BodyPartPositions[EBodyPart.Head];
-                if (!Physics.SphereCast(lastKnownEyePos, SPHERE_RADIUS, pointPosition - lastKnownEyePos, out hit, (pointPosition - lastKnownEyePos).magnitude, mask))
-                {
-                    DebugGizmos.DrawLine(lastKnownEyePos, pointPosition, Color.red, 0.075f, 0.02f, true);
-                    return false;
-                }
-            }
-            DebugGizmos.Ray(point.Position, Vector3.up, Color.green, 1f, 0.2f, 0.02f);
-            return true;
-        }
-
         private float GetInterval()
         {
             if (CoverInUse == null && CoverPoint_MovingTo == null)
             {
-                return 0f;
+                return 0.05f;
             }
             if (CoverPoint_MovingTo != null)
             {
-                return Bot.Mover.Moving ? 0.5f : 0f;
+                return Bot.Mover.Moving ? 1f : 0.05f;
             }
             if (CoverInUse != null)
             {
                 return 0.5f;
             }
-            return 0.1f;
+            return 0.05f;
         }
 
         private float _timeLastUpdate;
@@ -412,7 +241,6 @@ namespace SAIN.SAINComponent.Classes
                     CoverInUse = null;
                     CoverPoint_MovingTo = null;
                     _shallSprint = false;
-                    _customNavPoint = null;
                     return;
 
                 default:

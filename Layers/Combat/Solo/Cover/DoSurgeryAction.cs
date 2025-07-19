@@ -52,8 +52,8 @@ namespace SAIN.Layers.Combat.Solo.Cover
         {
             if (!TryShootAnyTarget(Bot.GoalEnemy))
             {
-                Bot.Steering.SteerByPriority(Bot.GoalEnemy, true);
             }
+                Bot.Steering.SteerByPriority(Bot.GoalEnemy, true);
         }
 
         private void onSurgeryDone()

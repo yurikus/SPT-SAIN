@@ -31,7 +31,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             TickRequirement = ESAINTickState.OnlyNoSleep;
             BlindFire = new BlindFireController(bot);
-            SideStep = new SideStepClass(bot);
             Lean = new LeanClass(bot);
             Prone = new ProneClass(bot);
             Pose = new PoseClass(bot);
@@ -48,6 +47,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (Bot.SAINLayersActive)
             {
+                if (Bot.CurrentAction == null)
+                {
+                    Logger.LogWarning($"[{Bot.name}] No current action set, cannot update movement and steering!.");
+                }
                 Bot.CurrentAction?.UpdateMovement();
                 if (!CheckTickPath())
                 {
@@ -86,32 +89,34 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (pathData == _preparedPath1)
             {
                 Logger.LogDebug($"[{Bot.name}] Path 1 Completed");
-                _preparedPath1.Dispose();
                 if (_preparedPath2.Status == EBotMoveStatus.ReadyToMove)
                 {
+                    Logger.LogDebug($"[{Bot.name}] Path 2 Started");
                     _activePath = _preparedPath2;
                     _activePath.Start();
-                    return;
+                }
+                else
+                {
+                    _activePath = null;
                 }
             }
             else if (pathData == _preparedPath2)
             {
                 Logger.LogDebug($"[{Bot.name}] Path 2 Completed");
-                _preparedPath2.Dispose();
                 if (_preparedPath1.Status == EBotMoveStatus.ReadyToMove)
                 {
+                    Logger.LogDebug($"[{Bot.name}] Path 1 Started");
                     _activePath = _preparedPath1;
                     _activePath.Start();
-                    return;
+                }
+                else
+                {
+                    _activePath = null;
                 }
             }
             else
             {
                 Logger.LogError($"[{Bot.name}] what"); // This should never happen, but if it does...
-            }
-            if (pathData == _activePath)
-            {
-                _activePath = null;
             }
         }
 
@@ -166,7 +171,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             TriggerNewMove(path.corners, lastCorner, true, urgency, path);
             _activePath.SetDestinationReachDistance(reachDist);
-            return false;
+            return true;
         }
 
         private const float BASE_DESTINATION_REACH_DIST = 0.5f;
@@ -186,6 +191,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 TriggerNewMove(path.corners, point, false, ESprintUrgency.None, path);
                 _activePath.SetDestinationReachDistance(reachDist);
+                return true;
             }
             return false;
         }
@@ -219,15 +225,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private bool TryUpdatePath(Vector3 point)
         {
-            if ((_preparedPath1.Status == EBotMoveStatus.Moving || _preparedPath1.Status == EBotMoveStatus.ReadyToMove) && _preparedPath1.TryUpdatePath(point))
-            {
-                return true;
-            }
-            if ((_preparedPath2.Status == EBotMoveStatus.Moving || _preparedPath2.Status == EBotMoveStatus.ReadyToMove) && _preparedPath2.TryUpdatePath(point))
-            {
-                return true;
-            }
-            return false;
+            return _preparedPath1.TryUpdatePath(point) || _preparedPath2.TryUpdatePath(point);
         }
 
         private void TriggerNewMove(Vector3[] pathCorners, Vector3 point, bool shallSprint, ESprintUrgency urgency, NavMeshPath path)
@@ -285,7 +283,6 @@ namespace SAIN.SAINComponent.Classes.Mover
         }
 
         public BlindFireController BlindFire { get; private set; }
-        public SideStepClass SideStep { get; private set; }
         public LeanClass Lean { get; private set; }
         public PoseClass Pose { get; private set; }
         public ProneClass Prone { get; private set; }
@@ -337,13 +334,14 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private static bool CanGoToCoverPoint(CoverPoint point, PlayerNavData navData)
         {
-            if (point.GetDistance(navData.Position) < BASE_DESTINATION_REACH_DIST * BASE_DESTINATION_REACH_DIST) return false;
+            //if (point.GetDistance(navData.Position) < BASE_DESTINATION_REACH_DIST * BASE_DESTINATION_REACH_DIST) return false;
             if (navData.IsOnNavMesh)
             {
                 PathData coverPathData = point.PathData;
-                if (coverPathData.TimeSinceLastUpdated > 1f)
+                if (coverPathData.TimeSinceLastUpdated > 0.5f)
                 {
-                    return TryRecalcCoverPointPath(point, navData, coverPathData);
+                    coverPathData.Path.ClearCorners();
+                    NavMesh.CalculatePath(navData.Position, point.Position, -1, coverPathData.Path);
                 }
                 if (coverPathData.Path.status == NavMeshPathStatus.PathComplete)
                 {
@@ -356,11 +354,11 @@ namespace SAIN.SAINComponent.Classes.Mover
         private static bool TryRecalcCoverPointPath(CoverPoint point, PlayerNavData navData, PathData coverPathData)
         {
             coverPathData.Path.ClearCorners();
-            if (NavMesh.CalculatePath(navData.Position, point.Position, -1, coverPathData.Path) &&
-                coverPathData.Path.status == NavMeshPathStatus.PathComplete)
+            if (NavMesh.CalculatePath(navData.Position, point.Position, -1, coverPathData.Path) && coverPathData.Path.status == NavMeshPathStatus.PathComplete)
             {
                 return true;
             }
+            Logger.LogDebug($"Failed to recalculate path to cover point, path status: {coverPathData.Path.status}");
             return false;
         }
 
@@ -498,7 +496,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public void PathSteeringTicked(BotPathCorner corner, int index, int totalCorners)
         {
-            Bot.CurrentAction?.OnPathSteeringTicked(corner, index, totalCorners);
+            Bot.CurrentAction?.OnSteeringTicked();
             Bot.Steering.TickPlayerSteering();
         }
 

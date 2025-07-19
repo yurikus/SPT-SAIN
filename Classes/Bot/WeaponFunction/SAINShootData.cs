@@ -334,6 +334,5 @@ namespace SAIN.SAINComponent.Classes
         private EquipmentSlot optimalSlot;
         private float _nextCheckOptimalTime;
         private float _nextChangeWeaponTime;
-        private float _changeAimTimer;
     }
 }

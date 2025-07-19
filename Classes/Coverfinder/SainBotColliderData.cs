@@ -5,6 +5,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
     public struct SainBotColliderData(Collider collider)
     {
         public Collider Collider = collider;
+        public CoverPoint CoverPoint = null;
         public float SqrMagnitude;
 
         public static bool operator ==(SainBotColliderData left, SainBotColliderData right)

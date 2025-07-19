@@ -376,26 +376,6 @@ namespace SAIN.Patches.Movement
             }
             __result = false;
             return false;
-            if (___botOwner_0.BotLay.IsLay &&
-                getUpWithCheck)
-            {
-                Vector3 vector = pos - ___botOwner_0.Mover.PositionOnWay;
-                if (vector.y < 0.5f)
-                {
-                    vector.y = 0f;
-                }
-                if (vector.sqrMagnitude > 0.2f)
-                {
-                    ___botOwner_0.BotLay.GetUp(getUpWithCheck);
-                }
-                if (___botOwner_0.BotLay.IsLay)
-                {
-                    return false;
-                }
-            }
-            ___botOwner_0.WeaponManager.Stationary.StartMove();
-            __instance.SlowAtTheEnd = slowAtTheEnd;
-            return false;
         }
     }
 

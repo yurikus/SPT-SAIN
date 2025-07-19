@@ -64,8 +64,8 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private ESteerPriority StrickChecks(bool ignoreRunningPath, Enemy enemy)
         {
-            if (!ignoreRunningPath && Bot.Mover.Running)
-                return ESteerPriority.RunningPath;
+            //if (!ignoreRunningPath && Bot.Mover.Running)
+            //    return ESteerPriority.RunningPath;
 
             if (LookToAimTarget(enemy))
                 return ESteerPriority.Aiming;

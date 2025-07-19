@@ -196,7 +196,7 @@ namespace SAIN
             new Patches.Shoot.Aim.DisableMalfunctionPatch(),
 
             new Patches.Shoot.Aim.SetAimStatusPatch(),
-            new Patches.Shoot.Aim.AimOffsetPatch(),
+            //new Patches.Shoot.Aim.AimOffsetPatch(),
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),
             new Patches.Shoot.Aim.SmoothTurnPatch(),

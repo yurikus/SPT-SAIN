@@ -5,6 +5,8 @@
         None,
         ReadyToMove,
         Moving,
+        Paused,
+        DoorInteraction,
         Complete,
     }
 }

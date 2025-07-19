@@ -115,6 +115,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (shootController != null && shootController.IsAiming != value)
             {
                 shootController.SetAim(value);
+                _timeLastADSUpdate = Time.time;
             }
             AimingDownSights = value;
         }

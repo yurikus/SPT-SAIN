@@ -107,7 +107,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void ManualUpdate()
         {
-            UpdatePlaces();
+            //UpdatePlaces();
             if (Enemy.EnemyKnown)
             {
                 //checkIfArrived();
@@ -120,10 +120,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 }
             }
             base.ManualUpdate();
-        }
-
-        private void SetLastKnown()
-        {
         }
 
         public override void Dispose()
@@ -315,68 +311,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Enemy.Events.LastKnownUpdated(place);
         }
 
-        private void UpdatePlaces()
-        {
-            if (_nextSortPlacesTime < Time.time)
-            {
-                _nextSortPlacesTime = Time.time + 4f;
-                SortAndClearPlaces();
-            }
-        }
-
-        private void RemovePlace(EnemyPlace place)
-        {
-            AllEnemyPlaces.Remove(place);
-            if (LastKnownPlace != null && LastKnownPlace == place)
-            {
-                LastKnownPlace = null;
-            }
-
-            if (_guiObjects.ContainsKey(place))
-            {
-                DebugGizmos.DestroyLabel(_guiObjects[place]);
-                _guiObjects.Remove(place);
-            }
-            place.Dispose();
-        }
-
-        private void SortAndClearPlaces()
-        {
-            if (LastSeenPlace?.ShallClear == true)
-            {
-                RemovePlace(LastSeenPlace);
-                LastSeenPlace = null;
-            }
-            if (LastHeardPlace?.ShallClear == true)
-            {
-                RemovePlace(LastHeardPlace);
-                LastHeardPlace = null;
-            }
-            if (LastSquadHeardPlace?.ShallClear == true)
-            {
-                RemovePlace(LastSquadHeardPlace);
-                LastSquadHeardPlace = null;
-            }
-            if (LastSquadSeenPlace?.ShallClear == true)
-            {
-                RemovePlace(LastSquadSeenPlace);
-                LastSquadSeenPlace = null;
-            }
-
-            if (AllEnemyPlaces.Count > 0)
-            {
-                AllEnemyPlaces.Sort((x, y) => x.TimeSincePositionUpdated.CompareTo(y.TimeSincePositionUpdated));
-                if (LastKnownPlace == null)
-                    SetLastKnown(AllEnemyPlaces[0]);
-            }
-        }
-
         public float TimeLastKnownUpdated { get; private set; } = -1000f;
 
         private readonly PlaceData _placeData;
         private float _nextTalkClearTime;
         private float _nextCheckSearchTime;
-        private float _nextSortPlacesTime;
         private DebugLabel debugLastKnown;
         private readonly Dictionary<EnemyPlace, DebugLabel> _guiObjects = new();
     }

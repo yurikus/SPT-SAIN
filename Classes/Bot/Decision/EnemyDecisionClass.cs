@@ -346,47 +346,6 @@ namespace SAIN.SAINComponent.Classes.Decision
             return false;
         }
 
-        private bool shallDogFight(Enemy enemy, out string reason)
-        {
-            if (Bot.Decision.CurrentSelfDecision != ESelfActionType.None || BotOwner.WeaponManager.Reload.Reloading)
-            {
-                reason = "selfDecisionOrReloading";
-                return false;
-            }
-
-            if (Bot.Decision.CurrentCombatDecision == ECombatDecision.RushEnemy)
-            {
-                reason = "rushingEnemy";
-                return false;
-            }
-
-            //var currentSolo = Bot.Decision.CurrentSoloDecision;
-            //if (Time.time - Bot.Cover.LastHitTime < 2f
-            //    && currentSolo != SoloDecision.RunAway
-            //    && currentSolo != SoloDecision.RunToCover
-            //    && currentSolo != SoloDecision.Retreat
-            //    && currentSolo != SoloDecision.MoveToCover)
-            //{
-            //    reason = "shotInCover";
-            //    ShotInCover = true;
-            //    return true;
-            //}
-
-            if (Bot.Cover.SpottedInCover)
-            {
-                reason = "coverSpotted";
-                return true;
-            }
-            if (enemy != null && enemy.EPathDistance == EPathDistance.VeryClose && enemy.IsVisible)
-            {
-                reason = "enemyClose";
-                return true;
-            }
-
-            reason = string.Empty;
-            return false;
-        }
-
         private bool shallMoveToEngage(Enemy enemy)
         {
             if (Bot.Suppression.IsSuppressed)
@@ -448,43 +407,6 @@ namespace SAIN.SAINComponent.Classes.Decision
             return false;
         }
 
-        private bool shallRunForCover(Enemy enemy, out string reason)
-        {
-            if (!Player.MovementContext.CanSprint)
-            {
-                reason = "cantSprint";
-                return false;
-            }
-
-            if (Bot.Cover.CoverPoints.Count == 0)
-            {
-                reason = "noCoverPoints";
-                return false;
-            }
-
-            if (!enemy.IsVisible &&
-                (!enemy.Seen || enemy.TimeSinceSeen > 3f))
-            {
-                //reason = "runNow cantSeeEnemy";
-                //return true;
-            }
-
-            if (enemy.IsSniper && GlobalSettings.Mind.ENEMYSNIPER_ALWAYS_SPRINT_COVER)
-            {
-                reason = "EnemySniperRun";
-                return true;
-            }
-
-            if (StartRunCoverTimer < Time.time)
-            {
-                reason = "timeToRun";
-                return true;
-            }
-
-            reason = "dontRunYet";
-            return false;
-        }
-
         private bool shallSearch(Enemy enemy, out string reason)
         {
             bool shallSearch = Bot.Search.SearchDecider.ShallStartSearch(enemy, out SearchReasonsStruct reasons);
@@ -499,17 +421,6 @@ namespace SAIN.SAINComponent.Classes.Decision
                 reason = "cantSearch";
             }
             return shallSearch;
-        }
-
-        public bool shallHoldInCover(out string reason)
-        {
-            if (Bot.Cover.HasCover)
-            {
-                reason = "inCover";
-                return true;
-            }
-            reason = "notInCover";
-            return false;
         }
 
         private bool shallStandAndShoot(Enemy enemy, out string reason, EnemyList KnownEnemies)
@@ -597,7 +508,6 @@ namespace SAIN.SAINComponent.Classes.Decision
         private float ShiftCoverNewCoverTime => CoverSettings.ShiftCoverNewCoverTime;
         private float ShiftCoverResetTime => CoverSettings.ShiftCoverResetTime;
 
-        private float StartRunCoverTimer;
         private float _nextShootDistTargetTime;
         private float _endShootDistTargetTime;
         private float TimeForNewShift;

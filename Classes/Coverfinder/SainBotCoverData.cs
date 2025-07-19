@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             UpdateColliderDistances(ValidCollidersList, origin);
             SortCollidersByDistance(ValidCollidersList, origin);
             ClearCollidersOverDistance(ValidCollidersList, validCollidersHashSet, MAX_DISTANCE, MIN_COLLIDERS);
-            Logger.LogDebug($"Currently {ValidCollidersList.Count} valid colliders");
+            //Logger.LogDebug($"Currently {ValidCollidersList.Count} valid colliders");
         }
 
         private static void UpdateColliderDistances(List<SainBotColliderData> list, Vector3 origin)
@@ -65,12 +65,13 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 return;
 
             float distSqr = maxDistance * maxDistance;
-            for (int i = list.Count - 1; i >= min; i--)
+            for (int i = list.Count - 1; i >= 0; i--)
             {
-                if (list[i].SqrMagnitude > distSqr)
+                SainBotColliderData data = list[i];
+                if (data.SqrMagnitude > distSqr)
                 {
+                    hashSet.Remove(data.Collider);
                     list.RemoveAt(i);
-                    hashSet.Remove(list[i].Collider);
                 }
             }
         }

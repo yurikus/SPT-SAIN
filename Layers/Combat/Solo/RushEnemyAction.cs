@@ -48,9 +48,11 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void OnSteeringTicked()
         {
-            if (!Shoot.ShootAnyVisibleEnemies(_enemy) && 
-                !Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.KnownEnemies) && 
-                !Bot.Steering.SteerByPriority(_enemy, false))
+            if (!Shoot.ShootAnyVisibleEnemies(_enemy))
+            {
+                Bot.Suppression.TrySuppressAnyEnemy(_enemy, Bot.EnemyController.KnownEnemies);
+            }
+            if (!Bot.Steering.SteerByPriority(_enemy, false))
             {
                 Bot.Steering.LookToLastKnownEnemyPosition(_enemy);
             }
