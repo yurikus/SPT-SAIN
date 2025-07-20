@@ -11,9 +11,9 @@ namespace SAIN.Preset.GlobalSettings
         public Dictionary<EBotLookMode, TurnSettings> SMOOTHTURN_SETTINGS = new() {
             { EBotLookMode.Peace, new TurnSettings(0.5f, 300f) },
             { EBotLookMode.Combat, new TurnSettings(0.4f, 480f) },
-            { EBotLookMode.CombatSprint, new TurnSettings(0.3f, 540f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.05f, 540f) },
             { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.35f, 540f) },
-            { EBotLookMode.Aiming, new TurnSettings(0.15f, 540f ) },
+            { EBotLookMode.Aiming, new TurnSettings(0.05f, 540f ) },
             { EBotLookMode.RandomLook, new TurnSettings(0.8f, 200f ) },
         };
         
