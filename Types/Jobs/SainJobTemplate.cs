@@ -70,13 +70,10 @@ namespace SAIN.Types.Jobs
             {
                 if (!CanProceed())
                 {
-                    //Logger.LogDebug($"Cannot Proceed [{Name}]");
-                    yield return null;
+                    yield return Wait;
                     continue;
                 }
-                OnExecutionStarted?.Invoke();
                 yield return PrimaryFunction();
-                OnExecutionFinished?.Invoke();
                 yield return Wait;
             }
             Logger.LogDebug($"Job Ended [{Name}]");

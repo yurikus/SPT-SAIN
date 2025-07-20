@@ -40,7 +40,6 @@ namespace SAIN.Layers
 
         protected void CheckActiveChanged(bool isActiveNow)
         {
-            if (_wasActive == isActiveNow) return;
             if (isActiveNow)
             {
                 SetLayer(true);
@@ -75,7 +74,7 @@ namespace SAIN.Layers
                 {
                     Bot.ActiveLayer = ELayer;
                 }
-                else if (_wasActive)
+                else if (Bot.ActiveLayer == ELayer)
                 {
                     Bot.ActiveLayer = ESAINLayer.None;
                 }

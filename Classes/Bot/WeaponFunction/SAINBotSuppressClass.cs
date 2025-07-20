@@ -44,7 +44,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 {
                     ResetSuppressing();
                 }
-                else if (!Bot.HasEnemy || Bot.GoalEnemy != EnemyBeingSuppressed)
+                else if (!Bot.HasEnemy)
                 {
                     ResetSuppressing();
                 }
@@ -100,8 +100,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
 
         public float TimeSinceSeenToSuppress = 6f;
-        public float TimeSinceShotAtToSuppress = 2f;
-        public float TimeSinceShotToSuppress = 3f;
+        public float TimeSinceShotAtToSuppress = 6f;
+        public float TimeSinceShotToSuppress = 6f;
 
         public bool TrySuppressEnemy(Enemy Enemy, bool withBehaviorChecks = true)
         {

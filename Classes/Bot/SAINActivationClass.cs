@@ -49,7 +49,7 @@ namespace SAIN.SAINComponent.Classes
 
         public void SetInCombat(bool inCombat)
         {
-            BotInCombatToggle.CheckToggle(!inCombat);
+            BotInCombatToggle.CheckToggle(inCombat);
         }
 
         public void SetActiveLayer(ESAINLayer layer)

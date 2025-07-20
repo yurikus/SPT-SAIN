@@ -43,9 +43,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
         public override void OnSteeringTicked()
         {
             Enemy enemy = Bot.GoalEnemy;
-            if (!Shoot.ShootAnyVisibleEnemies(enemy))
+            if (!Shoot.ShootAnyVisibleEnemies(enemy) && !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies))
             {
-                Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies);
+                Bot.Aim.LoseAimTarget();
+                Bot.Suppression.ResetSuppressing();
             }
             if (!Bot.Steering.SteerByPriority(enemy, false))
             {
@@ -92,10 +93,10 @@ namespace SAIN.Layers.Combat.Solo.Cover
 
                 default:
                     newLean = Bot.Mover.Lean.FindLeanFromBlindCornerAngle(Bot.GoalEnemy);
-                    if (newLean == LeanSetting.None)
-                    {
-                        newLean = EFTMath.RandomBool() ? LeanSetting.Left : LeanSetting.Right;
-                    }
+                    //if (newLean == LeanSetting.None)
+                    //{
+                    //    newLean = EFTMath.RandomBool() ? LeanSetting.Left : LeanSetting.Right;
+                    //}
                     ChangeLeanTimer = Time.time + Random.Range(0.5f, 2f);
                     break;
             }
@@ -118,7 +119,7 @@ namespace SAIN.Layers.Combat.Solo.Cover
             {
                 case LeanSetting.Right:
                 case LeanSetting.Left:
-                    return Vector.Raycast(headPos, headPos + (rayEnd * RAYCAST_LEAN_HITOBJECT_DIST), LayerMaskClass.HighPolyWithTerrainMask);
+                    return Vector.Raycast(headPos, rayEnd * RAYCAST_LEAN_HITOBJECT_DIST, LayerMaskClass.HighPolyWithTerrainMask);
 
                 default:
                     return false;

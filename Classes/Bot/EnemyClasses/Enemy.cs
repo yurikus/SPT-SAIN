@@ -386,7 +386,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Vector3 directionToSuppPoint = suppressPoint - Bot.Position;
             Vector3 directionToTarget = target - Bot.Position;
             float angle = Vector3.Angle(directionToSuppPoint.normalized, directionToTarget.normalized);
-            if (angle < settings.MAX_TARGET_SUPPRESS_ANGLE.Sqr())
+            if (angle < settings.MAX_TARGET_SUPPRESS_ANGLE)
             {
                 return true;
             }

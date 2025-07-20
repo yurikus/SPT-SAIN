@@ -10,12 +10,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 {
     public class LeanClass : BotBase
     {
-        private const float LEAN_UPDATE_FOUND_FREQ = 0.5f;
-        private const float LEAN_UPDATE_NOT_FOUND_FREQ = 0.25f;
+        private const float LEAN_UPDATE_FOUND_FREQ = 0.25f;
+        private const float LEAN_UPDATE_NOT_FOUND_FREQ = 0.1f;
         private const float LEAN_RAYCAST_OFFSET_DIST = 0.66f;
         private const float LEAN_MAX_RAYCAST_DIST = 16f;
         private const float RESET_LEAN_AFTER_TIME = 0.66f;
-        private const float MAX_CORNER_DISTANCE_LEAN = 10f;
+        private const float MAX_CORNER_DISTANCE_LEAN = 15f;
         private const float MAX_CORNER_DISTANCE_LEAN_SQR = MAX_CORNER_DISTANCE_LEAN * MAX_CORNER_DISTANCE_LEAN;
 
         public LeanSetting LeanDirection { get; private set; }
@@ -56,9 +56,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                     LeanSetting.Right => 5f,
                     _ => 0f,
                 };
-                LeanAngleValue.Set(num);
-                float tiltValue = LeanAngleValue.Get(GameWorldComponent.WorldTickDeltaTime);
-                Player.MovementContext.SetTilt(tiltValue);
+                //LeanAngleValue.Set(num);
+                //float tiltValue = LeanAngleValue.Get(GameWorldComponent.WorldTickDeltaTime);
+                Player.MovementContext.SetTilt(num);
             }
         }
 
@@ -153,7 +153,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            var blindCornerLean = FindLeanFromBlindCornerAngle(enemy, 0.1f);
+            var blindCornerLean = FindLeanFromBlindCornerAngle(enemy);
             if (blindCornerLean != LeanSetting.None)
             {
                 FastLean(blindCornerLean);

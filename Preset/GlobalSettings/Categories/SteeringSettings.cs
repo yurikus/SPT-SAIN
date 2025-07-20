@@ -31,28 +31,17 @@ namespace SAIN.Preset.GlobalSettings
         [Advanced]
         public float GeneratePointStackHeight = 4;
         
-        [Name("Max Path Nodes - Player")]
-        [Category("Enemy Path Visibility System")]
-        [MinMax(0f, 2048, 1)]
-        [Advanced]
-        public float MaxPathPoints = 512;
-        
-        [Name("Max Path Nodes - Bot")]
-        [MinMax(0f, 2048, 1)]
-        [Advanced]
-        public float MaxPathPoints_AI = 128;
-        
         [Name("Distance Between Nodes - Player")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0.01f, 1, 1000)]
         [Advanced]
-        public float DistanceBetweenPoints = 0.25f;
+        public float DistanceBetweenPoints = 0.33f;
         
         [Name("Distance Between Nodes - Bot")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0.01f, 1, 1000)]
         [Advanced]
-        public float DistanceBetweenPoints_AI = 0.5f;
+        public float DistanceBetweenPoints_AI = 0.66f;
         
         [Name("Random Bot Aim Sway")]
         [Category("Random Sway")]

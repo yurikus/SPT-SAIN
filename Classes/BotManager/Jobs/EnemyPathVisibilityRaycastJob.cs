@@ -9,35 +9,31 @@ using UnityEngine.AI;
 
 namespace SAIN.Components
 {
-    public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
+    public class EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : SainJobTemplate("Path Visibility Job", botcontroller, true, 1f / 60f), IDisposable
     {
-        public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : base("Path Visibility Job", botcontroller, true, 1f / 10f)
-        {
-        }
-
         protected readonly List<RaycastJob> Jobs = [];
+
+        private float _nextVisionPathUpdateTime;
+        private const float VisionPathUpdateInterval = 0.1f;
 
         protected override IEnumerator PrimaryFunction()
         {
-            CreateJobs();
-            int Total = Jobs.Count;
-            if (Total > 0)
+            HashSet<BotComponent> bots = SAINBotController.BotSpawnController.SAINBots;
+            CalcEnemyPaths(bots);
+            if (_nextVisionPathUpdateTime < Time.time)
             {
-                //ScheduleJobs(Total);
                 yield return null;
-                ReadResults(Total);
-                Dispose();
-                // Logger.LogDebug($"Completed {Total}");
+                _nextVisionPathUpdateTime = Time.time + VisionPathUpdateInterval;
+                CreateJobs(bots);
+                int Total = Jobs.Count;
+                if (Total > 0)
+                {
+                    yield return null;
+                    ReadResults(Total);
+                    Dispose();
+                }
             }
-            //int Total = RaycastJobs.Count;
-            //if (Total > 0)
-            //{
-            //    ScheduleJobs(Total);
-            //    yield return AwaitCompletion(Total);
-            //    ReadResults(Total);
-            //    Dispose();
-            //    // Logger.LogDebug($"Completed {Total}");
-            //}
+            yield return null;
         }
 
         private void ScheduleJobs(int Total)
@@ -109,11 +105,28 @@ namespace SAIN.Components
                             Enemy.ClearVisiblePathPoint();
                         }
                     }
-                } 
+                }
             }
         }
 
-        private void CreateJobs()
+        private static void CalcEnemyPaths(HashSet<BotComponent> bots)
+        {
+            foreach (BotComponent bot in bots)
+            {
+                if (bot != null && bot.BotActive)
+                {
+                    foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
+                    {
+                        if (enemy.EnemyKnown)
+                        {
+                            enemy.Path.CheckCalcPath();
+                        }
+                    }
+                }
+            }
+        }
+
+        private void CreateJobs(HashSet<BotComponent> bots)
         {
             LayerMask HighPolyWithTerrain = LayerMaskClass.HighPolyWithTerrainMask;
             LayerMask DoorLayer = LayerMaskClass.DoorLayer;
@@ -125,10 +138,8 @@ namespace SAIN.Components
                     Vector3 botEyePos = bot.Transform.EyePosition;
                     foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                     {
-                        if (enemy == null) continue;
                         if (enemy.EnemyKnown)
                         {
-                            enemy.Path.CheckCalcPath();
                             Vector3[] corners = enemy.Path.PathCorners;
                             if (corners != null)
                             {

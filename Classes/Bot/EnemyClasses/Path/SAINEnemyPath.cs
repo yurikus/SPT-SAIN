@@ -156,12 +156,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Vector3 cornerA = PathCorners[i];
                 Vector3 cornerB = PathCorners[i + 1];
                 Vector3 cornerDir = cornerB - cornerA;
-                Vector3 cornerDirNormal = cornerDir.normalized;
                 float Magnitude = cornerDir.magnitude;
                 PathLength += Magnitude;
 
                 if (PathLength <= settings.DistToCheckVision)
                 {
+                    Vector3 cornerDirNormal = cornerDir.normalized;
                     Vector3 step = cornerDirNormal * distanceBetweenPoints;
                     int count = Mathf.FloorToInt(Magnitude / distanceBetweenPoints);
                     for (int j = 0; j <= count; j++)
@@ -170,10 +170,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                         VisionPathNodes.Add(new BotVisiblePathNode(nodePosition, cornerDirNormal, CharacterHeight, pointCount));
                     }
                 }
-                else if (i == CornerCount - 2) // Last corner?
-                {
-                    VisionPathNodes.Add(new BotVisiblePathNode(cornerB, cornerDirNormal, CharacterHeight, pointCount));
-                }
+                //else if (i == CornerCount - 2) // Last corner?
+                //{
+                //    VisionPathNodes.Add(new BotVisiblePathNode(cornerB, cornerDirNormal, CharacterHeight, pointCount));
+                //}
             }
 
             //int max = Mathf.RoundToInt(Enemy.IsAI ? GlobalSettingsClass.Instance.Steering.MaxPathPoints_AI : GlobalSettingsClass.Instance.Steering.MaxPathPoints);
@@ -236,7 +236,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             bool performanceMode = SAINPlugin.LoadedPreset.GlobalSettings.General.Performance.PerformanceMode;
             bool currentEnemy = Enemy.IsCurrentEnemy;
             bool isAI = Enemy.IsAI;
-            bool searchingForEnemy = Enemy.Events.OnSearch.Value;
+            //bool searchingForEnemy = Enemy.Events.OnSearch.Value;
             float distance = Enemy.RealDistance;
 
             float maxDelay = isAI ? MAX_FREQ_CALCPATH_AI : MAX_FREQ_CALCPATH;
@@ -244,8 +244,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 maxDelay *= CURRENTENEMY_COEF;
             if (performanceMode)
                 maxDelay *= PERFORMANCE_MODE_COEF;
-            if (searchingForEnemy)
-                maxDelay *= ACTIVE_SEARCH_COEF;
+            //if (searchingForEnemy)
+            //    maxDelay *= ACTIVE_SEARCH_COEF;
 
             if (distance > MAX_FREQ_CALCPATH_DISTANCE)
             {
@@ -257,8 +257,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 minDelay *= CURRENTENEMY_COEF;
             if (performanceMode)
                 minDelay *= PERFORMANCE_MODE_COEF;
-            if (searchingForEnemy)
-                minDelay *= ACTIVE_SEARCH_COEF;
+            //if (searchingForEnemy)
+            //    minDelay *= ACTIVE_SEARCH_COEF;
 
             if (distance < MIN_FREQ_CALCPATH_DISTANCE)
             {
@@ -272,11 +272,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             float result = distanceRatio * delayDifference + minDelay;
             float clampedResult = Mathf.Clamp(result, minDelay, maxDelay);
 
-            if (_nextLogTime < Time.time)
-            {
-                _nextLogTime = Time.time + 10f;
-                //Logger.LogDebug($"{BotOwner.name} calcPathFreqResults for [{Enemy.EnemyPerson.Nickname}] Result: [{result}] preClamped: [[{result}] [{distanceRatio} * {delayDifference} + {minDelay}]] : Distance: [{distance}] : IsAI? [{isAI}] : Current Enemy? [{currentEnemy}] : MinDelay [{minDelay}] : MaxDelay [{maxDelay}]");
-            }
+            //if (_nextLogTime < Time.time)
+            //{
+            //    _nextLogTime = Time.time + 10f;
+            //    //Logger.LogDebug($"{BotOwner.name} calcPathFreqResults for [{Enemy.EnemyPerson.Nickname}] Result: [{result}] preClamped: [[{result}] [{distanceRatio} * {delayDifference} + {minDelay}]] : Distance: [{distance}] : IsAI? [{isAI}] : Current Enemy? [{currentEnemy}] : MinDelay [{minDelay}] : MaxDelay [{maxDelay}]");
+            //}
 
             return clampedResult;
         }
@@ -285,17 +285,17 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private const float ACTIVE_SEARCH_COEF = 0.5f;
 
-        private const float MAX_FREQ_CALCPATH = 2f;
-        private const float MAX_FREQ_CALCPATH_AI = 4f;
+        private const float MAX_FREQ_CALCPATH = 3f;
+        private const float MAX_FREQ_CALCPATH_AI = 6f;
         private const float MAX_FREQ_CALCPATH_DISTANCE = 250f;
 
-        private const float MIN_FREQ_CALCPATH = 0.33f;
-        private const float MIN_FREQ_CALCPATH_AI = 0.66f;
-        private const float MIN_FREQ_CALCPATH_DISTANCE = 50f;
+        private const float MIN_FREQ_CALCPATH = 1f;
+        private const float MIN_FREQ_CALCPATH_AI = 2f;
+        private const float MIN_FREQ_CALCPATH_DISTANCE = 25f;
 
         private const float DISTANCE_DIFFERENCE = MAX_FREQ_CALCPATH_DISTANCE - MIN_FREQ_CALCPATH_DISTANCE;
         private const float PERFORMANCE_MODE_COEF = 1.5f;
-        private const float CURRENTENEMY_COEF = 0.5f;
+        private const float CURRENTENEMY_COEF = 0.25f;
 
         private bool isEnemyInRange()
         {
@@ -314,8 +314,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             // Did we already check the current enemy position and has the bot not moved? dont recalc path then
             if (_enemyLastPosChecked != null
-                && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.025f
-                && (_botLastPosChecked - botPosition).sqrMagnitude < 0.025f)
+                && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.1f
+                && (_botLastPosChecked - botPosition).sqrMagnitude < 0.1f)
             {
                 return false;
             }
@@ -324,22 +324,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _enemyLastPosChecked = enemyPosition;
             _botLastPosChecked = botPosition;
             return true;
-        }
-
-        public float CalculatePathLength(Vector3[] corners)
-        {
-            if (corners == null)
-            {
-                return float.MaxValue;
-            }
-            float result = 0f;
-            for (int i = 0; i < corners.Length - 1; i++)
-            {
-                Vector3 a = corners[i];
-                Vector3 b = corners[i + 1];
-                result += (a - b).magnitude;
-            }
-            return result;
         }
 
         private Vector3? _enemyLastPosChecked;

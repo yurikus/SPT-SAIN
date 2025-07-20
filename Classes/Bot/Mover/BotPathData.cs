@@ -196,6 +196,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         /// </summary>
         public void Initialize(Vector3 botNavPosition, Vector3 destination, bool shallSprint, ESprintUrgency urgency, Vector3[] corners, NavMeshPath path)
         {
+            ClearCachedData();
             NavMeshPath = path;
             StartPosition = botNavPosition;
             WantToSprint = shallSprint;
@@ -317,6 +318,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             Status = EBotMoveStatus.Complete;
             PathFinder.PathComplete(new OperationResult(success, reason), this);
             Logger.LogDebug($"[{Bot.name}]:[{Id}]: Complete Move: Duration [{Time.time - TimeStarted}] Reason: [{reason}]");
+            ClearCachedData();
+        }
+
+        private void ClearCachedData()
+        {
             PathStatus = NavMeshPathStatus.PathInvalid;
             CurrentIndex = 0;
             NavMeshPath = null;
@@ -558,7 +564,13 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return EBotSprintStatus.CantSprint;
                 }
 
+                const float DISTANCE_TO_DESTINATION_CAN_START_SPRINT = 1.5f;
                 bool sprintingNow = Bot.Player.MovementContext.IsSprintEnabled;
+                if (!sprintingNow && (Destination - botPosition).sqrMagnitude < DISTANCE_TO_DESTINATION_CAN_START_SPRINT * DISTANCE_TO_DESTINATION_CAN_START_SPRINT)
+                {
+                    //Logger.LogDebug($"cant sprint, too close to corner");
+                    return EBotSprintStatus.None;
+                }
                 float stamina = Bot.Player.Physical.Stamina.NormalValue;
                 // We are out of stamina, stop sprinting.
                 if (sprintingNow && Util.ShallPauseSprintStamina(stamina, SprintUrgency))
