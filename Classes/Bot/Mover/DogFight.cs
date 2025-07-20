@@ -60,8 +60,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
 
             Bot.Mover.SetTargetMoveSpeed(Bot.Info.FileSettings.Move.STRAFE_SPEED);
+            Bot.Mover.ActivePath?.RequestEndSprint(ESprintUrgency.None, "dogfight");
 
-            if (HasEnemy && Enemy.IsVisible && Enemy.CanShoot && 
+            if (HasEnemy &&
+                Enemy.InLineOfSight &&
+                //Enemy.CanShoot &&
                 Status == EDogFightStatus.MovingToEnemy)
             {
                 Status = EDogFightStatus.Shooting;
@@ -72,7 +75,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (HasEnemy && !Enemy.CanShoot)
+            if (HasEnemy && !Enemy.InLineOfSight)
             {
                 Bot.Mover.Lean.ResetHoldLean();
             }
@@ -82,11 +85,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            if (_backingUp && Bot.Mover.Moving)
-            {
-                _updateDogFightTimer = Time.time + 0.1f;
-                return;
-            }
+            //if (_backingUp && Bot.Mover.Moving)
+            //{
+            //    _updateDogFightTimer = Time.time + 0.1f;
+            //    return;
+            //}
             if (HasEnemy && BackUpFromEnemy(Enemy))
             {
                 _backingUp = true;
@@ -130,7 +133,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public bool BackUpFromEnemy(Enemy Enemy)
         {
             if (Enemy == null) return false;
-            if (Bot.Transform.NavData.Status != SAIN.Classes.Transform.EPlayerNavMeshDistance.OnNavMesh) return false;
+            if (!Bot.Transform.NavData.IsOnNavMesh) return false;
             if (findStrafePoint(out Vector3 backupPoint, Enemy))
             {
                 return true;

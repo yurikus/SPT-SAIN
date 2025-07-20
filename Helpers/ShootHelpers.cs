@@ -7,31 +7,21 @@ namespace SAIN.Helpers
 {
     public class Shoot
     {
-        public static float FullAutoBurstLength(BotOwner BotOwner, float distance)
+        public static float FullAutoBurstLength(BotComponent bot, float distance)
         {
-            var component = BotOwner.GetComponent<BotComponent>();
-
-            if (component == null)
-            {
-                return 0.1f;
-            }
-
-            if (component.IsCheater)
+            if (bot.IsCheater)
             {
                 return 1f;
             }
 
-            if (component.ManualShoot.Reason != EShootReason.None && component.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
+            if (bot.ManualShoot.Reason != EShootReason.None && bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
             {
                 return 0.75f;
             }
 
-            //float k = 0.08f; // How fast for the burst length to falloff with Distance
-            //float scaledDistance = InverseScaleWithLogisticFunction(distance, k, 20f);
-
             float scaledBurstLength = 1f - (Mathf.Clamp(distance, 0f, 30f) / 30f);
-            scaledBurstLength /= component.Info.WeaponInfo.FinalModifier;
-            scaledBurstLength *= component.Info.FileSettings.Shoot.BurstMulti;
+            scaledBurstLength /= bot.Info.WeaponInfo.FinalModifier;
+            scaledBurstLength *= bot.Info.FileSettings.Shoot.BurstMulti;
             scaledBurstLength = Mathf.Clamp(scaledBurstLength, 0.001f, 1f);
 
             if (distance > 30f)

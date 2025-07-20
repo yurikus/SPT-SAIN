@@ -8,7 +8,6 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Preset.BotSettings.SAINSettings.Categories;
 using SAIN.Preset.GlobalSettings;
-using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using SPT.Reflection.Patching;
@@ -22,7 +21,7 @@ namespace SAIN.Patches.Shoot.Aim
     internal class WeaponMoAModificationPatch : ModulePatch
     {
         private const float MIN_START_MOA_AI = 4f;
-        private const float MOA_FULLAUTO_COEF = 2f;
+        private const float MOA_FULLAUTO_COEF = 3f;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -33,47 +32,28 @@ namespace SAIN.Patches.Shoot.Aim
         public static void Patch(Player.FirearmController __instance, Player ____player, ref float __result)
         {
             // this method was lost due to a VS crash, so I grabbed from a decompiled build
-            BotOwner botOwner;
-            if (____player == null)
+            BotOwner botOwner = ____player.AIData?.BotOwner;
+            if (botOwner == null)
             {
-                botOwner = null;
+                return;
             }
-            else
+            __result = Mathf.Min(__result, MIN_START_MOA_AI);
+            __result *= botOwner.Settings.Current.CurrentScattering;
+            if (__instance.Weapon?.FireMode?.FireMode == EFT.InventoryLogic.Weapon.EFireMode.fullauto)
             {
-                IAIData aidata = ____player.AIData;
-                botOwner = aidata?.BotOwner;
+                __result *= MOA_FULLAUTO_COEF;
             }
-            BotOwner botOwner2 = botOwner;
-            if (botOwner2 != null)
+            if (SAINEnableClass.GetSAIN(botOwner, out BotComponent botComponent))
             {
-                __result = Mathf.Min(__result, MIN_START_MOA_AI);
-                __result *= botOwner2.Settings.Current.CurrentScattering;
-                if (__instance.Weapon?.FireMode?.FireMode == EFT.InventoryLogic.Weapon.EFireMode.fullauto)
+                Enemy lastShotEnemy = botComponent.Shoot.LastShotEnemy;
+                if (lastShotEnemy != null)
                 {
-                    __result *= MOA_FULLAUTO_COEF;
-                }
-                BotOwner botOwner3;
-                if (____player == null)
-                {
-                    botOwner3 = null;
-                }
-                else
-                {
-                    IAIData aidata2 = ____player.AIData;
-                    botOwner3 = aidata2?.BotOwner;
-                }
-                if (SAINEnableClass.GetSAIN(botOwner3, out BotComponent botComponent))
-                {
-                    Enemy lastShotEnemy = botComponent.Shoot.LastShotEnemy;
-                    if (lastShotEnemy != null)
-                    {
-                        __result /= lastShotEnemy.Aim.AimAndScatterMultiplier;
-                    }
+                    __result /= lastShotEnemy.Aim.AimAndScatterMultiplier;
                 }
             }
         }
     }
-    
+
     /// <summary>
     /// This method is usually called by NodeUpdate, we want to remove a few function calls from the original method.
     /// </summary>
@@ -87,12 +67,16 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotAimingClass __instance, Vector3 dir)
         {
-            if (SAINEnableClass.IsBotExcluded(__instance.botOwner_0)) return true;
-            __instance.botOwner_0.Steering.LookToDirection(dir, float.MaxValue);
+            if (!SAINEnableClass.IsBotInCombat(__instance.botOwner_0)) return true;
+            //__instance.botOwner_0.Steering.LookToDirection(dir, float.MaxValue);
             return false;
         }
     }
-
+    
+    /// <summary>
+    /// In the original method it triggers a bot to set ADS, we control this in sain, and dont want it to override our settings.
+    /// This is just the original method, but without setting ADS.
+    /// </summary>
     internal class HardAimDisablePatch1 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -112,6 +96,10 @@ namespace SAIN.Patches.Shoot.Aim
         }
     }
 
+    /// <summary>
+    /// In the original method it triggers a bot to set ADS, we control this in sain, and dont want it to override our settings.
+    /// This is just the original method, but without setting ADS.
+    /// </summary>
     internal class HardAimDisablePatch2 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -122,19 +110,13 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotAimingClass __instance, AimStatus value)
         {
-            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
-            {
-                if (__instance.aimStatus_0 != value && __instance.botOwner_0.BotState == EBotState.Active)
-                {
-                    __instance.aimStatus_0 = value;
-                    if (__instance.aimStatus_0 == AimStatus.AimComplete)
-                    {
-                        __instance.botOwner_0.BotPersonalStats.Aim(__instance.EndTargetPoint, __instance.float_7);
-                    }
-                }
-                return false;
-            }
-            return true;
+            if (__instance.aimStatus_0 == value) return false;
+
+            BotOwner botOwner = __instance.botOwner_0;
+            if (botOwner == null || botOwner.BotState != EBotState.Active) return false;
+            if (!SAINEnableClass.IsBotInCombat(botOwner)) return true;
+            __instance.aimStatus_0 = value;
+            return false;
         }
     }
 
@@ -219,39 +201,6 @@ namespace SAIN.Patches.Shoot.Aim
         }
     }
 
-    internal class SetAimStatusPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.PropertySetter(typeof(BotAimingClass), nameof(BotAimingClass.Status));
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(BotAimingClass __instance, AimStatus value, BotOwner ___botOwner_0, ref AimStatus ___aimStatus_0, float ___float_7)
-        {
-            if (___aimStatus_0 == value || ___botOwner_0.BotState != EBotState.Active)
-            {
-                return false;
-            }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out var bot))
-            {
-                ___aimStatus_0 = value;
-                //bool flag;
-                //if ((flag = (((this.bool_0 && __instance.botOwner_0.Tactic.IsCurTactic(BotsGroup.BotCurrentTactic.Attack)) || __instance.botOwner_0.Memory.IsInCover || this.method_1()) && this.aimStatus_0 != AimStatus.NoTarget && this.method_0())) != __instance.botOwner_0.WeaponManager.ShootController.IsAiming)
-                //{
-                //	__instance.botOwner_0.WeaponManager.ShootController.SetAim(flag);
-                //}
-                __instance.HardAim = bot.AimDownSightsController.AimingDownSights;
-                if (value == AimStatus.AimComplete)
-                {
-                    ___botOwner_0.BotPersonalStats.Aim(__instance.EndTargetPoint, ___float_7);
-                }
-                return false;
-            }
-            return true;
-        }
-    }
-
     internal class AimOffsetPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -262,91 +211,26 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool PatchPrefix(BotAimingClass __instance)
         {
-            Vector3 realTargetPoint = __instance.RealTargetPoint;
-            __instance.EndTargetPoint = realTargetPoint;
-            return false;
-
-            if (!SAINEnableClass.GetSAIN(__instance.botOwner_0, out var bot))
-            {
-                return true;
-            }
-
-            if (bot.IsCheater)
-            {
-                __instance.EndTargetPoint = realTargetPoint;
-                return false;
-            }
-
-            Enemy enemy = bot.Shoot.LastShotEnemy ?? bot.GoalEnemy ?? bot.GoalEnemy;
-            if (enemy == null)
-            {
-                return true;
-            }
-
-            float aimUpgradeByTime = __instance.float_13;
-            Vector3 badShootOffset = __instance.vector3_5;
-            Vector3 recoilOffset = Vector3.zero;
+            if (!SAINEnableClass.IsBotInCombat(__instance.botOwner_0)) return true;
 
             // Applies aiming offset, recoil offset, and scatter offsets
             // Default Setup :: Vector3 finalTarget = __instance.RealTargetPoint + badShootOffset + (AimUpgradeByTime * (AimOffset + ___botOwner_0.RecoilData.RecoilOffset));
 
-            Vector3 aimOffset;
-            if (__instance.botOwner_0.Settings.FileSettings.Aiming.DIST_TO_SHOOT_NO_OFFSET > enemy.RealDistance)
-            {
-                aimOffset = Vector3.zero;
-            }
-            else
-            {
-                float spread = aimUpgradeByTime / enemy.Aim.AimAndScatterMultiplier;
-                spread = Mathf.Clamp(spread, 0f, 3f);
-                aimOffset = __instance.vector3_4 * spread;
-            }
+            float aimUpgradeByTime = __instance.float_13;
+            Vector3 aimOffset = __instance.vector3_4;
+            Vector3 realTargetPoint = __instance.RealTargetPoint;
+            Vector3 result = realTargetPoint + (aimOffset * aimUpgradeByTime);
 
-            if (bot.Info.Profile.IsPMC || bot.Info.Profile.WildSpawnType.IsGoons())
-            {
-                badShootOffset = Vector3.zero;
-            }
+            __instance.EndTargetPoint = result;
 
-            Vector3 finalOffset = badShootOffset + aimOffset + recoilOffset;
-            if (!enemy.IsAI &&
-                SAINPlugin.LoadedPreset.GlobalSettings.Look.NotLooking.NotLookingToggle)
-            {
-                finalOffset += NotLookingOffset(enemy.EnemyPlayer, __instance.botOwner_0);
-            }
-
-            Vector3 result = realTargetPoint + finalOffset;
-
-            if (SAINPlugin.LoadedPreset.GlobalSettings.General.Debug.Gizmos.DebugDrawAimGizmos &&
-                enemy.EnemyPlayer.IsYourPlayer)
+            if (SAINPlugin.LoadedPreset.GlobalSettings.General.Debug.Gizmos.DebugDrawAimGizmos)
             {
                 Vector3 weaponRoot = __instance.botOwner_0.WeaponRoot.position;
                 DebugGizmos.DrawLine(weaponRoot, result, Color.red, 0.02f, 0.25f, true);
                 DebugGizmos.DrawSphere(result, 0.025f, Color.red, 10f);
-
-                DebugGizmos.DrawLine(weaponRoot, realTargetPoint, Color.white, 0.02f, 0.25f, true);
-                DebugGizmos.DrawSphere(realTargetPoint, 0.025f, Color.white, 10f);
+                DebugGizmos.DrawLine(result, realTargetPoint, Color.white, 0.02f, 0.25f, true);
             }
-            //if (SAINPlugin.DebugSettings.Gizmos.DebugDrawRecoilGizmos &&
-            //    enemy.EnemyPerson.IPlayer.IsYourPlayer == true &&
-            //    ___botOwner_0.ShootData.Shooting) {
-            //    DebugGizmos.Sphere(recoilOffset + realTargetPoint, 0.035f, Color.red, true, 10f);
-            //    DebugGizmos.Line(recoilOffset + realTargetPoint, realTargetPoint, Color.red, 0.02f, true, 10f, true);
-            //}
-
-            __instance.EndTargetPoint = result;
             return false;
-        }
-
-        private static Vector3 NotLookingOffset(IPlayer person, BotOwner botOwner)
-        {
-            float ExtraSpread = SAINNotLooking.GetSpreadIncrease(person, botOwner);
-            if (ExtraSpread > 0)
-            {
-                Vector3 vectorSpread = UnityEngine.Random.insideUnitSphere * ExtraSpread;
-                vectorSpread.y = 0;
-                return vectorSpread;
-            }
-            return Vector3.zero;
         }
     }
 

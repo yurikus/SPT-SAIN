@@ -37,10 +37,14 @@ namespace SAIN.Layers.Combat.Solo
 
         public override void Update(CustomLayer.ActionData data)
         {
-            
             setTargetEnemy();
             if (_searchTarget != null)
             {
+                if (_searchTarget.IsVisible)
+                {
+                    Bot.Mover.DogFight.DogFightMove(true, _searchTarget);
+                    return;
+                }
                 bool isBeingStealthy = _searchTarget.Hearing.EnemyHeardFromPeace;
                 if (isBeingStealthy)
                 {

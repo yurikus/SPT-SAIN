@@ -7,6 +7,28 @@ namespace SAIN.Preset.GlobalSettings
     // note for later: Need to find a way to remove the clunky duplicates of the dictionaries here, as its a hold over from a previous system of getting the default values for different config options.
     public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     {
+        [Name("Base Minimum Time Between Shots")]
+        [Category("General")]
+        [MinMax(0.0f, 2f, 100f)]
+        public float MIN_FIRE_RATE_INTERVAL = 0.1f; // minimum time between shots
+
+        [Name("Base Maximum Time Between Shots")]
+        [Category("General")]
+        [MinMax(0.0f, 8f, 100f)]
+        public float MAX_FIRE_RATE_INTERVAL = 4f; // maximum time between shots
+
+        [Name("Fullauto Wait Multiplier")]
+        [Description("If a bot is on fullauto, the time between shots will be multiplied by this value")]
+        [Category("General")]
+        [MinMax(0.0f, 1f, 100f)]
+        public float MAX_FIRE_RATE_COEF_FULLAUTO = 0.25f; // maximum time between shots
+
+        [Name("Firerate Randomization")]
+        [Description("Randomize the time a bot waits between shots to make it less robotic. A value of 0.25 means it will multiply it by a random value between 0.75x - 1.25x")]
+        [Category("General")]
+        [MinMax(0.0f, 1f, 100f)]
+        public float FIRERATE_RANDOMIZATION_COEF = 0.25f; // randomization coefficient for firerate
+
         [Name("Bots only use Semi Auto")]
         [Description("If enabled, bots will never be able to use full auto at close/mid range.")]
         [Category("General")]

@@ -310,7 +310,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 return true;
             }
-            if (!enemy.Status.ShotByEnemyRecently && !enemy.Status.ShotAtMeRecently)
+            if (!enemy.Status.ShotMeRecently && !enemy.Status.ShotAtMeRecently)
             {
                 if (!enemy.Seen)
                 {

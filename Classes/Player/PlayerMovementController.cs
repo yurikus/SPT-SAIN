@@ -110,11 +110,11 @@ namespace SAIN.Classes
         {
             UpdateRandomSway(GameWorldComponent.WorldTickDeltaTime, botOwner.GetPlayer, botOwner, bot, GlobalSettingsClass.Instance.Steering);
             Vector3 targetDir = targetDirection + RandomSwayOffset;
-            if (bot != null) targetDir = bot.Info.WeaponInfo.Recoil.ApplyRecoil(targetDir);
             ControlLookDirection.Target = targetDir;
             TurnSettings turnSettings = GetTurnSettings(botOwner, bot);
             ControlLookDirection.Calculate(GameWorldComponent.WorldTickDeltaTime, turnSettings.SmoothingValue, turnSettings.MaxTurnSpeed, GlobalSettingsClass.Instance.Steering.TURN_PITCH_MAX);
             Vector3 dir = ControlLookDirection.Current;
+            if (bot != null) dir = bot.Info.WeaponInfo.Recoil.ApplyRecoil(dir);
             //botOwner.GetPlayer.CharacterController.SetSteerDirection(dir);
             SetXAngle(botOwner, dir);
             SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
@@ -164,8 +164,8 @@ namespace SAIN.Classes
             Player player = playerComp.Player;
             float playerSpeed = player.Speed;
 
-            const float START_SLOW_DIST = 1f;
-            const float STOP_SPRINT_DIST = START_SLOW_DIST * 1.1f;
+            const float START_SLOW_DIST = 0.25f;
+            const float STOP_SPRINT_DIST = 0.5f;
 
             float destinationDistance = (finalMoveDestination - playerComp.Position).magnitude;
             bool canSprint = player.MovementContext.CanSprint && CheckCanSprintByDistanceRemaining(destinationDistance, STOP_SPRINT_DIST);
@@ -174,7 +174,7 @@ namespace SAIN.Classes
             player.EnableSprint(shallSprint);
 
             //direction.Normalize();
-            player.CharacterController.SetSteerDirection(direction.normalized);
+            if (destinationDistance > 0.25f) player.CharacterController.SetSteerDirection(direction.normalized);
             Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
             player.Move(moveDir);
             playerComp.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);
@@ -183,10 +183,14 @@ namespace SAIN.Classes
         private static float CalcRandomSwayModifier(Player player, BotOwner botOwner, BotComponent botComponent)
         {
             float result = 1f;
+            if (botComponent?.Mover?.Running == true)
+            {
+                return 0f;
+            }
             bool sprinting = player.IsSprintEnabled;
             if (sprinting)
             {
-                return 0.25f;
+                return 0f;
             }
 
             MovementContext movementContext = player.MovementContext;

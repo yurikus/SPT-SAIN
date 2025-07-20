@@ -26,7 +26,7 @@ namespace SAIN.Types.Jobs
             Commands = CreateCommands(Points.Length, Points, ViewPosition, InMask);
         }
 
-        public RaycastJob(List<Vector3> Points
+        public RaycastJob(List<Vector3> points
         , Vector3 ViewPosition
         , LayerMask InMask
         , IPlayer inOwner
@@ -36,7 +36,8 @@ namespace SAIN.Types.Jobs
             Owner = inOwner;
             Target = inTarget;
             Mask = InMask;
-            TotalRaycasts = Points.Count;
+            TotalRaycasts = points.Count;
+            Points = points;
             Hits = new NativeArray<RaycastHit>(TotalRaycasts, Allocator.TempJob);
             Commands = CreateCommands(TotalRaycasts, Points, ViewPosition, InMask);
         }
@@ -100,6 +101,7 @@ namespace SAIN.Types.Jobs
 
         public int OffsetCount;
         private bool _IsScheduled;
+        internal List<Vector3> Points;
 
         private static NativeArray<RaycastCommand> CreateCommands(int Count, Vector3[] Points, Vector3 ViewPosition, LayerMask Mask)
         {

@@ -50,6 +50,7 @@
             ContinueSearch_EnemyNotSeen_Squad,
             ContinueSearch_EnemyNotHeard,
             ContinueSearch_EnemyNotHeard_Squad,
+            ContinueSearch_EnemyVisible,
         }
 
         public enum ECantStartReason

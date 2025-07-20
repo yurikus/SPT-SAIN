@@ -9,103 +9,100 @@ using static SAIN.Helpers.Shoot;
 
 namespace SAIN.Patches.Shoot.RateOfFire
 {
-    public class FullAutoPatch : ModulePatch
+    public class BotReloadBlockPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(ShootData), nameof(ShootData.method_6));
+            return AccessTools.Method(typeof(ShootData), nameof(ShootData.ManualUpdate));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotOwner ____owner, ref float ___nextFingerUpTime)
+        public static bool PatchPrefix(ShootData __instance)
         {
-            if (SAINPlugin.IsBotExluded(____owner))
+            BotOwner botOwner = __instance._owner;
+            if (!SAINEnableClass.GetSAIN(botOwner, out BotComponent bot) || !bot.SAINLayersActive)
             {
                 return true;
             }
-            if (____owner.AimingManager.CurrentAiming == null)
+            if (__instance.Shooting && __instance.nextFingerUpTime < Time.time)
+            {
+                __instance.EndShoot();
+            }
+            return false;
+        }
+    }
+    public class ShootDataManualUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(ShootData), nameof(ShootData.ManualUpdate));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(ShootData __instance)
+        {
+            BotOwner botOwner = __instance._owner;
+            if (!SAINEnableClass.GetSAIN(botOwner, out BotComponent bot) || !bot.SAINLayersActive)
             {
                 return true;
             }
-
-            Weapon weapon = ____owner.WeaponManager.CurrentWeapon;
-
-            if (weapon.SelectedFireMode == Weapon.EFireMode.fullauto)
+            if (__instance.Shooting && __instance.nextFingerUpTime < Time.time)
             {
-                float distance = ____owner.AimingManager.CurrentAiming.LastDist2Target;
-                float scaledDistance = FullAutoBurstLength(____owner, distance);
+                __instance.EndShoot();
+            }
+            return false;
+        }
+    }
 
-                ___nextFingerUpTime = scaledDistance + Time.time;
+    public class BotShootPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(ShootData), nameof(ShootData.Shoot));
+        }
 
+        [PatchPrefix]
+        public static bool PatchPrefix(ShootData __instance, ref bool __result)
+        {
+            BotOwner botOwner = __instance._owner;
+            if (!SAINEnableClass.GetSAIN(botOwner, out BotComponent bot))
+            {
+                return true;
+            }
+            __result = false;
+            if (__instance.ShootController == null)
+            {
                 return false;
             }
-
-            ___nextFingerUpTime = 0.001f + Time.time;
-
-            return true;
-        }
-    }
-
-    public class SemiAutoPatch3 : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(GClass453), nameof(GClass453.method_0));
-        }
-
-        [PatchPostfix]
-        public static void PatchPostfix(BotOwner ___botOwner_0, ref float __result)
-        {
-            if (SAINPlugin.IsBotExluded(___botOwner_0))
+            BotUnderbarrelLauncherController underbarrelLauncherController = botOwner.WeaponManager.UnderbarrelLauncherController;
+            if (underbarrelLauncherController.IsActive)
             {
-                return;
+                if (underbarrelLauncherController.NeedToReload() && !underbarrelLauncherController.TryReload(null))
+                {
+                    underbarrelLauncherController.TryDisable(null);
+                    return false;
+                }
+                if (!underbarrelLauncherController.CheckShootAttemptAndDisableIfNeeded())
+                {
+                    return false;
+                }
+                __instance.nextFingerDownCan = Time.time - 0.1f;
             }
-            if (BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var component))
+            if (!__instance.Shooting && __instance.nextFingerDownCan < Time.time)
             {
-                __result = component.Info.WeaponInfo.Firerate.SemiAutoROF();
+                bool fullAuto = bot.Info.WeaponInfo.SelectedFireMode == Weapon.EFireMode.fullauto;
+                if (fullAuto) __instance.nextFingerUpTime = Time.time + FullAutoBurstLength(bot, bot.DistanceToAimTarget);
+                __instance.nextFingerDownCan = Time.time + bot.Info.WeaponInfo.Firerate.CalcFirerateInterval();
+                __instance.Shooting = true;
+                __instance.timeFingerDown = Time.time;
+                __instance.LastTriggerPressd = Time.time;
+                __instance.ShootController.IsInLauncherMode();
+                __instance.ShootController.SetTriggerPressed(true);
+                __instance._owner.AimingManager.CurrentAiming.TriggerPressedDone();
+                __result = true;
+                return false;
             }
-        }
-    }
-
-    public class SemiAutoPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(GClass453), nameof(GClass453.method_1));
-        }
-
-        [PatchPostfix]
-        public static void PatchPostfix(BotOwner ___botOwner_0, ref float __result)
-        {
-            if (SAINPlugin.IsBotExluded(___botOwner_0))
-            {
-                return;
-            }
-            if (BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var component))
-            {
-                __result = component.Info.WeaponInfo.Firerate.SemiAutoROF();
-            }
-        }
-    }
-
-    public class SemiAutoPatch2 : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(GClass453), nameof(GClass453.method_6));
-        }
-
-        [PatchPostfix]
-        public static void PatchPostfix(BotOwner ___botOwner_0, ref float __result)
-        {
-            if (SAINPlugin.IsBotExluded(___botOwner_0))
-            {
-                return;
-            }
-            if (BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var component))
-            {
-                __result = component.Info.WeaponInfo.Firerate.SemiAutoROF();
-            }
+            return false;
         }
     }
 }

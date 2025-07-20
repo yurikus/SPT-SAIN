@@ -144,7 +144,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             HeardRecently = false;
             EnemyLookAtMe = false;
             PointingWeaponAtMe = false;
-            ShotByEnemyRecently = false;
+            ShotMeRecently = false;
             EnemyUsingSurgery = false;
             EnemyIsLooting = false;
             EnemyHasGrenadeOut = false;
@@ -168,7 +168,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool ShotByEnemyRecently {
+        public bool ShotMeRecently {
             get
             {
                 return _shotByEnemy.Value;
@@ -314,7 +314,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     TimeFirstShot = Time.time;
                 }
                 TimeLastShotMe = Time.time;
-                ShotByEnemyRecently = true;
+                ShotMeRecently = true;
                 Enemy.Events.ShotByEnemy();
             }
         }
@@ -348,7 +348,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private readonly ExpirableBool _heardRecently = new(2f, 0.5f, 1.5f);
         private readonly ExpirableBool _enemyIsReloading = new(4f, 0.5f, 1.5f);
         private readonly ExpirableBool _enemyHasGrenade = new(4f, 0.5f, 1.5f);
-        private readonly ExpirableBool _enemyIsHealing = new(4f, 0.5f, 1.5f);
+        private readonly ExpirableBool _enemyIsHealing = new(6f, 0.5f, 1.5f);
         private readonly ExpirableBool _enemyShotAtMe = new(5f, 0.5f, 1.5f);
         private readonly ExpirableBool _enemyIsSuppressed = new(4f, 0.5f, 1.5f);
         private readonly ExpirableBool _enemyLooting = new(15f, 0.5f, 1.5f);

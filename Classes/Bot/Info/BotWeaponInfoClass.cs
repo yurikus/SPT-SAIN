@@ -11,7 +11,7 @@ using static EFT.InventoryLogic.Weapon;
 
 namespace SAIN.SAINComponent.Classes.Info
 {
-    public class WeaponInfoClass : BotBase
+    public class BotWeaponInfoClass : BotBase
     {
         private const float MACHINEGUN_SWAPDIST_MULTI = 1.5f;
         public float FinalModifier { get; private set; }
@@ -25,20 +25,17 @@ namespace SAIN.SAINComponent.Classes.Info
         public Firemode Firemode { get; private set; }
         public ReloadClass Reload { get; private set; }
 
-        public WeaponInfoClass(BotComponent bot) : base(bot)
+        public BotWeaponInfoClass(BotComponent bot) : base(bot)
         {
             Recoil = new Recoil(bot);
-            Firerate = new Firerate(bot);
-            Firemode = new Firemode(bot);
+            Firerate = new Firerate(this);
+            Firemode = new Firemode();
             Reload = new ReloadClass(bot);
         }
 
         public override void Init()
         {
             Recoil.Init();
-            Firerate.Init();
-            Firemode.Init();
-            Reload.Init();
             base.Init();
         }
 
@@ -50,11 +47,8 @@ namespace SAIN.SAINComponent.Classes.Info
         public override void ManualUpdate()
         {
             checkCalcWeaponInfo();
-            Recoil.ManualUpdate();
-            Firerate.ManualUpdate();
-            Firemode.ManualUpdate();
-            Reload.ManualUpdate();
-            base.ManualUpdate();
+            Firemode.CheckSwapFireMode(Bot, this);
+            Recoil.CalcRecoilDecay();
         }
 
         public void checkCalcWeaponInfo()
@@ -164,14 +158,10 @@ namespace SAIN.SAINComponent.Classes.Info
         public override void Dispose()
         {
             Recoil.Dispose();
-            Firerate.Dispose();
-            Firemode.Dispose();
-            Reload.Dispose();
             base.Dispose();
         }
 
-        public float EffectiveWeaponDistance
-        {
+        public float EffectiveWeaponDistance {
             get
             {
                 if (ECaliber == ECaliber.Caliber9x39)
@@ -186,8 +176,7 @@ namespace SAIN.SAINComponent.Classes.Info
             }
         }
 
-        public float PreferedShootDistance
-        {
+        public float PreferedShootDistance {
             get
             {
                 return EffectiveWeaponDistance * 0.66f;
@@ -214,8 +203,7 @@ namespace SAIN.SAINComponent.Classes.Info
             return modes.Contains(fireMode);
         }
 
-        public EFireMode SelectedFireMode
-        {
+        public EFireMode SelectedFireMode {
             get
             {
                 if (CurrentWeapon != null)
@@ -226,8 +214,7 @@ namespace SAIN.SAINComponent.Classes.Info
             }
         }
 
-        public Weapon CurrentWeapon
-        {
+        public Weapon CurrentWeapon {
             get
             {
                 return BotOwner?.WeaponManager?.CurrentWeapon;
@@ -236,7 +223,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         private Weapon _lastCheckedWeapon;
         private float _nextRecalcTime;
-        private const float _recalcFreq = 60f;
+        private const float _recalcFreq = 10f;
         private float _nextCheckWeapTime;
         private const float _checkWeapFreq = 1f;
         private bool _forceNewCheck = false;

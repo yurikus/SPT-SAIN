@@ -7,112 +7,6 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public enum SBotAimState
-    {
-        None,
-        Turning,
-        Aiming,
-        AimComplete,
-    }
-
-    public class SBotAimingClass : IBotAiming
-    {
-        public event Action<Vector3> OnSettingsTarget;
-
-        public Enemy EnemyTarget { get; private set; }
-        public SBotAimState AimStatus { get; private set; }
-        public Vector3 EndTargetPoint { get; private set; }
-        public Vector3 RealTargetPoint { get; private set; }
-
-        public bool IsReady => AimStatus == SBotAimState.AimComplete;
-
-        public bool AlwaysTurnOnLight { get; private set; }
-
-        public float LastDist2Target { get; private set; }
-
-        public bool HardAim { get; private set; }
-
-        public void LoseTarget()
-        {
-        }
-
-        public void SetTarget(Vector3 trg)
-        {
-        }
-
-        public void SetTarget(Enemy enemy)
-        {
-        }
-
-        public void SetNextAimingDelay(float nextAimingDelay)
-        {
-        }
-
-        public void TriggerPressedDone()
-        {
-        }
-
-        public void ShootDone(Weapon weapon)
-        {
-        }
-
-        public void NodeUpdate()
-        {
-        }
-
-        public void Activate()
-        {
-        }
-
-        public void GetHit(DamageInfoStruct damageInfo)
-        {
-        }
-
-        public void DrawGizmosSelected()
-        {
-        }
-
-        public void ManualUpdate()
-        {
-        }
-
-        public void RotateX(float angToRotate)
-        {
-        }
-
-        public void RotateY(float deltaAngle)
-        {
-        }
-
-        public void SetWeapon(Weapon weapon)
-        {
-        }
-
-        public void SetTracers(bool isTracers)
-        {
-        }
-
-        public void Move(float delta = 0f)
-        {
-        }
-
-        public void NextShotMiss()
-        {
-        }
-
-        public void OnDrawGizmos()
-        {
-        }
-
-        public void DebugDraw()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-    }
-
     public class AimClass : BotComponentClassBase, IBotClass
     {
         public AimClass(BotComponent sain) : base(sain)
@@ -125,16 +19,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         public bool CanAim { get; private set; }
 
         public float LastAimTime { get; set; }
-
-        public Vector3 EndTargetPoint()
-        {
-            IBotAiming aim = BotOwner.AimingManager.CurrentAiming;
-            if (aim != null)
-            {
-                return aim.EndTargetPoint;
-            }
-            return Vector3.zero;
-        }
 
         public AimStatus AimStatus {
             get

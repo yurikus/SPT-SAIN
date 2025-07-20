@@ -86,8 +86,16 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 PathFinder.PathSteeringTicked(currentCorner, CurrentIndex, PathCorners.Count);
             }
+            else
+            {
+                Bot.BotOwner.ShootData.EndShoot();
+                Bot.BotOwner.ShootData.BlockFor(0.2f);
+                Bot.Aim.LoseAimTarget();
+                Bot.ManualShoot.Reset();
+                Bot.Suppression.ResetSuppressing();
+            }
 
-            if (CurrentCornerMoveData.Magnitude <= CornerReachDist())
+            if (CheckCornerComplete())
             {
                 CompleteCorner(CurrentIndex);
                 CurrentIndex++;
@@ -102,6 +110,24 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return;
             }
+        }
+
+        private bool CheckCornerComplete()
+        {
+            float currentDist = CurrentCornerMoveData.Magnitude;
+            if (currentDist <= CornerReachDist())
+            {
+                return true;
+            }
+            if (currentDist < 1f && CurrentIndex + 1 < PathCorners.Count)
+            {
+                BotPathCorner nextCorner = PathCorners[CurrentIndex + 1];
+                if (!NavMesh.Raycast(Bot.NavMeshPosition, nextCorner.Position, out _, NavMesh.AllAreas))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private bool CanProceedWithPath(Vector3 botPosition)
@@ -566,11 +592,11 @@ namespace SAIN.SAINComponent.Classes.Mover
 
                 const float DISTANCE_TO_DESTINATION_CAN_START_SPRINT = 1.5f;
                 bool sprintingNow = Bot.Player.MovementContext.IsSprintEnabled;
-                if (!sprintingNow && (Destination - botPosition).sqrMagnitude < DISTANCE_TO_DESTINATION_CAN_START_SPRINT * DISTANCE_TO_DESTINATION_CAN_START_SPRINT)
-                {
-                    //Logger.LogDebug($"cant sprint, too close to corner");
-                    return EBotSprintStatus.None;
-                }
+                //if (!sprintingNow && (Destination - botPosition).sqrMagnitude < DISTANCE_TO_DESTINATION_CAN_START_SPRINT * DISTANCE_TO_DESTINATION_CAN_START_SPRINT)
+                //{
+                //    //Logger.LogDebug($"cant sprint, too close to corner");
+                //    return EBotSprintStatus.None;
+                //}
                 float stamina = Bot.Player.Physical.Stamina.NormalValue;
                 // We are out of stamina, stop sprinting.
                 if (sprintingNow && Util.ShallPauseSprintStamina(stamina, SprintUrgency))
@@ -591,7 +617,8 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     return EBotSprintStatus.Running;
                 }
-                if (CurrentCornerDistance >= START_SPRINT_CORNER_MIN_DIST && Util.ShallStartSprintStamina(stamina, SprintUrgency))
+                //if (CurrentCornerDistance >= START_SPRINT_CORNER_MIN_DIST && Util.ShallStartSprintStamina(stamina, SprintUrgency))
+                if (Util.ShallStartSprintStamina(stamina, SprintUrgency))
                 {
                     //Logger.LogDebug($"start sprint {staminaNormal}");
                     return EBotSprintStatus.Running;

@@ -103,6 +103,11 @@ namespace SAIN.SAINComponent.Classes
 
         private bool CheckStartRun(Enemy enemy, out string reason)
         {
+            if (Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
+            {
+                reason = "doing self operation";
+                return true;
+            }
             if (CoverInUse != null)
             {
                 reason = "inCover";
@@ -118,19 +123,11 @@ namespace SAIN.SAINComponent.Classes
                 reason = "noCoverPoints";
                 return false;
             }
-
             if (enemy.IsSniper && GlobalSettings.Mind.ENEMYSNIPER_ALWAYS_SPRINT_COVER)
             {
                 reason = "EnemySniperRun";
                 return true;
             }
-
-            if (Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
-            {
-                reason = "doing self operation";
-                return true;
-            }
-
             if (StartRunCoverTimer < Time.time)
             {
                 reason = "timeToRun";
@@ -389,12 +386,13 @@ namespace SAIN.SAINComponent.Classes
                 return true;
             }
 
-            var point = CoverInUse;
-            if (point != null && shallProne && point.Collider.bounds.size.y < minCoverHeightToProne)
-            {
-                Bot.Mover.Prone.SetProne(true);
-                return true;
-            }
+            //var point = CoverInUse;
+            //if (point != null && shallProne && point.Collider.bounds.size.y < minCoverHeightToProne)
+            //{
+            //    Bot.Mover.Prone.SetProne(true);
+            //    return true;
+            //}
+                Bot.Mover.Prone.SetProne(false);
             return false;
         }
 

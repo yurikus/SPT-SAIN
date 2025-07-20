@@ -216,7 +216,8 @@ namespace SAIN.SAINComponent.Classes.Search
             if (enemy.IsVisible)
             {
                 reason = ECantStartReason.EnemyVisible;
-                return false;
+                //return false;
+                return true;
             }
             reason = ECantStartReason.None;
             return true;
@@ -224,6 +225,16 @@ namespace SAIN.SAINComponent.Classes.Search
 
         private bool shallContinueSearch(Enemy enemy, float timeBeforeSearch, out EWantToSearchReason reason)
         {
+            if (enemy.IsVisible)
+            {
+                reason = EWantToSearchReason.ContinueSearch_EnemyVisible;
+                return true;
+            }
+            if (enemy.Seen && enemy.TimeSinceSeen < 2f)
+            {
+                reason = EWantToSearchReason.ContinueSearch_EnemyVisible;
+                return true;
+            }
             if (enemy.Status.SearchingBecauseLooting)
             {
                 reason = EWantToSearchReason.ContinueSearch_Looting;
@@ -236,6 +247,7 @@ namespace SAIN.SAINComponent.Classes.Search
                 reason = EWantToSearchReason.ContinueSearch_PowerLevel;
                 return true;
             }
+
 
             timeBeforeSearch = Mathf.Clamp(timeBeforeSearch / 3f, 0f, 120f);
             if (enemy.Seen && enemy.TimeSinceSeen >= timeBeforeSearch)

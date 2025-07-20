@@ -66,33 +66,37 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 case EAimDownSightsStatus.EnemyHeardRecent:
                 case EAimDownSightsStatus.EnemySeenRecent:
                 case EAimDownSightsStatus.EnemyVisible:
-                    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f);
-                    break;
-
                 case EAimDownSightsStatus.DogFight:
-                    result = Bot.Mover.DogFight.Status == Mover.EDogFightStatus.Shooting;
+                case EAimDownSightsStatus.MovingToCover:
+                    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
                     break;
+                    
+                //case EAimDownSightsStatus.DogFight:
+                //    result = Bot.Mover.DogFight.Status == Mover.EDogFightStatus.Shooting;
+                //    break;
 
                 case EAimDownSightsStatus.None:
                 case EAimDownSightsStatus.Sprinting:
-                case EAimDownSightsStatus.MovingToCover:
                     result = false;
                     break;
 
                 case EAimDownSightsStatus.HoldInCover:
                     result = timeSinceChangeDecision > 3f &&
-                        (EFTMath.RandomBool(60) || enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f));
+                        (EFTMath.RandomBool(60) || enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f));
                     break;
 
                 case EAimDownSightsStatus.StandAndShoot:
-                    result = enemy != null && enemy.RealDistance > (AimingDownSights ? 10f : 15f);
+                case EAimDownSightsStatus.Suppressing:
+                    //result = enemy != null && enemy.RealDistance > (AimingDownSights ? 10f : 15f);
+                    result = true;
                     break;
 
-                case EAimDownSightsStatus.Suppressing:
-                    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f);
-                    break;
+                //case EAimDownSightsStatus.Suppressing:
+                //    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 10f : 15f);
+                //    break;
 
                 default:
+                    result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
                     break;
             }
 

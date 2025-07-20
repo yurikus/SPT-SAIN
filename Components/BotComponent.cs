@@ -135,10 +135,10 @@ namespace SAIN.Components
         public float DistanceToAimTarget {
             get
             {
-                if (BotOwner.AimingManager.CurrentAiming != null)
-                {
-                    return BotOwner.AimingManager.CurrentAiming.LastDist2Target;
-                }
+                //if (BotOwner.AimingManager.CurrentAiming != null)
+                //{
+                //    return BotOwner.AimingManager.CurrentAiming.LastDist2Target;
+                //}
                 if (EnemyController.GoalEnemy != null)
                 {
                     return EnemyController.GoalEnemy.KnownPlaces.BotDistanceFromLastKnown;

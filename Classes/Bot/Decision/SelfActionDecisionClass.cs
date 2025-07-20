@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (CheckDoReload(enemy, Bot))
             {
-                botOwner.ShootData.BlockFor(0.7f);
+                botOwner.ShootData.BlockFor(1f);
                 Decision = ESelfActionType.Reload;
                 return true;
             }
@@ -205,6 +205,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     if (checkContinueReload(_timeSinceChangeDecision, enemy))
                     {
                         Decision = ESelfActionType.Reload;
+                        BotOwner.ShootData.BlockFor(0.1f);
                         return true;
                     }
                     return false;
@@ -224,8 +225,8 @@ namespace SAIN.SAINComponent.Classes.Decision
         private bool checkContinueReload(float timeSinceChange, Enemy enemy)
         {
             BotComponent bot = Bot;
-            if (bot.Decision.CurrentSelfDecision != ESelfActionType.Reload)
-                return false;
+            if (bot.Decision.CurrentSelfDecision != ESelfActionType.Reload) return false;
+            if (timeSinceChange < 0.75f) return true;
             BotWeaponManager weaponManager = bot.BotOwner.WeaponManager;
             if (weaponManager == null) return false;
             BotReload reload = weaponManager.Reload;
@@ -242,7 +243,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 enemy.IsVisible &&
                 Time.time - enemy.Vision.VisibleStartTime > 0.25f)
             {
-                reload.TryStopReload();
+                //reload.TryStopReload();
                 //if (this._nextPossibleTryStopReload < Time.time)
                 //{
                 //    this._nextPossibleTryStopReload = Time.time + 1f;
@@ -251,7 +252,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 //return false;
             }
 
-            reload.CheckReloadLongTime();
+            //reload.CheckReloadLongTime();
 
             if (timeSinceChange > 8f)
             {

@@ -22,11 +22,28 @@ namespace SAIN.Layers
                 if (debug.Overlay_Info)
                 {
                     stringBuilder.AppendLine($"Name: [{bot.PlayerComponent.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]");
-                    stringBuilder.AppendLabeledValue("In Combat", $"{bot.IsInCombat}", Color.white, Color.yellow);
-                    stringBuilder.AppendLabeledValue("Goal Enemy", $"{bot.GoalEnemy?.EnemyName}", Color.white, Color.yellow);
-                    //stringBuilder.AppendLabeledValue("Active", $"{bot.BotActive}", Color.white, Color.yellow);
-                    //stringBuilder.AppendLabeledValue("Standby", $"{bot.BotInStandBy}", Color.white, Color.yellow);
-                    //stringBuilder.AppendLabeledValue("SAIN Layers Active", $"{bot.SAINLayersActive}", Color.white, Color.yellow);
+                    stringBuilder.AppendLine($"In Combat [{bot.IsInCombat}] Layers Active [{bot.SAINLayersActive}]", Color.white);
+                    var enemy = bot.GoalEnemy;
+                    if (enemy != null)
+                    {
+                        stringBuilder.AppendLine($"Goal Enemy: [{enemy.EnemyName}] Distance: [{enemy.RealDistance.Round100()}] IsVisible: [{enemy.IsVisible}]");
+                        stringBuilder.AppendLine($" Enemy Statuses: " +
+                            $"VULN: [{enemy.Status.VulnerableAction}] " +
+                            $"GREN: [{enemy.Status.EnemyHasGrenadeOut}] " +
+                            $"HEAL: [{enemy.Status.EnemyIsHealing}] " +
+                            $"LOOT:[{enemy.Status.EnemyIsLooting}] " +
+                            $"REL:[{enemy.Status.EnemyIsReloading}] " +
+                            $"LOOK:[{enemy.Status.EnemyLookAtMe}] " +
+                            $"SUR:[{enemy.Status.EnemyUsingSurgery}] " +
+                            $"HEAR:[{enemy.Status.HeardRecently}] " +
+                            $"SHOTATME:[{enemy.Status.ShotAtMe}:{enemy.Status.ShotAtMeRecently}] " +
+                            $"SHOTME:[{enemy.Status.ShotMe}]" +
+                            $"POINT:[{enemy.Status.PointingWeaponAtMe}]");
+                    }
+                    else
+                    {
+                        stringBuilder.AppendLine($"Goal Enemy: [null]");
+                    }
                     stringBuilder.AppendLabeledValue("Steering", $"{bot.Steering.CurrentSteerPriority} : {bot.Steering.EnemySteerDir}", Color.white, Color.yellow);
                     stringBuilder.AppendLine(decisionInfo(bot));
                     stringBuilder.AppendLabeledValue("DogFight Status", $"{bot.Mover.DogFight.Status}", Color.white, Color.yellow);

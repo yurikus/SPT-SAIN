@@ -65,22 +65,33 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return Player.IsInPronePose;
             }
 
+            if (Bot.Decision.CurrentSelfDecision == ESelfActionType.None)
+            {
+                return false;
+            }
+
             if (!Player.MovementContext.CanProne)
             {
                 return false;
             }
+            if (enemy.KnownPlaces.BotDistanceFromLastKnown < mindist)
+            {
+                return false;
+            }
+            if (enemy.IsVisible)
+            {
+                return true;
+            }
+            return Player.IsInPronePose;
+
 
             Vector3? lastKnownPos = enemy.LastKnownPosition;
             if (lastKnownPos == null)
             {
                 return false;
             }
-            if (Bot.DistanceToAimTarget < mindist)
-            {
-                return false;
-            }
-
-            bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
+           // bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
+            bool isUnderDuress = false;
             bool shallProne = isUnderDuress || !CheckShootProne(lastKnownPos.Value, enemy);
             if (shallProne)
             {

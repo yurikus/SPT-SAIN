@@ -35,6 +35,45 @@ namespace SAIN.Components
             }
             yield return null;
         }
+        
+        private void CreateJobs(HashSet<BotComponent> bots)
+        {
+            LayerMask HighPolyWithTerrain = LayerMaskClass.HighPolyWithTerrainMask;
+            LayerMask DoorLayer = LayerMaskClass.DoorLayer;
+            LayerMask Mask = HighPolyWithTerrain & ~(1 << DoorLayer);
+            foreach (BotComponent bot in bots)
+            {
+                if (bot != null && bot.BotActive)
+                {
+                    foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
+                    {
+                        if (enemy == null) continue;
+                        if (enemy.EnemyKnown)
+                        {
+                            Vector3[] corners = enemy.Path.PathCorners;
+                            if (corners != null)
+                            {
+                                int cornerCount = corners.Length;
+                                if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionPathPoints.Count > 0)
+                                {
+                                    enemy.Path.VisionPathPoints_Cache.AddRange(enemy.Path.VisionPathPoints);
+                                    RaycastJob job = new(enemy.Path.VisionPathPoints_Cache, bot.Transform.EyePosition, Mask, bot.Player, enemy.EnemyPlayer);
+                                    job.Schedule(64);
+                                    Jobs.Add(job);
+                                    continue;
+                                }
+                                else if (cornerCount == 2)
+                                {
+                                    enemy.SetLastCornerAsVisiblePathPoint(corners[1], 1);
+                                    continue;
+                                }
+                            }
+                            enemy.ClearVisiblePathPoint();
+                        }
+                    }
+                }
+            }
+        }
 
         private void ScheduleJobs(int Total)
         {
@@ -43,7 +82,7 @@ namespace SAIN.Components
             for (int i = 0; i < Total; i++)
                 Jobs[i].Schedule();
         }
-
+        
         private void ReadResults(int Total)
         {
             for (int i = 0; i < Total; i++)
@@ -51,61 +90,30 @@ namespace SAIN.Components
                 RaycastJob Job = Jobs[i];
                 Job.Complete();
                 NativeArray<RaycastHit> Hits = Job.Hits;
+                List<Vector3> Points = Job.Points;
 
                 if (SAINEnableClass.GetSAIN(Job.Owner?.AIData?.BotOwner, out BotComponent Bot))
                 {
                     Enemy Enemy = Bot.EnemyController.GetEnemy(Job.Target?.ProfileId, false);
                     if (Enemy != null)
                     {
-                        if (Hits.Length != Enemy.Path.VisionPathNodePoints.Count)
-                        {
-                            Logger.LogError($"Raycast Hits count does not match Vision Path Node Points count. Hits: [{Hits.Length}] : Nodes: [{Enemy.Path.VisionPathNodes.Count}] : Points: [{Enemy.Path.VisionPathNodePoints.Count}]");
-                            continue;
-                        }
-                        int hitIndex = 0;
                         bool PointFound = false;
-
-                        // Update each node with results from raycasts
-                        List<BotVisiblePathNode> nodes = Enemy.Path.VisionPathNodes;
-                        for (int j = 0; j < nodes.Count; j++)
+                        for (int j = Hits.Length - 1; j >= 0; j--)
                         {
-                            BotVisiblePathNode node = nodes[j];
-                            for (int k = 0; k < node.PointStack.Length; k++)
+                            if (Hits[j].collider == null)
                             {
-                                BotVisiblePathPoint Point = node.PointStack[k];
-                                Point.IsVisible = Hits[hitIndex].collider == null;
-                                hitIndex++;
-                                node.PointStack[k] = Point;
-                            }
-                            nodes[j] = node;
-                        }
-
-                        // find the first visible point.
-                        for (int j = nodes.Count - 1; j >= 0; j--)
-                        {
-                            BotVisiblePathNode node = nodes[j];
-                            for (int k = node.PointStack.Length - 1; k >= 0; k--)
-                            {
-                                BotVisiblePathPoint Point = node.PointStack[k];
-                                if (Point.IsVisible)
-                                {
-                                    PointFound = true;
-                                    Enemy.SetLastVisiblePathPoint(Point, k, node, j);
-                                    break;
-                                }
-                            }
-                            if (PointFound)
-                            {
+                                Enemy.SetLastVisiblePathPoint(Points[j], j);
+                                PointFound = true;
                                 break;
                             }
                         }
-
                         if (!PointFound)
                         {
                             Enemy.ClearVisiblePathPoint();
                         }
                     }
                 }
+                Points.Clear();
             }
         }
 
@@ -120,44 +128,6 @@ namespace SAIN.Components
                         if (enemy.EnemyKnown)
                         {
                             enemy.Path.CheckCalcPath();
-                        }
-                    }
-                }
-            }
-        }
-
-        private void CreateJobs(HashSet<BotComponent> bots)
-        {
-            LayerMask HighPolyWithTerrain = LayerMaskClass.HighPolyWithTerrainMask;
-            LayerMask DoorLayer = LayerMaskClass.DoorLayer;
-            LayerMask Mask = HighPolyWithTerrain & ~(1 << DoorLayer);
-            foreach (BotComponent bot in SAINBotController.BotSpawnController.SAINBots)
-            {
-                if (bot != null && bot.BotActive)
-                {
-                    Vector3 botEyePos = bot.Transform.EyePosition;
-                    foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
-                    {
-                        if (enemy.EnemyKnown)
-                        {
-                            Vector3[] corners = enemy.Path.PathCorners;
-                            if (corners != null)
-                            {
-                                int cornerCount = corners.Length;
-                                if (cornerCount > 2 && enemy.Path.PathToEnemyStatus != NavMeshPathStatus.PathInvalid && enemy.Path.VisionPathNodePoints.Count > 0)
-                                {
-                                    RaycastJob job = new(enemy.Path.VisionPathNodePoints, botEyePos, Mask, bot.Player, enemy.EnemyPlayer);
-                                    job.Schedule();
-                                    Jobs.Add(job);
-                                    continue;
-                                }
-                                else if (cornerCount == 2)
-                                {
-                                    enemy.SetLastCornerAsVisiblePathPoint(corners[1], 1);
-                                    continue;
-                                }
-                            }
-                            enemy.ClearVisiblePathPoint();
                         }
                     }
                 }

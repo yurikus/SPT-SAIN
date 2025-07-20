@@ -80,8 +80,8 @@ namespace SAIN
             new Patches.Components.AddGameWorldPatch(),
             new Patches.Components.GetBotController(),
 
+            new Patches.Generic.BotOwnerActivatePatch(),
             new Patches.Generic.SetEnvironmentPatch(),
-
             new Patches.Generic.SetPanicPointPatch(),
             new Patches.Generic.AddPointToSearchPatch(),
             new Patches.Generic.TurnDamnLightOffPatch(),
@@ -129,7 +129,7 @@ namespace SAIN
             new Patches.Movement.AimStaminaPatch(),
             new Patches.Movement.GlobalShootSettingsPatch(),
             new Patches.Movement.MovementContextIsAIPatch(),
-            new Patches.Movement.SetDoorCollisionPatch(),
+            //new Patches.Movement.SetDoorCollisionPatch(),
             new Patches.Movement.CanBeSnappedPatch(),
             new Patches.Movement.BotMoverManualUpdatePatch(),
             new Patches.Movement.BotMoverManualFixedUpdatePatch(),
@@ -193,10 +193,11 @@ namespace SAIN
             new Patches.Shoot.Aim.BotAimSteerPatch(),
             new Patches.Shoot.Aim.HardAimDisablePatch1(),
             new Patches.Shoot.Aim.HardAimDisablePatch2(),
-            new Patches.Shoot.Aim.DisableMalfunctionPatch(),
+            //new Patches.Shoot.Aim.DisableMalfunctionPatch(),
 
-            new Patches.Shoot.Aim.SetAimStatusPatch(),
-            //new Patches.Shoot.Aim.AimOffsetPatch(),
+            new Patches.Shoot.RateOfFire.BotShootPatch(),
+            new Patches.Shoot.RateOfFire.ShootDataManualUpdatePatch(),
+            new Patches.Shoot.Aim.AimOffsetPatch(),
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),
             new Patches.Shoot.Aim.SmoothTurnPatch(),
@@ -204,10 +205,6 @@ namespace SAIN
             new Patches.Shoot.Grenades.ResetGrenadePatch(),
             new Patches.Shoot.Grenades.SetGrenadePatch(),
 
-            new Patches.Shoot.RateOfFire.FullAutoPatch(),
-            new Patches.Shoot.RateOfFire.SemiAutoPatch(),
-            new Patches.Shoot.RateOfFire.SemiAutoPatch2(),
-            new Patches.Shoot.RateOfFire.SemiAutoPatch3(),
 
         ];
 

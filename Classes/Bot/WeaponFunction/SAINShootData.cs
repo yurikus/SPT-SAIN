@@ -94,6 +94,16 @@ namespace SAIN.SAINComponent.Classes
 
         public bool ShootAnyVisibleEnemies(Enemy priorityEnemy = null)
         {
+            if (Bot.Decision.CurrentSelfDecision == ESelfActionType.Reload)
+            {
+                return false;
+            }
+            if (Bot.Mover.Running && 
+                (Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running || 
+                Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning))
+            {
+                return false;
+            }
             return GetEnemyToShoot(priorityEnemy) != null;
         }
 

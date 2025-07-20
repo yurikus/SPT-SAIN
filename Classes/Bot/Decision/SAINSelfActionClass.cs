@@ -161,7 +161,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         {
             if (BotOwner.WeaponManager.Reload.Reloading)
             {
-                BotOwner.WeaponManager.Reload.TryStopReload();
+                //BotOwner.WeaponManager.Reload.TryStopReload();
             }
         }
 

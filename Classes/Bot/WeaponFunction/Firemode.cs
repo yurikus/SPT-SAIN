@@ -1,7 +1,8 @@
 ﻿using EFT;
+using EFT.InventoryLogic;
 using SAIN.Components;
-using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Info;
 using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
@@ -9,68 +10,53 @@ using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class Firemode : BotBase
+    public class Firemode
     {
-        public Firemode(BotComponent sain) : base(sain)
-        {
-        }
-
-        public override void ManualUpdate()
+        public void CheckSwapFireMode(BotComponent bot, BotWeaponInfoClass weaponInfo)
         {
             if (_nextSwapTime < Time.time)
             {
                 _nextSwapTime = Time.time + _swapFreq;
-                if (Player.HandsController is Player.FirearmController firearmController && 
-                    (firearmController.IsInReloadOperation() || firearmController.IsInInteraction()))
+                Player player = bot.Player;
+                if (player.HandsController is Player.FirearmController firearmController && (firearmController.IsInReloadOperation() || firearmController.IsInInteraction()))
                 {
                     return;
                 }
-                var manager = BotOwner?.WeaponManager;
-                if (manager.Selector?.IsWeaponReady == true)
+                var manager = bot.BotOwner.WeaponManager;
+                if (manager.Selector?.IsWeaponReady == true &&
+                    manager.Reload?.Reloading == false &&
+                    !bot.BotOwner.ShootData.Shooting)
                 {
-                    checkSwapFiremode();
+                    if (CheckSwapMachineGun(weaponInfo, player))
+                        return;
+
+                    if (manager.Stationary?.Taken == false)
+                    {
+                        if (GetModeToSwap(bot.IsCheater, weaponInfo, out EFireMode mode) && CanSetMode(mode, weaponInfo))
+                        {
+                            SetFireMode(mode, weaponInfo.CurrentWeapon, player);
+                            return;
+                        }
+
+                        TryCheckWeapon(player, bot.GoalEnemy);
+                    }
                 }
             }
-            base.ManualUpdate();
         }
 
-        private bool checkSwapMachineGun()
+        private bool CheckSwapMachineGun(BotWeaponInfoClass weaponInfo, Player player)
         {
-            if (Bot.ManualShoot.Reason != EShootReason.None
-                && Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun
-                && CanSetMode(EFireMode.fullauto))
+            if (weaponInfo.EWeaponClass == EWeaponClass.machinegun && CanSetMode(EFireMode.fullauto, weaponInfo))
             {
-                SetFireMode(EFireMode.fullauto);
+                SetFireMode(EFireMode.fullauto, weaponInfo.CurrentWeapon, player);
                 return true;
             }
             return false;
         }
 
-        private void checkSwapFiremode()
+        private static bool GetModeToSwap(bool isCheater, BotWeaponInfoClass weaponInfo, out EFireMode mode)
         {
-            WeaponInfoClass weaponInfo = Bot.Info.WeaponInfo;
-
-            if (weaponInfo == null)
-                return;
-
-            if (checkSwapMachineGun())
-                return;
-
-            if (BotOwner?.WeaponManager?.Stationary?.Taken == false)
-            {
-                if (getModeToSwap(weaponInfo, out EFireMode mode) && CanSetMode(mode))
-                {
-                    SetFireMode(mode);
-                    return;
-                }
-
-                tryCheckWeapon();
-            }
-        }
-
-        private bool getModeToSwap(WeaponInfoClass weaponInfo, out EFireMode mode)
-        {
-            if (Bot.IsCheater)
+            if (isCheater)
             {
                 if (weaponInfo.HasFireMode(EFireMode.fullauto))
                 {
@@ -85,17 +71,16 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 mode = EFireMode.doublet;
                 return false;
             }
-
-            float distance = Bot.DistanceToAimTarget;
+            float distanceToTarget = weaponInfo.Bot.DistanceToAimTarget;
             mode = EFireMode.doublet;
-            if (distance > SemiAutoSwapDist || GlobalSettingsClass.Instance.Shoot.ONLY_SEMIAUTO_TOGGLE)
+            if (distanceToTarget > weaponInfo.SwapToSemiDist || GlobalSettingsClass.Instance.Shoot.ONLY_SEMIAUTO_TOGGLE)
             {
                 if (weaponInfo.HasFireMode(EFireMode.single))
                 {
                     mode = EFireMode.single;
                 }
             }
-            else if (distance <= FullAutoSwapDist)
+            else if (distanceToTarget <= weaponInfo.SwapToAutoDist)
             {
                 if (weaponInfo.HasFireMode(EFireMode.fullauto))
                 {
@@ -113,43 +98,44 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return mode != EFireMode.doublet;
         }
 
-        public void SetFireMode(EFireMode fireMode)
+        private static void SetFireMode(EFireMode fireMode, Weapon weapon, Player player)
         {
-            Bot.Info.WeaponInfo.CurrentWeapon?.FireMode?.SetFireMode(fireMode);
-            Player?.HandsController?.FirearmsAnimator?.SetFireMode(fireMode);
+            if (weapon?.FireMode == null || weapon.FireMode.FireMode == fireMode)
+            {
+                return;
+            }
+            weapon.FireMode.SetFireMode(fireMode);
+            player.HandsController?.FirearmsAnimator?.SetFireMode(fireMode);
         }
 
-        public bool CanSetMode(EFireMode fireMode)
+        public static bool CanSetMode(EFireMode fireMode, BotWeaponInfoClass weaponInfo)
         {
-            WeaponInfoClass weaponInfo = Bot.Info.WeaponInfo;
             return weaponInfo?.CurrentWeapon != null && weaponInfo.HasFireMode(fireMode) && !weaponInfo.IsFireModeSet(fireMode);
         }
 
-        private void tryCheckWeapon()
+        private void TryCheckWeapon(Player player, Enemy currentEnemy)
         {
-            if (Bot.GoalEnemy == null)
+            if (currentEnemy == null)
             {
                 if (CheckMagTimer < Time.time && NextCheckTimer < Time.time)
                 {
                     NextCheckTimer = Time.time + 30f;
                     CheckMagTimer = Time.time + 360f * Random.Range(0.5f, 1.5f);
-                    Player.HandsController.FirearmsAnimator.CheckAmmo();
+                    player.HandsController.FirearmsAnimator.CheckAmmo();
                 }
                 else if (CheckChamberTimer < Time.time && NextCheckTimer < Time.time)
                 {
                     NextCheckTimer = Time.time + 30f;
                     CheckChamberTimer = Time.time + 360f * Random.Range(0.5f, 1.5f);
-                    Player.HandsController.FirearmsAnimator.CheckChamber();
+                    player.HandsController.FirearmsAnimator.CheckChamber();
                 }
             }
         }
 
-        private float SemiAutoSwapDist => Bot.Info.WeaponInfo.SwapToSemiDist;
-        private float FullAutoSwapDist => Bot.Info.WeaponInfo.SwapToAutoDist;
         private float CheckMagTimer;
         private float CheckChamberTimer;
         private float NextCheckTimer;
         private float _nextSwapTime;
-        private float _swapFreq = 0.2f;
+        private float _swapFreq = 0.5f;
     }
 }

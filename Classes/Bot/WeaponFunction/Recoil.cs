@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction
 {
-    public class Recoil : BotBase
+    public class Recoil(BotComponent sain) : BotBase(sain)
     {
         public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
         private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
@@ -17,21 +17,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         private bool _recoilFinished;
         private bool _armsInjured => Bot.Medical.HitReaction.ArmsInjured;
         private float RecoilMultiplier => Mathf.Round(Bot.Info.FileSettings.Shoot.RecoilMultiplier * GlobalSettings.Shoot.BOT_RECOIL_COEF * 100f) / 100f;
- 
-        public Recoil(BotComponent sain) : base(sain)
-        {
-        }
 
         public override void Init()
         {
             PlayerComponent.OnShoot += WeaponShot;
             base.Init();
-        }
-
-        public override void ManualUpdate()
-        {
-            calcDecay();
-            base.ManualUpdate();
         }
 
         public override void Dispose()
@@ -40,7 +30,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             base.Dispose();
         }
 
-        private void calcDecay()
+        public void CalcRecoilDecay()
         {
             if (!_recoilFinished)
             {
@@ -50,6 +40,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 if (_currentRecoilHorizAngle <= 0.001f && _currentRecoilVertAngle < 0.001f)
                 {
                     _recoilFinished = true;
+                    _currentRecoilHorizAngle = 0f;
+                    _currentRecoilVertAngle = 0f;
                 }
             }
         }
@@ -58,7 +50,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             if (Bot.IsCheater)
             {
-                Logger.LogDebug("cheato");
+                //Logger.LogDebug("cheato");
                 return;
             }
             calculateRecoil(WeaponInfo.Weapon);
@@ -87,8 +79,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             float recoilNum = calcRecoilNum(recoilTotal) + addRecoil;
             float calcdRecoil = recoilNum * recoilMod;
 
-            _currentRecoilVertAngle += Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
-            _currentRecoilHorizAngle += Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
+            _currentRecoilVertAngle = Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
+            _currentRecoilHorizAngle = Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
 
             if (_debugRecoilLogs)
                 Logger.LogDebug($"Recoil! New Recoil: [{_currentRecoilVertAngle}:{_currentRecoilHorizAngle}] " +
@@ -166,6 +158,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         }
 
         private float _shootModifier => Bot.Info.WeaponInfo.FinalModifier;
-        private ShootSettings _shootSettings => GlobalSettingsClass.Instance.Shoot;
+        private static ShootSettings _shootSettings => GlobalSettingsClass.Instance.Shoot;
     }
 }

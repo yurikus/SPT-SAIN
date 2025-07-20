@@ -302,11 +302,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             VisiblePathPointDistanceToEnemyLastKnown = float.MaxValue;
         }
 
-        public void SetLastVisiblePathPoint(BotVisiblePathPoint point, int pointIndex, BotVisiblePathNode node, int nodeIndex)
+        public void SetLastVisiblePathPoint(Vector3 point, int pointIndex)
         {
             _visPathPointIsCorner = false;
-            VisiblePathPoint = point.Point;
-            VisiblePathNodeIndex = nodeIndex;
+            VisiblePathPoint = point;
+            VisiblePathNodeIndex = pointIndex;
             Vector3? LastKnown = LastKnownPosition;
             UpdateVisiblePathPointDist(Bot.Transform.EyePosition);
             if (LastKnown != null)
@@ -317,8 +317,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 //Vector3 otherPoint = point.Point + node.DirectionToCornerNormal * VisiblePathPointDistanceToBot;
                 Vector3 otherPoint = LastKnown.Value;
-                DebugGizmos.DrawLine(point.Point, otherPoint, Color.yellow, 0.05f, 1f);
-                VisiblePathPointSignedAngle = Vector.FindFlatSignedAngle(point.Point, otherPoint, botPosition);
+                DebugGizmos.DrawLine(point, otherPoint, Color.yellow, 0.05f, 1f);
+                VisiblePathPointSignedAngle = Vector.FindFlatSignedAngle(point, otherPoint, botPosition);
             }
         }
 

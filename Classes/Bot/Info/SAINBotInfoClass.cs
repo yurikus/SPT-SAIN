@@ -17,7 +17,7 @@ namespace SAIN.SAINComponent.Classes.Info
         {
             TickRequirement = ESAINTickState.OnlyNoSleep;
             Profile = new BotProfile(sain);
-            WeaponInfo = new WeaponInfoClass(sain);
+            WeaponInfo = new BotWeaponInfoClass(sain);
             Personality = GetPersonality(out var settings);
             PersonalitySettingsClass = settings;
             Difficulty = new BotDifficultyClass(sain);
@@ -57,7 +57,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public BotDifficultyClass Difficulty { get; }
         public BotProfile Profile { get; private set; }
-        public WeaponInfoClass WeaponInfo { get; private set; }
+        public BotWeaponInfoClass WeaponInfo { get; private set; }
         public EPersonality Personality { get; private set; }
         public PersonalityBehaviorSettings PersonalitySettings => PersonalitySettingsClass?.Behavior;
         public PersonalitySettingsClass PersonalitySettingsClass { get; private set; }
