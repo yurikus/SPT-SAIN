@@ -1,20 +1,24 @@
 ﻿using EFT;
+using EFT.Interactive;
 using JetBrains.Annotations;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.RotationController;
+using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using UnityEngine;
+using static RootMotion.FinalIK.FBIKChain;
 
 namespace SAIN.Classes
 {
     public class PlayerMovementController
     {
-        public bool Moving { get; private set; }
-        public Vector3 CurrentControlLookDirection => ControlLookDirection.Current;
-        public SmoothDampVectorDirectionNormal ControlLookDirection { get; } = new();
+        public Vector3 CurrentControlLookDirection => _lookDirection;
+
+        private readonly PredictiveLookSmoothing Smoothing = new();
+        private Vector3 _lookDirection;
 
         private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
         {
@@ -108,14 +112,11 @@ namespace SAIN.Classes
 
         public void SetTargetLookDirection(Vector3 targetDirection, BotOwner botOwner, BotComponent bot)
         {
-            UpdateRandomSway(GameWorldComponent.WorldTickDeltaTime, botOwner.GetPlayer, botOwner, bot, GlobalSettingsClass.Instance.Steering);
-            Vector3 targetDir = targetDirection + RandomSwayOffset;
-            ControlLookDirection.Target = targetDir;
-            TurnSettings turnSettings = GetTurnSettings(botOwner, bot);
-            ControlLookDirection.Calculate(GameWorldComponent.WorldTickDeltaTime, turnSettings.SmoothingValue, turnSettings.MaxTurnSpeed, GlobalSettingsClass.Instance.Steering.TURN_PITCH_MAX);
-            Vector3 dir = ControlLookDirection.Current;
+            UpdateRandomSway(Time.fixedDeltaTime, botOwner.GetPlayer, botOwner, bot, GlobalSettingsClass.Instance.Steering);
+            _lookDirection = Smoothing.UpdateSmoothedDirection(_lookDirection, targetDirection + RandomSwayOffset, Time.fixedDeltaTime);
+
+            Vector3 dir = _lookDirection;
             if (bot != null) dir = bot.Info.WeaponInfo.Recoil.ApplyRecoil(dir);
-            //botOwner.GetPlayer.CharacterController.SetSteerDirection(dir);
             SetXAngle(botOwner, dir);
             SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
         }
@@ -278,6 +279,75 @@ namespace SAIN.Classes
                 return turnSettings;
             }
             return new TurnSettings(0.65f, 360f);
+        }
+
+        public static class Util
+        {
+            public static Vector3 CalculateBallisticOffset(Vector3 weaponRoot, Vector3 targetPosition, Vector3 playerVelocity, float muzzleVelocity, float gravity = 9.81f)
+            {
+                // Basic vector from shooter to target
+                Vector3 displacement = targetPosition - weaponRoot;
+                float horizontalDistance = new Vector3(displacement.x, 0, displacement.z).magnitude;
+
+                // Target is directly above/below, no ballistic correction needed
+                Vector3 bulletDropOffset = horizontalDistance < 0.01f ? Vector3.zero : CalculateSimpleBallisticOffset(displacement, muzzleVelocity, gravity);
+                Vector3 leadOffset = playerVelocity * (displacement.magnitude / muzzleVelocity);
+                //DebugGizmos.DrawLine(targetPosition, targetPosition + playerVelocity, Color.blue, 0.015f, 5f);
+                //DebugGizmos.DrawLine(targetPosition, targetPosition + leadOffset, Color.green, 0.015f, 5f);
+                DebugGizmos.DrawLine(targetPosition, targetPosition + leadOffset + bulletDropOffset, Color.green, 0.015f, 5f);
+                return bulletDropOffset + leadOffset;
+            }
+
+            private static Vector3 CalculateSimpleBallisticOffset(Vector3 displacement, float muzzleVelocity, float gravity)
+            {
+                var horizontalDistance = new Vector3(displacement.x, 0, displacement.z).magnitude;
+                var heightDifference = displacement.y;
+
+                // Calculate time of flight using quadratic formula
+                var timeOfFlight = CalculateTimeOfFlight(horizontalDistance, heightDifference, muzzleVelocity, gravity);
+
+                if (timeOfFlight <= 0)
+                {
+                    // No valid solution (target too far or velocity too low)
+                    return Vector3.zero;
+                }
+
+                // Calculate vertical drop
+                var verticalDrop = 0.5f * gravity * timeOfFlight * timeOfFlight;
+
+                // Return the upward offset needed to compensate for drop
+                return new Vector3(0, verticalDrop, 0);
+            }
+
+            private static float CalculateTimeOfFlight(
+                float horizontalDistance,
+                float heightDifference,
+                float muzzleVelocity,
+                float gravity)
+            {
+                // For a given horizontal distance and height difference,
+                // solve for the time using the kinematic equation
+
+                // We assume optimal launch angle for maximum range
+                var discriminant = muzzleVelocity * muzzleVelocity * muzzleVelocity * muzzleVelocity -
+                                   gravity * (gravity * horizontalDistance * horizontalDistance + 2 * heightDifference * muzzleVelocity * muzzleVelocity);
+
+                if (discriminant < 0)
+                {
+                    // No real solution - target is unreachable
+                    return -1f;
+                }
+
+                // Calculate the optimal launch angle
+                var tanTheta = (muzzleVelocity * muzzleVelocity - Mathf.Sqrt(discriminant)) / (gravity * horizontalDistance);
+                var launchAngle = Mathf.Atan(tanTheta);
+
+                // Calculate horizontal velocity component
+                var horizontalVelocity = muzzleVelocity * Mathf.Cos(launchAngle);
+
+                // Time of flight
+                return horizontalDistance / horizontalVelocity;
+            }
         }
     }
 }

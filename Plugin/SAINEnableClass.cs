@@ -155,9 +155,7 @@ namespace SAIN
 
         private static bool ExcludeScav(WildSpawnType wildSpawnType, BotOwner botOwner)
         {
-            return SAINEnabled.VanillaScavs
-            && WildSpawn.IsScav(wildSpawnType) &&
-            !IsPlayerScav(botOwner.Profile);
+            return SAINEnabled.VanillaScavs && WildSpawn.IsScav(wildSpawnType) && !IsPlayerScav(botOwner.Profile);
         }
 
         private static bool ExcludeOthers(WildSpawnType wildSpawnType)

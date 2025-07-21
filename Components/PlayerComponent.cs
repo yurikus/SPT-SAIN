@@ -606,9 +606,7 @@ namespace SAIN.Components.PlayerComponentSpace
 
         private void drawTransformGizmos()
         {
-            if (SAINPlugin.DebugMode &&
-                SAINPlugin.DrawDebugGizmos &&
-                SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
+            if (SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
             {
                 DebugGizmos.DrawSphere(Transform.EyePosition, 0.05f, Color.white, 0.1f, "Eye");
                 DebugGizmos.Ray(Transform.EyePosition, Transform.LookDirection, Color.white, 1f, 0.025f, 0.1f);
@@ -623,7 +621,6 @@ namespace SAIN.Components.PlayerComponentSpace
                 DebugGizmos.Ray(Transform.WeaponData.FirePort, Transform.WeaponData.PointDirection, Color.green, 1f, 0.05f, 0.1f);
 
                 DebugGizmos.DrawSphere(Transform.BodyPosition, 0.1f, Color.blue, 0.1f, "Body");
-                DebugGizmos.Ray(Transform.BodyPosition, Transform.LookDirection, Color.blue, 1f, 0.05f, 0.1f);
             }
         }
 

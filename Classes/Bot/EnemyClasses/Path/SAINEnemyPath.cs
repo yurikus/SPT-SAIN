@@ -166,12 +166,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
                 // Dont include the corner index 0, as it is what the bot's position is, we dont need to see if thats visible or not.
                 // Only add a segment if we are under our maximum length, or if we have no segments at all.
-                if (i > 0)
-                {
-                    bool firstCorner = i == 1;
-                    if (firstCorner)
-                        VisionPathCheckPoints.Add(Corner);
-                    bool lastCorner = i == CornerCount - 2;
+                //if (i > 0)
+                //{
+                   // bool firstCorner = i == 1;
+                    //if (firstCorner)
+                        //VisionPathCheckPoints.Add(Corner);
                     if (PathLength <= settings.DistToCheckVision)
                     {
                         // Create Equal dist points along the line between two corners.
@@ -188,11 +187,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                         }
                         VisionPathCheckPoints.Add(End);
                     }
-                    else if (lastCorner)
+                    else if (i == CornerCount - 2)
                     {
                         VisionPathCheckPoints.Add(End);
                     }
-                }
+                //}
             }
 
             int max = Mathf.RoundToInt(Enemy.IsAI ? settings.MaxPathPoints_AI : settings.MaxPathPoints);
@@ -200,10 +199,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             for (int i = 0; i < VisionPathCheckPoints.Count; i++)
             {
                 Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / settings.GeneratePointStackHeight);
-                if (VisionPathPoints.Count >= max)
-                {
-                    break;
-                }
+                //if (VisionPathPoints.Count >= max)
+                //{
+                //    break;
+                //}
             }
 
 

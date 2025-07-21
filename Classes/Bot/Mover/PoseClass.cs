@@ -22,7 +22,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             if (Bot.SAINLayersActive || Bot.HasEnemy)
             {
-                float deltaTime = GameWorldComponent.WorldTickDeltaTime;
+                float deltaTime = Time.fixedDeltaTime;
                 if (_stopSprintAndPoseChangeTime > Time.time)
                 {
                     PoseValue.Set(1);

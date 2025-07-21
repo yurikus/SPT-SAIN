@@ -100,7 +100,7 @@ namespace SAIN.SAINComponent.Classes
             {
                 if (part.IsVisible || part.VisibleType == EEnemyPartVisibleType.Sence)
                 {
-                    part.UpdateVisibility(BotOwner, false, false, false, Time.deltaTime);
+                    part.UpdateVisibility(BotOwner, false, false, false, Time.fixedDeltaTime);
                 }
             }
 

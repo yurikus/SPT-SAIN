@@ -57,7 +57,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     _ => 0f,
                 };
                 //LeanAngleValue.Set(num);
-                //float tiltValue = LeanAngleValue.Get(GameWorldComponent.WorldTickDeltaTime);
+                //float tiltValue = LeanAngleValue.Get(Time.fixedDeltaTime);
                 Player.MovementContext.SetTilt(num);
             }
         }

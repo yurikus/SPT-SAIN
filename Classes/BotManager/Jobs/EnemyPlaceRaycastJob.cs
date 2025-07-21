@@ -83,11 +83,10 @@ namespace SAIN.Components
                                     PlacesToCheck.Add(enemy.KnownPlaces.LastHeardPlace);
                                 if (enemy.KnownPlaces.LastSeenPlace != null)
                                     PlacesToCheck.Add(enemy.KnownPlaces.LastSeenPlace);
-
-                                //if (enemy.KnownPlaces.LastSquadHeardPlace != null)
-                                //    PlacesToCheck.Add(enemy.KnownPlaces.LastSquadHeardPlace);
-                                //if (enemy.KnownPlaces.LastSquadSeenPlace != null)
-                                //    PlacesToCheck.Add(enemy.KnownPlaces.LastSquadSeenPlace);
+                                if (enemy.KnownPlaces.LastSquadHeardPlace != null)
+                                    PlacesToCheck.Add(enemy.KnownPlaces.LastSquadHeardPlace);
+                                if (enemy.KnownPlaces.LastSquadSeenPlace != null)
+                                    PlacesToCheck.Add(enemy.KnownPlaces.LastSquadSeenPlace);
                             }
                         }
                     }
@@ -134,7 +133,7 @@ namespace SAIN.Components
                     }, 1f);
                 }
 
-                RaycastJobHandle = RaycastCommand.ScheduleBatch(_commands, _hits, 8);
+                RaycastJobHandle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
 
                 yield return null;
                 RaycastJobHandle.Complete();

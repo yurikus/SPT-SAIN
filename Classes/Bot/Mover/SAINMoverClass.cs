@@ -77,7 +77,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     _activePath.Cancel();
                 }
             }
-            _activePath.TickPath(GameWorldComponent.WorldTickDeltaTime, Time.time);
+            _activePath.TickPath(Time.fixedDeltaTime, Time.time);
             return true;
         }
 

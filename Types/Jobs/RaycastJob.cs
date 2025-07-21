@@ -72,7 +72,7 @@ namespace SAIN.Types.Jobs
             Commands = CreateCommands(Directions, OriginPoint, InMask);
         }
 
-        public JobHandle Schedule(int MaxCommandsPerJob = 8)
+        public JobHandle Schedule(int MaxCommandsPerJob = 32)
         {
             Handle = RaycastCommand.ScheduleBatch(Commands, Hits, MaxCommandsPerJob);
             _IsScheduled = true;

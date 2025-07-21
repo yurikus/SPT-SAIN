@@ -1,6 +1,7 @@
 ﻿using EFT;
-using EFT.InventoryLogic;
+using SAIN.Classes;
 using SAIN.Components;
+using SAIN.Helpers;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using UnityEngine;
@@ -61,7 +62,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 Bot.Aim.LoseAimTarget();
                 return false;
             }
-            currentAiming.SetTarget(shootPoint);
+
+            Vector3 firePort = bot.Transform.WeaponData.FirePort;
+            Vector3 ballisticOffset = PlayerMovementController.Util.CalculateBallisticOffset(firePort, shootPoint, enemy.EnemyPlayer.Velocity, bot.PlayerComponent.Equipment.CurrentWeaponInfo.BulletSpeed);
+            Vector3 aimPoint = shootPoint + ballisticOffset;
+            currentAiming.SetTarget(aimPoint);
             if (!bot.FriendlyFire.UpdateFriendlyFireStatus(currentAiming.LastDist2Target, bot.Transform.WeaponData.FirePort, bot.Transform.WeaponData.PointDirection, bot))
             {
                 botOwner.ShootData.EndShoot();
@@ -69,58 +74,11 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 Bot.Aim.LoseAimTarget();
                 return false;
             }
-
             currentAiming.NodeUpdate();
-            Bot.Steering.LookToPoint(currentAiming.EndTargetPoint);
-
-            if (enemy != _lastAimEnemy)
-            {
-                TurningWeaponToAimPoint = true;
-                _lastAimEnemy = enemy;
-            }
-            if (TurningWeaponToAimPoint)
-            {
-                const float STARTAIMANGLE = 20f;
-                if (enemy.Vision.Angles.AngleToEnemy <= STARTAIMANGLE)
-                {
-                    TurningWeaponToAimPoint = false;
-                }
-            }
-
-            CheckAimToEnemy(enemy);
-            if (!Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.75f))
-            {
-                AimComplete = false;
-                return true;
-            }
-            AimComplete = currentAiming.IsReady;
+            Bot.Steering.LookToPoint(aimPoint);
+            AimComplete = currentAiming.IsReady && Bot.Steering.IsLookingAtPoint(aimPoint, out float dot, 0.75f);
             return true;
         }
-
-        /// <summary>
-        /// Make sure we are actually pointing our weapon at our target before we start ticking aim.
-        /// </summary>
-        /// <param name="shootPoint"></param>
-        /// <param name="enemy"></param>
-        private void CheckAimToEnemy(Enemy enemy)
-        {
-            if (enemy != _lastAimEnemy)
-            {
-                TurningWeaponToAimPoint = true;
-                _lastAimEnemy = enemy;
-            }
-            if (TurningWeaponToAimPoint)
-            {
-                const float STARTAIMANGLE = 20f;
-                if (enemy.Vision.Angles.AngleToEnemy <= STARTAIMANGLE)
-                {
-                    TurningWeaponToAimPoint = false;
-                }
-            }
-        }
-
-        private bool TurningWeaponToAimPoint;
-        private Enemy _lastAimEnemy;
 
         private void checkCanAim()
         {
@@ -155,8 +113,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 aimClass.aimStatus_0 != AimStatus.NoTarget)
             {
                 aimClass.aimStatus_0 = AimStatus.NoTarget;
-                TurningWeaponToAimPoint = false;
-                _lastAimEnemy = null;
             }
         }
 

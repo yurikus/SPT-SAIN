@@ -58,7 +58,7 @@ namespace SAIN.Components
                                 {
                                     enemy.Path.VisionPathPoints_Cache.AddRange(enemy.Path.VisionPathPoints);
                                     RaycastJob job = new(enemy.Path.VisionPathPoints_Cache, bot.Transform.EyePosition, Mask, bot.Player, enemy.EnemyPlayer);
-                                    job.Schedule(64);
+                                    job.Schedule(32);
                                     Jobs.Add(job);
                                     continue;
                                 }

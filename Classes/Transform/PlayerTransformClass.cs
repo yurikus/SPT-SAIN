@@ -44,7 +44,7 @@ namespace SAIN.Classes.Transform
             WeaponData = PlayerWeaponData.Update(WeaponData, playerPosition, player);
             NavData = PlayerNavData.Update(NavData, playerPosition, isAI);
             VelocityData = PlayerVelocityData.Update(VelocityData, player.MovementContext.Velocity);
-            HeadData = PlayerHeadData.Update(HeadData, headTransform.position, headTransform.rotation, headTransform.forward);
+            HeadData = PlayerHeadData.Update(HeadData, headTransform.position, headTransform.rotation, headTransform.up);
         }
     }
 }

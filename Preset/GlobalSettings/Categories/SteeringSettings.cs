@@ -29,7 +29,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Enemy Path Visibility System")]
         [MinMax(2f, 20, 1)]
         [Advanced]
-        public float GeneratePointStackHeight = 4;
+        public float GeneratePointStackHeight = 6;
 
         [Name("Max Path Nodes - Player")]
         [Category("Enemy Path Visibility System")]
@@ -38,9 +38,10 @@ namespace SAIN.Preset.GlobalSettings
         public float MaxPathPoints = 512;
         
         [Name("Max Path Nodes - Bot")]
+        [Category("Enemy Path Visibility System")]
         [MinMax(0f, 2048, 1)]
         [Advanced]
-        public float MaxPathPoints_AI = 128;
+        public float MaxPathPoints_AI = 256;
         
         [Name("Distance Between Nodes - Player")]
         [Category("Enemy Path Visibility System")]
@@ -83,6 +84,16 @@ namespace SAIN.Preset.GlobalSettings
         [Advanced]
         [MinMax(0f, 50f, 1000f)]
         public float STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE = 2.5f;
+        
+        [MinMax(0f, 0.5f, 100f)]
+        public float SmoothingFactor = 0.06f;  // Lower = smoother, higher = more responsive
+        [MinMax(0f, 3f, 100f)]
+        public float PredictionStrength = 0f; // How much to compensate for lag
+        [MinMax(90f, 720f, 1f)]
+        public float MaxAngularVelocity = 360f; // Degrees per second limit
+        [MinMax(1f, 3f, 100f)]
+        public float ConvergenceBoost = 1.2f;   // Multiplier when far from target
+
 
         public override void Init(List<ISAINSettings> list)
         {

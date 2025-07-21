@@ -13,7 +13,7 @@ namespace SAIN.Components
 {
     public class VisionRaycastJob : BotManagerBase
     {
-        private const float VISION_UPDATE_INTERVAL = 1f / 30f;
+        private const float VISION_UPDATE_INTERVAL = 1f / 15f;
 
         public VisionRaycastJob(BotManagerComponent botcontroller) : base(botcontroller)
         {
@@ -60,7 +60,7 @@ namespace SAIN.Components
                 _commands = new NativeArray<RaycastCommand>(totalRaycasts, Allocator.TempJob);
 
                 CreateCommands(_commands, enemyCount, partCount);
-                _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 64);
+                _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
 
                 yield return null;
 
@@ -179,7 +179,6 @@ namespace SAIN.Components
                         Vector3 castPoint = _castPoints[colliderTypeCount];
                         colliderTypeCount++;
 
-                        part.SetLineOfSight(castPoint, colliderType, raycastHits[hits], ERaycastCheck.LineofSight, time);
                         if (raycastHits[hits].collider == null)
                         {
                             DebugGizmos.DrawLine(_commands[hits].from, _commands[hits].from + _commands[hits].direction, Color.red, 0.025f, 0.02f);

@@ -34,7 +34,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             if (!_recoilFinished)
             {
-                float decayTime = GameWorldComponent.WorldTickDeltaTime * _recoilDecayCoef;
+                float decayTime = Time.fixedDeltaTime * _recoilDecayCoef;
                 _currentRecoilHorizAngle = Mathf.LerpAngle(0, _currentRecoilHorizAngle, 1f - decayTime);
                 _currentRecoilVertAngle = Mathf.LerpAngle(0, _currentRecoilVertAngle, 1f - decayTime);
                 if (_currentRecoilHorizAngle <= 0.001f && _currentRecoilVertAngle < 0.001f)

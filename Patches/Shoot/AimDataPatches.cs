@@ -37,6 +37,9 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 return;
             }
+            __result = 0;
+            return;
+
             __result = Mathf.Min(__result, MIN_START_MOA_AI);
             __result *= botOwner.Settings.Current.CurrentScattering;
             if (__instance.Weapon?.FireMode?.FireMode == EFT.InventoryLogic.Weapon.EFireMode.fullauto)
@@ -451,7 +454,7 @@ namespace SAIN.Patches.Shoot.Aim
                 newTargetLookDirection.y = 0;
             }
             playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection, botOwner, playerComponent.BotComponent);
-            __instance._lookDirection = playerComponent.CharacterController.ControlLookDirection.Current;
+            __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
             return false;
         }
 
