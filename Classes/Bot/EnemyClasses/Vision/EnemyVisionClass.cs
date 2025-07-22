@@ -146,11 +146,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             bool iamCurrentEnemy = Enemy.IsCurrentEnemy;
             if (iamCurrentEnemy && !IsVisible && wasVisible)
             {
-                try { BotOwner.CalcGoal(); } catch { /* eft code */  }
+               // try { BotOwner.CalcGoal(); } catch { /* eft code */  }
             }
             else if (!iamCurrentEnemy && IsVisible && Bot.GoalEnemy?.IsVisible != true)
             {
-                try { BotOwner.CalcGoal(); } catch { /* eft code */  }
+                //try { BotOwner.CalcGoal(); } catch { /* eft code */  }
             }
 
             if (IsVisible)

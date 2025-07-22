@@ -93,12 +93,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void UpdateVulnerableState()
         {
-            EEnemyAction lastAction = VulnerableAction;
             VulnerableAction = CheckVulnerableAction();
-            if (lastAction != VulnerableAction)
-            {
-                Enemy.Events.EnemyVulnerableChanged(VulnerableAction);
-            }
         }
 
         public void SetVulnerableAction(EEnemyAction action)
@@ -135,7 +130,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     default:
                         break;
                 }
-                Enemy.Events.EnemyVulnerableChanged(action);
             }
         }
 

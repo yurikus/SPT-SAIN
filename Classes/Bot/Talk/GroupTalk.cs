@@ -11,8 +11,8 @@ namespace SAIN.SAINComponent.Classes.Talk
 {
     public class GroupTalk : BotBase
     {
-        public float RANDOM_TALK_INTERVAL_MIN = 60f;
-        public float RANDOM_TALK_INTERVAL_MAX = 240f;
+        public float RANDOM_TALK_INTERVAL_MIN = 30f;
+        public float RANDOM_TALK_INTERVAL_MAX = 120f;
         public float FRIEND_DISTANCE_INTERVAL = 1f;
 
         public GroupTalk(BotComponent bot) : base(bot)
@@ -551,12 +551,12 @@ namespace SAIN.SAINComponent.Classes.Talk
 
         private bool PersonIsClose(IPlayer player)
         {
-            return player != null && BotOwner != null && (player.Position - BotOwner.Position).magnitude < 30f;
+            return player != null && BotOwner != null && (player.Position - BotOwner.Position).sqrMagnitude < 30f * 30f;
         }
 
         private bool PersonIsClose(Player player)
         {
-            return player != null && BotOwner != null && (player.Position - BotOwner.Position).magnitude < 30f;
+            return player != null && BotOwner != null && (player.Position - BotOwner.Position).sqrMagnitude < 30f * 30f;
         }
 
         private void updateFriendClose()

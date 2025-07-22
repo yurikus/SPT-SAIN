@@ -46,12 +46,12 @@ namespace SAIN.Components.PlayerComponentSpace
             }
             if (playerComp == null)
             {
-                Logger.LogWarning("Player Component is null. Cannot add other player data!");
+                //Logger.LogWarning("Player Component is null. Cannot add other player data!");
                 return;
             }
             if (playerComp.Player?.HealthController?.IsAlive != true)
             {
-                Logger.LogWarning("Player is dead. Cannot add other player data!");
+                //Logger.LogWarning("Player is dead. Cannot add other player data!");
                 return;
             }
             string profileId = playerComp.ProfileId;

@@ -187,7 +187,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     if (value.LastKnownPosition == null)
                     {
-                        Logger.LogError($"Bot: [{Bot.name}] cant set enemy [{value.EnemyName}] with null last known![Timesinceseen {value.TimeSinceSeen}: timesinceheard{value.TimeSinceHeard}] [IsAlive:{value.EnemyPlayer?.HealthController.IsAlive} : IsSainBot:[{value.EnemyPlayerComponent?.IsSAINBot}]]");
+                        //Logger.LogError($"Bot: [{Bot.name}] cant set enemy [{value.EnemyName}] with null last known![Timesinceseen {value.TimeSinceSeen}: timesinceheard{value.TimeSinceHeard}] [IsAlive:{value.EnemyPlayer?.HealthController.IsAlive} : IsSainBot:[{value.EnemyPlayerComponent?.IsSAINBot}]]");
                         return;
                     }
                 }
@@ -234,11 +234,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             const float CHANGE_ENEMY_KNOWN_SHOT_AT_ME_DIST_RATIO = 0.5f;
             const float MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST = 50f;
 
-            if (_goalEnemy != null && (
-                !_goalEnemy.CheckValid() ||
-                !Enemy.IsEnemyActive(_goalEnemy) ||
-                !_goalEnemy.EnemyKnown
-                ))
+            if (_goalEnemy != null && (!_goalEnemy.CheckValid() || !Enemy.IsEnemyActive(_goalEnemy) || !_goalEnemy.EnemyKnown || _goalEnemy.LastKnownPosition == null))
             {
                 LastGoalEnemy = _goalEnemy;
                 _goalEnemy = null;
@@ -252,7 +248,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (Bot.Medical.TimeSinceShot < 2f)
             {
                 Enemy enemy = Bot.Medical.HitByEnemy.EnemyWhoLastShotMe;
-                if (enemy != null && KnownEnemies.Contains(enemy))
+                if (enemy != null && enemy.LastKnownPosition != null && KnownEnemies.Contains(enemy))
                 {
                     return enemy;
                 }
@@ -433,12 +429,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void setGoalEnemy(EnemyInfo enemyInfo)
         {
+            BotOwner.Memory.IsPeace = enemyInfo == null;
             if (BotOwner.Memory.GoalEnemy != enemyInfo)
             {
                 try
                 {
                     BotOwner.Memory.GoalEnemy = enemyInfo;
-                    BotOwner.CalcGoal();
+                    BotOwner.Memory.IsPeace = enemyInfo == null;
+                    //BotOwner.CalcGoal();
                 }
                 catch
                 {

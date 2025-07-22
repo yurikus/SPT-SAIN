@@ -203,7 +203,7 @@ namespace SAIN.Patches.Movement
             }
         }
 
-        private static IEnumerator SetDoorCollisionAfterDelay(Player player, Collider playerCollider, Collider doorCollider, float delay)
+        public static IEnumerator SetDoorCollisionAfterDelay(Player player, Collider playerCollider, Collider doorCollider, float delay)
         {
             if (playerCollider != null && doorCollider != null && player != null)
             {

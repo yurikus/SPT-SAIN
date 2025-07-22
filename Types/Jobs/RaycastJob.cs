@@ -161,45 +161,27 @@ namespace SAIN.Types.Jobs
 
     public struct PathVisionJob
     {
-        public PathVisionJob(List<Vector3> points, Vector3 origin, Enemy enemy, QueryParameters queryParameters)
+        public PathVisionJob(BotVisiblePathNode[] allPathNodes, int nodeCount, Vector3 origin, Enemy enemy, QueryParameters queryParameters)
         {
             Enemy = enemy;
-            int pointCount = points.Count;
-            NativeArray<RaycastCommand> commands = new(pointCount, Allocator.TempJob);
-            for (int i = 0; i < pointCount; i++)
+            NativeArray<RaycastCommand> commands = new(nodeCount, Allocator.TempJob);
+            for (int i = 0; i < nodeCount; i++)
             {
-                commands[i] = new RaycastCommand(origin, (points[i] - origin), queryParameters, 1f);
+                commands[i] = new RaycastCommand(origin, (allPathNodes[i].Point - origin), queryParameters, 1f);
             }
             Commands = commands;
-            Hits = new NativeArray<RaycastHit>(pointCount, Allocator.TempJob);
-        }
-
-        public void Schedule(int minCommandsPerJob = -1)
-        {
-            if (minCommandsPerJob < 0) minCommandsPerJob = Commands.Length;
-            Handle = RaycastCommand.ScheduleBatch(Commands, Hits, minCommandsPerJob);
-        }
-
-        public void Complete()
-        {
-            JobHandle handle = Handle;
-            if (!handle.IsCompleted)
-            {
-                Logger.LogDebug("job was not complete yet, finished anyways.");
-                handle.Complete();
-            }
-            Handle = handle;
+            Hits = new NativeArray<RaycastHit>(nodeCount, Allocator.TempJob);
         }
 
         public readonly Enemy Enemy { get; }
 
-        public JobHandle Handle { get; private set; }
+        public JobHandle Handle { get; set; } = default;
         public NativeArray<RaycastHit> Hits { get; private set; }
         public NativeArray<RaycastCommand> Commands { get; private set; }
 
         public void Dispose()
         {
-            Complete();
+            if (!Handle.IsCompleted) Handle.Complete();
             if (Hits.IsCreated) Hits.Dispose();
             if (Commands.IsCreated) Commands.Dispose();
         }

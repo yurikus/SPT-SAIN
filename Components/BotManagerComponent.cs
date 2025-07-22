@@ -99,7 +99,7 @@ namespace SAIN.Components
                 foreach (BotComponent BotComponent in BotsArray)
                     BotComponent?.ManualUpdate(currentTime, deltaTime);
                 stopwatch.Stop();
-                if (Time.time - _debug_lastshowticktime > 10)
+                if (Time.time - _debug_lastshowticktime > 10 || stopwatch.ElapsedMilliseconds > 10)
                 {
                     _debug_lastshowticktime = Time.time;
                     Logger.LogDebug($"Bot Tick Time [{stopwatch.ElapsedMilliseconds}.ms]");

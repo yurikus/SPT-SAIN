@@ -75,6 +75,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     Logger.LogWarning("Failed to recalculate path, cancelling active path.");
                     _activePath.Cancel();
+                    return false;
                 }
             }
             _activePath.TickPath(Time.fixedDeltaTime, Time.time);
@@ -88,10 +89,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             // We are swapping between two preallocated paths, so we need to check which one is active and check if the other one is prepared.
             if (pathData == _preparedPath1)
             {
-                Logger.LogDebug($"[{Bot.name}] Path 1 Completed");
+                //Logger.LogDebug($"[{Bot.name}] Path 1 Completed");
                 if (_preparedPath2.Status == EBotMoveStatus.ReadyToMove)
                 {
-                    Logger.LogDebug($"[{Bot.name}] Path 2 Started");
+                    //Logger.LogDebug($"[{Bot.name}] Path 2 Started");
                     _activePath = _preparedPath2;
                     _activePath.Start();
                 }
@@ -102,10 +103,10 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             else if (pathData == _preparedPath2)
             {
-                Logger.LogDebug($"[{Bot.name}] Path 2 Completed");
+                //Logger.LogDebug($"[{Bot.name}] Path 2 Completed");
                 if (_preparedPath1.Status == EBotMoveStatus.ReadyToMove)
                 {
-                    Logger.LogDebug($"[{Bot.name}] Path 1 Started");
+                    //Logger.LogDebug($"[{Bot.name}] Path 1 Started");
                     _activePath = _preparedPath1;
                     _activePath.Start();
                 }
@@ -327,7 +328,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             else
             {
-                Logger.LogDebug("cant go to point");
+                //Logger.LogDebug("cant go to point");
             }
             return false;
         }

@@ -13,7 +13,7 @@ namespace SAIN.Components
 {
     public class VisionRaycastJob : BotManagerBase
     {
-        private const float VISION_UPDATE_INTERVAL = 1f / 15f;
+        private const float VISION_UPDATE_INTERVAL = 1f / 20f;
 
         public VisionRaycastJob(BotManagerComponent botcontroller) : base(botcontroller)
         {
@@ -64,15 +64,19 @@ namespace SAIN.Components
 
                 yield return null;
 
-                _handle.Complete();
+                if (!_handle.IsCompleted)
+                {
+                    _handle.Complete();
+                }
                 AnalyzeHits(_hits, enemyCount, partCount);
                 _commands.Dispose();
                 _hits.Dispose();
-
+                
                 // Updates vanilla eft vision code, it'll run another raycast if this one succeeds which isn't ideal, but id rather not rewrite all their code.
-                foreach (var bot in bots) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
+                foreach (var bot in BotController.BotSpawnController.BotGroup1) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
+                yield return null;
+                foreach (var bot in BotController.BotSpawnController.BotGroup2) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
                 _timelastLook = Time.time;
-
                 yield return wait;
             }
         }
@@ -205,16 +209,16 @@ namespace SAIN.Components
         private readonly List<EBodyPartColliderType> _colliderTypes = [];
         private readonly List<Vector3> _castPoints = [];
 
-        private static void FindEnemies(HashSet<BotComponent> bots, List<Enemy> result)
+        private static void FindEnemies(HashSet<BotComponent> bots, List<Enemy> enemies)
         {
-            result.Clear();
+            enemies.Clear();
             foreach (BotComponent bot in bots)
                 if (bot != null && bot.BotActive)
                     foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                     {
                         if (enemy == null || enemy.Player == null || !enemy.Player.HealthController.IsAlive) continue;
                         //if (enemy.RealDistance > EnemyVisionClass.AIVisionRangeLimit(enemy)) continue;
-                        result.Add(enemy);
+                        enemies.Add(enemy);
                     }
         }
 

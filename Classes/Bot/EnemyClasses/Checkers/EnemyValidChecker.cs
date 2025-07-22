@@ -7,15 +7,8 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
     {
         public bool CheckValid()
         {
-            if (!WasValid)
-            {
-                return false;
-            }
+            if (!WasValid) return false;
             WasValid = isValid();
-            if (!WasValid)
-            {
-                Enemy.Events.SetEnemyAsInvalid();
-            }
             return WasValid;
         }
 

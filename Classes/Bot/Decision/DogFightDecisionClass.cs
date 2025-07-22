@@ -76,7 +76,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (_changeDFTargetTime < Time.time)
             {
                 _changeDFTargetTime = Time.time + 0.5f;
-                KnownEnemies.Sort((x, y) => x.RealDistance.CompareTo(y.RealDistance));
+                KnownEnemies.Sort((x, y) => x.Path.PathLength.CompareTo(y.Path.PathLength));
                 for (int i = 0; i < KnownEnemies.Count; i++)
                 {
                     Enemy enemy = KnownEnemies[i];
@@ -94,14 +94,17 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool ShallDogfightEnemy(Enemy enemy)
         {
-            return enemy.Path.PathLength <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START && 
+            return enemy.EnemyKnown && enemy.LastKnownPosition != null && enemy.Path.PathLength <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START && 
                 ((enemy.Seen && enemy.TimeSinceSeen < Bot.Info.PersonalitySettings.General.DOGFIGHT_TIMESINCESEEN_START) 
-                || 
-                enemy.Status.ShotMeRecently);
+                ||  enemy.Status.ShotMeRecently);
         }
 
         private bool shallClearDogfightTarget(Enemy enemy)
         {
+            if (!enemy.EnemyKnown || enemy.LastKnownPosition == null)
+            {
+                return true;
+            }
             float pathDist = enemy.Path.PathLength;
             var settings = Bot.Info.PersonalitySettings.General;
             if (pathDist > settings.DOGFIGHT_PATH_DIST_END)

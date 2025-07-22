@@ -61,7 +61,7 @@ namespace SAIN.SAINComponent.Classes
 
             if (lookData.ShallRecalcGoal)
             {
-                BotOwner.CalcGoal();
+                //BotOwner.CalcGoal();
             }
 
             lookData.Reset();

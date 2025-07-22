@@ -261,7 +261,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             resetDecisions(false);
             if (active && hasDecision)
             {
-                BotOwner.CalcGoal();
+                //BotOwner.CalcGoal();
             }
         }
 

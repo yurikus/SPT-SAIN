@@ -32,7 +32,7 @@ namespace SAIN.SAINComponent.Classes
                         goalTarget.CreatedTime > 120f)
                     {
                         goalTarget.Clear();
-                        BotOwner.CalcGoal();
+                        //BotOwner.CalcGoal();
                     }
                 }
             }

@@ -36,7 +36,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             Interacting = true;
             ActiveDoor = data;
             InteractionType = interactionType;
-            _doorInteractionEndTime = time + (IsDoorPullOpen(data, Bot.NavMeshPosition) ? 1.2f : 0.6f);
+            _doorInteractionEndTime = time + (IsDoorPullOpen(data, Bot.NavMeshPosition) ? 1.25f : 1f);
+            Bot.Player.MovementContext.IgnoreInteractionCollision(data.Door.Collider, true);
             return true;
         }
 
@@ -103,6 +104,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private void Clear()
         {
+            Bot.Player.MovementContext.IgnoreInteractionCollision(ActiveDoor.Door?.Collider, false);
             Interacting = false;
             _interactionDoorIndex = 0;
             ActiveDoor = new();
@@ -180,7 +182,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private static bool RaycastToDoors(out EInteractionType interactionType, ref DoorDataStruct data, out int index, float RAY_LENGTH, Ray ray, List<DoorDataStruct> doors)
         {
-            const float SPHERECAST_RADIUS = 0.25f;
+            const float SPHERECAST_RADIUS = 0.15f;
             const float SPHERECAST_DISTANCE = 1.5f;
             if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out RaycastHit hit, SPHERECAST_DISTANCE, LayerMaskClass.PlayerStaticDoorMask))
             {
@@ -201,7 +203,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 }
                 else
                 {
-                    Logger.LogDebug($"Failed to find door, but we hit something on [PlayerStaticDoorMask] [{hit.collider.name}]");
+                    //Logger.LogDebug($"Failed to find door, but we hit something on [PlayerStaticDoorMask] [{hit.collider.name}]");
                 }
             }
             if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out hit, SPHERECAST_DISTANCE, LayerMaskClass.DoorLayer))
@@ -223,7 +225,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 }
                 else
                 {
-                    Logger.LogDebug($"Failed to find door, but we hit something on [DoorLayer] [{hit.collider.name}]");
+                    //Logger.LogDebug($"Failed to find door, but we hit something on [DoorLayer] [{hit.collider.name}]");
                 }
             }
             for (index = 0; index < doors.Count; index++)

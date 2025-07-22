@@ -153,12 +153,17 @@ namespace SAIN.SAINComponent.Classes.Mover
         public void RequestStartSprint(ESprintUrgency urgency, string reason)
         {
             WantToSprint = true;
+            SprintUrgency = urgency;
+            SprintReason = reason;
         }
 
         public void RequestEndSprint(ESprintUrgency urgency, string reason)
         {
             WantToSprint = false;
+            SprintReason = reason;
         }
+
+        public string SprintReason { get; private set; }
 
         public bool Crawling { get; private set; }
 
@@ -343,7 +348,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             Status = EBotMoveStatus.Complete;
             PathFinder.PathComplete(new OperationResult(success, reason), this);
-            Logger.LogDebug($"[{Bot.name}]:[{Id}]: Complete Move: Duration [{Time.time - TimeStarted}] Reason: [{reason}]");
+            //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Complete Move: Duration [{Time.time - TimeStarted}] Reason: [{reason}]");
             ClearCachedData();
         }
 
@@ -390,10 +395,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 Bot.AimDownSightsController.SetADS(false);
                 if (Bot.DoorOpener.Interacting || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data))
                 {
-                    DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();
+                    //DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();
                     //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
                     Vector3 position = CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
-                    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(position - Bot.Position, position, Bot.PlayerComponent);
+                    Vector3 dirNormal = (position - Bot.Position).normalized;
+                    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(dirNormal, Vector3.zero, Bot.PlayerComponent);
                     return true;
                 }
             }
@@ -446,11 +452,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 var currentMoveData = CurrentCornerMoveData;
                 if (currentMoveData.Dot < 0.75f)
                 {
-                    Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from Dot MoveData: " +
-                        $"{currentMoveData.CornerDirectionFromBot}:" +
-                        $"{currentMoveData.CornerDirectionFromBotNormal}:" +
-                        $"{currentMoveData.Dot}:" +
-                        $"{currentMoveData.SqrMagnitude}");
+                    //Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from Dot MoveData: " +
+                    //    $"{currentMoveData.CornerDirectionFromBot}:" +
+                    //    $"{currentMoveData.CornerDirectionFromBotNormal}:" +
+                    //    $"{currentMoveData.Dot}:" +
+                    //    $"{currentMoveData.SqrMagnitude}");
                     PathRecalcRequested = true;
                     return true;
                 }
@@ -468,11 +474,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                 {
                     if (CheckObjectInWay(BotPosition(), CurrentCornerMoveData.CornerDirectionFromBot, 1f, 0.2f, 1f))
                     {
-                        Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from object in way: " +
-                            $"{currentMoveData.CornerDirectionFromBot}:" +
-                            $"{currentMoveData.CornerDirectionFromBotNormal}:" +
-                            $"{currentMoveData.Dot}:" +
-                            $"{currentMoveData.SqrMagnitude}");
+                        //Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from object in way: " +
+                        //    $"{currentMoveData.CornerDirectionFromBot}:" +
+                        //    $"{currentMoveData.CornerDirectionFromBotNormal}:" +
+                        //    $"{currentMoveData.Dot}:" +
+                        //    $"{currentMoveData.SqrMagnitude}");
                         PathRecalcRequested = true;
                         return true;
                     }
@@ -480,11 +486,11 @@ namespace SAIN.SAINComponent.Classes.Mover
                     if (timeSinceNoMove > 2)
                     //if (timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_RECALC_TIME)
                     {
-                        Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from no move: " +
-                            $"{currentMoveData.CornerDirectionFromBot}:" +
-                            $"{currentMoveData.CornerDirectionFromBotNormal}:" +
-                            $"{currentMoveData.Dot}:" +
-                            $"{currentMoveData.SqrMagnitude}");
+                        //Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from no move: " +
+                        //    $"{currentMoveData.CornerDirectionFromBot}:" +
+                        //    $"{currentMoveData.CornerDirectionFromBotNormal}:" +
+                        //    $"{currentMoveData.Dot}:" +
+                        //    $"{currentMoveData.SqrMagnitude}");
                         PathRecalcRequested = true;
                         return true;
                     }

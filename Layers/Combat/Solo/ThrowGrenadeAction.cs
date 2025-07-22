@@ -11,7 +11,7 @@ namespace SAIN.Layers.Combat.Solo
             if (!Stopped && Time.time - StartTime > 1f || Bot.Cover.CheckLimbsForCover(Bot.GoalEnemy))
             {
                 Stopped = true;
-                BotOwner.StopMove();
+                
             }
         }
 
@@ -24,7 +24,7 @@ namespace SAIN.Layers.Combat.Solo
             StartTime = Time.time;
             if (Bot.Squad.BotInGroup && Bot.Talk.GroupTalk.FriendIsClose)
             {
-                Bot.Talk.Say(EPhraseTrigger.OnGrenade);
+                Bot.Talk.Say(EPhraseTrigger.OnGrenade, null, false);
             }
         }
     }

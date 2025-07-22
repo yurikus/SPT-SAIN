@@ -125,12 +125,27 @@ namespace SAIN.Components.BotController
         private void OnBotActivated(BotComponent bot)
         {
             bot.OnBotActivated -= OnBotActivated;
+
             SAINBots.Add(bot);
+            if (_useGroup1)
+            {
+                BotGroup1.Add(bot);
+            }
+            else
+            {
+                BotGroup2.Add(bot);
+            }
+            _useGroup1 = !_useGroup1;
+
             BotDictionary.Add(bot.ProfileId, bot);
             bot.PlayerComponent.InitializeBotComponent(bot);
             bot.BotOwner.LeaveData.OnLeave += RemoveBot;
             OnBotAdded?.Invoke(bot);
         }
+        
+        public HashSet<BotComponent> BotGroup1 { get; } = [];
+        public HashSet<BotComponent> BotGroup2 { get; } = [];
+        private bool _useGroup1 = false;
 
         public HashSet<BotOwner> VanillaBots { get; } = [];
         public HashSet<BotComponent> SAINBots { get; } = [];
@@ -203,12 +218,19 @@ namespace SAIN.Components.BotController
                     if (BotDictionary.TryGetValue(botOwner.ProfileId, out BotComponent botComponent))
                     {
                         OnBotRemoved?.Invoke(botComponent);
+                        SAINBots.Remove(botComponent);
+                        BotGroup1.Remove(botComponent);
+                        BotGroup1.Remove(botComponent);
                         botComponent.Dispose();
                     }
                     BotDictionary.Remove(botOwner.ProfileId);
-                    if (botOwner.TryGetComponent(out BotComponent component))
+                    if (botOwner.TryGetComponent(out BotComponent component) && botComponent != null)
                     {
                         OnBotRemoved?.Invoke(botComponent);
+                        SAINBots.Remove(botComponent);
+                        BotGroup1.Remove(botComponent);
+                        BotGroup1.Remove(botComponent);
+
                         component.Dispose();
                     }
                     if (botOwner.TryGetComponent(out SAINNoBushESP noBush))

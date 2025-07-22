@@ -14,15 +14,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyToggleEventTimeTracked OnSearch { get; }
         public EnemyToggleEventTimeTracked OnEnemyCanShootChanged { get; }
 
-        public event Action<Enemy> OnEnemyInvalid;
         public event Action<Enemy> OnEnemyLocationsSearched;
         public event Action<Enemy> OnFirstSeen;
         public event Action<Enemy> OnEnemyShot;
         public event Action<Enemy> OnBeingShotByEnemy;
         public event Action<Enemy, EnemyPlace> OnPositionUpdated;
         public event Action<Enemy, SAINSoundType, bool, EnemyPlace> OnEnemyHeard;
-        public event Action<Enemy, NavMeshPathStatus> OnPathUpdated;
-        public event Action<Enemy, EEnemyAction> OnVulnerableStateChanged;
         public event Action<Enemy, ETagStatus> OnHealthStatusChanged;
 
         public EnemyEvents(EnemyData enemy) : base(enemy)
@@ -45,8 +42,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public override void Dispose()
         {
             var player = EnemyPlayer;
-            if (player != null)
-                player.BeingHitAction -= enemyHit;
+            if (player != null) player.BeingHitAction -= enemyHit;
             base.Dispose();
         }
 
@@ -61,11 +57,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             OnEnemyKnownChanged.CheckToggle(true);
         }
 
-        public void SetEnemyAsInvalid()
-        {
-            OnEnemyInvalid?.Invoke(Enemy);
-        }
-
         public void ShotByEnemy()
         {
             OnBeingShotByEnemy?.Invoke(Enemy);
@@ -74,16 +65,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public void HealthStatusChanged(ETagStatus status)
         {
             OnHealthStatusChanged?.Invoke(Enemy, status);
-        }
-
-        public void EnemyVulnerableChanged(EEnemyAction action)
-        {
-            OnVulnerableStateChanged?.Invoke(Enemy, action);
-        }
-
-        public void PathUpdated(NavMeshPathStatus status)
-        {
-            OnPathUpdated?.Invoke(Enemy, status);
         }
 
         public void EnemyFirstSeen()

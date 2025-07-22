@@ -108,14 +108,14 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckCalcGoal()
         {
-            if (BotOwner.Memory.GoalEnemy == null || Bot.GoalEnemy?.IsVisible != true)
-            {
-                try
-                {
-                    BotOwner.BotsGroup.CalcGoalForBot(BotOwner);
-                }
-                catch { /* Gotta love eft code throwing errors randomly */ }
-            }
+            //if (BotOwner.Memory.GoalEnemy == null || Bot.GoalEnemy?.IsVisible != true)
+            //{
+            //    try
+            //    {
+            //        BotOwner.BotsGroup.CalcGoalForBot(BotOwner);
+            //    }
+            //    catch { /* Gotta love eft code throwing errors randomly */ }
+            //}
         }
     }
 }

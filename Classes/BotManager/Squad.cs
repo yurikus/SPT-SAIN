@@ -278,10 +278,10 @@ namespace SAIN.BotController.Classes
         {
             try
             {
-                if (!botOwner.Memory.GoalTarget.HavePlaceTarget() && botOwner.Memory.GoalEnemy == null)
-                {
-                    botOwner.BotsGroup.CalcGoalForBot(botOwner);
-                }
+                //if (!botOwner.Memory.GoalTarget.HavePlaceTarget() && botOwner.Memory.GoalEnemy == null)
+                //{
+                //    botOwner.BotsGroup.CalcGoalForBot(botOwner);
+                //}
             }
             catch (Exception e)
             {

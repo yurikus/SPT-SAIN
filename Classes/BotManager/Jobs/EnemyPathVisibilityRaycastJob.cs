@@ -1,4 +1,7 @@
-﻿using SAIN.SAINComponent.Classes.EnemyClasses;
+﻿using SAIN.Plugin;
+using SAIN.Preset;
+using SAIN.Preset.GlobalSettings;
+using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.Types.Jobs;
 using System;
 using System.Collections;
@@ -10,11 +13,24 @@ namespace SAIN.Components
 {
     public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
     {
+        static EnemyPathVisibilityRaycastJob()
+        {
+            PresetHandler.OnPresetUpdated += updateSettings;
+            updateSettings(PresetHandler.LoadedPreset);
+        }
+
+        private static void updateSettings(SAINPresetClass preset)
+        {
+            _commandsPerJob = Mathf.RoundToInt(preset.GlobalSettings.Steering.PathVisionMinCommandsPerJob);
+        }
+
         protected readonly List<PathVisionJob> VisionJobs = [];
         protected readonly List<PathVisionJob> ShootJobs = [];
         private float _nextVisionPathUpdateTime;
         private const float VisionPathUpdateInterval = 1f / 20f;
         private QueryParameters queryParams;
+
+        private static int _commandsPerJob = 256;
 
         public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : base("Path Visibility Job", botcontroller, true, 1f / 60f)
         {
@@ -26,26 +42,48 @@ namespace SAIN.Components
 
         protected override IEnumerator PrimaryFunction()
         {
-            HashSet<BotComponent> bots = SAINBotController.BotSpawnController.SAINBots;
+            HashSet<BotComponent> bots = SAINBotController.BotSpawnController.BotGroup1;
             CalcEnemyPaths(bots);
-            if (_nextVisionPathUpdateTime < Time.time)
+            CreateJobs(bots);
+            if (VisionJobs.Count > 0)
             {
-                _nextVisionPathUpdateTime = Time.time + VisionPathUpdateInterval;
-                CreateJobs(bots);
-                if (VisionJobs.Count > 0)
+                ScheduleJobs(VisionJobs, _commandsPerJob);
+                yield return null;
+                ScheduleShootCommands();
+                if (ShootJobs.Count > 0)
                 {
+                    ScheduleJobs(ShootJobs, _commandsPerJob);
                     yield return null;
-                    foreach (var job in VisionJobs) job.Schedule(32);
-                    yield return null;
-                    ScheduleShootCommands();
-                    if (ShootJobs.Count > 0)
-                    {
-                        yield return null;
-                        foreach (var job in ShootJobs) job.Schedule(32);
-                        yield return null;
-                        ReadResults();
-                    }
+                    ReadResults();
                 }
+            }
+            
+            yield return null;
+
+            bots = SAINBotController.BotSpawnController.BotGroup2;
+            CalcEnemyPaths(bots);
+            CreateJobs(bots);
+            if (VisionJobs.Count > 0)
+            {
+                ScheduleJobs(VisionJobs, _commandsPerJob);
+                yield return null;
+                ScheduleShootCommands();
+                if (ShootJobs.Count > 0)
+                {
+                    ScheduleJobs(ShootJobs, _commandsPerJob);
+                    yield return null;
+                    ReadResults();
+                }
+            }
+        }
+
+        private static void ScheduleJobs(List<PathVisionJob> jobs, int minCommandsPerJob = 256)
+        {
+            for (int i = 0; i < jobs.Count; i++)
+            {
+                PathVisionJob job = jobs[i];
+                job.Handle = RaycastCommand.ScheduleBatch(job.Commands, job.Hits, minCommandsPerJob);
+                jobs[i] = job;
             }
         }
 
@@ -65,9 +103,10 @@ namespace SAIN.Components
                             if (corners != null)
                             {
                                 int cornerCount = corners.Length;
-                                if (cornerCount > 2 && enemy.Path.AllPathPoints.Count > 0)
+                                int nodeCount = enemy.Path.AllPathNodeCount;
+                                if (cornerCount > 2 && nodeCount > 0)
                                 {
-                                    VisionJobs.Add(new(enemy.Path.AllPathPoints, eyePosition, enemy, queryParams));
+                                    VisionJobs.Add(new(enemy.Path.AllPathNodes, nodeCount, eyePosition, enemy, queryParams));
                                     continue;
                                 }
                                 else if (cornerCount == 2)
@@ -88,33 +127,28 @@ namespace SAIN.Components
             for (int i = 0; i < VisionJobs.Count; i++)
             {
                 PathVisionJob job = VisionJobs[i];
-                job.Complete();
+                if (!job.Handle.IsCompleted)
+                {
+                    Logger.LogWarning("completing job!");
+                    job.Handle.Complete();
+                }
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)
                 {
-                    var visiblePoints = enemy.Path.VisiblePathPoints;
-                    var allPoints = enemy.Path.AllPathPoints;
                     var Hits = job.Hits;
                     //int lastVisibleIndex = 0;
-                    visiblePoints.Clear();
-                    for (int j = 0; j < allPoints.Count; j++)
+                    var nodes = enemy.Path.AllPathNodes;
+                    for (int j = 0; j < Hits.Length; j++)
                     {
-                        if (Hits[j].collider == null)
-                        {
-                            visiblePoints.Add(allPoints[j]);
-                            //lastVisibleIndex = i;
-                        }
+                        BotVisiblePathNode node = nodes[j];
+                        node.State = Hits[j].collider == null ? VisiblePathNodeState.Visible : VisiblePathNodeState.NotVisible;
+                        nodes[j] = node;
                     }
-                    int visiblePointsCount = visiblePoints.Count;
-                    if (visiblePointsCount > 0)
-                    {
-                        ShootJobs.Add(new(visiblePoints, enemy.Bot.Transform.WeaponRoot, enemy, queryParams));
-                        continue;
-                    }
-                    enemy.ClearVisiblePathPoint();
+                    ShootJobs.Add(new(nodes, enemy.Path.AllPathNodeCount, enemy.Bot.Transform.WeaponRoot, enemy, queryParams));
                 }
+                job.Hits.Dispose();
+                job.Commands.Dispose();
             }
-            foreach (var job in VisionJobs) job.Dispose();
             VisionJobs.Clear();
         }
 
@@ -123,42 +157,47 @@ namespace SAIN.Components
             for (int i = 0; i < ShootJobs.Count; i++)
             {
                 PathVisionJob job = ShootJobs[i];
-                job.Complete();
+                if (!job.Handle.IsCompleted)
+                {
+                    Logger.LogWarning("completing job!");
+                    job.Handle.Complete();
+                }
 
                 NativeArray<RaycastHit> hits = job.Hits;
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)
                 {
-                    List<Vector3> visiblePoints = enemy.Path.VisiblePathPoints;
+                    var nodes = enemy.Path.AllPathNodes;
                     bool PointFound = false;
-                    for (int j = visiblePoints.Count - 1; j >= 0; j--)
+                    for (int j = hits.Length - 1; j >= 0; j--)
                     {
-                        if (hits[j].collider == null)
+                        BotVisiblePathNode node = nodes[j];
+                        if (node.State == VisiblePathNodeState.Visible &&
+                            hits[j].collider == null)
                         {
-                            enemy.SetLastVisiblePathPoint(visiblePoints[j], j);
+                            enemy.SetLastVisiblePathPoint(node);
                             PointFound = true;
                             break;
                         }
                     }
                     if (!PointFound) enemy.ClearVisiblePathPoint();
                 }
+                job.Hits.Dispose();
+                job.Commands.Dispose();
             }
-            foreach (var job in ShootJobs) job.Dispose();
             ShootJobs.Clear();
         }
 
         private static void CalcEnemyPaths(HashSet<BotComponent> bots)
         {
+            PathVisibilityConfig config = new(GlobalSettingsClass.Instance.Steering);
             foreach (BotComponent bot in bots)
             {
                 if (bot != null && bot.BotActive)
                 {
-                    foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
+                    foreach (Enemy enemy in bot.EnemyController.KnownEnemies)
                     {
-                        if (enemy.EnemyKnown)
-                        {
-                            enemy.Path.CheckCalcPath();
-                        }
+                        enemy.Path.CheckCalcPath(config);
                     }
                 }
             }

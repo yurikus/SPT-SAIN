@@ -129,7 +129,7 @@ namespace SAIN.SAINComponent.Classes.Search
             EnemyPlace targetPlace = PathFinder.TargetPlace;
             if (targetPlace == null)
             {
-                Logger.LogWarning($"{BotOwner.name}'s targetPlace is null, cannot search!");
+                //Logger.LogWarning($"{BotOwner.name}'s targetPlace is null, cannot search!");
                 return;
             }
 

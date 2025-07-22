@@ -16,64 +16,69 @@ namespace SAIN.Preset.GlobalSettings
             { EBotLookMode.Aiming, new TurnSettings(0.05f, 540f ) },
             { EBotLookMode.RandomLook, new TurnSettings(0.8f, 200f ) },
         };
-        
+
         [Name("Max Path Length")]
         [Description("How far along a path to an enemy a bot will check vision to, in meters.")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0f, 500f, 1)]
         [Advanced]
         public float DistToCheckVision = 50.0f;
-        
+
+        [Hidden]
+        public float characterHeight = 1.5f;
+        [Hidden]
+        public float startHeight = 0.5f;
+
         [Name("Path Nodes Stack Height")]
         [Description("X number of points will be generated above each node in the path")]
         [Category("Enemy Path Visibility System")]
         [MinMax(2f, 20, 1)]
         [Advanced]
-        public float GeneratePointStackHeight = 6;
+        public float GeneratePointStackHeight = 4;
 
         [Name("Max Path Nodes - Player")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0f, 2048, 1)]
         [Advanced]
         public float MaxPathPoints = 512;
-        
+
         [Name("Max Path Nodes - Bot")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0f, 2048, 1)]
         [Advanced]
         public float MaxPathPoints_AI = 256;
-        
+
         [Name("Distance Between Nodes - Player")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0.01f, 1, 1000)]
         [Advanced]
         public float DistanceBetweenPoints = 0.33f;
-        
+
         [Name("Distance Between Nodes - Bot")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0.01f, 1, 1000)]
         [Advanced]
         public float DistanceBetweenPoints_AI = 0.66f;
-        
+
         [Name("Random Bot Aim Sway")]
         [Category("Random Sway")]
         public bool RANDOMSWAY_TOGGLE = true;
-        
+
         [Category("Random Sway")]
         [MinMax(0f, 1f, 1000f)]
         [Advanced]
         public float RANDOMSWAY_CIRCLE_RADIUS = 0.035f;
-        
+
         [Category("Random Sway")]
         [MinMax(0f, 10f, 10f)]
         [Advanced]
         public float RANDOMSWAY_LOOP_DURATION = 3.5f;
-        
+
         [Category("Random Sway")]
         [MinMax(0f, 1f, 1000f)]
         [Advanced]
         public float RANDOMSWAY_CIRCLE_SCALE = 0.015f;
-        
+
         [Category("Random Sway")]
         [MinMax(45f, 90f, 100f)]
         [Advanced]
@@ -84,16 +89,22 @@ namespace SAIN.Preset.GlobalSettings
         [Advanced]
         [MinMax(0f, 50f, 1000f)]
         public float STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE = 2.5f;
-        
+
         [MinMax(0f, 0.5f, 100f)]
         public float SmoothingFactor = 0.06f;  // Lower = smoother, higher = more responsive
+
         [MinMax(0f, 3f, 100f)]
         public float PredictionStrength = 0f; // How much to compensate for lag
+
         [MinMax(90f, 720f, 1f)]
         public float MaxAngularVelocity = 360f; // Degrees per second limit
+
         [MinMax(1f, 3f, 100f)]
         public float ConvergenceBoost = 1.2f;   // Multiplier when far from target
 
+        [Advanced]
+        [MinMax(16, 2048, 1f)]
+        public float PathVisionMinCommandsPerJob = 256f; // Minimum commands per job for path vision jobs
 
         public override void Init(List<ISAINSettings> list)
         {
