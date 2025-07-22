@@ -75,6 +75,7 @@ namespace SAIN.Layers
 
         public override void Start()
         {
+            BotOwner.PatrollingData.Pause();
             Bot.BotActivation.SetCurrentAction(this);
         }
 

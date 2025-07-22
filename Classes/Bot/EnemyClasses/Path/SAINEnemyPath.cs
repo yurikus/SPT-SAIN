@@ -7,15 +7,11 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public struct PathSegment
+    public struct BotVisiblePathNode
     {
-        public Vector3 Corner;
-        public Vector3 EndPoint;
-        public Vector3 Direction;
-        public Vector3 DirectionNormal;
-        public float SegmentLength;
-        public int Index;
-        public List<Vector3> SegmentPoints;
+        public Vector3 Point;
+        public bool IsVisible;
+        public bool CanShoot;
     }
 
     public class SAINEnemyPath(EnemyData enemy) : EnemyBase(enemy), IBotEnemyClass
@@ -44,10 +40,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        private const float ENEMY_DISTANCE_VERYCLOSE = 10f;
-        private const float ENEMY_DISTANCE_CLOSE = 20f;
-        private const float ENEMY_DISTANCE_MID = 80f;
-        private const float ENEMY_DISTANCE_FAR = 150f;
+        private const float ENEMY_DISTANCE_VERYCLOSE = 8f;
+        private const float ENEMY_DISTANCE_CLOSE = 16f;
+        private const float ENEMY_DISTANCE_MID = 32f;
+        private const float ENEMY_DISTANCE_FAR = 64f;
 
         public float PathLength { get; private set; } = float.MaxValue;
 
@@ -66,12 +62,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         /// <summary>
         /// Raycast Positions
         /// </summary>
-        public List<Vector3> VisionPathPoints { get; } = [];
+        public List<Vector3> AllPathPoints { get; } = [];
 
         /// <summary>
         /// Raycast Positions Cached, this list is used by the job so it should not be altered here.
         /// </summary>
         public List<Vector3> VisionPathPoints_Cache { get; } = [];
+
+        public List<Vector3> VisiblePathPoints { get; } = [];
 
         public override void Init()
         {
@@ -195,10 +193,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
 
             int max = Mathf.RoundToInt(Enemy.IsAI ? settings.MaxPathPoints_AI : settings.MaxPathPoints);
-            VisionPathPoints.Clear();
+            AllPathPoints.Clear();
             for (int i = 0; i < VisionPathCheckPoints.Count; i++)
             {
-                Vector.GeneratePointsAlongDirection(VisionPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / settings.GeneratePointStackHeight);
+                Vector.GeneratePointsAlongDirection(AllPathPoints, VisionPathCheckPoints[i], Vector3.up, CharacterHeight, CharacterHeight / settings.GeneratePointStackHeight);
                 //if (VisionPathPoints.Count >= max)
                 //{
                 //    break;
@@ -231,7 +229,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             PathCorners = null;
             DistanceToEnemyPositionFromLastCorner = 0;
             VisionPathCheckPoints.Clear();
-            VisionPathPoints.Clear();
+            AllPathPoints.Clear();
         }
 
         private float calcDelayOnDistance()

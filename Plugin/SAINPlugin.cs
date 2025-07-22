@@ -189,7 +189,7 @@ namespace SAIN
             new Patches.Shoot.Aim.DoHitAffectPatch(),
             new Patches.Shoot.Aim.HitAffectApplyPatch(),
             new Patches.Shoot.Aim.PlayerHitReactionDisablePatch(),
-            new Patches.Shoot.Aim.WeaponMoAModificationPatch(),
+            //new Patches.Shoot.Aim.WeaponMoAModificationPatch(),
             new Patches.Shoot.Aim.BotAimSteerPatch(),
             new Patches.Shoot.Aim.HardAimDisablePatch1(),
             new Patches.Shoot.Aim.HardAimDisablePatch2(),

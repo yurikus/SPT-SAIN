@@ -32,7 +32,9 @@ namespace SAIN.Components
         public void Dispose()
         {
             foreach (var job in Jobs)
+            {
                 job?.Stop();
+            }
         }
     }
 }

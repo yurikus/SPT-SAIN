@@ -42,6 +42,7 @@ namespace SAIN.Layers
         {
             if (isActiveNow)
             {
+                BotOwner.PatrollingData.Pause();
                 SetLayer(true);
             }
             else

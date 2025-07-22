@@ -492,7 +492,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far = 3f;
             const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryFar = 3f;
 
-            const float RELOAD_AMMORATIO_MID = 0.4f;
+            const float RELOAD_AMMORATIO_MID = 0.5f;
             const float RELOAD_AMMORATIO_MID_TimeSinceSeen = 20f;
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose = 60;
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Close = 8f;
@@ -500,7 +500,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Far = 2f;
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar = 2f;
 
-            const float RELOAD_AMMORATIO_LOW = 0.2f;
+            const float RELOAD_AMMORATIO_LOW = 0.25f;
             const float RELOAD_AMMORATIO_LOW_TimeSinceSeen = 4f;
             const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose = 2f;
             const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close = 2f;
@@ -510,13 +510,9 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             const float RELOAD_AMMORATIO_MINIMUM_TIMESINCESEEN = 2f;
 
-            if (enemy.Seen && enemy.TimeSinceSeen < 1f)
+            if (enemy.Seen && enemy.TimeSinceSeen < 2f)
             {
                 return false;
-            }
-            if (!enemy.Seen && !enemy.Status.ShotAtMe && !enemy.Status.ShotMe)
-            {
-                return true;
             }
 
             float timeSinceSeen = enemy.TimeSinceSeen;
@@ -525,24 +521,16 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             if (ammoRatio > RELOAD_AMMORATIO_UPPER)
             {
-                if (timeSinceSeen > RELOAD_AMMORATIO_UPPER_TimeSinceSeen)
-                    return true;
                 switch (distance)
                 {
                     case EPathDistance.VeryClose:
-                        if (timeSinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose)
-                            return true;
-                        break;
+                        return false;
 
                     case EPathDistance.Close:
-                        if (timeSinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close)
-                            return true;
-                        break;
+                        return false;
 
                     case EPathDistance.Mid:
-                        if (timeSinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid)
-                            return true;
-                        break;
+                        return false;
 
                     case EPathDistance.Far:
                         if (timeSinceSeen > RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far)
@@ -558,11 +546,9 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (ammoRatio > RELOAD_AMMORATIO_MID)
             {
-                if (timeSinceSeen > RELOAD_AMMORATIO_MID_TimeSinceSeen)
-                    return true;
                 return distance switch {
-                    EPathDistance.VeryClose => timeSinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose,
-                    EPathDistance.Close => timeSinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Close,
+                    EPathDistance.VeryClose => false,
+                    EPathDistance.Close => false,
                     EPathDistance.Mid => timeSinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid,
                     EPathDistance.Far => timeSinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Far,
                     EPathDistance.VeryFar => timeSinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar,
@@ -570,16 +556,17 @@ namespace SAIN.SAINComponent.Classes.Decision
                 };
             }
 
+            if (!enemy.Seen && !enemy.Status.ShotAtMe && !enemy.Status.ShotMe)
+            {
+                return true;
+            }
+
             if (ammoRatio > RELOAD_AMMORATIO_LOW)
             {
-                if (enemy.TimeSinceSeen > RELOAD_AMMORATIO_LOW_TimeSinceSeen)
-                    return true;
                 switch (distance)
                 {
                     case EPathDistance.VeryClose:
-                        if (timeSinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose)
-                            return true;
-                        break;
+                        return false;
 
                     case EPathDistance.Close:
                         if (timeSinceSeen > RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close)

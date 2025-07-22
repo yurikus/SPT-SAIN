@@ -220,12 +220,15 @@ namespace SAIN.Components
             return SAINGameWorld != null;
         }
 
+        public override void Stop()
+        {
+            Dispose();
+            base.Stop();
+        }
+
         public void Dispose()
         {
-            foreach (RaycastJob Job in RaycastJobs)
-            {
-                Job.Dispose();
-            }
+            foreach (RaycastJob Job in RaycastJobs) Job.Dispose();
             RaycastJobs.Clear();
         }
     }

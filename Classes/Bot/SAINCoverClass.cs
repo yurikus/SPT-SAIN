@@ -118,11 +118,11 @@ namespace SAIN.SAINComponent.Classes
                 reason = "cantSprint";
                 return false;
             }
-            if (Bot.Cover.CoverPoints.Count == 0)
-            {
-                reason = "noCoverPoints";
-                return false;
-            }
+            //if (Bot.Cover.CoverPoints.Count == 0)
+            //{
+            //    reason = "noCoverPoints";
+            //    return false;
+            //}
             if (enemy.IsSniper && GlobalSettings.Mind.ENEMYSNIPER_ALWAYS_SPRINT_COVER)
             {
                 reason = "EnemySniperRun";
@@ -151,7 +151,8 @@ namespace SAIN.SAINComponent.Classes
             if (CoverInUse != null)
             {
                 // Hold in cover
-                if (!CoverInUse.CoverData.IsBad && CoverPoints.Contains(CoverInUse))
+                //if (!CoverInUse.CoverData.IsBad && CoverPoints.Contains(CoverInUse))
+                if (!CoverInUse.CoverData.IsBad)
                 {
                     Bot.Mover.GoToCoverPoint(CoverInUse, false, Mover.ESprintUrgency.High);
                     _shallSprint = false;

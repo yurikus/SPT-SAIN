@@ -75,8 +75,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 return false;
             }
             currentAiming.NodeUpdate();
-            Bot.Steering.LookToPoint(aimPoint);
-            AimComplete = currentAiming.IsReady && Bot.Steering.IsLookingAtPoint(aimPoint, out float dot, 0.75f);
+            Bot.Steering.LookToPoint(currentAiming.EndTargetPoint);
+            AimComplete = currentAiming.IsReady && Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.75f);
             return true;
         }
 

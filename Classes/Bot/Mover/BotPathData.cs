@@ -387,6 +387,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                 SetSprint(false, "door");
                 Bot.Mover.SetTargetPose(1f);
                 Bot.Mover.SetTargetMoveSpeed(1f);
+                Bot.AimDownSightsController.SetADS(false);
                 if (Bot.DoorOpener.Interacting || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data))
                 {
                     DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();

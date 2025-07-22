@@ -1,6 +1,4 @@
 ﻿using EFT;
-using EFT.Interactive;
-using JetBrains.Annotations;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.RotationController;
@@ -9,7 +7,6 @@ using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System;
 using UnityEngine;
-using static RootMotion.FinalIK.FBIKChain;
 
 namespace SAIN.Classes
 {
@@ -18,7 +15,7 @@ namespace SAIN.Classes
         public Vector3 CurrentControlLookDirection => _lookDirection;
 
         private readonly PredictiveLookSmoothing Smoothing = new();
-        private Vector3 _lookDirection;
+        private Vector3 _lookDirection = Vector3.forward;
 
         private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
         {
@@ -29,7 +26,7 @@ namespace SAIN.Classes
         private void SetPlayerSpeed(Player player, float magnitude, float playerSpeed, float START_SLOW_DIST, bool shallSprint)
         {
             const float SLOW_COEF = 10f;
-            if (shallSprint)
+            if (shallSprint || player.IsSprintEnabled)
             {
                 ChangeSpeed(player, 1f - playerSpeed);
             }
@@ -57,7 +54,7 @@ namespace SAIN.Classes
             {
                 canSprint = false;
             }
-            else if (magnitude >= STOP_SPRINT_DIST * 1.1f)
+            else if (magnitude >= STOP_SPRINT_DIST * 1.25f)
             {
                 canSprint = true;
             }
@@ -112,11 +109,10 @@ namespace SAIN.Classes
 
         public void SetTargetLookDirection(Vector3 targetDirection, BotOwner botOwner, BotComponent bot)
         {
+            if (bot != null) targetDirection = bot.Info.WeaponInfo.Recoil.ApplyRecoil(targetDirection);
+            _lookDirection = Smoothing.UpdateSmoothedDirection(_lookDirection, targetDirection.normalized, Time.fixedDeltaTime);
             UpdateRandomSway(Time.fixedDeltaTime, botOwner.GetPlayer, botOwner, bot, GlobalSettingsClass.Instance.Steering);
-            _lookDirection = Smoothing.UpdateSmoothedDirection(_lookDirection, targetDirection + RandomSwayOffset, Time.fixedDeltaTime);
-
-            Vector3 dir = _lookDirection;
-            if (bot != null) dir = bot.Info.WeaponInfo.Recoil.ApplyRecoil(dir);
+            Vector3 dir = _lookDirection + RandomSwayOffset;
             SetXAngle(botOwner, dir);
             SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
         }
@@ -146,7 +142,7 @@ namespace SAIN.Classes
         {
             float num = Mathf.DeltaAngle(player.Rotation.y, angle);
             botOwner.AimingManager.CurrentAiming.RotateY(num);
-            player.Rotate(new Vector2(0f, num), false);
+            player.Rotate(new Vector2(0f, num), true);
         }
 
         private static float CalcYByDir(Vector3 dir)
@@ -165,8 +161,8 @@ namespace SAIN.Classes
             Player player = playerComp.Player;
             float playerSpeed = player.Speed;
 
-            const float START_SLOW_DIST = 0.25f;
-            const float STOP_SPRINT_DIST = 0.5f;
+            const float START_SLOW_DIST = 0.5f;
+            const float STOP_SPRINT_DIST = 0.75f;
 
             float destinationDistance = (finalMoveDestination - playerComp.Position).magnitude;
             bool canSprint = player.MovementContext.CanSprint && CheckCanSprintByDistanceRemaining(destinationDistance, STOP_SPRINT_DIST);
@@ -174,8 +170,8 @@ namespace SAIN.Classes
             SetPlayerSpeed(player, destinationDistance, playerSpeed, START_SLOW_DIST, shallSprint);
             player.EnableSprint(shallSprint);
 
-            //direction.Normalize();
-            if (destinationDistance > 0.25f) player.CharacterController.SetSteerDirection(direction.normalized);
+            direction.Normalize();
+            if (destinationDistance > 0.1f) player.CharacterController.SetSteerDirection(direction);
             Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
             player.Move(moveDir);
             playerComp.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);
@@ -202,22 +198,17 @@ namespace SAIN.Classes
             bool aimingDownSights = botOwner.WeaponManager.ShootController?.IsAiming == true;
 
             if (aiming) result *= 0.5f;
-            if (aimingDownSights) result *= 0.25f;
-            if (moving) result *= 1.5f;
+            if (aimingDownSights) result *= 0.15f;
+            if (moving) result *= 1.25f;
             if (armsDamaged) result *= 1.5f;
             if (noStamina) result *= 1.5f;
-            return Mathf.Clamp(result, 0.001f, 2.5f);
+            return Mathf.Clamp(result, 0f, 2.5f);
         }
 
         private static Vector2 FindMoveDirection(Vector3 direction, Vector2 playerRotation)
         {
             Vector3 vector = Quaternion.Euler(0f, 0f, playerRotation.x) * new Vector2(direction.x, direction.z);
-            return MoveDirToVector2(vector);
-        }
-
-        private static Vector2 MoveDirToVector2(Vector3 direction)
-        {
-            return new Vector2(direction.x, direction.y);
+            return new Vector2(vector.x, vector.y);
         }
 
         private static TurnSettings GetTurnSettings(BotOwner bot, BotComponent botComponent)

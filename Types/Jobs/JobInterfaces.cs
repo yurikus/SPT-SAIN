@@ -45,4 +45,20 @@ namespace SAIN.Types.Jobs
         public int TotalRaycasts { get; }
         public LayerMask Mask { get; }
     }
+
+    public interface ISpherecastJob : IDisposable
+    {
+        public JobHandle Schedule(int MaxCommandsPerJob = 8);
+
+        public void Complete();
+
+        public bool IsScheduled { get; }
+        public bool IsCompleted { get; }
+        public bool IsCreated { get; }
+        public JobHandle Handle { get; }
+        public NativeArray<RaycastHit> Hits { get; }
+        public NativeArray<SpherecastCommand> Commands { get; }
+        public int TotalRaycasts { get; }
+        public LayerMask Mask { get; }
+    }
 }

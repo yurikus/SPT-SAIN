@@ -131,6 +131,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public EAimDownSightsStatus GetADSStatus(Vector3 targetPosition, Enemy enemy)
         {
+            if (Bot.Mover.ActivePath?.Status == Mover.EBotMoveStatus.DoorInteraction)
+            {
+                return EAimDownSightsStatus.None;
+            }
             if (Bot.Player.IsSprintEnabled || Bot.Mover.Running)
             {
                 return EAimDownSightsStatus.Sprinting;
@@ -145,8 +149,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             if (enemy != null)
             {
                 if (enemy.CanShoot &&
-                    enemy.IsVisible &&
-                    enemy.RealDistance > 50f)
+                    enemy.IsVisible)
                 {
                     return EAimDownSightsStatus.EnemyVisible;
                 }

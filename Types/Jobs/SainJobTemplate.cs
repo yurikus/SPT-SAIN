@@ -94,7 +94,7 @@ namespace SAIN.Types.Jobs
             return true;
         }
 
-        public void Start()
+        public virtual void Start()
         {
             if (!Active)
             {
@@ -109,7 +109,7 @@ namespace SAIN.Types.Jobs
             }
         }
 
-        public void Stop()
+        public virtual void Stop()
         {
             if (Active)
             {
