@@ -15,7 +15,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         private const float LEAN_RAYCAST_OFFSET_DIST = 0.66f;
         private const float LEAN_MAX_RAYCAST_DIST = 16f;
         private const float RESET_LEAN_AFTER_TIME = 0.66f;
-        private const float MAX_CORNER_DISTANCE_LEAN = 15f;
+        private const float MAX_CORNER_DISTANCE_LEAN = 12f;
         private const float MAX_CORNER_DISTANCE_LEAN_SQR = MAX_CORNER_DISTANCE_LEAN * MAX_CORNER_DISTANCE_LEAN;
 
         public LeanSetting LeanDirection { get; private set; }
