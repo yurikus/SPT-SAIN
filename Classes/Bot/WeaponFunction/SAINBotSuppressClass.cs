@@ -98,7 +98,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 knownEnemies.SortBy(EnemyList.EBotListSortType.VisiblePathPointDistanceToEnemy);
                 foreach (Enemy enemy in knownEnemies)
                 {
-                    if (TrySuppressEnemy(enemy))
+                    if (TrySuppressEnemy(enemy, withBehaviorChecks))
                     {
                         return true;
                     }

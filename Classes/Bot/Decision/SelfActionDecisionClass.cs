@@ -192,11 +192,11 @@ namespace SAIN.SAINComponent.Classes.Decision
                     Decision = ESelfActionType.FirstAid;
                     return true;
                 }
-                if (Bot.Medical.TryUseMedItem())
-                {
-                    Decision = ESelfActionType.FirstAid;
-                    return true;
-                }
+                //if (Bot.Medical.TryUseMedItem())
+                //{
+                //    Decision = ESelfActionType.FirstAid;
+                //    return true;
+                //}
                 if (Bot.Medical.Surgery.CheckCanStartUsingKit())
                 {
                     Decision = ESelfActionType.Surgery;

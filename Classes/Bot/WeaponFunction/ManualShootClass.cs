@@ -64,13 +64,21 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 Bot.Steering.AngleToPointFromLookDir(targetPos) <= 10 &&
                 Bot.FriendlyFire.UpdateFriendlyFireStatus(targetPos, Bot.Transform.WeaponData.FirePort, Bot.Transform.WeaponData.PointDirection, Bot))
             {
+                if (!Shooting)
+                {
+                    if (BotOwner.ShootData.Shoot())
+                    {
+                        _timeStartManualShoot = Time.time;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
                 ManualShootEnemy = Enemy;
                 ShootPosition = targetPos;
                 Reason = reason;
-                if (!Shooting && BotOwner.ShootData.Shoot())
-                {
-                    _timeStartManualShoot = Time.time;
-                }
                 return true;
             }
             Reset();

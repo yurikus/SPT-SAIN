@@ -40,13 +40,20 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private void setLight(bool value)
         {
-            if (value)
+            try
             {
-                BotOwner.BotLight.TurnOn(true);
+
+                if (value)
+                {
+                    BotOwner.BotLight.TurnOn(true);
+                }
+                else
+                {
+                    BotOwner.BotLight.TurnOff(false, true);
+                }
             }
-            else
-            {
-                BotOwner.BotLight.TurnOff(false, true);
+            catch
+            { // eft code go burr
             }
         }
 
