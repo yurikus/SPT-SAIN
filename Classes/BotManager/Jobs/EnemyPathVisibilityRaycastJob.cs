@@ -42,26 +42,9 @@ namespace SAIN.Components
 
         protected override IEnumerator PrimaryFunction()
         {
-            HashSet<BotComponent> bots = SAINBotController.BotSpawnController.BotGroup1;
+            HashSet<BotComponent> bots = SAINBotController.BotSpawnController.SAINBots;
             CalcEnemyPaths(bots);
-            CreateJobs(bots);
-            if (VisionJobs.Count > 0)
-            {
-                ScheduleJobs(VisionJobs, _commandsPerJob);
-                yield return null;
-                ScheduleShootCommands();
-                if (ShootJobs.Count > 0)
-                {
-                    ScheduleJobs(ShootJobs, _commandsPerJob);
-                    yield return null;
-                    ReadResults();
-                }
-            }
-            
             yield return null;
-
-            bots = SAINBotController.BotSpawnController.BotGroup2;
-            CalcEnemyPaths(bots);
             CreateJobs(bots);
             if (VisionJobs.Count > 0)
             {
@@ -96,24 +79,21 @@ namespace SAIN.Components
                     EnemyList knownEnemies = bot.EnemyController.KnownEnemies;
                     if (knownEnemies.Count > 0)
                     {
+                        Vector3 botPosition = bot.Transform.Position;
                         Vector3 eyePosition = bot.Transform.EyePosition;
+                        Vector3 neutralViewPosition = new(botPosition.x, eyePosition.y, botPosition.z);
                         foreach (Enemy enemy in bot.EnemyController.KnownEnemies)
                         {
-                            Vector3[] corners = enemy.Path.PathCorners;
-                            if (corners != null)
+                            int nodeCount = enemy.Path.AllPathNodeCount;
+                            if (nodeCount > 0)
                             {
-                                int cornerCount = corners.Length;
-                                int nodeCount = enemy.Path.AllPathNodeCount;
-                                if (cornerCount > 2 && nodeCount > 0)
-                                {
-                                    VisionJobs.Add(new(enemy.Path.AllPathNodes, nodeCount, eyePosition, enemy, queryParams));
-                                    continue;
-                                }
-                                else if (cornerCount == 2)
-                                {
-                                    enemy.SetLastCornerAsVisiblePathPoint(corners[1], 1);
-                                    continue;
-                                }
+                                VisionJobs.Add(new(enemy.Path.AllPathNodes, nodeCount, neutralViewPosition, enemy, queryParams));
+                                continue;
+                            }
+                            if (enemy.Path.PathCorners.Length > 1)
+                            {
+                                enemy.SetLastCornerAsVisiblePathPoint(enemy.Path.PathCorners[1], 1);
+                                continue;
                             }
                             enemy.ClearVisiblePathPoint();
                         }
@@ -138,13 +118,38 @@ namespace SAIN.Components
                     var Hits = job.Hits;
                     //int lastVisibleIndex = 0;
                     var nodes = enemy.Path.AllPathNodes;
+                    var visibleNodes = enemy.Path.VisibleNodes;
+                    visibleNodes.Clear();
                     for (int j = 0; j < Hits.Length; j++)
                     {
                         BotVisiblePathNode node = nodes[j];
-                        node.State = Hits[j].collider == null ? VisiblePathNodeState.Visible : VisiblePathNodeState.NotVisible;
+                        if (Hits[j].collider == null)
+                        {
+                            node.Visible = true;
+                            visibleNodes.Add(node);
+                        }
+                        else
+                        {
+                            node.Visible = false;
+                        }
                         nodes[j] = node;
                     }
-                    ShootJobs.Add(new(nodes, enemy.Path.AllPathNodeCount, enemy.Bot.Transform.WeaponRoot, enemy, queryParams));
+                    if (visibleNodes.Count == 0)
+                    {
+                        if (enemy.Path.PathCorners.Length > 1)
+                        {
+                            enemy.SetLastCornerAsVisiblePathPoint(enemy.Path.PathCorners[1], 1);
+                        }
+                        else
+                        {
+                            Logger.LogDebug($"[{enemy.Bot.name}] No visible path point found for enemy {enemy.EnemyName}");
+                            enemy.ClearVisiblePathPoint();
+                        }
+                    }
+                    else
+                    {
+                        ShootJobs.Add(new(visibleNodes, enemy.Bot.Transform.WeaponRoot, enemy, queryParams));
+                    }
                 }
                 job.Hits.Dispose();
                 job.Commands.Dispose();
@@ -167,20 +172,30 @@ namespace SAIN.Components
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)
                 {
-                    var nodes = enemy.Path.AllPathNodes;
+                    var visibleNodes = enemy.Path.VisibleNodes;
                     bool PointFound = false;
                     for (int j = hits.Length - 1; j >= 0; j--)
                     {
-                        BotVisiblePathNode node = nodes[j];
-                        if (node.State == VisiblePathNodeState.Visible &&
-                            hits[j].collider == null)
+                        BotVisiblePathNode node = visibleNodes[j];
+                        if (hits[j].collider == null)
                         {
                             enemy.SetLastVisiblePathPoint(node);
                             PointFound = true;
                             break;
                         }
                     }
-                    if (!PointFound) enemy.ClearVisiblePathPoint();
+                    if (!PointFound)
+                    {
+                        if (visibleNodes.Count > 0)
+                        {
+                            enemy.SetLastVisiblePathPoint(visibleNodes[visibleNodes.Count - 1]);
+                        }
+                        else
+                        {
+                            enemy.ClearVisiblePathPoint();
+                            Logger.LogDebug($"[{enemy.Bot.name}] No shootable path point found for enemy {enemy.EnemyName}");
+                        }
+                    }
                 }
                 job.Hits.Dispose();
                 job.Commands.Dispose();

@@ -136,8 +136,14 @@ namespace SAIN.Components
                 RaycastJobHandle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
 
                 yield return null;
-                RaycastJobHandle.Complete();
-                EnemyPlaceJobHandle.Complete();
+
+                var handle = RaycastJobHandle;
+                if (!handle.IsCompleted) handle.Complete();
+                RaycastJobHandle = handle;
+
+                handle = EnemyPlaceJobHandle;
+                if (!handle.IsCompleted) handle.Complete();
+                EnemyPlaceJobHandle = handle;
 
                 for (int i = 0; i < Count; i++)
                 {

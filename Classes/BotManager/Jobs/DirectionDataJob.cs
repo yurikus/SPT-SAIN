@@ -210,7 +210,11 @@ namespace SAIN.Components.BotControllerSpace.Classes.Raycasts
                     _PlayerTickJobHandle = _PlayerTickJob.Schedule(jobCount, new JobHandle());
 
                     yield return null;
-                    _PlayerTickJobHandle.Complete();
+
+                    var handle = _PlayerTickJobHandle;
+                    if (!handle.IsCompleted) handle.Complete();
+                    _PlayerTickJobHandle = handle;
+
                     for (int i = 0; i < jobCount; i++)
                     {
                         PlayerTickData data = _PlayerTickJob.Output[i];

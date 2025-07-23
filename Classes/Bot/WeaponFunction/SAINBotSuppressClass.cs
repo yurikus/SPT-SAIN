@@ -108,20 +108,15 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return false;
         }
 
-
-        public float TimeSinceSeenToSuppress = 6f;
-        public float TimeSinceShotAtToSuppress = 6f;
-        public float TimeSinceShotToSuppress = 6f;
+        public static float TimeSinceSeenToSuppress => GlobalSettingsClass.Instance.Mind.TimeSinceShotToSuppress;
+        public static float TimeSinceShotAtToSuppress => GlobalSettingsClass.Instance.Mind.TimeSinceShotToSuppress;
+        public static float TimeSinceShotToSuppress => GlobalSettingsClass.Instance.Mind.TimeSinceShotToSuppress;
 
         public bool TrySuppressEnemy(Enemy Enemy, bool withBehaviorChecks = true)
         {
             if (Enemy != null && !Enemy.IsZombie && !Enemy.IsVisible)
             {
-                if (withBehaviorChecks && (
-                    (Enemy.Seen && Enemy.TimeSinceSeen < TimeSinceSeenToSuppress) ||
-                    (Enemy.Status.ShotAtMe && Time.time - Enemy.Status.TimeLastShotAtMe < TimeSinceShotAtToSuppress) ||
-                    (Enemy.Status.ShotMe && Time.time - Enemy.Status.TimeLastShotMe < TimeSinceShotToSuppress)
-                    ))
+                if (withBehaviorChecks && !CanSuppressEnemy(Enemy))
                 {
                     return false;
                 }
@@ -131,7 +126,24 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                     return Bot.Suppression.SuppressPosition(suppressTarget.Value, Enemy);
                 }
             }
-            //ResetSuppressing();
+            return false;
+        }
+
+        private bool CanSuppressEnemy(Enemy Enemy)
+        {
+            if (Enemy.Seen && Enemy.TimeSinceSeen <= TimeSinceSeenToSuppress)
+            {
+                return true;
+            }
+            var status = Enemy.Status;
+            if (status.ShotAtMe && Time.time - status.TimeLastShotAtMe <= TimeSinceShotAtToSuppress)
+            {
+                return true;
+            }
+            if (status.ShotMe && Time.time - status.TimeLastShotMe <= TimeSinceShotToSuppress)
+            {
+                return true;
+            }
             return false;
         }
 

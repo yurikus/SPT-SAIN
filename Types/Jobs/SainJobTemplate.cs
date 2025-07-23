@@ -22,41 +22,12 @@ namespace SAIN.Types.Jobs
         public void Stop();
     }
 
-    public abstract class SainMultiJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 60.0f) : SainJobTemplate(InName, InOwner, InLooping, InLoopInterval)
-    {
-        protected readonly List<JobHandle> JobHandles = [];
-
-        protected virtual void ClearJobHandles()
-        {
-            foreach (JobHandle Handle in JobHandles)
-                if (Handle.IsCompleted)
-                    Handle.Complete();
-            JobHandles.Clear();
-        }
-    }
-
-    public abstract class SainMultiRaycastJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 60.0f) : SainJobTemplate(InName, InOwner, InLooping, InLoopInterval)
-    {
-        protected readonly List<IRaycastJob> Jobs = [];
-
-        protected void StopAndClearJobs()
-        {
-            foreach (IRaycastJob Job in Jobs)
-                Job.Dispose();
-            Jobs.Clear();
-        }
-    }
-
     public abstract class SainJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 30.0f) : ISainJob
     {
         protected readonly string Name = InName;
         protected readonly bool Looping = InLooping;
         protected readonly float LoopInterval = InLoopInterval;
         protected readonly MonoBehaviour Owner = InOwner;
-
-        public event Action OnExecutionFinished;
-
-        public event Action OnExecutionStarted;
 
         public bool Active => Coroutine != null;
 

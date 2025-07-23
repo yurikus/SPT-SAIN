@@ -27,6 +27,8 @@ namespace SAIN.Layers
                     if (enemy != null)
                     {
                         stringBuilder.AppendLine($"Goal Enemy: [{enemy.EnemyName}] Distance: [{enemy.RealDistance.Round100()}] IsVisible: [{enemy.IsVisible}]");
+                        stringBuilder.AppendLine($"VisiblePathPoint: [{enemy.VisiblePathPoint}] Dist2Bot: [{enemy.VisiblePathPointDistanceToBot}] DistToLN: [{enemy.VisiblePathPointDistanceToEnemyLastKnown}]");
+                        stringBuilder.AppendLine($"Path: [{enemy.Path.PathToEnemyStatus}] Nodes: [{enemy.Path.AllPathNodeCount}] corners: [{enemy.Path.PathCorners?.Length}]");
                         stringBuilder.AppendLine($" Enemy Statuses: " +
                             $"VULN: [{enemy.Status.VulnerableAction}] " +
                             $"GREN: [{enemy.Status.EnemyHasGrenadeOut}] " +

@@ -52,7 +52,10 @@ namespace SAIN.Types.TurnSmoothing
 
         private static BotTurnData UpdateTargetVelocity(BotTurnData turnData, float deltaTime)
         {
-            turnData.NewTargetLookDirection = turnData.NewTargetLookDirection.normalized;
+            if (turnData.NewTargetLookDirection == Vector3.zero)
+                turnData.NewTargetLookDirection = Vector3.forward; // Default to forward if no direction is set
+
+            turnData.NewTargetLookDirection.Normalize();
 
             // Calculate angular velocity using cross product and dot product
             var cross = Vector3.Cross(turnData.LastTargetLookDirection, turnData.NewTargetLookDirection);

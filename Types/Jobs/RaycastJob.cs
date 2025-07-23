@@ -80,7 +80,15 @@ namespace SAIN.Types.Jobs
             return Handle;
         }
 
-        public readonly void Complete() => Handle.Complete();
+        public void Complete()
+        {
+            var handle = Handle;
+            if (!handle.IsCompleted)
+            {
+                handle.Complete();
+            }
+            Handle = handle;
+        }
 
         public readonly bool IsCompleted => Handle.IsCompleted;
         public readonly IPlayer Owner { get; }
@@ -93,7 +101,7 @@ namespace SAIN.Types.Jobs
         public NativeArray<RaycastCommand> Commands { get; }
         public JobHandle Handle { get; private set; }
 
-        public readonly void Dispose()
+        public void Dispose()
         {
             if (!IsCompleted) Complete();
             if (Hits.IsCreated) Hits.Dispose();
@@ -168,6 +176,19 @@ namespace SAIN.Types.Jobs
             for (int i = 0; i < nodeCount; i++)
             {
                 commands[i] = new RaycastCommand(origin, (allPathNodes[i].Point - origin), queryParameters, 1f);
+            }
+            Commands = commands;
+            Hits = new NativeArray<RaycastHit>(nodeCount, Allocator.TempJob);
+        }
+
+        public PathVisionJob(List<BotVisiblePathNode> nodes, Vector3 origin, Enemy enemy, QueryParameters queryParameters)
+        {
+            Enemy = enemy;
+            int nodeCount = nodes.Count;
+            NativeArray<RaycastCommand> commands = new(nodeCount, Allocator.TempJob);
+            for (int i = 0; i < nodeCount; i++)
+            {
+                commands[i] = new RaycastCommand(origin, (nodes[i].Point - origin), queryParameters, 1f);
             }
             Commands = commands;
             Hits = new NativeArray<RaycastHit>(nodeCount, Allocator.TempJob);

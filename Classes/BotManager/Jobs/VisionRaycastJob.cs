@@ -64,10 +64,10 @@ namespace SAIN.Components
 
                 yield return null;
 
-                if (!_handle.IsCompleted)
-                {
-                    _handle.Complete();
-                }
+                var handle = _handle;
+                if (!handle.IsCompleted) handle.Complete();
+                _handle = handle;
+
                 AnalyzeHits(_hits, enemyCount, partCount);
                 _commands.Dispose();
                 _hits.Dispose();

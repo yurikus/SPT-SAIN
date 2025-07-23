@@ -228,6 +228,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         internal void TickPlayerSteering()
         {
             PlayerComponent.CharacterController.SetTargetLookDirection(_targetLookDirection, BotOwner, Bot);
+            BotOwner.Steering.LookToDirection(_targetLookDirection);
             BotOwner.Steering._lookDirection = _targetLookDirection;
         }
 

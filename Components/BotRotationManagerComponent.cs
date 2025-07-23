@@ -1,16 +1,10 @@
 ﻿using Comfort.Common;
 using EFT;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.SAINComponent;
-using System;
+using SAIN.Preset.GlobalSettings;
+using SAIN.Types.TurnSmoothing;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections;
-using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.Bindings;
 
 namespace SAIN.Components.RotationController
 {
@@ -23,11 +17,22 @@ namespace SAIN.Components.RotationController
 
         protected void Update()
         {
-            //HashSet<PlayerComponent> bots = GameWorldComponent.Instance.PlayerTracker.AlivePlayerArray;
-            //foreach (PlayerComponent player in bots)
-            //{
-            //    player?.UpdateControlRotation(Time.deltaTime);
-            //}
+            var settings = GlobalSettingsClass.Instance.Steering;
+            SmoothTurnConfig config = new(
+            settings.SmoothingFactor,
+            settings.PredictionStrength,
+            settings.MaxAngularVelocity,
+            settings.ConvergenceBoost,
+            settings.MIN_STEERING_PITCH
+            );
+            HashSet<PlayerComponent> allPlayers = GameWorldComponent.Instance.PlayerTracker.AlivePlayerArray;
+            foreach (PlayerComponent player in allPlayers)
+            {
+                if (player.BotOwner != null)
+                {
+                    player?.CharacterController.TickBotSteering(Time.deltaTime, player.BotOwner, player.BotComponent, config);
+                }
+            }
         }
     }
 }

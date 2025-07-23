@@ -46,7 +46,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public BotVisiblePathNode(Vector3 point, int cornerStartIndex, int cornerEndIndex)
         {
             Point = point;
-            State = VisiblePathNodeState.NotChecked;
             CornerStartIndex = cornerStartIndex;
             CornerEndIndex = cornerEndIndex;
         }
@@ -54,11 +53,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public BotVisiblePathNode()
         {
             Point = default;
-            State = VisiblePathNodeState.NotSet;
         }
 
         public readonly Vector3 Point;
-        public VisiblePathNodeState State;
+        public bool Visible = false;
         public readonly int CornerStartIndex;
         public readonly int CornerEndIndex;
     }
@@ -99,10 +97,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float DistanceToEnemyPositionFromLastCorner { get; private set; }
 
         public NavMeshPath PathToEnemy { get; } = new NavMeshPath();
-        public NavMeshPathStatus PathToEnemyStatus { get; private set; }
-        public Vector3[] PathCorners { get; private set; }
+        public NavMeshPathStatus PathToEnemyStatus => PathToEnemy.status;
+        public Vector3[] PathCorners => PathToEnemy.corners;
 
         public BotVisiblePathNode[] AllPathNodes { get; } = new BotVisiblePathNode[512];
+        public List<BotVisiblePathNode> VisibleNodes { get; } = [];
 
         public int AllPathNodeCount { get; private set; } = 0;
 
@@ -134,9 +133,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
                 PathToEnemy.ClearCorners();
                 NavMesh.CalculatePath(Bot.Position, enemyPosition, -1, PathToEnemy);
-                PathToEnemyStatus = PathToEnemy.status;
-                PathCorners = PathToEnemy.corners;
-                int max = Enemy.IsCurrentEnemy ? AllPathNodes.Length - 1 : 128;
+                //int max = Enemy.IsCurrentEnemy ? AllPathNodes.Length - 1 : 256 - 1;
+                int max = AllPathNodes.Length;
                 PathLength = CalcPathLengthCreateVisionNodes(pathVisibilityConfig, AllPathNodes, PathCorners, out int nodeCount, max);
                 AllPathNodeCount = nodeCount;
                 if (PathCorners.Length > 0)
@@ -200,9 +198,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 float magnitude = direction.magnitude;
                 pathLength += magnitude;
 
-                if (!full)
+                if (i > 0 && !full)
                 {
-                    if (pathLength <= maxPathLength)
+                    if (pathLength < maxPathLength)
                     {
                         // Create Equal dist points along the line between two corners.
                         if (magnitude > minGenerationMagnitude)
@@ -262,9 +260,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             _calcPathTime = 0;
             PathToEnemy.ClearCorners();
-            PathToEnemyStatus = NavMeshPathStatus.PathInvalid;
             PathLength = float.MaxValue;
-            PathCorners = null;
             DistanceToEnemyPositionFromLastCorner = 0;
         }
 

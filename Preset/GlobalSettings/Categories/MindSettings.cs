@@ -34,6 +34,18 @@ namespace SAIN.Preset.GlobalSettings.Categories
         [Description("If the horizontal angle from an enemy visible path point to where their last known position is less than this, they can suppress.")]
         [MinMax(0f, 180f, 1f)]
         public float MAX_TARGET_SUPPRESS_ANGLE = 45f;
+        
+        [Category("Enemy Suppression")]
+        [MinMax(0f, 180f, 10f)]
+        public float TimeSinceSeenToSuppress = 3f;
+
+        [Category("Enemy Suppression")]
+        [MinMax(0f, 180f, 10f)]
+        public float TimeSinceShotAtToSuppress = 12f;
+
+        [Category("Enemy Suppression")]
+        [MinMax(0f, 180f, 10f)]
+        public float TimeSinceShotToSuppress = 12f;
 
         [Category("Enemy Sniper Reaction")]
         [Description("If a bot thinks it is under fire from a sniper, they will always want to sprint to cover.")]

@@ -304,8 +304,13 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             _visPathPointIsCorner = false;
             VisiblePathPoint = node.Point;
-            Vector3? LastKnown = LastKnownPosition;
             UpdateVisiblePathPointDist(Bot.Transform.EyePosition);
+            if (node.CornerStartIndex == node.CornerEndIndex)
+            {
+                VisiblePathPointSignedAngle = null;
+                return;
+            }
+            Vector3? LastKnown = LastKnownPosition;
             if (LastKnown != null)
             {
                 Vector3 botPosition = Bot.Position;
@@ -313,9 +318,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 botPosition.y = botEyePosition.y;
 
                 //Vector3 otherPoint = point.Point + node.DirectionToCornerNormal * VisiblePathPointDistanceToBot;
-                Vector3 otherPoint = Path.PathCorners[node.CornerEndIndex];
-                DebugGizmos.DrawLine(node.Point, otherPoint, Color.yellow, 0.05f, 1f);
-                VisiblePathPointSignedAngle = Vector.FindFlatSignedAngle(node.Point, otherPoint, botPosition);
+                Vector3 cornerA = Path.PathCorners[node.CornerStartIndex];
+                Vector3 cornerB = Path.PathCorners[node.CornerEndIndex];
+                DebugGizmos.DrawLine(cornerA, cornerB, Color.yellow, 0.05f, 1f);
+                VisiblePathPointSignedAngle = Vector.FindFlatSignedAngle(cornerA, cornerB, botPosition);
             }
         }
 
