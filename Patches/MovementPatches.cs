@@ -73,7 +73,7 @@ namespace SAIN.Patches.Movement
         public static bool Sprint(bool target, BasePhysicalClass __instance)
         {
             if (target) return true;
-            Logger.LogWarning("stop sprinting");
+            //Logger.LogWarning("stop sprinting");
             if (target == __instance.bool_2) return true;
             IPlayer player = __instance.iobserverToPlayerBridge_0.iPlayer;
             if (player?.IsAI == true &&
