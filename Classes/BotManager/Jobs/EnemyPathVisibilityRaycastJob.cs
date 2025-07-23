@@ -107,11 +107,7 @@ namespace SAIN.Components
             for (int i = 0; i < VisionJobs.Count; i++)
             {
                 PathVisionJob job = VisionJobs[i];
-                if (!job.Handle.IsCompleted)
-                {
-                    Logger.LogWarning("completing job!");
-                    job.Handle.Complete();
-                }
+                job.Handle.Complete();
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)
                 {
@@ -142,7 +138,7 @@ namespace SAIN.Components
                         }
                         else
                         {
-                            Logger.LogDebug($"[{enemy.Bot.name}] No visible path point found for enemy {enemy.EnemyName}");
+                            //Logger.LogDebug($"[{enemy.Bot.name}] No visible path point found for enemy {enemy.EnemyName}");
                             enemy.ClearVisiblePathPoint();
                         }
                     }
@@ -162,12 +158,7 @@ namespace SAIN.Components
             for (int i = 0; i < ShootJobs.Count; i++)
             {
                 PathVisionJob job = ShootJobs[i];
-                if (!job.Handle.IsCompleted)
-                {
-                    Logger.LogWarning("completing job!");
-                    job.Handle.Complete();
-                }
-
+                job.Handle.Complete();
                 NativeArray<RaycastHit> hits = job.Hits;
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)
@@ -193,7 +184,7 @@ namespace SAIN.Components
                         else
                         {
                             enemy.ClearVisiblePathPoint();
-                            Logger.LogDebug($"[{enemy.Bot.name}] No shootable path point found for enemy {enemy.EnemyName}");
+                            //Logger.LogDebug($"[{enemy.Bot.name}] No shootable path point found for enemy {enemy.EnemyName}");
                         }
                     }
                 }

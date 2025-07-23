@@ -83,7 +83,7 @@ namespace SAIN.SAINComponent.Classes
                     return coverPoint;
                 }
             }
-            Logger.LogWarning($"[{Bot.name}] No Cover Point found, even though there are {_coverPoints.Count} cover points available.");
+            //Logger.LogWarning($"[{Bot.name}] No Cover Point found, even though there are {_coverPoints.Count} cover points available.");
             return null;
         }
 
@@ -193,7 +193,8 @@ namespace SAIN.SAINComponent.Classes
                 CoverPoint_MovingTo = FindCoverPoint();
                 if (CoverPoint_MovingTo == null)
                 {
-                    Bot.Mover.DogFight.DogFightMove(false, enemy);
+                    const bool AGGRESSIVE_NO_COVER = true;
+                    Bot.Mover.DogFight.DogFightMove(AGGRESSIVE_NO_COVER, enemy);
                     SetCoverSeekingState(ECoverSeekingState.NoCover);
                     _shallSprint = false;
                 }

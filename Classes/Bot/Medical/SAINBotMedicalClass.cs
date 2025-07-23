@@ -217,7 +217,7 @@ namespace SAIN.SAINComponent.Classes
 
         public override void Dispose()
         {
-            if (BotOwner != null) BotOwner.Medecine.FirstAid.OnEndApply -= FindHealingItems;
+            if (BotOwner != null && BotOwner.Medecine?.FirstAid != null) BotOwner.Medecine.FirstAid.OnEndApply -= FindHealingItems;
             if (Player != null) Player.BeingHitAction -= GetHit;
             Surgery?.Dispose();
             HitReaction?.Dispose();

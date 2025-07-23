@@ -83,10 +83,7 @@ namespace SAIN.Types.Jobs
         public void Complete()
         {
             var handle = Handle;
-            if (!handle.IsCompleted)
-            {
-                handle.Complete();
-            }
+            handle.Complete();
             Handle = handle;
         }
 
@@ -202,7 +199,7 @@ namespace SAIN.Types.Jobs
 
         public void Dispose()
         {
-            if (!Handle.IsCompleted) Handle.Complete();
+            Handle.Complete();
             if (Hits.IsCreated) Hits.Dispose();
             if (Commands.IsCreated) Commands.Dispose();
         }

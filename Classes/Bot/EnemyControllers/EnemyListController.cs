@@ -22,8 +22,16 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             GameWorldComponent.Instance.PlayerTracker.OnPlayerRemoved += RemoveEnemy;
             BotOwner.Memory.OnAddEnemy += enemyAdded;
+            if (BotOwner.BotsGroup != null)
+                BotOwner.BotsGroup.OnEnemyRemove += RemoveEnemy;
             compareEnemyLists();
             base.Init();
+        }
+
+        private void RemoveEnemy(IPlayer player)
+        {
+            if (player != null)
+                RemoveEnemy(player.ProfileId);
         }
 
         public override void ManualUpdate()
@@ -114,12 +122,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void RemoveEnemy(string id, PlayerComponent playerComp) => RemoveEnemy(id);
 
-        public void RemoveEnemy(string playerComp)
+        public void RemoveEnemy(string profileId)
         {
-            if (Enemies.TryGetValue(playerComp, out Enemy enemy))
+            if (Enemies.TryGetValue(profileId, out Enemy enemy))
             {
                 destroyEnemy(enemy);
-                Enemies.Remove(playerComp);
+                Enemies.Remove(profileId);
                 EnemiesArray.Remove(enemy);
 
                 //if (enemy.EnemyPlayer.IsYourPlayer)
@@ -175,7 +183,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             if (enemyPlayer.ProfileId == Bot.ProfileId)
             {
-                string debugString = $"Cannot add enemy that matches this bot: ";
+                //string debugString = $"Cannot add enemy that matches this bot: ";
                 //debugString = findSourceDebug(debugString);
                 //Logger.LogDebug(debugString);
                 return null;
@@ -229,7 +237,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     destroyEnemy(oldEnemy);
                     Enemies.Remove(enemyPlayer.ProfileId);
-                    Logger.LogDebug($"Removed Old Enemy.");
+                    //Logger.LogDebug($"Removed Old Enemy.");
                 }
                 enemyPlayerComponent = playerTracker.AddPlayerManual(enemyPlayer);
                 if (enemyPlayerComponent == null)
