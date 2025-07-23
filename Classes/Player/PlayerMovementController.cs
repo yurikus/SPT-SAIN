@@ -5,6 +5,7 @@ using SAIN.Components.RotationController;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.Types.TurnSmoothing;
 using System;
 using UnityEngine;
 
@@ -12,10 +13,9 @@ namespace SAIN.Classes
 {
     public class PlayerMovementController
     {
-        public Vector3 CurrentControlLookDirection => _lookDirection;
+        public Vector3 CurrentControlLookDirection => TurnData.CurrentLookDirection;
 
-        private readonly PredictiveLookSmoothing Smoothing = new();
-        private Vector3 _lookDirection = Vector3.forward;
+        public BotTurnData TurnData { get; set; } = new(Vector3.forward);
 
         private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
         {
@@ -110,9 +110,14 @@ namespace SAIN.Classes
         public void SetTargetLookDirection(Vector3 targetDirection, BotOwner botOwner, BotComponent bot)
         {
             if (bot != null) targetDirection = bot.Info.WeaponInfo.Recoil.ApplyRecoil(targetDirection);
-            _lookDirection = Smoothing.UpdateSmoothedDirection(_lookDirection, targetDirection.normalized, Time.fixedDeltaTime);
+
+            BotTurnData turnData = TurnData;
+            turnData.NewTargetLookDirection = targetDirection;
+            TurnData = PredictiveLookSmoothing.UpdateSmoothedDirection(turnData, Time.fixedDeltaTime);
+
             UpdateRandomSway(Time.fixedDeltaTime, botOwner.GetPlayer, botOwner, bot, GlobalSettingsClass.Instance.Steering);
-            Vector3 dir = _lookDirection + RandomSwayOffset;
+
+            Vector3 dir = TurnData.CurrentLookDirection + RandomSwayOffset;
             SetXAngle(botOwner, dir);
             SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
         }
@@ -161,8 +166,8 @@ namespace SAIN.Classes
             Player player = playerComp.Player;
             float playerSpeed = player.Speed;
 
-            const float START_SLOW_DIST = 0.5f;
-            const float STOP_SPRINT_DIST = 0.75f;
+            const float START_SLOW_DIST = 0.75f;
+            const float STOP_SPRINT_DIST = 1f;
 
             float destinationDistance = (finalMoveDestination - playerComp.Position).magnitude;
             bool canSprint = player.MovementContext.CanSprint && CheckCanSprintByDistanceRemaining(destinationDistance, STOP_SPRINT_DIST);

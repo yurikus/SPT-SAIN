@@ -10,8 +10,8 @@ namespace SAIN.SAINComponent.Classes.Mover
 {
     public class LeanClass : BotBase
     {
-        private const float LEAN_UPDATE_FOUND_FREQ = 0.25f;
-        private const float LEAN_UPDATE_NOT_FOUND_FREQ = 0.1f;
+        private const float LEAN_UPDATE_FOUND_FREQ = 0.33f;
+        private const float LEAN_UPDATE_NOT_FOUND_FREQ = 0.25f;
         private const float LEAN_RAYCAST_OFFSET_DIST = 0.66f;
         private const float LEAN_MAX_RAYCAST_DIST = 16f;
         private const float RESET_LEAN_AFTER_TIME = 0.66f;
@@ -153,28 +153,23 @@ namespace SAIN.SAINComponent.Classes.Mover
                 return;
             }
 
-            var blindCornerLean = FindLeanFromBlindCornerAngle(enemy);
-            if (blindCornerLean != LeanSetting.None)
-            {
+            var blindCornerLean = FindLeanFromBlindCornerAngle(enemy, 1);
                 FastLean(blindCornerLean);
-                return;
-            }
-
-            DirectLineOfSight = CheckOffSetRay(lastKnownPlace.Position, 0f, 0f, out var direct);
-            if (DirectLineOfSight)
-            {
-                if (Time.time - _timeLastLeaned > RESET_LEAN_AFTER_TIME)
-                    FastLean(LeanSetting.None);
-
-                return;
-            }
-
-            var raycastLean = FindLeanDirectionRayCast(lastKnownPlace.Position);
-            if (raycastLean != LeanSetting.None || Time.time - _timeLastLeaned > RESET_LEAN_AFTER_TIME)
-            {
-                IsRaycastLeaning = raycastLean != LeanSetting.None;
-                FastLean(raycastLean);
-            }
+            //DirectLineOfSight = CheckOffSetRay(lastKnownPlace.Position, 0f, 0f, out var direct);
+            //if (DirectLineOfSight)
+            //{
+            //    if (Time.time - _timeLastLeaned > RESET_LEAN_AFTER_TIME)
+            //        FastLean(LeanSetting.None);
+            //
+            //    return;
+            //}
+            //
+            //var raycastLean = FindLeanDirectionRayCast(lastKnownPlace.Position);
+            //if (raycastLean != LeanSetting.None || Time.time - _timeLastLeaned > RESET_LEAN_AFTER_TIME)
+            //{
+            //    IsRaycastLeaning = raycastLean != LeanSetting.None;
+            //    FastLean(raycastLean);
+            //}
         }
 
         public LeanSetting FindLeanFromBlindCornerAngle(Enemy enemy, float minAngle = -1f)

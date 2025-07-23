@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
+   
     public class SelfActionDecisionClass : BotBase
     {
         public SelfActionDecisionClass(BotComponent sain) : base(sain)
@@ -39,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (CheckDoReload(enemy, Bot))
             {
-                botOwner.ShootData.BlockFor(1f);
+                botOwner.ShootData.BlockFor(1.5f);
                 Decision = ESelfActionType.Reload;
                 return true;
             }
@@ -103,19 +104,8 @@ namespace SAIN.SAINComponent.Classes.Decision
 
             if (CheckReloadRatiosCanReload(enemy, RELOAD_AMMORATIO_MIN_PEACE, RELOAD_AMMORATIO_MAX, _ammoRatio))
             {
-                botOwner.ShootData.EndShoot();
-                if (reload.CanReload(true, out var MagazineItemClass, out var list))
+                if (TryReload(botOwner, reload))
                 {
-                    reload.Reloading = true;
-                    _lastReloadTime = Time.time;
-                    if (MagazineItemClass != null)
-                    {
-                        reload.ReloadMagazine(MagazineItemClass);
-                    }
-                    else if (list != null && list.Count > 0)
-                    {
-                        reload.ReloadAmmo(list);
-                    }
                     return true;
                 }
                 if (enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
@@ -123,6 +113,27 @@ namespace SAIN.SAINComponent.Classes.Decision
                     weaponManager.Selector.ChangeToMelee();
                 }
             }
+            return false;
+        }
+
+        private bool TryReload(BotOwner botOwner, BotReload reload)
+        {
+            if (reload.CanReload(true, out var MagazineItemClass, out var list))
+            {
+                botOwner.ShootData.EndShoot();
+                reload.Reloading = true;
+                _lastReloadTime = Time.time;
+                if (MagazineItemClass != null)
+                {
+                    reload.ReloadMagazine(MagazineItemClass);
+                }
+                else if (list != null && list.Count > 0)
+                {
+                    reload.ReloadAmmo(list);
+                }
+                return true;
+            }
+
             return false;
         }
 
@@ -163,7 +174,6 @@ namespace SAIN.SAINComponent.Classes.Decision
         {
             if (_nextCheckHealTime < Time.time)
             {
-                // Solarint - Should fixed bots insta-healing when shot. TODO: Make these config variables.
                 const float TimeSinceShotToBlockHeal = 0.5f;
                 float TimeSinceShot = Bot.Medical.TimeSinceShot;
                 if (TimeSinceShot < TimeSinceShotToBlockHeal)
@@ -171,13 +181,18 @@ namespace SAIN.SAINComponent.Classes.Decision
                     _nextCheckHealTime = Time.time + 0.2f;
                     return false;
                 }
-                _nextCheckHealTime = Time.time + 1f;
+                _nextCheckHealTime = Time.time + 2f;
                 if (startUseStims())
                 {
                     Decision = ESelfActionType.Stims;
                     return true;
                 }
                 if (startFirstAid())
+                {
+                    Decision = ESelfActionType.FirstAid;
+                    return true;
+                }
+                if (Bot.Medical.TryUseMedItem())
                 {
                     Decision = ESelfActionType.FirstAid;
                     return true;
@@ -327,12 +342,10 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         public bool UsingMeds => BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfActionType.None;
 
-        public bool CanUseStims {
-            get
-            {
-                var stims = BotOwner.Medecine?.Stimulators;
-                return stims?.HaveSmt == true && Time.time - stims.LastEndUseTime > 3f && stims?.CanUseNow() == true && !Bot.Memory.Health.Healthy;
-            }
+        public bool GetCanUseStims()
+        {
+            var stims = BotOwner.Medecine?.Stimulators;
+            return stims?.HaveSmt == true && Time.time - stims.LastEndUseTime > 3f && stims?.CanUseNow() == true;
         }
 
         public bool CanUseFirstAid => BotOwner.Medecine?.FirstAid?.ShallStartUse() == true;
@@ -343,7 +356,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool startUseStims()
         {
-            if (!CanUseStims)
+            if (!GetCanUseStims())
             {
                 return false;
             }
@@ -367,21 +380,13 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private bool startFirstAid()
         {
-            if (Bot.Medical.TimeSinceShot < 0.25f)
+            if (Bot.Medical.TimeSinceShot < 0.66f)
             {
                 return false;
             }
             if (!CanUseFirstAid)
             {
                 return false;
-            }
-            if (Bot.Memory.Health.Healthy)
-            {
-                return false;
-            }
-            if (Bot.Decision.RunningToCover)
-            {
-                return true;
             }
             foreach (Enemy enemy in Bot.EnemyController.KnownEnemies)
                 if (!ShallFirstAidCheckEnemy(enemy))

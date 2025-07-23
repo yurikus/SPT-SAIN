@@ -135,7 +135,7 @@ namespace SAIN.Patches.Shoot.Aim
         {
             if (____player.IsAI && __result != Weapon.EMalfunctionState.None)
             {
-                SAIN.Logger.LogError(__result);
+                //SAIN.Logger.LogError(__result);
                 __result = Weapon.EMalfunctionState.None;
             }
         }
@@ -408,6 +408,7 @@ namespace SAIN.Patches.Shoot.Aim
             BotOwner botOwner = __instance.botOwner_0;
             if (!GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent)) return true;
             if (playerComponent.BotComponent?.SAINLayersActive == true) return false;
+            //return true;
 
             Vector3 newTargetLookDirection;
             if (botOwner.Mover.Sprinting && botOwner.Mover.HasPathAndNoComplete)
@@ -453,6 +454,7 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 newTargetLookDirection.y = 0;
             }
+            newTargetLookDirection.Normalize();
             playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection, botOwner, playerComponent.BotComponent);
             __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
             return false;

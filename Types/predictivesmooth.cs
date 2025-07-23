@@ -1,149 +1,144 @@
 using SAIN.Preset.GlobalSettings;
 using UnityEngine;
 
-public class PredictiveLookSmoothing
+namespace SAIN.Types.TurnSmoothing
 {
-    private Vector3 _lastTargetDirection;
-    private Vector3 _targetVelocity;
-    private bool _initialized;
-
-    public float SmoothingFactor  => GlobalSettingsClass.Instance.Steering.SmoothingFactor;
-    public float PredictionStrength  => GlobalSettingsClass.Instance.Steering.PredictionStrength;
-    public float MaxAngularVelocity  => GlobalSettingsClass.Instance.Steering.MaxAngularVelocity;
-    public float ConvergenceBoost => GlobalSettingsClass.Instance.Steering.ConvergenceBoost;
-
-    /// <summary>
-    /// Updates the smoothed look direction towards the target with predictive compensation.
-    /// </summary>
-    /// <param name="currentDirection">Current look direction (normalized)</param>
-    /// <param name="targetDirection">Desired look direction (normalized)</param>
-    /// <param name="deltaTime">Time since last update</param>
-    /// <returns>New smoothed look direction (normalized)</returns>
-    public Vector3 UpdateSmoothedDirection(Vector3 currentDirection, Vector3 targetDirection, float deltaTime)
+    public struct BotTurnData(Vector3 lookDir)
     {
-        if (!_initialized)
+        public Vector3 CurrentLookDirection = lookDir;
+        public Vector3 NewTargetLookDirection = lookDir;
+        public Vector3 LastTargetLookDirection = lookDir;
+        public Vector3 TargetVelocity = Vector3.zero;
+        public float TargetVelocityMagnitude = 0f;
+
+        public Vector3 RandomSwayOffset = Vector3.zero;
+
+        public SmoothTurnConfig Config = new(
+            SAINPlugin.LoadedPreset.GlobalSettings.Steering.SmoothingFactor,
+            SAINPlugin.LoadedPreset.GlobalSettings.Steering.PredictionStrength,
+            SAINPlugin.LoadedPreset.GlobalSettings.Steering.MaxAngularVelocity,
+            SAINPlugin.LoadedPreset.GlobalSettings.Steering.ConvergenceBoost,
+            SAINPlugin.LoadedPreset.GlobalSettings.Steering.MIN_STEERING_PITCH
+        );
+    }
+
+    public struct SmoothTurnConfig(float smoothingFactor, float predictionStrength, float turnSpeedCap, float convergenceBoost, float minPitch)
+    {
+        public float SmoothingFactor = smoothingFactor;
+        public float PredictionStrength = predictionStrength;
+        public float MaxAngularVelocity = turnSpeedCap;
+        public float ConvergenceBoost = convergenceBoost;
+        public float MinPitch = minPitch;
+    }
+
+    public static class PredictiveLookSmoothing
+    {
+        /// <summary>
+        /// Updates the smoothed look direction towards the target with predictive compensation.
+        /// </summary>
+        public static BotTurnData UpdateSmoothedDirection(BotTurnData turnData, float deltaTime)
         {
-            Initialize(targetDirection);
-            return currentDirection;
+            if (deltaTime <= 0f) return turnData;
+
+            // Calculate target angular velocity
+            turnData = UpdateTargetVelocity(turnData, deltaTime);
+            // Apply adaptive smoothing with convergence boost
+            float adaptiveSmoothingFactor = CalculateAdaptiveSmoothingFactor(turnData.CurrentLookDirection, turnData.LastTargetLookDirection, deltaTime, turnData.Config);
+            // Perform the smoothed rotation
+            turnData.CurrentLookDirection = SmoothTowardsTarget(turnData.CurrentLookDirection, turnData.LastTargetLookDirection, adaptiveSmoothingFactor, turnData.Config);
+
+            return turnData;
         }
 
-        if (deltaTime <= 0f) return currentDirection;
-
-        // Calculate target angular velocity
-        UpdateTargetVelocity(targetDirection, deltaTime);
-
-        // Predict where the target will be to compensate for smoothing lag
-        var predictedTarget = PredictTargetDirection(targetDirection, deltaTime);
-
-        // Apply adaptive smoothing with convergence boost
-        var adaptiveSmoothingFactor = CalculateAdaptiveSmoothingFactor(currentDirection, predictedTarget, deltaTime);
-        
-        // Perform the smoothed rotation
-        return SmoothTowardsTarget(currentDirection, predictedTarget, adaptiveSmoothingFactor);
-    }
-
-    private void Initialize(Vector3 targetDirection)
-    {
-        _lastTargetDirection = targetDirection.normalized;
-        _targetVelocity = Vector3.zero;
-        _initialized = true;
-    }
-
-    private void UpdateTargetVelocity(Vector3 targetDirection, float deltaTime)
-    {
-        targetDirection = targetDirection.normalized;
-
-        if (deltaTime > 0f)
+        private static BotTurnData UpdateTargetVelocity(BotTurnData turnData, float deltaTime)
         {
+            turnData.NewTargetLookDirection = turnData.NewTargetLookDirection.normalized;
+
             // Calculate angular velocity using cross product and dot product
-            var cross = Vector3.Cross(_lastTargetDirection, targetDirection);
-            var dot = Vector3.Dot(_lastTargetDirection, targetDirection);
-            
+            var cross = Vector3.Cross(turnData.LastTargetLookDirection, turnData.NewTargetLookDirection);
+            var dot = Vector3.Dot(turnData.LastTargetLookDirection, turnData.NewTargetLookDirection);
+
             // Calculate angular velocity in degrees per second
             var angularChange = Mathf.Atan2(cross.magnitude, dot) * Mathf.Rad2Deg;
             var angularVelocityVector = cross.magnitude > 0.001f ? cross.normalized * (angularChange / deltaTime) : Vector3.zero;
 
             // Smooth the velocity estimate to reduce noise
             var velocitySmoothingFactor = Mathf.Clamp01(deltaTime * 10f);
-            _targetVelocity = Vector3.Lerp(_targetVelocity, angularVelocityVector, velocitySmoothingFactor);
-
+            turnData.TargetVelocity = Vector3.Lerp(turnData.TargetVelocity, angularVelocityVector, velocitySmoothingFactor);
+            turnData.TargetVelocityMagnitude = turnData.TargetVelocity.magnitude;
             // Clamp to maximum angular velocity
-            if (_targetVelocity.magnitude > MaxAngularVelocity)
+            if (turnData.TargetVelocityMagnitude > turnData.Config.MaxAngularVelocity)
             {
-                _targetVelocity = _targetVelocity.normalized * MaxAngularVelocity;
+                turnData.TargetVelocity = turnData.TargetVelocity.normalized * turnData.Config.MaxAngularVelocity;
             }
+
+            turnData.LastTargetLookDirection = turnData.NewTargetLookDirection;
+            return turnData;
         }
 
-        _lastTargetDirection = targetDirection;
-    }
-
-    private Vector3 PredictTargetDirection(Vector3 targetDirection, float deltaTime)
-    {
-        if (_targetVelocity.magnitude < 0.01f) return targetDirection;
-
-        // Estimate lag time based on smoothing factor
-        var estimatedLagTime = (1f - SmoothingFactor) / SmoothingFactor * deltaTime * PredictionStrength;
-
-        // Predict future position using angular velocity
-        var predictionAngle = _targetVelocity.magnitude * estimatedLagTime * Mathf.Deg2Rad;
-        
-        if (predictionAngle < 0.001f) return targetDirection;
-
-        // Apply rotation using Rodriguez rotation formula
-        var rotationAxis = _targetVelocity.normalized;
-        var predictionRotation = Quaternion.AngleAxis(_targetVelocity.magnitude * estimatedLagTime, rotationAxis);
-        
-        return predictionRotation * targetDirection;
-    }
-
-    private float CalculateAdaptiveSmoothingFactor(Vector3 currentDirection, Vector3 targetDirection, float deltaTime)
-    {
-        // Calculate angular difference
-        var angularDifference = Vector3.Angle(currentDirection, targetDirection);
-        
-        // Apply convergence boost when far from target
-        var convergenceMultiplier = 1f;
-        if (angularDifference > 20f) // If more than 30 degrees off
+        private static Vector3 PredictTargetDirection(Vector3 targetDirection, Vector3 targetVelocity, float deltaTime, SmoothTurnConfig config)
         {
-            // The convergence boost is applied over a 180 degree range (inner range of 20 + 160)
-            convergenceMultiplier = Mathf.Lerp(1f, ConvergenceBoost, (angularDifference - 20f) / 160f);
+            float velocityMagnitude = targetVelocity.magnitude;
+            if (velocityMagnitude < 0.01f) return targetDirection;
+
+            // Estimate lag time based on smoothing factor
+            var estimatedLagTime = (1f - config.SmoothingFactor) / config.SmoothingFactor * deltaTime * config.PredictionStrength;
+
+            // Predict future position using angular velocity
+            var predictionAngle = velocityMagnitude * estimatedLagTime * Mathf.Deg2Rad;
+
+            if (predictionAngle < 0.001f) return targetDirection;
+
+            // Apply rotation using Rodriguez rotation formula
+            var rotationAxis = targetVelocity.normalized;
+            var predictionRotation = Quaternion.AngleAxis(velocityMagnitude * estimatedLagTime, rotationAxis);
+
+            return predictionRotation * targetDirection;
         }
 
-        // Scale smoothing factor by delta time and convergence boost
-        var adaptiveFactor = SmoothingFactor * convergenceMultiplier;
-        
-        // Ensure we don't overshoot with large delta times
-        // TODO: Switch to FixedDeltaTime if possible! 
-        return Mathf.Clamp01(adaptiveFactor * (deltaTime * 60f)); // Normalize for 60 FPS baseline
-    }
+        private static float CalculateAdaptiveSmoothingFactor(Vector3 currentDirection, Vector3 targetDirection, float deltaTime, SmoothTurnConfig config)
+        {
+            // Calculate angular difference
+            var angularDifference = Vector3.Angle(currentDirection, targetDirection);
 
-    private static Vector3 SmoothTowardsTarget(Vector3 current, Vector3 target, float smoothingFactor)
-    {
-        // Use Quaternion.Slerp for smooth angular interpolation
-        var currentRotation = Quaternion.LookRotation(current, Vector3.up);
-        var targetRotation = Quaternion.LookRotation(target, Vector3.up);
-        
-        // We use Quaternion.Slerp because it's stable
-        var smoothedRotation = Quaternion.Slerp(currentRotation, targetRotation, smoothingFactor);
-        return smoothedRotation * Vector3.forward; // Already normalized due to quaternion math
-    }
+            // Apply convergence boost when far from target
+            var convergenceMultiplier = 1f;
+            if (angularDifference > 20f) // If more than 30 degrees off
+            {
+                // The convergence boost is applied over a 180 degree range (inner rangnowe of 20 + 160)
+                convergenceMultiplier = Mathf.Lerp(1f, config.ConvergenceBoost, (angularDifference - 20f) / 160f);
+            }
 
-    /// <summary>
-    /// Resets the smoothing state. Call when the AI loses track of target or switches targets.
-    /// </summary>
-    public void Reset()
-    {
-        _initialized = false;
-        _targetVelocity = Vector3.zero;
-    }
+            // Scale smoothing factor by delta time and convergence boost
+            var adaptiveFactor = config.SmoothingFactor * convergenceMultiplier;
 
-    /// <summary>
-    /// Force sets the direction state. Useful for teleportation or instant direction changes.
-    /// </summary>
-    public void SetDirection(Vector3 direction)
-    {
-        _lastTargetDirection = direction.normalized;
-        _targetVelocity = Vector3.zero;
-        _initialized = true;
+            // Ensure we don't overshoot with large delta times
+            return Mathf.Clamp01(adaptiveFactor * (deltaTime * 60f)); // Normalize for 60 FPS baseline
+        }
+
+        private static Vector3 SmoothTowardsTarget(Vector3 current, Vector3 target, float smoothingFactor, SmoothTurnConfig config)
+        {
+            // Use Quaternion.Slerp for smooth angular interpolation
+            var currentRotation = Quaternion.LookRotation(current, Vector3.up);
+            var targetRotation = Quaternion.LookRotation(target, Vector3.up);
+
+            var smoothedRotation = Quaternion.Slerp(currentRotation, targetRotation, smoothingFactor);
+            //return smoothedRotation * Vector3.forward; // Already normalized due to quaternion math
+
+            // Limit pitch angle
+            var eulerAngles = smoothedRotation.eulerAngles;
+
+            // Convert to -180 to 180 range for easier clamping
+            var pitch = eulerAngles.x;
+            if (pitch > 180f) pitch -= 360f;
+
+            // Clamp pitch within limits
+            pitch = Mathf.Max(pitch, config.MinPitch);
+
+            // Apply clamped rotation
+            smoothedRotation = Quaternion.Euler(pitch, eulerAngles.y, eulerAngles.z);
+
+            return smoothedRotation * Vector3.forward; // Already normalized due to quaternion math
+        }
     }
 }

@@ -34,31 +34,13 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Enemy Path Visibility System")]
         [MinMax(2f, 20, 1)]
         [Advanced]
-        public float GeneratePointStackHeight = 4;
-
-        [Name("Max Path Nodes - Player")]
-        [Category("Enemy Path Visibility System")]
-        [MinMax(0f, 2048, 1)]
-        [Advanced]
-        public float MaxPathPoints = 512;
-
-        [Name("Max Path Nodes - Bot")]
-        [Category("Enemy Path Visibility System")]
-        [MinMax(0f, 2048, 1)]
-        [Advanced]
-        public float MaxPathPoints_AI = 256;
+        public float GeneratePointStackHeight = 3;
 
         [Name("Distance Between Nodes - Player")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0.01f, 1, 1000)]
         [Advanced]
-        public float DistanceBetweenPoints = 0.33f;
-
-        [Name("Distance Between Nodes - Bot")]
-        [Category("Enemy Path Visibility System")]
-        [MinMax(0.01f, 1, 1000)]
-        [Advanced]
-        public float DistanceBetweenPoints_AI = 0.66f;
+        public float DistanceBetweenPoints = 0.5f;
 
         [Name("Random Bot Aim Sway")]
         [Category("Random Sway")]
@@ -79,10 +61,9 @@ namespace SAIN.Preset.GlobalSettings
         [Advanced]
         public float RANDOMSWAY_CIRCLE_SCALE = 0.015f;
 
-        [Category("Random Sway")]
         [MinMax(45f, 90f, 100f)]
         [Advanced]
-        public float TURN_PITCH_MAX = 65f;
+        public float MIN_STEERING_PITCH = -65f;
 
         [Name("Last Seen to Last Known Position Distance Threshold")]
         [Description("If the last known position of an enemy (something heard or reported by their squad) is within X distance (meters) to the place they last saw an enemy, focus on the place they were last seen.")]
@@ -91,16 +72,20 @@ namespace SAIN.Preset.GlobalSettings
         public float STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE = 2.5f;
 
         [MinMax(0f, 0.5f, 100f)]
-        public float SmoothingFactor = 0.06f;  // Lower = smoother, higher = more responsive
+        [Advanced]
+        public float SmoothingFactor = 0.075f;  // Lower = smoother, higher = more responsive
 
         [MinMax(0f, 3f, 100f)]
+        [Advanced]
         public float PredictionStrength = 0f; // How much to compensate for lag
 
         [MinMax(90f, 720f, 1f)]
-        public float MaxAngularVelocity = 360f; // Degrees per second limit
+        [Advanced]
+        public float MaxAngularVelocity = 300f; // Degrees per second limit
 
         [MinMax(1f, 3f, 100f)]
-        public float ConvergenceBoost = 1.2f;   // Multiplier when far from target
+        [Advanced]
+        public float ConvergenceBoost = 1f;   // Multiplier when far from target
 
         [Advanced]
         [MinMax(16, 2048, 1f)]
