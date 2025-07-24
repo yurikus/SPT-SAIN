@@ -707,6 +707,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             public static void StopVanillaMover(BotMover botOwnerMover)
             {
+                if (botOwnerMover == null)
+                {
+                    return;
+                }
                 // Make sure the vanilla path finder is NOT active
                 if (botOwnerMover.IsMoving || botOwnerMover.HasPathAndNoComplete)
                 {
