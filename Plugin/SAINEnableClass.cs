@@ -18,6 +18,7 @@ namespace SAIN
         private static readonly HashSet<string> ExcludedBots = [];
         private static readonly HashSet<string> EnabledBots = [];
 
+
         /// <summary>
         /// Checks if this bot has SAIN enabled or if it is a vanilla bot.
         /// </summary>
@@ -103,6 +104,18 @@ namespace SAIN
             }
         }
 
+        /// <summary>
+        /// Checks if this bot has SAIN enabled or if it is a vanilla bot.
+        /// </summary>
+        public static bool IsBotExcluded(string profileId)
+        {
+            if (!EnabledBots.Contains(profileId)) return false;
+            return true;
+        }
+        
+        /// <summary>
+        /// Checks if this bot has SAIN enabled or if it is a vanilla bot.
+        /// </summary>
         public static bool IsBotExcluded(BotOwner botOwner)
         {
             var settings = botOwner.Profile?.Info?.Settings;
@@ -215,7 +228,8 @@ namespace SAIN
         public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)
         {
             sain = null;
-            if (IsSAINDisabledForBot(botOwner)) {
+            string profileId = botOwner?.ProfileId;
+            if (IsBotExcluded(profileId)) {
                 return false;
             }
             if (BotManagerComponent.Instance == null) {

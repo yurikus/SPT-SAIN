@@ -64,29 +64,21 @@ namespace SAIN.Preset.GlobalSettings
         [Name("Smooth Turn Settings")]
         [Hidden]
         public Dictionary<EBotLookMode, TurnSettings> SMOOTHING_BY_STATE = new() {
-            { EBotLookMode.RandomLook, new TurnSettings(0.045f, 120f ) },
-            { EBotLookMode.Peace, new TurnSettings(0.055f, 240) },
-            { EBotLookMode.Combat, new TurnSettings(0.065f, 300f) },
-            { EBotLookMode.CombatSprint, new TurnSettings(0.065f, 300f) },
-            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.075f, 300f) },
-            { EBotLookMode.Aiming, new TurnSettings(0.075f, 360f ) },
+            { EBotLookMode.RandomLook, new TurnSettings(0.040f, 120f ) },
+            { EBotLookMode.Peace, new TurnSettings(0.050f, 240) },
+            { EBotLookMode.Combat, new TurnSettings(0.060f, 300f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.060f, 300f) },
+            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.070f, 300f) },
+            { EBotLookMode.Aiming, new TurnSettings(0.070f, 360f ) },
         };
-
-        [MinMax(0f, 0.5f, 1000f)]
-        [Advanced]
-        public float SmoothingFactor = 0.065f;  // Lower = smoother, higher = more responsive
 
         [MinMax(0f, 3f, 1000f)]
         [Advanced]
         public float PredictionStrength = 0f; // How much to compensate for lag
 
-        [MinMax(90f, 720f, 1f)]
-        [Advanced]
-        public float MaxAngularVelocity = 300f; // Degrees per second limit
-
         [MinMax(1f, 3f, 1000f)]
         [Advanced]
-        public float ConvergenceBoost = 1f;   // Multiplier when far from target
+        public float ConvergenceBoost = 1.1f;   // Multiplier when far from target
 
         [Advanced]
         [MinMax(16, 2048, 1f)]

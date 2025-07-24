@@ -1,12 +1,15 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
+using HarmonyLib;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SPT.Reflection.Patching;
+using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision
 {
-   
     public class SelfActionDecisionClass : BotBase
     {
         public SelfActionDecisionClass(BotComponent sain) : base(sain)
@@ -653,5 +656,29 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private float _ammoRatio;
         private float _nextGetRatioTime;
+
+        /// <summary>
+        /// Add a callback for sain bots when a bot finishes using first aid.
+        /// </summary>
+        public class BotFirstAidCallBackPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return AccessTools.Method(typeof(BotFirstAidClass), nameof(BotFirstAidClass.method_3));
+            }
+
+            [PatchPrefix]
+            public static void PatchPrefix(BotFirstAidClass __instance, Action callback)
+            {
+
+                //if (SAINEnableClass.IsBotExluded(__instance.botOwner_0)) return;
+                if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent sain))
+                {
+                    if (sain.SAINLayersActive)
+                    {
+                    }
+                }
+            }
+        }
     }
 }

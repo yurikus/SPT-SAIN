@@ -16,7 +16,7 @@ namespace SAIN.SAINComponent.Classes
 
         public override void Init()
         {
-            if (GlobalSettingsClass.Instance.General.BotWeightEffects)
+            if (GlobalSettingsClass.Instance.General.BOT_INTERTIA_TOGGLE)
             {
                 getSlots();
                 Traverse.Create(Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);

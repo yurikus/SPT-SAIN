@@ -115,7 +115,7 @@ namespace SAIN.SAINComponent.Classes
         public Enemy CheckEnemiesForShootableTargets(EnemyList VisibleEnemies)
         {
             foreach (Enemy Enemy in VisibleEnemies)
-                if (AimAndShootAtEnemy(Enemy, Bot))
+                if (Enemy.IsVisible && Time.time - Enemy.Vision.LastChangeVisionTime > 0.33f && AimAndShootAtEnemy(Enemy, Bot))
                     return Enemy;
             return null;
         }

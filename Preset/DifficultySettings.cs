@@ -20,30 +20,25 @@ namespace SAIN.Preset.GlobalSettings
         [DifficultyModAttribute]
         public float ScatteringCoef = 1f;
 
-        //[Name("Scatter Priority Multiplier")]
-        //[Description("Lower is more difficult.")]
-        //[DifficultyModAttribute]
-        //public float PriorityScatteringCoef = 1f;
-
         [Name("Hearing Distance Multiplier")]
         [Description("Higher is more difficult.")]
         [DifficultyModAttribute]
         public float HearingDistanceCoef = 1f;
 
         [Name("Aggression Multiplier")]
-        [Description("Higher is more difficult.")]
+        [Description("Higher is more difficult. Affects how long bots wait before entering search and how long they stand their ground to return fire when spotting an enemy.")]
         [DifficultyModAttribute]
         public float AggressionCoef = 1f;
 
         [Name("Precision Speed Multiplier")]
-        [Description("Lower is more difficult.")]
+        [Description("Higher is more difficult.")]
         [DifficultyModAttribute]
-        public float PrecisionSpeedCoef = 1f;
+        public float PRECISION_SPEED_COEF = 1f;
 
         [Name("Accuracy Speed Multiplier")]
-        [Description("Lower is more difficult.")]
+        [Description("Lower is more difficult. Affects how long it takes for a bot to line up a shot when aiming.")]
         [DifficultyModAttribute]
-        public float AccuracySpeedCoef = 1f;
+        public float ACCURACY_SPEED_COEF = 1f;
 
         //[Name("Recoil Multiplier")]
         //[Description("Lower is more difficult.")]

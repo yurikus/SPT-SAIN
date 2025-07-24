@@ -62,7 +62,7 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 
         [Category("Time to Aim")]
         [Name("Max Aiming Upgrade By Time")]
-        [Description("Lower = Better. How much to cap this bots aim improvement based on time. 0.25 means they will be able to multiply their aim offset by 0.25x when aiming. Making their shots more accurate")]
+        [Description("VANILLA EFT CONFIG VALUE : Lower = Better. How much to cap this bots aim improvement based on time. 0.25 means they will be able to multiply their aim offset by 0.25x when aiming. Making their shots more accurate")]
         [MinMax(0.01f, 0.99f, 100f)]
         [Advanced]
         [CopyValue]
@@ -70,30 +70,30 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 
         [Category("Scatter Modifiers")]
         [Name("Distance To Not Scatter Aim")]
-        [Description("If an enemy is closer than this distance, ignore scatter.")]
+        [Description("VANILLA EFT CONFIG VALUE : If an enemy is closer than this distance, ignore scatter.")]
         [MinMax(0.1f, 30f, 100f)]
         [Advanced]
         public float DIST_TO_SHOOT_NO_OFFSET = 3f;
 
         [Category("Scatter Modifiers")]
-        [Name("Scatter Multiplier - Moving")]
+        [Name("VANILLA EFT CONFIG VALUE : Scatter Multiplier - Moving")]
         [MinMax(0.1f, 6f, 100f)]
         [Advanced]
         public float COEF_IF_MOVE = 1.5f;
 
         [Category("Time to Aim")]
-        [Name("Aim Time Multiplier - Moving")]
+        [Name("VANILLA EFT CONFIG VALUE : Aim Time Multiplier - Moving")]
         [Hidden]
         [JsonIgnore]
         public float TIME_COEF_IF_MOVE = 1.5f;
 
         [Category("Time to Aim")]
         [Name("Max Aim Time")]
-        [Description("EFT CONFIG SETTING. A cap on how long it will take this bot to finish aiming at a target, and begin shooting.")]
+        [Description("VANILLA EFT CONFIG VALUE :  A cap on how long it will take this bot to finish aiming at a target, and begin shooting.")]
         [MinMax(0.01f, 4f, 1000f)]
         [Advanced]
         [CopyValue]
-        public float MAX_AIM_TIME = 1f;
+        public float MAX_AIM_TIME = 2f;
 
         [Hidden]
         [JsonIgnore]
@@ -110,34 +110,20 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 
         [Category("Time to Aim")]
         [NameAndDescription(
-            "Hit Reaction Recovery Time",
+            "VANILLA EFT CONFIG VALUE : Hit Reaction Recovery Time",
             "How much time it takes to recover a bot's aim when they get hit by a bullet")]
         [MinMax(0.1f, 0.99f, 100f)]
         [Advanced]
         public float BASE_HIT_AFFECTION_DELAY_SEC = 0.65f;
 
-        //[NameAndDescription(
-        //    "Minimum Hit Reaction Angle",
-        //    "How much to kick a bot's aim when they get hit by a bullet")]
-        //[MinMax(0f, 25f, 10f)]
-        //[Advanced]
-        //public float BASE_HIT_AFFECTION_MIN_ANG = 3f;
-        //
-        //[NameAndDescription(
-        //    "Maximum Hit Reaction Angle",
-        //    "How much to kick a bot's aim when they get hit by a bullet")]
-        //[MinMax(0f, 25f, 10f)]
-        //[Advanced]
-        //public float BASE_HIT_AFFECTION_MAX_ANG = 5f;
-
         [Category("Time to Aim")]
-        [Name("Hit Aim Time Penalty Seconds - Min")]
+        [Name("VANILLA EFT CONFIG VALUE : Hit Aim Time Penalty Seconds - Min")]
         [MinMax(0f, 1f, 100f)]
         [Advanced]
         public float MIN_TIME_DISCARD_AIM_SEC = 0.5f;
 
         [Category("Time to Aim")]
-        [Name("Hit Aim Time Penalty Seconds - Max")]
+        [Name("VANILLA EFT CONFIG VALUE : Hit Aim Time Penalty Seconds - Max")]
         [MinMax(0f, 2f, 100f)]
         [Advanced]
         public float MAX_TIME_DISCARD_AIM_SEC = 1.5f;
@@ -147,7 +133,7 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         public float ANY_PART_SHOOT_TIME = 2f;
 
         [Category("Time to Aim")]
-        [Name("Enemy First Contact Reaction Delay")]
+        [Name("VANILLA EFT CONFIG VALUE : Enemy First Contact Reaction Delay")]
         [MinMax(0f, 1f, 100f)]
         [Advanced]
         public float FIRST_CONTACT_ADD_SEC = 0.2f;

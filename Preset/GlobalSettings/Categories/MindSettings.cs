@@ -126,7 +126,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
         {
             {ESuppressionState.Light, new SuppressionConfig {
                 Threshold = 1f,
-                PrecisionSpeedCoef = 1.15f,
+                PrecisionSpeedCoef = 0.8f,
                 AccuracySpeedCoef = 1.2f,
                 GainSightCoef = 1.2f,
                 ScatteringCoef = 1.35f,
@@ -136,7 +136,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
             },
             {ESuppressionState.Medium, new SuppressionConfig {
                 Threshold = 6f,
-                PrecisionSpeedCoef = 1.5f,
+                PrecisionSpeedCoef = 0.75f,
                 AccuracySpeedCoef = 1.5f,
                 GainSightCoef = 1.5f,
                 ScatteringCoef = 1.75f,
@@ -146,7 +146,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
             },
             {ESuppressionState.Heavy, new SuppressionConfig {
                 Threshold = 15f,
-                PrecisionSpeedCoef = 2f,
+                PrecisionSpeedCoef = 0.5f,
                 AccuracySpeedCoef = 2f,
                 GainSightCoef = 1.65f,
                 ScatteringCoef = 2.5f,
@@ -156,7 +156,7 @@ namespace SAIN.Preset.GlobalSettings.Categories
             },
             {ESuppressionState.Extreme, new SuppressionConfig {
                 Threshold = 25f,
-                PrecisionSpeedCoef = 3f,
+                PrecisionSpeedCoef = 0.25f,
                 AccuracySpeedCoef = 3f,
                 GainSightCoef = 2f,
                 ScatteringCoef = 3f,

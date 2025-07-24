@@ -14,9 +14,9 @@ namespace SAIN.Types.TurnSmoothing
         public Vector3 RandomSwayOffset = Vector3.zero;
 
         public SmoothTurnConfig Config = new(
-            SAINPlugin.LoadedPreset.GlobalSettings.Steering.SmoothingFactor,
+            0.06f,
             SAINPlugin.LoadedPreset.GlobalSettings.Steering.PredictionStrength,
-            SAINPlugin.LoadedPreset.GlobalSettings.Steering.MaxAngularVelocity,
+            300f,
             SAINPlugin.LoadedPreset.GlobalSettings.Steering.ConvergenceBoost,
             SAINPlugin.LoadedPreset.GlobalSettings.Steering.MIN_STEERING_PITCH
         );
@@ -106,16 +106,18 @@ namespace SAIN.Types.TurnSmoothing
 
             // Apply convergence boost when far from target
             var convergenceMultiplier = 1f;
-            if (angularDifference > 20f) // If more than 30 degrees off
+            const float CONVERGENCE_THRESHOLD = 45f; // Threshold for convergence boost
+            if (angularDifference > CONVERGENCE_THRESHOLD) // If more than 30 degrees off
             {
                 // The convergence boost is applied over a 180 degree range (inner rangnowe of 20 + 160)
-                convergenceMultiplier = Mathf.Lerp(1f, config.ConvergenceBoost, (angularDifference - 20f) / 160f);
+                convergenceMultiplier = Mathf.Lerp(1f, config.ConvergenceBoost, (angularDifference - CONVERGENCE_THRESHOLD) / (180 - CONVERGENCE_THRESHOLD));
             }
 
             // Scale smoothing factor by delta time and convergence boost
             var adaptiveFactor = config.SmoothingFactor * convergenceMultiplier;
 
             // Ensure we don't overshoot with large delta times
+            return adaptiveFactor;
             return Mathf.Clamp01(adaptiveFactor * (deltaTime * 60f)); // Normalize for 60 FPS baseline
         }
 

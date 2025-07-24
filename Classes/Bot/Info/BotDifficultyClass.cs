@@ -72,8 +72,8 @@ namespace SAIN.SAINComponent.Classes
             var globalSettings = preset.GlobalSettings.Difficulty;
             var mods = GlobalDifficultyModifiers.Modifiers;
 
-            mods.AccuratySpeedCoef = globalSettings.AccuracySpeedCoef;
-            mods.PrecicingSpeedCoef = globalSettings.PrecisionSpeedCoef;
+            mods.AccuratySpeedCoef = globalSettings.ACCURACY_SPEED_COEF;
+            mods.PrecicingSpeedCoef = globalSettings.PRECISION_SPEED_COEF;
             mods.VisibleDistCoef = globalSettings.VisibleDistCoef;
             mods.ScatteringCoef = globalSettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = globalSettings.PriorityScatteringCoef;
@@ -83,8 +83,8 @@ namespace SAIN.SAINComponent.Classes
 
         private void apply(DifficultySettings settings, TemporaryStatModifiers mods)
         {
-            mods.Modifiers.AccuratySpeedCoef = settings.AccuracySpeedCoef;
-            mods.Modifiers.PrecicingSpeedCoef = settings.PrecisionSpeedCoef;
+            mods.Modifiers.AccuratySpeedCoef = settings.ACCURACY_SPEED_COEF;
+            mods.Modifiers.PrecicingSpeedCoef = settings.PRECISION_SPEED_COEF;
             mods.Modifiers.VisibleDistCoef = settings.VisibleDistCoef;
             mods.Modifiers.ScatteringCoef = settings.ScatteringCoef;
             //mods.PriorityScatteringCoef = botSettings.PriorityScatteringCoef;
@@ -97,8 +97,8 @@ namespace SAIN.SAINComponent.Classes
             var botSettings = Bot.Info.FileSettings.Difficulty;
             var mods = BotDifficultyModifiers.Modifiers;
 
-            mods.AccuratySpeedCoef = botSettings.AccuracySpeedCoef;
-            mods.PrecicingSpeedCoef = botSettings.PrecisionSpeedCoef;
+            mods.AccuratySpeedCoef = botSettings.ACCURACY_SPEED_COEF;
+            mods.PrecicingSpeedCoef = botSettings.PRECISION_SPEED_COEF;
             mods.VisibleDistCoef = botSettings.VisibleDistCoef;
             mods.ScatteringCoef = botSettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = botSettings.PriorityScatteringCoef;
@@ -115,8 +115,8 @@ namespace SAIN.SAINComponent.Classes
             }
             var mods = LocationDifficultyModifiers.Modifiers;
 
-            mods.AccuratySpeedCoef = locationSettings.AccuracySpeedCoef;
-            mods.PrecicingSpeedCoef = locationSettings.PrecisionSpeedCoef;
+            mods.AccuratySpeedCoef = locationSettings.ACCURACY_SPEED_COEF;
+            mods.PrecicingSpeedCoef = locationSettings.PRECISION_SPEED_COEF;
             mods.VisibleDistCoef = locationSettings.VisibleDistCoef;
             mods.ScatteringCoef = locationSettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = locationSettings.PriorityScatteringCoef;
@@ -129,8 +129,8 @@ namespace SAIN.SAINComponent.Classes
             var personalitySettings = Bot.Info.PersonalitySettingsClass.Difficulty;
             var mods = PersonalityDifficultyModifiers.Modifiers;
 
-            mods.AccuratySpeedCoef = personalitySettings.AccuracySpeedCoef;
-            mods.PrecicingSpeedCoef = personalitySettings.PrecisionSpeedCoef;
+            mods.AccuratySpeedCoef = personalitySettings.ACCURACY_SPEED_COEF;
+            mods.PrecicingSpeedCoef = personalitySettings.PRECISION_SPEED_COEF;
             mods.VisibleDistCoef = personalitySettings.VisibleDistCoef;
             mods.ScatteringCoef = personalitySettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = personalitySettings.PriorityScatteringCoef;

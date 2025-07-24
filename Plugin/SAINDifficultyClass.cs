@@ -105,13 +105,13 @@ namespace SAIN.Plugin
 
             var global = preset.GlobalSettings;
             global.Shoot.BOT_RECOIL_COEF = 3f;
-            global.Difficulty.ScatteringCoef = 5f;
-            global.Difficulty.PrecisionSpeedCoef = 2f;
-            global.Difficulty.AccuracySpeedCoef = 2f;
-            global.Difficulty.HearingDistanceCoef = 0.6f;
+            global.Difficulty.ScatteringCoef = 3f;
+            global.Difficulty.PRECISION_SPEED_COEF = 0.33f;
+            global.Difficulty.ACCURACY_SPEED_COEF = 3f;
+            global.Difficulty.HearingDistanceCoef = 0.4f;
             global.Aiming.FasterCQBReactionsGlobal = false;
-            global.Difficulty.VisibleDistCoef = 0.66f;
-            global.Difficulty.GainSightCoef = 2.5f;
+            global.Difficulty.VisibleDistCoef = 0.5f;
+            global.Difficulty.GainSightCoef = 2.0f;
 
             foreach (var bot in preset.BotSettings.SAINSettings)
             {
@@ -122,18 +122,14 @@ namespace SAIN.Plugin
                     setting.Value.Shoot.FireratMulti *= 0.4f;
                     setting.Value.Shoot.BurstMulti *= 0.5f;
                     setting.Value.Look.MinimumVisionSpeed = 0.4f;
-                    setting.Value.Aiming.DistanceAimTimeMultiplier = 1.5f;
-                    setting.Value.Aiming.AngleAimTimeMultiplier = 1.5f;
-                    if (setting.Value.Aiming.MAX_AIM_TIME < 1f)
+                    if (setting.Value.Aiming.MAX_AIM_TIME < 2f)
                     {
-                        setting.Value.Aiming.MAX_AIM_TIME = 1f;
+                        setting.Value.Aiming.MAX_AIM_TIME = 2f;
                     }
                     if (setting.Value.Aiming.MAX_AIMING_UPGRADE_BY_TIME < 0.4f)
                     {
                         setting.Value.Aiming.MAX_AIMING_UPGRADE_BY_TIME = 0.4f;
                     }
-                    setting.Value.Core.ScatteringPerMeter += 0.05f;
-                    setting.Value.Core.ScatteringClosePerMeter += 0.1f;
                 }
             }
             foreach (var botsetting in preset.BotSettings.SAINSettings)
@@ -197,11 +193,11 @@ namespace SAIN.Plugin
             var global = preset.GlobalSettings;
             global.Shoot.BOT_RECOIL_COEF = 1.6f;
             global.Difficulty.ScatteringCoef = 1.25f;
-            global.Difficulty.PrecisionSpeedCoef = 1.25f;
-            global.Difficulty.AccuracySpeedCoef = 1.25f;
-            global.Difficulty.VisibleDistCoef = 0.85f;
+            global.Difficulty.PRECISION_SPEED_COEF = 0.75f;
+            global.Difficulty.ACCURACY_SPEED_COEF = 1.25f;
+            global.Difficulty.VisibleDistCoef = 0.75f;
             global.Difficulty.GainSightCoef = 1.25f;
-            global.Difficulty.HearingDistanceCoef = 0.85f;
+            global.Difficulty.HearingDistanceCoef = 0.66f;
             global.Aiming.FasterCQBReactionsGlobal = false;
 
             foreach (var bot in preset.BotSettings.SAINSettings)
@@ -419,10 +415,10 @@ namespace SAIN.Plugin
                         //diff.Core.ScatteringPerMeter = 0.03f;
                         //diff.Core.ScatteringClosePerMeter = 0.080f;
                         diff.Mind.WeaponProficiency = 0.75f;
-                        diff.Difficulty.ScatteringCoef = 0.8f;
-                        diff.Difficulty.PrecisionSpeedCoef = 0.8f;
-                        diff.Difficulty.AccuracySpeedCoef = 0.8f;
-                        diff.Difficulty.GainSightCoef = 0.8f;
+                        diff.Difficulty.ScatteringCoef = 0.66f;
+                        diff.Difficulty.PRECISION_SPEED_COEF = 1.33f;
+                        diff.Difficulty.ACCURACY_SPEED_COEF = 0.66f;
+                        diff.Difficulty.GainSightCoef = 0.75f;
                         diff.Difficulty.VisibleDistCoef = 1.25f;
                         diff.Difficulty.AggressionCoef = 1.2f;
                     }
@@ -472,13 +468,13 @@ namespace SAIN.Plugin
             var preset = new SAINPresetClass(SAINDifficulty.veryhard);
 
             var global = preset.GlobalSettings;
-            global.Shoot.BOT_RECOIL_COEF = 0.66f;
-            global.Difficulty.ScatteringCoef = 0.85f;
+            global.Shoot.BOT_RECOIL_COEF = 0.75f;
+            global.Difficulty.ScatteringCoef = 0.75f;
             global.Aiming.AimCenterMassGlobal = false;
-            global.Difficulty.VisibleDistCoef = 1.33f;
-            global.Difficulty.GainSightCoef = 0.8f;
-            global.Difficulty.PrecisionSpeedCoef = 0.8f;
-            global.Difficulty.AccuracySpeedCoef = 0.8f;
+            global.Difficulty.VisibleDistCoef = 1.25f;
+            global.Difficulty.GainSightCoef = 0.75f;
+            global.Difficulty.PRECISION_SPEED_COEF = 1.25f;
+            global.Difficulty.ACCURACY_SPEED_COEF = 0.75f;
 
             ApplyHarderPMCs(preset);
 
@@ -552,13 +548,13 @@ namespace SAIN.Plugin
             var preset = new SAINPresetClass(SAINDifficulty.deathwish);
 
             var global = preset.GlobalSettings;
-            global.Shoot.BOT_RECOIL_COEF = 0.25f;
+            global.Shoot.BOT_RECOIL_COEF = 0.5f;
 
             global.Difficulty.ScatteringCoef = 0.01f;
-            global.Difficulty.VisibleDistCoef = 3f;
+            global.Difficulty.VisibleDistCoef = 2f;
             global.Difficulty.GainSightCoef = 0.5f;
-            global.Difficulty.PrecisionSpeedCoef = 0.1f;
-            global.Difficulty.AccuracySpeedCoef = 0.1f;
+            global.Difficulty.PRECISION_SPEED_COEF = 3f;
+            global.Difficulty.ACCURACY_SPEED_COEF = 0.1f;
 
             global.Aiming.AimCenterMassGlobal = false;
             global.Look.NotLooking.NotLookingToggle = false;
@@ -572,7 +568,6 @@ namespace SAIN.Plugin
                     setting.Value.Shoot.BurstMulti = 3f;
                     setting.Value.Aiming.AimCenterMass = false;
                     setting.Value.Core.VisibleAngle = 180;
-                    setting.Value.Core.GainSightCoef *= 0.66f;
                     setting.Value.Aiming.AimForHead = true;
                     setting.Value.Aiming.AimForHeadChance = 66f;
                 }

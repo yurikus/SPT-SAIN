@@ -89,8 +89,21 @@ namespace SAIN.Layers.Combat.Solo.Cover
         {
             base.Stop();
             Bot.Medical.Surgery.SurgeryStarted = false;
-            BotOwner.MovementResume();
+            Bot.Mover?.ActivePath?.UnPause();
+            foreach (EBodyPart part in SurgeryParts)
+            {
+                Bot.Player.ActiveHealthController?.RestoreBodyPart(part, 1f);
+            }
         }
+
+        private static readonly EBodyPart[] SurgeryParts =
+        [
+            EBodyPart.LeftArm,
+            EBodyPart.RightArm,
+            EBodyPart.LeftLeg,
+            EBodyPart.RightLeg,
+            EBodyPart.Stomach,
+        ];
 
         public override void BuildDebugText(StringBuilder stringBuilder)
         {
