@@ -157,6 +157,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void createDebug()
         {
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 EnemyPlace lastKnown = LastKnownPlace;
@@ -175,6 +176,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 DebugGizmos.DestroyLabel(debugLastKnown);
                 debugLastKnown = null;
             }
+#endif
         }
 
         private void tryTalk()

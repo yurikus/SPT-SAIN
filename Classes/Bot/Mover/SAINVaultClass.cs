@@ -81,11 +81,13 @@ namespace SAIN.SAINComponent.Classes.Mover
                     break;
                 }
             }
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogInfo($"{totalChecks} : {foundPoint}");
             }
+#endif
 
             return foundPoint;
         }
@@ -143,19 +145,23 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (CanVault() && Player.VaultingComponent.TryVaulting())
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogWarning("Vault Success");
                 }
+#endif
 
                 Player.OnVaulting();
                 return true;
             }
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogWarning("Vault Fail");
             }
+#endif
 
             return false;
         }
@@ -164,28 +170,34 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (Player == null || Player.VaultingComponent == null || Player.VaultingGameplayRestrictions == null)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogWarning("Vault Fail, Something Null");
                 }
+#endif
 
                 return false;
             }
 
             if (Player.VaultingGameplayRestrictions.CanVaulting())
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogWarning("Vault Success - Player Can Vault");
                 }
+#endif
 
                 return true;
             }
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogWarning("Vault Fail - Player Can NOT Vault");
             }
+#endif
 
             return false;
         }

@@ -92,7 +92,9 @@ namespace SAIN.Components
             BotSquads.Update(currentTime, deltaTime);
 
             HashSet<BotComponent> BotsArray = BotSpawnController.SAINBots;
-
+                foreach (BotComponent BotComponent in BotsArray)
+                    BotComponent?.ManualUpdate(currentTime, deltaTime);
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
@@ -111,6 +113,7 @@ namespace SAIN.Components
                     BotComponent?.ManualUpdate(currentTime, deltaTime);
             }
             //drawCover();
+#endif
         }
 
         private void drawCover()

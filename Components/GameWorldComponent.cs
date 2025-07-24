@@ -259,9 +259,11 @@ namespace SAIN.Components
             }
 
             SpawnPointMarkers = UnityEngine.Object.FindObjectsOfType<SpawnPointMarker>();
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
                 Logger.LogInfo($"Found {SpawnPointMarkers.Length} spawn point markers");
+#endif
         }
 
         public IEnumerable<Vector3> GetAllSpawnPointPositionsOnNavMesh()

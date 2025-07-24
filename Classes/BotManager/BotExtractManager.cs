@@ -120,10 +120,12 @@ namespace SAIN.Components.BotController
         {
             if (bot == null)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogInfo("Skipped searching for Exfil for unknown bot because they are null");
                 }
+#endif
 
                 return false;
             }
@@ -147,19 +149,23 @@ namespace SAIN.Components.BotController
             {
                 return true;
             }
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogInfo($"Looking for Exfil for {bot.name}...");
             }
+#endif
 
             int validExfils = GameWorldComponent.Instance.ExtractFinder.CountValidExfilsForBot(bot);
             if (validExfils == 0)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogInfo($"Could not select exfil for {bot.name}; no valid ones found");
                 }
+#endif
 
                 ResetExfilSearchTime(bot);
                 return false;
@@ -168,10 +174,12 @@ namespace SAIN.Components.BotController
             bool exfilAssigned = bot.Squad.BotInGroup ? TryAssignSquadExfil(bot) : TryAssignExfilForBot(bot);
             if (!exfilAssigned)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogInfo($"{bot.name} could not find exfil. Bot spawn type: {bot.Info.Profile.WildSpawnType}");
                 }
+#endif
 
                 ResetExfilSearchTime(bot);
                 return false;
@@ -238,6 +246,7 @@ namespace SAIN.Components.BotController
 
             if (possibleExfils.Count == 0)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     StringBuilder sb = new();
@@ -251,6 +260,7 @@ namespace SAIN.Components.BotController
                     }
                     Logger.LogInfo(sb.ToString());
                 }
+#endif
 
                 return null;
             }
@@ -259,11 +269,13 @@ namespace SAIN.Components.BotController
             KeyValuePair<ExfiltrationPoint, Vector3> selectedExfil = possibleExfils.Random(); // Assumes Random() is an extension method that works with Dictionary
 
             bot.Memory.Extract.ExfilPosition = selectedExfil.Value;
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogInfo($"bot {bot.name} will extract at {selectedExfil.Key.Settings.Name}");
             }
+#endif
 
             return selectedExfil.Key;
         }

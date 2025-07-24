@@ -143,8 +143,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 }
                 if (Allies.Contains(Enemy.EnemyPlayer))
                 {
+#if DEBUG
                     if (SAINPlugin.DebugMode)
                         Logger.LogWarning($"{Enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection");
+#endif
 
                     _allyIdsToRemove.Add(Enemy.EnemyProfileId);
                     continue;
@@ -156,7 +158,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 foreach (var id in _invalidIdsToRemove)
                     RemoveEnemy(id);
+#if DEBUG
                 Logger.LogWarning($"Removed {_invalidIdsToRemove.Count} Invalid Enemies");
+#endif
                 _invalidIdsToRemove.Clear();
             }
 
@@ -164,8 +168,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 foreach (var id in _allyIdsToRemove)
                     RemoveEnemy(id);
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                     Logger.LogWarning($"Removed {_allyIdsToRemove.Count} allies");
+#endif
                 _allyIdsToRemove.Clear();
             }
 

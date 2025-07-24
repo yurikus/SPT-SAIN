@@ -103,6 +103,11 @@ namespace SAIN.SAINComponent.Classes
 
         private bool CheckStartRun(Enemy enemy, out string reason)
         {
+            if (enemy == null || !enemy.EnemyKnown)
+            {
+                reason = "noEnemy";
+                return false;
+            }
             if (Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
             {
                 reason = "doing self operation";
@@ -316,11 +321,13 @@ namespace SAIN.SAINComponent.Classes
 
         private void createDebug()
         {
+#if DEBUG
             if (SAINPlugin.DebugMode && CoverInUse != null)
             {
                 DebugGizmos.DrawSphere(CoverInUse.Position, 0.1f, Color.cyan, 0.02f, $"[{Bot.name}] Cover In Use");
                 DebugGizmos.DrawLine(CoverInUse.Position, Bot.Position + Vector3.up, Color.cyan, 0.075f, 0.02f, true);
             }
+#endif
         }
 
         public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)

@@ -93,7 +93,9 @@ namespace SAIN.Components.PlayerComponentSpace
             AddPlayer(player);
             if (AlivePlayersDictionary.TryGetValue(player.ProfileId, out var component))
             {
+#if DEBUG
                 Logger.LogDebug($"Successfully created new Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]");
+#endif
                 return component;
             }
             return null;
@@ -103,7 +105,9 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (iPlayer == null)
             {
+#if DEBUG
                 Logger.LogError($"Could not add PlayerComponent for Null IPlayer.");
+#endif
                 return;
             }
 
@@ -111,26 +115,34 @@ namespace SAIN.Components.PlayerComponentSpace
             Player player = iPlayer as Player;
             if (player == null)
             {
+#if DEBUG
                 Logger.LogError($"Could not add PlayerComponent for Null Player. IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
+#endif
                 return;
             }
             if (player.gameObject == null)
             {
+#if DEBUG
                 Logger.LogError($"Player Has null gameobject? IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
+#endif
                 return;
             }
 
             if (TryRemove(profileId, out bool compDestroyed))
             {
+#if DEBUG
                 Logger.LogWarning($"PlayerComponent already exists for Player: {player.name} : {player.Profile?.Nickname} : {profileId}");
                 if (compDestroyed)
                 {
                     Logger.LogWarning($"Destroyed old Component for: {player.name} : {player.Profile?.Nickname} : {profileId}");
                 }
+#endif
             }
             if (TryAddPlayerComponent(player))
             {
+#if DEBUG
                 Logger.LogDebug($"Added New Player [{player.name}] : [{player.Profile.Nickname}]");
+#endif
             }
         }
 
@@ -138,17 +150,25 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (player == null)
             {
+#if DEBUG
                 Logger.LogError("Can't Remove player. Player Null");
+#endif
                 return;
             }
             if (TryRemove(player.ProfileId, out _))
             {
+#if DEBUG
                 Logger.LogDebug($"Removed Player Component [{player.Profile.Nickname}]]");
+#endif
             }
             else
             {
+#if DEBUG
                 Logger.LogWarning("Could not find player in Player Component Dictionary!");
+#endif
             }
+#if DEBUG
+#endif
         }
 
         public PlayerSpawnTracker(GameWorldComponent sainGameWorld)
@@ -180,12 +200,16 @@ namespace SAIN.Components.PlayerComponentSpace
                 AlivePlayersDictionary.Add(player.ProfileId, component);
                 AlivePlayerArray.Add(component);
                 OnPlayerAdded?.Invoke(component);
+#if DEBUG
                 Logger.LogDebug($"Initialized Player Component {player.name} : {player.ProfileId}");
+#endif
                 return true;
             }
             else
             {
+#if DEBUG
                 Logger.LogError($"Init PlayerComponent Failed for {player.name} : {player.ProfileId}");
+#endif
                 GameObject.Destroy(component);
                 return false;
             }
@@ -224,13 +248,17 @@ namespace SAIN.Components.PlayerComponentSpace
                     _ids.Add(kvp.Key);
                     if (component.Player != null)
                     {
+#if DEBUG
                         Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
+#endif
                     }
                 }
             }
             if (_ids.Count > 0)
             {
+#if DEBUG
                 Logger.LogDebug($"Removing {_ids.Count} null players");
+#endif
                 foreach (var id in _ids)
                 {
                     TryRemove(id, out _);

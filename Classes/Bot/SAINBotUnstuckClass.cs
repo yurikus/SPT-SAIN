@@ -49,8 +49,10 @@ namespace SAIN.SAINComponent.Classes.Debug
         private void teleport(Vector3 position)
         {
             Player.Teleport(position + Vector3.up * 0.25f);
+#if DEBUG
             if (SAINPlugin.DebugMode)
                 Logger.LogDebug($"{BotOwner.name} has teleported because they were stuck after vaulting, and no human players are visible to them, and no human players are close.");
+#endif
             BotOwner.Mover?.Stop();
             BotOwner.Mover?.RecalcWay();
         }

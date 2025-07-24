@@ -31,7 +31,9 @@ namespace SAIN.Components.BotController.PeacefulActions
             BotZone botZone = bot.BotOwner.BotsGroup.BotZone;
             if (botZone == null)
             {
+#if DEBUG
                 Logger.LogWarning($"Null BotZone for [{bot.BotOwner.name}]");
+#endif
                 return;
             }
 
@@ -48,23 +50,31 @@ namespace SAIN.Components.BotController.PeacefulActions
         {
             if (bot == null)
             {
+#if DEBUG
                 Logger.LogWarning($"Null BotComponent");
+#endif
                 return;
             }
             if (bot.BotOwner == null)
             {
+#if DEBUG
                 Logger.LogWarning($"Null BotOwner [{bot.Info.Profile.Name}]");
+#endif
                 return;
             }
             if (bot.BotOwner.BotsGroup == null)
             {
+#if DEBUG
                 Logger.LogWarning($"Null BotGroup [{bot.Info.Profile.Name}]");
+#endif
                 return;
             }
             BotZone botZone = bot.BotOwner.BotsGroup.BotZone;
             if (botZone == null)
             {
+#if DEBUG
                 Logger.LogWarning($"Null BotZone for [{bot.BotOwner.name}]");
+#endif
                 return;
             }
             BotZoneData data;

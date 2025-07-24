@@ -66,7 +66,9 @@ namespace SAIN.Components.BotControllerSpace.Classes
         {
             if (playerComponent == null)
             {
+#if DEBUG
                 Logger.LogError("Player Component Null");
+#endif
                 return;
             }
             if (!playerComponent.IsActive)

@@ -38,7 +38,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 result = ECombatDecision.None;
                 return false;
             }
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.Clear();
+#endif
 
             BotWeaponManager weaponManager = BotOwner.WeaponManager;
             if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
@@ -48,13 +50,19 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
 
             string reason = string.Empty;
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"1. I've Got Bullets.");
+#endif
 
             bool canTakeAggressiveAction = CanBeAggressive(ref reason);
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]");
+#endif
 
             bool shallShoot = shallStandAndShoot(enemy, out reason, knownEnemies);
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
+#endif
             if (shallShoot)
             {
                 if (Bot.Decision.CurrentCombatDecision != ECombatDecision.StandAndShoot)
@@ -65,7 +73,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 return true;
             }
             bool shallShootDistant = shallShootDistantEnemy(enemy, out reason);
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
+#endif
             if (shallShootDistant)
             {
                 result = ECombatDecision.ShootDistantEnemy;
@@ -75,7 +85,9 @@ namespace SAIN.SAINComponent.Classes.Decision
             if (canTakeAggressiveAction)
             {
                 bool shallRush = shallRushEnemy(enemy, out reason);
+#if DEBUG
                 if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
+#endif
                 if (shallRush)
                 {
                     result = ECombatDecision.RushEnemy;
@@ -83,7 +95,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 }
 
                 bool shallThrowNade = shallThrowGrenade(enemy, out reason);
+#if DEBUG
                 if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
+#endif
                 if (shallThrowNade)
                 {
                     result = ECombatDecision.ThrowGrenade;
@@ -91,7 +105,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 }
 
                 bool search = shallSearch(enemy, out reason);
+#if DEBUG
                 if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
+#endif
                 if (search)
                 {
                     if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Search)
@@ -104,7 +120,9 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
 
             bool freeze = shallFreezeAndWait(enemy, out reason);
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"7. Shall Freeze: [{freeze}, {reason}]");
+#endif
             if (freeze)
             {
                 result = ECombatDecision.Freeze;
@@ -112,14 +130,18 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
 
             bool shift = shallShiftCover(enemy, out reason);
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"8. Shall Shift Cover: [{shift}, {reason}]");
+#endif
             if (shift)
             {
                 result = ECombatDecision.ShiftCover;
                 return true;
             }
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"8. Seek Cover: [{true}, {Bot.Cover.CoverSeekingState}]");
+#endif
             result = ECombatDecision.SeekCover;
             return true;
         }
@@ -133,7 +155,9 @@ namespace SAIN.SAINComponent.Classes.Decision
                 case ESuppressionState.Extreme:
                 case ESuppressionState.Heavy:
                     canTakeAggressiveAction = false;
+#if DEBUG
                     reason = $"Suppressed [{suppState}]";
+#endif
                     break;
 
                 default:

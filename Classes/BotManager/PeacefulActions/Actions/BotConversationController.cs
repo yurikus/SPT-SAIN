@@ -64,6 +64,7 @@ namespace SAIN.Components.BotController.PeacefulActions
 
         private void logConvoStart(BotZoneData data)
         {
+#if DEBUG
             if (SAINPlugin.DebugMode || true)
             {
                 StringBuilder stringBuilder = new();
@@ -78,6 +79,7 @@ namespace SAIN.Components.BotController.PeacefulActions
                 }
                 Logger.LogDebug(stringBuilder.ToString());
             }
+#endif
         }
 
         private int _conversations;

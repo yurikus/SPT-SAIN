@@ -17,9 +17,11 @@ namespace SAIN.BotController.Classes
                 squad?.Update(currentTime, deltaTime);
 
             ClearEmptySquads();
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode && DebugTimer < Time.time)
                 LogDebug();
+#endif
         }
 
         private void ClearEmptySquads()
@@ -70,9 +72,11 @@ namespace SAIN.BotController.Classes
             if (group != null)
             {
                 int groupCount = group.MembersCount;
-
+                
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                     Logger.LogDebug($"Member Count: {groupCount} Checking for existing squad object");
+#endif
 
                 for (int i = 0; i < groupCount; i++)
                 {
@@ -81,14 +85,18 @@ namespace SAIN.BotController.Classes
                         defaultMember.ProfileId != botOwner.ProfileId &&
                         BotController.GetSAIN(defaultMember, out var sainComponent))
                     {
+#if DEBUG
                         if (SAINPlugin.DebugMode)
                             Logger.LogInfo($"Found SAIN Bot for squad");
+#endif
 
                         result = sainComponent.Squad.SquadInfo;
                         if (result != null)
                         {
+#if DEBUG
                             if (SAINPlugin.DebugMode)
                                 Logger.LogInfo($"Adding bot to squad [{result.GUID}]");
+#endif
 
                             break;
                         }
@@ -99,8 +107,10 @@ namespace SAIN.BotController.Classes
             if (result == null)
             {
                 result = new Squad();
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                     Logger.LogWarning($"Created New Squad [{result.GUID}]");
+#endif
 
                 if (!Squads.ContainsKey(result.GUID))
                 {

@@ -224,6 +224,7 @@ namespace SAIN.Helpers
 
         public static GameObject DrawLine(Vector3 startPoint, Vector3 endPoint, Color color, float lineWidth, float expiretime = -1, bool taperLine = false, string label = null)
         {
+#if DEBUG
             if (DrawGizmos && SAINPlugin.DebugMode)
             {
                 GameObject gameObject = new();
@@ -234,6 +235,7 @@ namespace SAIN.Helpers
                 AddGizmo(gameObject, expiretime, label);
                 return gameObject;
             }
+#endif
             return null;
         }
 

@@ -156,6 +156,7 @@ namespace SAIN.SAINComponent.Classes.Decision
 
         private void SetDecisions(ECombatDecision solo, ESquadDecision squad, ESelfActionType self, Enemy enemy)
         {
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 if (SAINPlugin.ForceSoloDecision != ECombatDecision.None)
@@ -171,6 +172,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     self = SAINPlugin.ForceSelfDecision;
                 }
             }
+#endif
 
             if (checkForNewDecision(solo, squad, self, enemy))
             {
@@ -192,6 +194,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         
         private void SetDecision(FSainBotDecision decision)
         {
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 if (SAINPlugin.ForceSoloDecision != ECombatDecision.None)
@@ -207,6 +210,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     decision.SelfAction = SAINPlugin.ForceSelfDecision;
                 }
             }
+#endif
 
             if (CurrentDecision != decision)
             {

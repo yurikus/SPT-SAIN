@@ -108,13 +108,17 @@ namespace SAIN.Components.BotController
 
             if (botComponent == null)
             {
+#if DEBUG
                 Logger.LogError($"Bot Component Null!");
+#endif
                 return;
             }
             if (playerComponent == null)
             {
                 botComponent.Dispose();
+#if DEBUG
                 Logger.LogError($"Player Component Null!");
+#endif
                 return;
             }
             // When this botowner gets set to active is when we should initialize sain.
@@ -191,7 +195,9 @@ namespace SAIN.Components.BotController
             string ProfileId = botOwner.ProfileId;
             if (BotDictionary.ContainsKey(ProfileId))
             {
+#if DEBUG
                 Logger.LogDebug($"{ProfileId} was already present in Bot Dictionary. Removing...");
+#endif
                 BotDictionary.Remove(ProfileId);
             }
 
@@ -199,12 +205,16 @@ namespace SAIN.Components.BotController
             // If somehow this bot already has components attached, destroy it.
             if (gameObject.TryGetComponent(out BotComponent botComponent))
             {
+#if DEBUG
                 Logger.LogDebug($"{ProfileId} already had a BotComponent attached. Destroying...");
+#endif
                 botComponent.Dispose();
             }
             if (gameObject.TryGetComponent(out SAINNoBushESP noBushComponent))
             {
+#if DEBUG
                 Logger.LogDebug($"{ProfileId} already had No Bush ESP attached. Destroying...");
+#endif
                 GameObject.Destroy(noBushComponent);
             }
         }
@@ -240,7 +250,9 @@ namespace SAIN.Components.BotController
                 }
                 else
                 {
+#if DEBUG
                     Logger.LogError("Bot is null, cannot dispose!");
+#endif
                 }
             }
             catch (Exception ex)

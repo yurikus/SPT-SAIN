@@ -35,7 +35,9 @@ namespace SAIN.Editor
         {
             if (_soundsWrapper == null || _audioSource == null)
             {
+#if DEBUG
                 Logger.LogWarning($"null");
+#endif
                 Singleton<GUISounds>.Instance.PlayUISound(soundType);
             }
             else
@@ -47,10 +49,12 @@ namespace SAIN.Editor
                 }
                 _audioSource.PlayOneShot(clip, volume);
             }
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogDebug(soundType);
             }
+#endif
         }
 
         private static float SoundLimiter;

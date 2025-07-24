@@ -35,17 +35,21 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
                     }
                     catch (Exception e)
                     {
+#if DEBUG
                         if (SAINPlugin.DebugMode)
                             Logger.LogError(e);
+#endif
                     }
 
                     if (success)
                     {
+#if DEBUG
                         if (_nextLogTime < Time.time && modifier != 1f)
                         {
                             _nextLogTime = Time.time + 60f;
                             //Logger.LogDebug($"Stealth Mod: {modifier}");
                         }
+#endif
                         _gearStealthModifier = modifier;
                     }
                     else

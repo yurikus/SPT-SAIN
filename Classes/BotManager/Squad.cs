@@ -527,6 +527,7 @@ namespace SAIN.BotController.Classes
 
         private void memberWasKilled(Player player, IPlayer lastAggressor, DamageInfoStruct lastDamageInfoStruct, EBodyPart lastBodyPart)
         {
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogInfo(
@@ -538,6 +539,7 @@ namespace SAIN.BotController.Classes
                     $"to Body part: [{lastBodyPart}]"
                     );
             }
+#endif
 
             OnMemberKilled?.Invoke(lastAggressor, lastDamageInfoStruct, Time.time);
 
@@ -547,8 +549,10 @@ namespace SAIN.BotController.Classes
                 // If this killed Member is the squad leader then
                 if (member.ProfileId == LeaderId)
                 {
+#if DEBUG
                     if (SAINPlugin.DebugMode)
                         Logger.LogInfo($"Leader [{player?.Profile.Nickname}] was killed for Squad: [{Id}]");
+#endif
 
                     LeaderKilled?.Invoke(lastAggressor, lastDamageInfoStruct, Time.time);
                     TimeThatLeaderDied = Time.time;
@@ -561,8 +565,10 @@ namespace SAIN.BotController.Classes
 
         public void MemberExtracted(BotComponent sain)
         {
+#if DEBUG
             if (SAINPlugin.DebugMode)
                 Logger.LogInfo($"Leader [{sain?.Player?.Profile.Nickname}] Extracted for Squad: [{Id}]");
+#endif
 
             RemoveMember(sain?.ProfileId);
         }
@@ -602,7 +608,9 @@ namespace SAIN.BotController.Classes
         {
             if (sain?.Player == null)
             {
+#if DEBUG
                 Logger.LogError($"Tried to Assign Null SAIN Component or Player for Squad [{Id}], skipping");
+#endif
                 return;
             }
 
@@ -611,7 +619,8 @@ namespace SAIN.BotController.Classes
             LeaderId = sain.Player?.ProfileId;
 
             NewLeaderFound?.Invoke(sain, Time.time);
-
+            
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogInfo(
@@ -621,6 +630,7 @@ namespace SAIN.BotController.Classes
                     $" Group Size: [{Members.Count}]"
                     );
             }
+#endif
         }
 
         public void AddMember(BotComponent bot)

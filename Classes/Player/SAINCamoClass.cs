@@ -96,6 +96,7 @@ namespace SAIN.Components
 
         public void OnGUI()
         {
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 GUIUtility.ScaleAroundPivot(RectLayout.ScaledPivot, Vector2.zero);
@@ -124,6 +125,7 @@ namespace SAIN.Components
                     }
                 }
             }
+#endif
         }
     }
 }

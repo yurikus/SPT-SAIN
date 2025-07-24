@@ -255,10 +255,12 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             WeaponInfo weapon = enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo;
             if (weapon == null)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode)
                 {
                     Logger.LogWarning($"Could not find Weapon to check suppression amount!");
                 }
+#endif
                 return defaultNum;
             }
 
@@ -266,19 +268,23 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 return result;
             }
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogWarning($"Could not find [{weapon.AmmoCaliber}] to check suppression amount!");
             }
+#endif
 
             if (GlobalSettings.Mind.SUPP_AMOUNTS.TryGetValue(ECaliber.Default, out result))
             {
                 return result;
             }
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 Logger.LogWarning($"Could not find Default Caliber Value to check suppression amount!");
             }
+#endif
             return defaultNum;
         }
 

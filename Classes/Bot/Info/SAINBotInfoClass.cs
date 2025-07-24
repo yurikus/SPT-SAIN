@@ -1,6 +1,7 @@
 ﻿using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
+using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;
 using SAIN.Preset.Personalities;
@@ -25,6 +26,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public override void Init()
         {
+            PresetHandler.OnPresetUpdated += ConfigureBot;
             ConfigureBot(SAINPlugin.LoadedPreset);
             WeaponInfo.Init();
             Difficulty.Init();
@@ -39,6 +41,7 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public override void Dispose()
         {
+            PresetHandler.OnPresetUpdated -= ConfigureBot;
             WeaponInfo.Dispose();
             Difficulty.Dispose();
         }
@@ -80,6 +83,8 @@ namespace SAIN.SAINComponent.Classes.Info
 
         private void ConfigureBot(SAINPresetClass preset)
         {
+            Personality = GetPersonality(out var settings);
+            PersonalitySettingsClass = settings;
             Difficulty.UpdateSettings(preset);
             CalcTimeBeforeSearch();
             CalcHoldGroundDelay();
@@ -217,12 +222,14 @@ namespace SAIN.SAINComponent.Classes.Info
                         if (eftVarField != null)
                         {
                             object sainValue = sainVarField.GetValue(sainCategory);
+#if DEBUG
                             if (SAINPlugin.DebugMode)
                             {
                                 //string message = $"[{eftVarField.Name}] : Default Value = [{eftVarField.GetValue(eftCategory)}] New Value = [{sainValue}]";
                                 //Logger.LogInfo(message);
                                 //Logger.NotifyInfo(message);
                             }
+#endif
                             eftVarField.SetValue(eftCategory, sainValue);
                         }
                     }

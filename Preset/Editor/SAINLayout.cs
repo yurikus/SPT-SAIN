@@ -97,10 +97,12 @@ namespace SAIN.Editor
         {
             string newvalue = GUILayout.TextField(value, GetStyle(Style.textField), options);
             bool soundPlayed = CompareValuePlaySound(value, newvalue, sound);
+#if DEBUG
             if (soundPlayed && SAINPlugin.DebugMode)
             {
                 Logger.LogDebug($"Toggle {sound.Value}");
             }
+#endif
             return newvalue;
         }
 
@@ -108,10 +110,12 @@ namespace SAIN.Editor
         {
             string newvalue = GUILayout.TextArea(value, GetStyle(Style.textField), options);
             bool soundPlayed = CompareValuePlaySound(value, newvalue, sound);
+#if DEBUG
             if (soundPlayed && SAINPlugin.DebugMode)
             {
                 Logger.LogDebug($"Toggle {sound.Value}");
             }
+#endif
             return newvalue;
         }
 
@@ -174,10 +178,12 @@ namespace SAIN.Editor
         {
             bool newvalue = GUILayout.Toggle(value, content, style, options);
             bool soundPlayed = CompareValuePlaySound(value, newvalue, sound);
+#if DEBUG
             if (soundPlayed && SAINPlugin.DebugMode)
             {
                 Logger.LogDebug($"Toggle {sound.Value}");
             }
+#endif
             return newvalue;
         }
 
@@ -198,10 +204,12 @@ namespace SAIN.Editor
             sound = sound ?? EUISoundType.ButtonOver;
             progress = Mathf.Clamp(progress, 0.33f, 1f);
             bool soundPlayed = CompareValuePlaySound(value, newvalue, sound, progress);
+#if DEBUG
             if (soundPlayed && SAINPlugin.DebugMode)
             {
                 //Logger.LogDebug($"Toggle {sound.Value}");
             }
+#endif
             return newvalue;
         }
 

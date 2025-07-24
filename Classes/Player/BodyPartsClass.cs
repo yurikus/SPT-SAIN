@@ -67,14 +67,20 @@ namespace SAIN.Components
         private SAINBodyPart createPart(EBodyPart bodyPartType, PlayerBones playerBones, EBodyPartColliderType[] colliderTypes)
         {
             BifacialTransform transform = getTransform(bodyPartType, playerBones);
+#if DEBUG
             if (transform == null)
             {
                 Logger.LogDebug($"{bodyPartType} has null bifacial transform");
             }
+#endif
             List<BodyPartCollider> colliders = getColliders(playerBones, colliderTypes);
             if (colliders?.Count == 0)
             {
+#if DEBUG
+#endif
+#if DEBUG
                 Logger.LogWarning($"No Colliders for {bodyPartType}!");
+#endif
             }
             return new SAINBodyPart(bodyPartType, transform, colliders);
         }
@@ -84,12 +90,16 @@ namespace SAIN.Components
             var colliderList = new List<BodyPartCollider>();
             if (playerBones == null)
             {
+#if DEBUG
                 Logger.LogError("Player bones null");
+#endif
                 return colliderList;
             }
             if (colliderTypes == null)
             {
+#if DEBUG
                 Logger.LogError("colliderTypes null");
+#endif
                 return colliderList;
             }
             var bodyParts = playerBones.BodyPartCollidersDictionary;
@@ -97,22 +107,30 @@ namespace SAIN.Components
             {
                 if (!bodyParts.TryGetValue(type, out BodyPartCollider collider))
                 {
+#if DEBUG
                     Logger.LogDebug($"{type} not in collider dictionary");
+#endif
                 }
                 else if (collider == null || collider.Collider == null)
                 {
+#if DEBUG
                     Logger.LogDebug($"{type} has null collider");
+#endif
                 }
                 else if (collider.transform == null)
                 {
+#if DEBUG
                     Logger.LogDebug($"{type} has null transform");
+#endif
                 }
                 else
                 {
+#if DEBUG
                     if (collider.Collider.transform == null)
                     {
                         Logger.LogDebug($"{type} collider.Collider has null transform");
                     }
+#endif
                     colliderList.Add(collider);
                 }
             }

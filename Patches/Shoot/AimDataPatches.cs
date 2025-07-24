@@ -37,9 +37,6 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 return;
             }
-            __result = 0;
-            return;
-
             __result = Mathf.Min(__result, MIN_START_MOA_AI);
             __result *= botOwner.Settings.Current.CurrentScattering;
             if (__instance.Weapon?.FireMode?.FireMode == EFT.InventoryLogic.Weapon.EFireMode.fullauto)

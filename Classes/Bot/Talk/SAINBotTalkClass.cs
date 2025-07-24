@@ -220,7 +220,9 @@ namespace SAIN.SAINComponent.Classes.Talk
             {
                 if (!_phraseDictionary.ContainsKey(phrase))
                 {
+#if DEBUG
                     Logger.LogWarning($"Phrase: [{phrase}] Not in Dictionary, adding it manually.");
+#endif
                     _phraseDictionary.Add(phrase, new PhraseInfo(phrase, 10, 5f));
                 }
                 var talk = new BotTalkPackage(_phraseDictionary[phrase], SetETagMask(mask));

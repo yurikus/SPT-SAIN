@@ -39,21 +39,27 @@ namespace SAIN.SAINComponent.Classes
             //Vector3 randomBox = getRandomizedDirection(finalDispersion, 1f, 0.1f, 1f);
             if (GetRandomReachablePointAroundPlayer(Sound.HeardPlayerComponent, finalDispersion, 0f, out Vector3 result, 4f, 20))
             {
+#if DEBUG
                 if (Sound.HeardPlayer.IsYourPlayer)
                 {
                     //DebugGizmos.DrawBox(Sound.HeardPlayer.Position, randomBox * 0.5f, Color.magenta, 10f);
                     var line = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.magenta, 0.1f, 10f, false);
                     DebugGizmos.SetLinePositions(line, _randomPath.corners);
                 }
+#endif
                 return result;
             }
             if (enemyLastKnown != null)
             {
+#if DEBUG
                 if (SAINPlugin.DebugMode) Logger.LogWarning($"[{Bot.name}] Failed to find reachable point from perception event for Enemy: [{Sound.Enemy.Player.name}]! but we had their old last known to fall back on.");
+#endif
                 return enemyLastKnown.Position;
             }
-
+            
+#if DEBUG
             Logger.LogWarning($"[{Bot.name}] Failed to find reachable point from perception event for Enemy: [{Sound.Enemy.Player.name}]! had to use enemy's real location as fallback!");
+#endif
             return Sound.Enemy.EnemyPosition;
         }
 
@@ -71,13 +77,17 @@ namespace SAIN.SAINComponent.Classes
                 Vector3 randomPoint = RandomPointInBox(origin, size);
                 if (!NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navSampleRange, -1))
                 {
+#if DEBUG
                     Logger.LogDebug($"Failed nav sample [randomDir magnitude: {(randomPoint - origin).magnitude}] [Box Size magnitude {size.magnitude}]");
+#endif
                     continue; // No valid point found
                 }
                 path = new NavMeshPath();
                 if (!NavMesh.CalculatePath(origin, hit.position, -1, path))
                 {
+#if DEBUG
                     Logger.LogDebug($"Failed nav path");
+#endif
                     continue;
                 }
                 Vector3[] corners = path.corners;
@@ -112,14 +122,18 @@ namespace SAIN.SAINComponent.Classes
                 Vector3 randomPoint = origin + randomDir;
                 if (!NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navSampleRange, -1))
                 {
+#if DEBUG
                     Logger.LogDebug($"Failed nav sample [randomDir magnitude: {randomDir.magnitude}] [Radius: {radius}]");
+#endif
                     continue; // No valid point found
                 }
                 _randomPath ??= new NavMeshPath();
                 _randomPath.ClearCorners();
                 if (!NavMesh.CalculatePath(origin, hit.position, -1, _randomPath))
                 {
+#if DEBUG
                     Logger.LogDebug($"Failed nav path");
+#endif
                     continue;
                 }
                 Vector3[] corners = _randomPath.corners;

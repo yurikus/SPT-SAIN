@@ -72,6 +72,7 @@ namespace SAIN.Patches.Movement
         [PatchPrefix]
         public static bool Sprint(bool target, BasePhysicalClass __instance)
         {
+#if DEBUG
             if (target) return true;
             //Logger.LogWarning("stop sprinting");
             if (target == __instance.bool_2) return true;
@@ -83,6 +84,7 @@ namespace SAIN.Patches.Movement
             {
                 SAIN.Logger.LogError("WHO DID IT");
             }
+#endif
             return true;
         }
     }
@@ -396,7 +398,9 @@ namespace SAIN.Patches.Movement
             IPlayer player = ___iobserverToPlayerBridge_0.iPlayer;
             if (player == null)
             {
+#if DEBUG
                 Logger.LogWarning($"Player is Null, can't set weight limits for AI.");
+#endif 
                 return true;
             }
             if (!player.IsAI)

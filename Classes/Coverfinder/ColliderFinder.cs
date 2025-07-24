@@ -185,6 +185,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         public void UpdateDebugColliders(Collider[] array)
         {
+#if DEBUG
             if (SAINPlugin.DebugMode
                 && SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder
                 && CoverFinderComponent.Bot.Cover.CurrentCoverFinderState == Classes.CoverFinderState.on)
@@ -225,6 +226,7 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                 debugGUIObjects.Clear();
                 debugColliders.Clear();
             }
+#endif
         }
 
         private static Dictionary<Collider, DebugLabel> debugGUIObjects = new();

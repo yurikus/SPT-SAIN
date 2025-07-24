@@ -56,6 +56,7 @@ namespace SAIN.Components.Extract
 
         public void OnGUI()
         {
+#if DEBUG
             DebugGizmos.OnGUI();
 
             if (!DebugMode || !SAINPlugin.DebugSettings.Logs.DrawDebugLabels)
@@ -84,10 +85,12 @@ namespace SAIN.Components.Extract
                     DebugGizmos.OnGUIDrawLabel(worldPos, "Extract point: " + ex.Settings.Name, guiStyle);
                 }
             }
+#endif
         }
 
         private void DrawGizmoSpheres(ExtractPositionFinder finder)
         {
+#if DEBUG
             if (!DebugGizmos.DrawGizmos || !DebugMode)
             {
                 return;
@@ -103,6 +106,7 @@ namespace SAIN.Components.Extract
                 Color color = finder.ValidPathFound ? Color.green : Color.red;
                 DebugGizmos.DrawSphere(finder.ExtractPosition.Value, 1f, color, CheckExtractDelay);
             }
+#endif
         }
 
         public int CountValidExfilsForBot(BotComponent bot)
@@ -135,17 +139,21 @@ namespace SAIN.Components.Extract
             }
 
             AllExfils = ExfilController.ExfiltrationPoints.AddRangeToArray(ExfilController.SecretExfiltrationPoints);
+#if DEBUG
             if (DebugMode)
             {
                 Logger.LogInfo($"Found {AllExfils?.Length} possible Exfil Points in this map.");
             }
+#endif
 
             ExfiltrationPoint[] secretScavExfils = ExfilController.GetScavSecretExits();
             AllScavExfils = ExfilController.ScavExfiltrationPoints.AddRangeToArray(secretScavExfils);
+#if DEBUG
             if (DebugMode)
             {
                 Logger.LogInfo($"Found {AllScavExfils?.Length} possible Scav Exfil Points in this map.");
             }
+#endif
 
             return true;
         }
@@ -168,7 +176,9 @@ namespace SAIN.Components.Extract
 
                 if (!completedCoroutine)
                 {
+#if DEBUG
                     Logger.LogError("An error occurred when searching for extracts.");
+#endif
                 }
             }
         }

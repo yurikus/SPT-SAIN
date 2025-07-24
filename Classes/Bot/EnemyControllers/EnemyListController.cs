@@ -22,8 +22,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             GameWorldComponent.Instance.PlayerTracker.OnPlayerRemoved += RemoveEnemy;
             BotOwner.Memory.OnAddEnemy += enemyAdded;
-            if (BotOwner.BotsGroup != null)
-                BotOwner.BotsGroup.OnEnemyRemove += RemoveEnemy;
+            if (BotOwner.BotsGroup is BotsGroup botsGroup)
+            {
+                botsGroup.OnEnemyAdd += enemyAdded;
+                botsGroup.OnEnemyRemove += RemoveEnemy;
+            }
             compareEnemyLists();
             base.Init();
         }
@@ -37,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public override void ManualUpdate()
         {
             compareEnemyLists();
-
+#if DEBUG
             if (SAINPlugin.DebugMode)
             {
                 foreach (Enemy enemy in Bot.EnemyController.VisibleEnemies)
@@ -74,6 +77,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     //    DebugGizmos.DrawLine(enemy.LastKnownPosition.Value, enemy.EnemyPosition, Color.blue, 0.025f, 0.02f);
                 }
             }
+#endif
 
             base.ManualUpdate();
         }
@@ -85,6 +89,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             if (memory != null)
             {
                 memory.OnAddEnemy -= enemyAdded;
+            }
+            if (BotOwner?.BotsGroup is BotsGroup botsGroup)
+            {
+                botsGroup.OnEnemyAdd -= enemyAdded;
+                botsGroup.OnEnemyRemove -= RemoveEnemy;
             }
 
             foreach (var enemy in EnemiesArray)
@@ -153,6 +162,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         }
 
         private void enemyAdded(IPlayer player)
+        {
+            tryAddEnemy(player);
+        }
+        private void enemyAdded(IPlayer player, EBotEnemyCause cause)
         {
             tryAddEnemy(player);
         }

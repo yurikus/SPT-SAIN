@@ -56,16 +56,27 @@ namespace SAIN.Patches.Vision
                 {
                     __instance.TurnOn(true);
                 }
-                catch (Exception e)
+                catch { }
+#if DEBUG
+                try
                 {
+                    __instance.TurnOn(true);
+                }
+                catch (Exception e)
                     if (SAINPlugin.DebugMode)
                     {
                         Logger.LogError(e);
                     }
-                }
+#endif
             }
             if (wantOff)
             {
+                try
+                {
+                    __instance.TurnOff(true,true);
+                }
+                catch { }
+#if DEBUG
                 try
                 {
                     __instance.TurnOff(true, true);
@@ -76,7 +87,7 @@ namespace SAIN.Patches.Vision
                     {
                         Logger.LogError(e);
                     }
-                }
+#endif
             }
 
             if (__instance.IsEnable)
@@ -84,13 +95,17 @@ namespace SAIN.Patches.Vision
                 var gameworld = GameWorldComponent.Instance;
                 if (gameworld == null)
                 {
+#if DEBUG
                     Logger.LogError($"GameWorldComponent is null, cannot check if bot has flashlight on!");
+#endif
                     return false;
                 }
                 PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(___botOwner_0.ProfileId);
                 if (playerComponent == null)
                 {
+#if DEBUG
                     Logger.LogError($"Player Component is null, cannot check if bot has flashlight on!");
+#endif
                     return false;
                 }
                 if (playerComponent.Flashlight.WhiteLight ||

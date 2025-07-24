@@ -228,7 +228,7 @@ namespace SAIN.Classes
 
         private static TurnSettings GetTurnSettings(BotOwner bot, BotComponent botComponent)
         {
-            TurnSettings turnSettings;
+            //TurnSettings turnSettings;
             //var settings = GlobalSettingsClass.Instance.Steering;
             //if (bot.AimingManager.CurrentAiming?.IsReady == true || bot.AimingManager.CurrentAiming is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
             //{

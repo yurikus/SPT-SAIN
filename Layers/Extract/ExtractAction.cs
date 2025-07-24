@@ -211,11 +211,13 @@ namespace SAIN.Layers
 
                     case EExfiltrationType.SharedTimer:
                         exfil.SetStatusLogged(EExfiltrationStatus.Countdown, "Proceed-1");
-
+                        
+#if DEBUG
                         if (SAINPlugin.DebugMode)
                         {
                             Logger.LogInfo($"bot {Bot.name} has started the VEX exfil");
                         }
+#endif
 
                         break;
 
