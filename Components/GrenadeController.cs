@@ -163,7 +163,9 @@ namespace SAIN.Components
 
             if (Rigidbody == null)
             {
+#if DEBUG
                 Logger.LogError("RigidBody Null");
+#endif
                 yield break;
             }
             while (Grenade != null && BotController != null && Rigidbody != null)

@@ -63,7 +63,9 @@ namespace SAIN.Components
 
             if (_tacticalModesField == null)
             {
+#if DEBUG
                 Logger.LogError("Could find not find _tacticalModesField");
+#endif
                 return;
             }
 
@@ -71,7 +73,9 @@ namespace SAIN.Components
             Player.FirearmController firearmController = player.HandsController as Player.FirearmController;
             if (firearmController == null)
             {
+#if DEBUG
                 Logger.LogError("Could find not find firearmController");
+#endif
                 return;
             }
 
@@ -80,7 +84,9 @@ namespace SAIN.Components
             TacticalDevices = weaponRoot.GetComponentsInChildrenActiveIgnoreFirstLevel<TacticalComboVisualController>();
             if (TacticalDevices == null)
             {
+#if DEBUG
                 Logger.LogError("Could find not find tacticalComboVisualControllers");
+#endif
                 return;
             }
 
@@ -105,28 +111,36 @@ namespace SAIN.Components
                         if (!foundWhiteLight && name.StartsWith("light_0"))
                         {
                             foundWhiteLight = true;
+#if DEBUG
                             if (_debugMode)
                                 Logger.LogDebug($"Found Light! Name:{name}");
+#endif
                             ActiveModes.Add(DeviceMode.WhiteLight);
                         }
                         if (!foundVisibleLaser && name.StartsWith("vis_0"))
                         {
+#if DEBUG
                             foundVisibleLaser = true;
                             if (_debugMode)
                                 Logger.LogDebug($"Found Visible Laser! Name:{name}");
+#endif
                             ActiveModes.Add(DeviceMode.VisibleLaser);
                         }
                         if (!foundIRLight && name.StartsWith("il_0"))
                         {
+#if DEBUG
                             foundIRLight = true;
                             if (_debugMode)
                                 Logger.LogDebug($"Found IR Light! Name:{name}");
+#endif
                             ActiveModes.Add(DeviceMode.IRLight);
                         }
                         if (!FoundIRLaser && name.StartsWith("ir_0"))
                         {
+#if DEBUG
                             if (_debugMode)
                                 Logger.LogDebug($"Found IR Laser! Name:{name}");
+#endif
                             FoundIRLaser = true;
                             ActiveModes.Add(DeviceMode.IRLaser);
                         }

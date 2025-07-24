@@ -98,7 +98,7 @@ namespace SAIN.SAINComponent.Classes
             {
                 BotOwner?.HearingSensor?.OnEnemySounHearded?.Invoke(EstimatedPosition, sound.PlayerDistance, sound.SoundType.Convert());
                 Bot.Memory.SetUnderFire(enemy, EstimatedPosition);
-                enemy.SetEnemyAsSniper(enemy.RealDistance > GlobalSettings.Mind.ENEMYSNIPER_DISTANCE);
+                enemy.SetEnemyAsSniper(enemy.RealDistance > Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE);
             }
             Bot.Suppression.CheckAddSuppression(enemy, ProjectionPointDistance);
             enemy.Status.RegisterEnemyFlyBy();

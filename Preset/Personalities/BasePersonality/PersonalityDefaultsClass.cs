@@ -85,6 +85,7 @@ namespace SAIN.Preset.Personalities
             behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 3f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.SearchNow;
+            behavior.Search.SlowAtCorners = false;
 
             behavior.Rush.CanRushEnemyReloadHeal = true;
             behavior.Rush.CanJumpCorners = true;
@@ -124,6 +125,10 @@ namespace SAIN.Preset.Personalities
             behavior.General.HoldGroundBaseTime = 2f;
             behavior.General.HoldGroundMaxRandom = 2.5f;
             behavior.General.HoldGroundMinRandom = 0.75f;
+            behavior.General.TARGET_SUPPRESS_TOGGLE = true;
+            behavior.General.TimeSinceSeenToSuppress = 30f;
+            behavior.General.TimeSinceShotAtToSuppress = 30f;
+            behavior.General.TimeSinceShotToSuppress = 30f;
 
             behavior.Cover.CanShiftCoverPosition = true;
             behavior.Cover.ShiftCoverTimeMultiplier = 0.5f;
@@ -153,12 +158,13 @@ namespace SAIN.Preset.Personalities
             behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 1f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Charge;
+            behavior.Search.SlowAtCorners = false;
 
             behavior.Rush.CanRushEnemyReloadHeal = true;
             behavior.Rush.CanJumpCorners = true;
-            behavior.Rush.JumpCornerChance = 60f;
+            behavior.Rush.JumpCornerChance = 80f;
             behavior.Rush.CanBunnyHop = true;
-            behavior.Rush.BunnyHopChance = 10;
+            behavior.Rush.BunnyHopChance = 40;
 
             addAllTypes(settings.Assignment.AllowedTypes);
             Personalities.Add(personality, settings);
@@ -191,6 +197,7 @@ namespace SAIN.Preset.Personalities
             behavior.General.HoldGroundBaseTime = 1.5f;
             behavior.General.HoldGroundMaxRandom = 1.2f;
             behavior.General.HoldGroundMinRandom = 0.8f;
+            behavior.General.TARGET_SUPPRESS_TOGGLE = false;
 
             behavior.Cover.CanShiftCoverPosition = true;
             behavior.Cover.ShiftCoverTimeMultiplier = 2f;
@@ -292,6 +299,7 @@ namespace SAIN.Preset.Personalities
             behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 1f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
+            behavior.Search.SlowAtCorners = false;
 
             behavior.Rush.CanRushEnemyReloadHeal = true;
             behavior.Rush.CanJumpCorners = false;
@@ -331,6 +339,7 @@ namespace SAIN.Preset.Personalities
             behavior.General.HoldGroundBaseTime = 1f;
             behavior.General.HoldGroundMaxRandom = 1.5f;
             behavior.General.HoldGroundMinRandom = 0.75f;
+            behavior.General.TARGET_SUPPRESS_TOGGLE = false;
 
             behavior.Cover.CanShiftCoverPosition = false;
             behavior.Cover.ShiftCoverTimeMultiplier = 1f;
@@ -408,6 +417,10 @@ namespace SAIN.Preset.Personalities
             behavior.General.HoldGroundBaseTime = 0.5f;
             behavior.General.HoldGroundMaxRandom = 1.5f;
             behavior.General.HoldGroundMinRandom = 0.75f;
+            behavior.General.TARGET_SUPPRESS_TOGGLE = true;
+            behavior.General.TimeSinceSeenToSuppress = 0.5f;
+            behavior.General.TimeSinceShotAtToSuppress = 30f;
+            behavior.General.TimeSinceShotToSuppress = 60f;
 
             behavior.Cover.CanShiftCoverPosition = false;
             behavior.Cover.ShiftCoverTimeMultiplier = 0.5f;
@@ -435,9 +448,9 @@ namespace SAIN.Preset.Personalities
             behavior.Search.SneakyPose = 0f;
             behavior.Search.SneakySpeed = 0f;
             behavior.Search.SearchHasEnemySpeed = 0f;
-            behavior.Search.SearchHasEnemyPose = 1f;
+            behavior.Search.SearchHasEnemyPose = 0.75f;
             behavior.Search.SearchNoEnemySpeed = 0f;
-            behavior.Search.SearchNoEnemyPose = 1f;
+            behavior.Search.SearchNoEnemyPose = 0.9f;
             behavior.Search.SearchWaitMultiplier = 0.5f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
 
@@ -485,6 +498,10 @@ namespace SAIN.Preset.Personalities
             behavior.General.HoldGroundBaseTime = 0.25f;
             behavior.General.HoldGroundMaxRandom = 1.5f;
             behavior.General.HoldGroundMinRandom = 0.75f;
+            behavior.General.TARGET_SUPPRESS_TOGGLE = true;
+            behavior.General.TimeSinceSeenToSuppress = 2f;
+            behavior.General.TimeSinceShotAtToSuppress = 2f;
+            behavior.General.TimeSinceShotToSuppress = 2f;
 
             behavior.Cover.CanShiftCoverPosition = false;
             behavior.Cover.MoveToCoverHasEnemySpeed = 0.5f;

@@ -56,7 +56,9 @@ namespace SAIN.Helpers
             }
             else
             {
+#if DEBUG
                 Logger.LogError($"Null!?");
+#endif
             }
             return default;
         }

@@ -11,6 +11,15 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [Description("Force this bot type to aim for center of mass.")]
         public bool AimCenterMass = true;
 
+        [Name("Can Aim for Headshots")]
+        [Category("Aim Target")]
+        public bool AimForHead = false;
+
+        [Category("Aim Target")]
+        [Name("Can Aim for Headshots - Percentage Chance")]
+        [Percentage]
+        public float AimForHeadChance = 33f;
+
         [Category("Time to Aim")]
         [Name("Distance Aim Time Multiplier")]
         [Description("Multiplies the time a bot takes to aim based on distance. So higher values will cause bots to take longer to aim depending on distance.")]

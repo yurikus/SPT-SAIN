@@ -232,6 +232,11 @@ namespace SAIN.Plugin
 
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 1.0f;
+
+                    easy.Aiming.AimCenterMass = false;
+                    normal.Aiming.AimCenterMass = false;
+                    hard.Aiming.AimCenterMass = false;
+                    impossible.Aiming.AimCenterMass = false;
                 }
                 if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
                 {
@@ -264,6 +269,11 @@ namespace SAIN.Plugin
 
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 0.65f;
+
+                    easy.Move.LEAN_TOGGLE = false;
+                    normal.Move.LEAN_TOGGLE = false;
+                    hard.Move.LEAN_TOGGLE = false;
+                    impossible.Move.LEAN_TOGGLE = false;
                 }
             }
             return preset;
@@ -289,6 +299,11 @@ namespace SAIN.Plugin
 
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 1.0f;
+
+                    easy.Aiming.AimCenterMass = false;
+                    normal.Aiming.AimCenterMass = false;
+                    hard.Aiming.AimCenterMass = false;
+                    impossible.Aiming.AimCenterMass = false;
                 }
                 if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
                 {
@@ -321,6 +336,11 @@ namespace SAIN.Plugin
 
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 0.65f;
+
+                    easy.Move.LEAN_TOGGLE = false;
+                    normal.Move.LEAN_TOGGLE = false;
+                    hard.Move.LEAN_TOGGLE = false;
+                    impossible.Move.LEAN_TOGGLE = false;
                 }
             }
             return preset;
@@ -438,6 +458,11 @@ namespace SAIN.Plugin
                     impossible.Aiming.MAX_AIM_TIME = 1.0f;
                     impossible.Aiming.BASE_HIT_AFFECTION_DELAY_SEC = 0.25f;
                     impossible.Core.VisibleDistance = 275f;
+
+                    easy.Aiming.AimCenterMass = false;
+                    normal.Aiming.AimCenterMass = false;
+                    hard.Aiming.AimCenterMass = false;
+                    impossible.Aiming.AimCenterMass = false;
                 }
             }
         }
@@ -454,6 +479,8 @@ namespace SAIN.Plugin
             global.Difficulty.GainSightCoef = 0.8f;
             global.Difficulty.PrecisionSpeedCoef = 0.8f;
             global.Difficulty.AccuracySpeedCoef = 0.8f;
+
+            ApplyHarderPMCs(preset);
 
             foreach (var bot in preset.BotSettings.SAINSettings)
             {
@@ -529,13 +556,12 @@ namespace SAIN.Plugin
 
             global.Difficulty.ScatteringCoef = 0.01f;
             global.Difficulty.VisibleDistCoef = 3f;
-            global.Difficulty.GainSightCoef = 0.65f;
-            global.Difficulty.PrecisionSpeedCoef = 0.5f;
-            global.Difficulty.AccuracySpeedCoef = 0.5f;
+            global.Difficulty.GainSightCoef = 0.5f;
+            global.Difficulty.PrecisionSpeedCoef = 0.1f;
+            global.Difficulty.AccuracySpeedCoef = 0.1f;
 
             global.Aiming.AimCenterMassGlobal = false;
             global.Look.NotLooking.NotLookingToggle = false;
-            global.Aiming.PMCSAimForHead = true;
 
             foreach (var bot in preset.BotSettings.SAINSettings)
             {
@@ -547,6 +573,8 @@ namespace SAIN.Plugin
                     setting.Value.Aiming.AimCenterMass = false;
                     setting.Value.Core.VisibleAngle = 180;
                     setting.Value.Core.GainSightCoef *= 0.66f;
+                    setting.Value.Aiming.AimForHead = true;
+                    setting.Value.Aiming.AimForHeadChance = 66f;
                 }
             }
             foreach (var botsetting in preset.BotSettings.SAINSettings)

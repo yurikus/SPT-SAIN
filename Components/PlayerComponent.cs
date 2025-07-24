@@ -45,7 +45,9 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (botOwner == null)
             {
+#if DEBUG
                 Logger.LogWarning($"{Name} : Null BotOwner, cannot Initialize!");
+#endif
                 return;
             }
             BotOwner = botOwner;
@@ -57,7 +59,9 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (bot == null)
             {
+#if DEBUG
                 Logger.LogWarning($"{Name} : Null BotComponent, cannot Initialize!");
+#endif
                 return;
             }
             BotComponent = bot;
@@ -351,7 +355,9 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public void Dispose()
         {
+#if DEBUG
             Logger.LogDebug($"Destroying Playing Component for [Name: {Name} : Nickname: {Player?.Profile?.Nickname}, ProfileID: {ProfileId}, at time: {Time.time}]");
+#endif
             OnComponentDestroyed?.Invoke(this);
             StopAllCoroutines();
             ActivationClass.Disable();

@@ -14,12 +14,16 @@ namespace SAIN.Components.BotComponentSpace.Classes
             Slot slot = weapon.weapon.GetMagazineSlot();
             if (slot == null)
             {
+#if DEBUG
                 Logger.LogError("slot null");
+#endif
                 return false;
             }
             if (slot.ContainedItem is not MagazineItemClass activeMag)
             {
+#if DEBUG
                 Logger.LogError($"mag null :: {slot.ContainedItem?.Name} :: {slot.ContainedItem?.ShortName}");
+#endif
                 return false;
             }
 
@@ -28,7 +32,9 @@ namespace SAIN.Components.BotComponentSpace.Classes
             if (_preAllocMagList.Count == 0)
             {
                 _preAllocMagList.Clear();
+#if DEBUG
                 Logger.LogDebug($"[{bot.Info.Profile.NickName}] no mags");
+#endif
                 return false;
             }
 
@@ -51,10 +57,14 @@ namespace SAIN.Components.BotComponentSpace.Classes
 
             if (refilledMags > 0 || fullMags >= numberToRefill)
             {
+#if DEBUG
                 Logger.LogDebug($"[{bot.Info.Profile.NickName}] success mags {refilledMags} : {fullMags}");
+#endif
                 return true;
             }
+#if DEBUG
             Logger.LogDebug($"[{bot.Info.Profile.NickName}] failed mags {refilledMags} : {fullMags}");
+#endif
             return false;
         }
 

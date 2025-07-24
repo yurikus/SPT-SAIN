@@ -179,7 +179,9 @@ namespace SAIN.SAINComponent.Classes.Search
                         CurrentState = ESearchMove.DirectMove;
                         break;
                     }
+#if DEBUG
                     Logger.LogWarning($"{BotOwner.name}'s cannot peek and cannot direct move!");
+#endif
                     break;
 
                 case ESearchMove.DirectMove:

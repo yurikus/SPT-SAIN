@@ -38,7 +38,9 @@ namespace SAIN.Helpers
             float minExtent = Math.Min(Math.Min(bounds.size.x, bounds.size.x), bounds.size.x) / 2;
             if (minExtent < radius)
             {
+#if DEBUG
                 Logger.LogError($"Radius {radius} is smaller than min bounds extent {minExtent} of size {bounds.size}");
+#endif
 
                 return Enumerable.Empty<Vector3>();
             }

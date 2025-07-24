@@ -87,7 +87,9 @@ namespace SAIN.Helpers
         }
         private static void LogDebug(string message)
         {
+#if DEBUG
             Logger.LogDebug(message);
+#endif
         }
 
         public static void ClearCache()

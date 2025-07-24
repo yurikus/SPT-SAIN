@@ -28,7 +28,9 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (!InteractWithDoor(ref data, interactionType))
             {
+#if DEBUG
                 Logger.LogDebug($"[{Bot.name}]:[{data.Door.Id}] failed to interact with door");
+#endif
                 Clear();
                 return false;
             }
@@ -186,10 +188,14 @@ namespace SAIN.SAINComponent.Classes.Mover
             const float SPHERECAST_DISTANCE = 1.5f;
             if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out RaycastHit hit, SPHERECAST_DISTANCE, LayerMaskClass.PlayerStaticDoorMask))
             {
+#if DEBUG
                 DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+#endif
                 if (FindDoorFromCollider(hit.collider, out data, out index, doors))
                 {
+#if DEBUG
                     Logger.LogDebug($"Found door from hit collider [PlayerStaticDoorMask] [{hit.collider.name}]");
+#endif
                     if (data.Door.DoorState == EDoorState.Open)
                     {
                         interactionType = EInteractionType.Close;
@@ -211,7 +217,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
                 if (FindDoorFromCollider(hit.collider, out data, out index, doors))
                 {
+#if DEBUG
                     Logger.LogDebug($"Found door from hit collider [DoorLayer] [{hit.collider.name}]");
+#endif
                     if (data.Door.DoorState == EDoorState.Open)
                     {
                         interactionType = EInteractionType.Close;
@@ -237,8 +245,10 @@ namespace SAIN.SAINComponent.Classes.Mover
                 if (doorCollider == null) continue;
                 if (doorCollider.Raycast(ray, out hit, SPHERECAST_DISTANCE))
                 {
+#if DEBUG
                     Logger.LogDebug($"hit door  [Door.collider.Raycast]");
                     DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
+#endif
                     if (data.Door.DoorState == EDoorState.Open)
                     {
                         interactionType = EInteractionType.Close;

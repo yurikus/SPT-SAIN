@@ -19,14 +19,21 @@ namespace SAIN.Classes
 
         public BotTurnData TurnData { get; set; } = new(Vector3.forward);
 
-        public void TickBotSteering(float deltaTime, BotOwner botOwner, BotComponent botComponent, SmoothTurnConfig config)
+        public void TickBotSteering(float deltaTime, BotOwner botOwner, BotComponent botComponent)
         {
             BotTurnData turnData = TurnData;
-            var settings = GlobalSettingsClass.Instance.Steering;
-            turnData.Config = config;
+            var globalSettings = GlobalSettingsClass.Instance.Steering;
+            var turnSettings = GetTurnSettings(botOwner, botComponent);
+            turnData.Config = new(
+            turnSettings.SmoothingValue,
+            turnSettings.MaxTurnSpeed,
+            globalSettings.PredictionStrength,
+            globalSettings.ConvergenceBoost,
+            globalSettings.MIN_STEERING_PITCH
+            );
             TurnData = PredictiveLookSmoothing.UpdateSmoothedDirection(turnData, deltaTime);
 
-            UpdateRandomSway(deltaTime, botOwner.GetPlayer, botOwner, botComponent, settings);
+            UpdateRandomSway(deltaTime, botOwner.GetPlayer, botOwner, botComponent, globalSettings);
 
             Vector3 dir = TurnData.CurrentLookDirection + RandomSwayOffset;
             SetXAngle(botOwner, dir);
@@ -169,15 +176,12 @@ namespace SAIN.Classes
             return -Mathf.Abs(num) * Mathf.Sign(dir.y);
         }
 
-        public void SetTargetMoveDirection(Vector3 direction, Vector3 finalMoveDestination, PlayerComponent playerComp)
+        public void SetTargetMoveDirection(Vector3 direction, Vector3 finalMoveDestination, PlayerComponent playerComp, float START_SLOW_DIST = 0.75f, float STOP_SPRINT_DIST = 1f)
         {
-            if (direction.sqrMagnitude < 0.001f) return;
+            if (direction.sqrMagnitude < Mathf.Epsilon) return;
 
             Player player = playerComp.Player;
             float playerSpeed = player.Speed;
-
-            const float START_SLOW_DIST = 0.75f;
-            const float STOP_SPRINT_DIST = 1f;
 
             float destinationDistance = (finalMoveDestination - playerComp.Position).magnitude;
             bool canSprint = player.MovementContext.CanSprint && CheckCanSprintByDistanceRemaining(destinationDistance, STOP_SPRINT_DIST);
@@ -186,7 +190,8 @@ namespace SAIN.Classes
             player.EnableSprint(shallSprint);
 
             direction.Normalize();
-            if (destinationDistance > 0.1f) player.CharacterController.SetSteerDirection(direction);
+            //if (destinationDistance > 0.1f) 
+                player.CharacterController.SetSteerDirection(direction);
             Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
             player.Move(moveDir);
             playerComp.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);
@@ -212,11 +217,11 @@ namespace SAIN.Classes
             bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
             bool aimingDownSights = botOwner.WeaponManager.ShootController?.IsAiming == true;
 
-            if (aiming) result *= 0.5f;
+            if (aiming) result *= 0.33f;
             if (aimingDownSights) result *= 0.15f;
-            if (moving) result *= 1.25f;
-            if (armsDamaged) result *= 1.5f;
-            if (noStamina) result *= 1.5f;
+            if (moving) result *= 1.15f;
+            if (armsDamaged) result *= 1.33f;
+            if (noStamina) result *= 1.33f;
             return Mathf.Clamp(result, 0.01f, 2.5f);
         }
 
@@ -226,64 +231,64 @@ namespace SAIN.Classes
             return new Vector2(vector.x, vector.y);
         }
 
-        private static TurnSettings GetTurnSettings(BotOwner bot, BotComponent botComponent)
+        private static TurnSettings GetTurnSettings(BotOwner botOwner, BotComponent botComponent)
         {
-            //TurnSettings turnSettings;
-            //var settings = GlobalSettingsClass.Instance.Steering;
-            //if (bot.AimingManager.CurrentAiming?.IsReady == true || bot.AimingManager.CurrentAiming is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
-            //{
-            //    if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.Aiming, out turnSettings))
-            //    {
-            //        return turnSettings;
-            //    }
-            //    return new TurnSettings(0.15f, 500f);
-            //}
-            //if (botComponent != null)
-            //{
-            //    if (botComponent.Mover.Running)
-            //    {
-            //        if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
-            //            return turnSettings;
-            //        return new TurnSettings(0.2f, 500f);
-            //    }
-            //    if (botComponent.Steering.CurrentSteerPriority == Models.Enums.ESteerPriority.RandomLook)
-            //    {
-            //        if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.RandomLook, out turnSettings))
-            //            return turnSettings;
-            //        return new TurnSettings(0.75f, 240f);
-            //    }
-            //    Enemy enemy = botComponent.GoalEnemy;
-            //    if (enemy != null)
-            //    {
-            //        if (enemy.IsVisible)
-            //        {
-            //            if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.CombatVisibleEnemy, out turnSettings))
-            //                return turnSettings;
-            //            return new TurnSettings(0.4f, 500f);
-            //        }
-            //        if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.Combat, out turnSettings))
-            //            return turnSettings;
-            //        return new TurnSettings(0.5f, 360f);
-            //    }
-            //}
-            //else if (bot.Memory.GoalEnemy != null)
-            //{
-            //    if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.Combat, out turnSettings))
-            //    {
-            //        return turnSettings;
-            //    }
-            //    return new TurnSettings(0.3f, 360f);
-            //}
-            //else if (bot.Mover.Sprinting)
-            //{
-            //    if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
-            //        return turnSettings;
-            //    return new TurnSettings(0.2f, 500f);
-            //}
-            //if (settings.SMOOTHTURN_SETTINGS.TryGetValue(EBotLookMode.Peace, out turnSettings))
-            //{
-            //    return turnSettings;
-            //}
+            TurnSettings turnSettings;
+            var settings = GlobalSettingsClass.Instance.Steering;
+            if (botOwner.AimingManager?.CurrentAiming?.IsReady == true || botOwner.AimingManager?.CurrentAiming is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
+            {
+                if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Aiming, out turnSettings))
+                {
+                    return turnSettings;
+                }
+                return new TurnSettings(0.15f, 500f);
+            }
+            if (botComponent != null)
+            {
+                if (botComponent.Mover.Running)
+                {
+                    if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
+                        return turnSettings;
+                    return new TurnSettings(0.2f, 500f);
+                }
+                if (botComponent.Steering.CurrentSteerPriority == Models.Enums.ESteerPriority.RandomLook)
+                {
+                    if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.RandomLook, out turnSettings))
+                        return turnSettings;
+                    return new TurnSettings(0.75f, 240f);
+                }
+                Enemy enemy = botComponent.GoalEnemy;
+                if (enemy != null)
+                {
+                    if (enemy.IsVisible)
+                    {
+                        if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.CombatVisibleEnemy, out turnSettings))
+                            return turnSettings;
+                        return new TurnSettings(0.4f, 500f);
+                    }
+                    if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
+                        return turnSettings;
+                    return new TurnSettings(0.5f, 360f);
+                }
+            }
+            else if (botOwner.Memory?.GoalEnemy != null)
+            {
+                if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
+                {
+                    return turnSettings;
+                }
+                return new TurnSettings(0.3f, 360f);
+            }
+            else if (botOwner.Mover.Sprinting)
+            {
+                if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
+                    return turnSettings;
+                return new TurnSettings(0.2f, 500f);
+            }
+            if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Peace, out turnSettings))
+            {
+                return turnSettings;
+            }
             return new TurnSettings(0.65f, 360f);
         }
 

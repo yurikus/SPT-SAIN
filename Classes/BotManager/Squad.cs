@@ -89,7 +89,9 @@ namespace SAIN.BotController.Classes
             }
             if (place == null)
             {
+#if DEBUG
                 Logger.LogError($"Tried to report enemy position for Squad [{Id}] but Place is null!");
+#endif
                 return;
             }
 

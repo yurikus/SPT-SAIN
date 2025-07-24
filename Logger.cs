@@ -10,10 +10,19 @@ namespace SAIN
 {
     internal static class Logger
     {
-        public static void LogInfo(object data)
-            => Log(LogLevel.Info, data);
+        public static void LogInfo(object data) 
+        { 
+#if DEBUG
+            Log(LogLevel.Info, data);
+#endif
+        }
         public static void LogDebug(object data)
-            => Log(LogLevel.Debug, data);
+        {
+            
+#if DEBUG
+            Log(LogLevel.Debug, data);
+#endif
+        }
         public static void LogWarning(object data)
             => Log(LogLevel.Warning, data);
         public static void LogError(object data)

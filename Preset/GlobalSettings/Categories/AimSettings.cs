@@ -141,7 +141,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Aim Target")]
         [Advanced]
         [MinMax(0f, 1f, 10000f)]
-        public float CenterMassVal = 0.3125f;
+        public float CenterMassVal = 0.275f;
 
         [Category("Time To Aim")]
         [Name("Global Faster CQB Reactions")]
@@ -152,16 +152,8 @@ namespace SAIN.Preset.GlobalSettings
         [Name("Aim Down Sight Aim Time Multiplier")]
         [Description("If a bot is aiming down sights, their time to aim will be multiplied by this number")]
         [MinMax(0.01f, 1f, 100f)]
-        public float AimDownSightsAimTimeMultiplier = 0.8f;
+        public float AimDownSightsAimTimeMultiplier = 0.7f;
 
-        [Name("PMCs Can Aim for Headshots")]
-        [Category("Aim Target")]
-        public bool PMCSAimForHead = false;
-
-        [Category("Aim Target")]
-        [Name("PMCs Can Aim for Headshots - Percentage Chance")]
-        [Percentage]
-        public float PMCAimForHeadChance = 33f;
 
         public override void Init(List<ISAINSettings> list)
         {

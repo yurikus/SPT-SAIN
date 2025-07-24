@@ -14,7 +14,9 @@ namespace SAIN.Components.PlayerComponentSpace
             var playerTracker = GameWorldComponent.Instance?.PlayerTracker;
             if (playerTracker == null)
             {
+#if DEBUG
                 Logger.LogError("player tracker null");
+#endif
                 return;
             }
             // Subscribe to player added or removed events

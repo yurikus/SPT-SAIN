@@ -196,7 +196,7 @@ namespace SAIN.Layers.Combat.Solo
                 return;
             }
 
-            if (_searchTarget.IsSniper && GlobalSettingsClass.Instance.Mind.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH)
+            if (_searchTarget.IsSniper && Bot.Info.PersonalitySettings.General.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH)
             {
                 _sprintEnabled = true;
                 return;

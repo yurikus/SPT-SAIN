@@ -61,7 +61,9 @@ namespace SAIN.Components
             var playerComponent = botOwner.GetComponent<PlayerComponent>();
             if (playerComponent == null)
             {
+#if DEBUG
                 Logger.LogError("Person Null");
+#endif
                 return;
             }
             if (botOwner.BotState == EBotState.Active)

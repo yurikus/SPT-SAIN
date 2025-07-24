@@ -112,7 +112,9 @@ namespace SAIN.SAINComponent.Classes
 
         private void resetHands(string reason)
         {
+#if DEBUG
             Logger.LogWarning($"[{BotOwner.name}] is resetting hands because [{reason}] too long!");
+#endif
             resetHandsController(Player);
         }
 
@@ -124,7 +126,9 @@ namespace SAIN.SAINComponent.Classes
         private static void resetHandsController(Player player)
         {
             var hands = player.HandsController as Player.ItemHandsController;
+#if DEBUG
             Logger.LogWarning($"[{hands?.Item?.Name} :: {hands.CurrentHandsOperationName}]");
+#endif
             hands.FastForwardCurrentState();
 
             //InventoryController inventoryController = player.InventoryController;

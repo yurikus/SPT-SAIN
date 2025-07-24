@@ -66,12 +66,20 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 2, bool withBehaviorChecks = true)
         {
+            if (!GlobalSettingsClass.Instance.Mind.TARGET_SUPPRESS_TOGGLE)
+            {
+                return false;
+            }
+            if (!Bot.Info.PersonalitySettings.General.TARGET_SUPPRESS_TOGGLE)
+            {
+                return false;
+            }
             if (Bot.Decision.CurrentSelfDecision == ESelfActionType.Reload)
             {
                 return false;
             }
-            if (Bot.Mover.Running && 
-                (Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running || 
+            if (Bot.Mover.Running &&
+                (Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running ||
                 Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning))
             {
                 return false;
@@ -108,9 +116,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return false;
         }
 
-        public static float TimeSinceSeenToSuppress => GlobalSettingsClass.Instance.Mind.TimeSinceShotToSuppress;
-        public static float TimeSinceShotAtToSuppress => GlobalSettingsClass.Instance.Mind.TimeSinceShotToSuppress;
-        public static float TimeSinceShotToSuppress => GlobalSettingsClass.Instance.Mind.TimeSinceShotToSuppress;
+        public float TimeSinceSeenToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceSeenToSuppress;
+        public float TimeSinceShotAtToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceShotToSuppress;
+        public float TimeSinceShotToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceShotToSuppress;
 
         public bool TrySuppressEnemy(Enemy Enemy, bool withBehaviorChecks = true)
         {

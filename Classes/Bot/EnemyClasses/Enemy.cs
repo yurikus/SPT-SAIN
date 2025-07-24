@@ -374,7 +374,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private bool IsTargetInSuppRange(Vector3 target, Vector3 suppressPoint)
         {
-            var settings = GlobalSettingsClass.Instance.Mind;
+            var settings = Bot.Info.PersonalitySettings.General;
 
             float distSqr = (target - suppressPoint).sqrMagnitude;
             if (distSqr <= settings.TARGET_SUPPRESS_DIST.Sqr())
@@ -416,7 +416,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     IsSniper = false;
                     return;
                 }
-                IsSniper = RealDistance < GlobalSettings.Mind.ENEMYSNIPER_DISTANCE_END;
+                IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
             }
         }
 
@@ -480,7 +480,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             var place = KnownPlaces.UpdateSeenPlace(position);
             if (place == null)
             {
+#if DEBUG
                 Logger.LogError($"Failed to update last seen position for {EnemyName} at {position}");
+#endif
                 return;
             }
             Bot.Squad.SquadInfo?.ReportEnemyPosition(this, place, true);

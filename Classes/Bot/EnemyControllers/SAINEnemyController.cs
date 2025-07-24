@@ -127,11 +127,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public void UpdateEnemies(BotComponent bot)
         {
+#if DEBUG
             UnityEngine.Profiling.Profiler.BeginSample("Enemy Updater");
+#endif
             List<IPlayer> Allies = bot.BotOwner?.BotsGroup?.Allies;
             if (Allies == null)
             {
+#if DEBUG
                 Logger.LogError($"[{bot.name}] No Allies List!");
+#endif
                 return;
             }
             foreach (Enemy Enemy in EnemiesArray)
@@ -174,8 +178,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 #endif
                 _allyIdsToRemove.Clear();
             }
-
+            
+#if DEBUG
             UnityEngine.Profiling.Profiler.EndSample();
+#endif
         }
 
         public Enemy GoalEnemy {

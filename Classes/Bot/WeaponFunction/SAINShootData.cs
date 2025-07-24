@@ -315,7 +315,7 @@ namespace SAIN.SAINComponent.Classes
             {
                 return null;
             }
-            if (bot.Info.Profile.IsPMC && GlobalSettingsClass.Instance.Aiming.PMCSAimForHead)
+            if (bot.Info.FileSettings.Aiming.AimForHead)
             {
                 return null;
             }

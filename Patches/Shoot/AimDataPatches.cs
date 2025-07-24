@@ -72,7 +72,7 @@ namespace SAIN.Patches.Shoot.Aim
             return false;
         }
     }
-    
+
     /// <summary>
     /// In the original method it triggers a bot to set ADS, we control this in sain, and dont want it to override our settings.
     /// This is just the original method, but without setting ADS.
@@ -479,8 +479,14 @@ namespace SAIN.Patches.Shoot.Aim
         {
             if (!__instance.Person.IsAI)
             {
-                var aim = GlobalSettingsClass.Instance.Aiming;
-                canBehead = EFTMath.RandomBool(aim.PMCAimForHeadChance) && aim.PMCSAimForHead && IsPMC(__instance);
+                if (SAINEnableClass.GetSAIN(__instance.Owner, out BotComponent bot))
+                {
+                    var aim = bot.Info.FileSettings.Aiming;
+                    canBehead = EFTMath.RandomBool(aim.AimForHeadChance) && aim.AimForHead;
+                    withLegs = true;
+                    return;
+                }
+                canBehead = false;
                 withLegs = true;
             }
             else

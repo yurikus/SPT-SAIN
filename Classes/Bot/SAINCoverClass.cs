@@ -128,7 +128,7 @@ namespace SAIN.SAINComponent.Classes
             //    reason = "noCoverPoints";
             //    return false;
             //}
-            if (enemy.IsSniper && GlobalSettings.Mind.ENEMYSNIPER_ALWAYS_SPRINT_COVER)
+            if (enemy.IsSniper && Bot.Info.PersonalitySettings.General.ENEMYSNIPER_ALWAYS_SPRINT_COVER)
             {
                 reason = "EnemySniperRun";
                 return true;

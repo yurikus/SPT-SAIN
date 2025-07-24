@@ -47,10 +47,12 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (Bot.SAINLayersActive)
             {
+#if DEBUG
                 if (Bot.CurrentAction == null)
                 {
                     Logger.LogWarning($"[{Bot.name}] No current action set, cannot update movement and steering!.");
                 }
+#endif
                 Bot.CurrentAction?.UpdateMovement();
                 if (!CheckTickPath())
                 {
@@ -73,7 +75,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 _activePath.PathRecalcRequested = false;
                 if (!TriggerRecalcPath())
                 {
+#if DEBUG
                     Logger.LogWarning("Failed to recalculate path, cancelling active path.");
+#endif
                     _activePath.Cancel();
                     return false;
                 }
@@ -359,6 +363,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 return true;
             }
+#if DEBUG
+#endif
             Logger.LogDebug($"Failed to recalculate path to cover point, path status: {coverPathData.Path.status}");
             return false;
         }

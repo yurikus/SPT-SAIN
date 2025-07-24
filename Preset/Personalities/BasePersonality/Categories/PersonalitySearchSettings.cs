@@ -19,7 +19,7 @@ namespace SAIN.Preset.Personalities
         public bool WillChaseDistantGunshots = true;
 
         [Description("If a sound is further than this, it will be considered chasing a gunshot sound, and will be ignored if WillChaseDistantGunshots is set to off, unless the gunshot is fired at them.")]
-        public float AudioStraightDistanceToIgnore = 125f;
+        public float AudioStraightDistanceToIgnore = 100f;
 
         [Name("Start Search Base Time")]
         [Description("The base time, before modifiers, that a personality will usually start searching for their enemy.")]
@@ -44,6 +44,9 @@ namespace SAIN.Preset.Personalities
         [Percentage0to1]
         [Advanced]
         public float SneakyPose = 1f;
+        
+        [Advanced]
+        public bool SlowAtCorners = true;
 
         [Percentage0to1]
         [Advanced]

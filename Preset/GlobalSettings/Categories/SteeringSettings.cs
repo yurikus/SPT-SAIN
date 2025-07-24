@@ -6,16 +6,6 @@ namespace SAIN.Preset.GlobalSettings
 {
     public class SteeringSettings : SAINSettingsBase<SteeringSettings>, ISAINSettings
     {
-        //[Name("Smooth Turn Settings")]
-        //[Hidden]
-        //public Dictionary<EBotLookMode, TurnSettings> SMOOTHTURN_SETTINGS = new() {
-        //    { EBotLookMode.Peace, new TurnSettings(0.5f, 300f) },
-        //    { EBotLookMode.Combat, new TurnSettings(0.4f, 480f) },
-        //    { EBotLookMode.CombatSprint, new TurnSettings(0.05f, 540f) },
-        //    { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.35f, 540f) },
-        //    { EBotLookMode.Aiming, new TurnSettings(0.05f, 540f ) },
-        //    { EBotLookMode.RandomLook, new TurnSettings(0.8f, 200f ) },
-        //};
 
         [Name("Max Path Length")]
         [Description("How far along a path to an enemy a bot will check vision to, in meters.")]
@@ -71,9 +61,20 @@ namespace SAIN.Preset.GlobalSettings
         [MinMax(0f, 50f, 1000f)]
         public float STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE = 2.5f;
 
+        [Name("Smooth Turn Settings")]
+        [Hidden]
+        public Dictionary<EBotLookMode, TurnSettings> SMOOTHING_BY_STATE = new() {
+            { EBotLookMode.RandomLook, new TurnSettings(0.045f, 120f ) },
+            { EBotLookMode.Peace, new TurnSettings(0.055f, 240) },
+            { EBotLookMode.Combat, new TurnSettings(0.065f, 300f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.065f, 300f) },
+            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.075f, 300f) },
+            { EBotLookMode.Aiming, new TurnSettings(0.075f, 360f ) },
+        };
+
         [MinMax(0f, 0.5f, 1000f)]
         [Advanced]
-        public float SmoothingFactor = 0.075f;  // Lower = smoother, higher = more responsive
+        public float SmoothingFactor = 0.065f;  // Lower = smoother, higher = more responsive
 
         [MinMax(0f, 3f, 1000f)]
         [Advanced]

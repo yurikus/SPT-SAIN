@@ -43,11 +43,15 @@ namespace SAIN
 
             if (IsBotExcluded(botOwner)) {
                 ExcludedBots.Add(id);
+#if DEBUG
                 Logger.LogDebug($"Added Excluded Bot [{player.Profile.Nickname},{id}]");
+#endif
                 return true;
             }
             EnabledBots.Add(id);
+#if DEBUG
             Logger.LogDebug($"Added Enabled Bot [{player.Profile.Nickname},{id}]");
+#endif
             return false;
         }
 

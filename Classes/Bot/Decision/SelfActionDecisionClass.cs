@@ -40,7 +40,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (CheckDoReload(enemy, Bot))
             {
-                botOwner.ShootData.BlockFor(1.5f);
+                botOwner.ShootData.BlockFor(1.0f);
                 Decision = ESelfActionType.Reload;
                 return true;
             }
@@ -154,6 +154,18 @@ namespace SAIN.SAINComponent.Classes.Decision
                     return false;
                 }
 
+                if (enemy.Events.OnSearch.Value)
+                {
+                    if (ammoRatio < 0.2f)
+                    {
+                        return true;
+                    }
+                    if (ammoRatio > 0.5f)
+                    {
+                        return false;
+                    }
+                }
+
                 //if (!CheckReloadByAmmoRemaining(enemy, ammoRatio))
                 //{
                 //    return false;
@@ -220,7 +232,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     if (checkContinueReload(_timeSinceChangeDecision, enemy))
                     {
                         Decision = ESelfActionType.Reload;
-                        BotOwner.ShootData.BlockFor(0.1f);
+                        BotOwner.ShootData.BlockFor(0.05f);
                         return true;
                     }
                     return false;
@@ -241,7 +253,7 @@ namespace SAIN.SAINComponent.Classes.Decision
         {
             BotComponent bot = Bot;
             if (bot.Decision.CurrentSelfDecision != ESelfActionType.Reload) return false;
-            if (timeSinceChange < 0.75f) return true;
+            if (timeSinceChange < 0.5f) return true;
             BotWeaponManager weaponManager = bot.BotOwner.WeaponManager;
             if (weaponManager == null) return false;
             BotReload reload = weaponManager.Reload;
@@ -267,7 +279,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                 //return false;
             }
 
-            //reload.CheckReloadLongTime();
+            reload.CheckReloadLongTime();
 
             if (timeSinceChange > 8f)
             {

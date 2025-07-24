@@ -84,7 +84,9 @@ namespace SAIN.SAINComponent.Classes
                 BotOwner.BotState == EBotState.Active && 
                 BotOwner.StandBy.StandByType == BotStandByType.active)
             {
+#if DEBUG
                 Logger.LogWarning($"Bot not active but should be!");
+#endif
                 SetActive(true);
             }
         }
@@ -102,7 +104,9 @@ namespace SAIN.SAINComponent.Classes
                 }
                 else if (CheckAllEnemies())
                 {
+#if DEBUG
                     Logger.LogDebug($"[{BotOwner.name}] disabled standby due to enemies being near.");
+#endif
                     BotOwner.StandBy.Activate();
                     standby = false;
                 }

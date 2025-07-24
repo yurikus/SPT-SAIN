@@ -35,7 +35,9 @@ namespace SAIN.Types.Jobs
 
         protected virtual IEnumerator Loop()
         {
+#if DEBUG
             Logger.LogDebug($"Starting Job: [{Name}]");
+#endif
             WaitForSeconds Wait = new(LoopInterval);
             while (LoopCondition())
             {
@@ -47,7 +49,9 @@ namespace SAIN.Types.Jobs
                 yield return PrimaryFunction();
                 yield return Wait;
             }
+#if DEBUG
             Logger.LogDebug($"Job Ended [{Name}]");
+#endif
         }
 
         protected virtual IEnumerator PrimaryFunction()
@@ -71,7 +75,9 @@ namespace SAIN.Types.Jobs
             {
                 if (Owner == null)
                 {
+#if DEBUG
                     Logger.LogError("Owner Null. Cannot Start.");
+#endif
                 }
                 else
                 {
@@ -86,7 +92,9 @@ namespace SAIN.Types.Jobs
             {
                 if (Owner == null)
                 {
+#if DEBUG
                     Logger.LogError("Owner Null. Cannot Stop Coroutine.");
+#endif
                 }
                 else
                 {

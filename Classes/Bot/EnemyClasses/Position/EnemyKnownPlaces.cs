@@ -304,7 +304,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             if (place == null)
             {
+#if DEBUG
                 Logger.LogWarning("SetLastKnown called with null place");
+#endif
                 return;
             }
             SearchedAllKnownLocations = false;

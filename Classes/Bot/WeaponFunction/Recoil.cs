@@ -68,7 +68,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             if (weapon == null)
             {
+#if DEBUG
                 Logger.LogError("Weapon Null!");
+#endif
                 return;
             }
             
@@ -81,11 +83,13 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
             _currentRecoilVertAngle = Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
             _currentRecoilHorizAngle = Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
-
+            
+#if DEBUG
             if (_debugRecoilLogs)
                 Logger.LogDebug($"Recoil! New Recoil: [{_currentRecoilVertAngle}:{_currentRecoilHorizAngle}] " +
                 $"recoilNum: [{recoilNum}] calcdRecoil: [{calcdRecoil}] : " +
                 $"Modifiers [ Add: [{addRecoil}] Multi: [{recoilMod}] Weapon RecoilTotal [{recoilTotal}]] Shoot Modifier: [{Bot.Info.WeaponInfo.FinalModifier}]");
+#endif
         }
          
         private float randomSign()

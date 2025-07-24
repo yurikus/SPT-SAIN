@@ -307,7 +307,9 @@ namespace SAIN.Components
             GameWorld = gameWorld;
             if (GameWorld == null)
             {
+#if DEBUG
                 Logger.LogWarning("GameWorld Null, cannot Init SAIN Gameworld! Check 2. Disposing Component...");
+#endif
                 DestroyComponent();
                 return;
             }

@@ -22,7 +22,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         public LeanSetting LastLeanDirection { get; private set; }
         public bool CanLeanByState { get; private set; }
         public bool IsRaycastLeaning { get; private set; }
-        public SmoothDampenedFloat LeanAngleValue { get; } = new(0.5f);
+        public SmoothDampenedFloat LeanAngleValue { get; } = new(0.2f);
 
         public LeanClass(BotComponent sain) : base(sain)
         {
@@ -48,6 +48,8 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (Player.IsSprintEnabled)
             {
                 Player.MovementContext.SetTilt(0);
+                LeanAngleValue.Set(0);
+                LeanAngleValue.Get(Time.fixedDeltaTime);
             }
             else
             {
@@ -56,9 +58,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                     LeanSetting.Right => 5f,
                     _ => 0f,
                 };
-                //LeanAngleValue.Set(num);
-                //float tiltValue = LeanAngleValue.Get(Time.fixedDeltaTime);
-                Player.MovementContext.SetTilt(num);
+                LeanAngleValue.Set(num);
+                float tiltValue = LeanAngleValue.Get(Time.fixedDeltaTime);
+                Player.MovementContext.SetTilt(tiltValue);
             }
         }
 
@@ -174,6 +176,10 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public LeanSetting FindLeanFromBlindCornerAngle(Enemy enemy, float minAngle = -1f)
         {
+            if (enemy == null)
+            {
+                return LeanSetting.None;
+            }
             var blindCorner = enemy.VisiblePathPoint;
             if (blindCorner == null)
             {

@@ -107,7 +107,9 @@ namespace SAIN.Preset
             }
             else
             {
+#if DEBUG
                 Logger.LogError($"WildSpawnType {wildSpawnType} does not exist in BotType Dictionary");
+#endif
                 return BotTypes[WildSpawnType.assault];
             }
         }

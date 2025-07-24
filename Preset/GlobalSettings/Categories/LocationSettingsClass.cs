@@ -34,14 +34,18 @@ namespace SAIN.Preset.GlobalSettings
             var gameworld = GameWorldComponent.Instance;
             if (gameworld == null || gameworld.Location == null)
             {
+#if DEBUG
                 Logger.LogError($"gameworld or location class null");
+#endif
                 return null;
             }
             if (LocationSettings.TryGetValue(gameworld.Location.Location, out var settings))
             {
                 return settings;
             }
+#if DEBUG
             Logger.LogError($"no settings for {gameworld.Location.Location}");
+#endif
             return null;
         }
 

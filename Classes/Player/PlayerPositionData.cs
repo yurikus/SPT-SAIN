@@ -14,17 +14,23 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (Player == null)
             {
+#if DEBUG
                 Logger.LogError($"Player == null");
+#endif
                 return;
             }
             if (Player.Profile == null)
             {
+#if DEBUG
                 Logger.LogError($"Player.Profile == null");
+#endif
             }
             PlayerNickname = Player.Profile.Nickname;
             if (Player.MainParts == null)
             {
+#if DEBUG
                 Logger.LogError($"Player.MainParts == null");
+#endif
                 return;
             }
             BodyParts = Player.MainParts;
@@ -55,7 +61,9 @@ namespace SAIN.Components.PlayerComponentSpace
             // The excessive null checks here are just to verify no mistakes are made. If there are no errors during gameplay during testing we should be able to safely remove them and remove some overhead  - Solarint
             if (Player == null)
             {
+#if DEBUG
                 Logger.LogError($"Player Null");
+#endif
                 return;
             }
             /////
@@ -64,7 +72,9 @@ namespace SAIN.Components.PlayerComponentSpace
             BifacialTransform Transform = Player.Transform;
             if (Transform == null)
             {
+#if DEBUG
                 Logger.LogError($"Player Transform Null");
+#endif
             }
             else
             {
@@ -74,7 +84,9 @@ namespace SAIN.Components.PlayerComponentSpace
             MovementContext movementContext = Player.MovementContext;
             if (movementContext == null)
             {
+#if DEBUG
                 Logger.LogError($"Player MovementContext Null");
+#endif
             }
             else
             {
@@ -86,7 +98,9 @@ namespace SAIN.Components.PlayerComponentSpace
             EnemyPart MyHeadPart = Head;
             if (MyHeadPart == null)
             {
+#if DEBUG
                 Logger.LogError($"{PlayerNickname}'s Head Part is null");
+#endif
                 HeadPosition = Zero;
             }
             else
@@ -97,7 +111,9 @@ namespace SAIN.Components.PlayerComponentSpace
             EnemyPart MyMainBodyPart = MainBody;
             if (MyMainBodyPart == null)
             {
+#if DEBUG
                 Logger.LogError($"{PlayerNickname}'s MainBody Part is null");
+#endif
                 BodyPosition = Zero;
             }
             else
@@ -141,17 +157,23 @@ namespace SAIN.Components.PlayerComponentSpace
             EnemyPart Result = null;
             if (BodyParts == null)
             {
+#if DEBUG
                 Logger.LogError($"[{PlayerNickname}] Body Parts Dictionary Null");
+#endif
                 return Result;
             }
             if (!BodyParts.TryGetValue(PartType, out Result))
             {
+#if DEBUG
                 Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary");
+#endif
                 return null;
             }
             if (Result == null)
             {
+#if DEBUG
                 Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is Null");
+#endif
             }
             return Result;
         }

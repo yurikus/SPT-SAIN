@@ -26,7 +26,6 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public override void Init()
         {
-            PresetHandler.OnPresetUpdated += ConfigureBot;
             ConfigureBot(SAINPlugin.LoadedPreset);
             WeaponInfo.Init();
             Difficulty.Init();
@@ -41,7 +40,6 @@ namespace SAIN.SAINComponent.Classes.Info
 
         public override void Dispose()
         {
-            PresetHandler.OnPresetUpdated -= ConfigureBot;
             WeaponInfo.Dispose();
             Difficulty.Dispose();
         }

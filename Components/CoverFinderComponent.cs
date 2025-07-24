@@ -69,7 +69,8 @@ namespace SAIN.Components.CoverFinder
             bot.BotActivation.BotStandByToggle.OnToggle += botInStandBy;
             bot.OnDispose += botDisposed;
         }
-
+        
+#if DEBUG
         public void Update()
         {
             if (SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder &&
@@ -78,6 +79,7 @@ namespace SAIN.Components.CoverFinder
                 DebugGizmos.DrawLine(CoverPoints.PickRandom().Position, Bot.Transform.EyePosition, Color.yellow, 0.05f, 0.1f);
             }
         }
+#endif
 
         public override void Dispose()
         {
@@ -206,7 +208,9 @@ namespace SAIN.Components.CoverFinder
                         Collider collider = colliderData.Collider;
                         if (collider == null)
                         {
+#if DEBUG
                             Logger.LogDebug("collider null");
+#endif
                             continue;
                         }
                         _totalChecked++;
@@ -214,7 +218,9 @@ namespace SAIN.Components.CoverFinder
                         enemy = TargetEnemy;
                         if (enemy == null || enemy.LastKnownPosition == null)
                         {
+#if DEBUG
                             Logger.LogDebug("enemy null");
+#endif
                             break;
                         }
                         Vector3 targetPosition = enemy.LastKnownPosition.Value;
@@ -243,7 +249,9 @@ namespace SAIN.Components.CoverFinder
                         yield return null;
                     }
                     sort(CoverPoints.Count, CoverPoints);
+#if DEBUG
                     log(CoverPoints.Count);
+#endif
                 }
                 CurrentStatus = ECoverFinderStatus.None;
                 yield return wait;

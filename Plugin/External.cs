@@ -59,13 +59,17 @@ namespace SAIN.Plugin
             var botController = BotManagerComponent.Instance;
             if (botController == null)
             {
+#if DEBUG
                 Logger.LogWarning("SAIN Bot Controller is Null, cannot retrieve Extracted Bots List.");
+#endif
                 return;
             }
             var extractedBots = botController.BotExtractManager?.ExtractedBots;
             if (extractedBots == null)
             {
+#if DEBUG
                 Logger.LogWarning("List of extracted bots is null! Cannot copy list.");
+#endif
                 return;
             }
             list.Clear();
@@ -77,13 +81,17 @@ namespace SAIN.Plugin
             var botController = BotManagerComponent.Instance;
             if (botController == null)
             {
+#if DEBUG
                 Logger.LogWarning("SAIN Bot Controller is Null, cannot retrieve Extracted Bots List.");
+#endif
                 return;
             }
             var extractedBots = botController.BotExtractManager?.BotExtractionInfos;
             if (extractedBots == null)
             {
+#if DEBUG
                 Logger.LogWarning("List of extracted bots is null! Cannot copy list.");
+#endif
                 return;
             }
             list.Clear();
@@ -97,11 +105,13 @@ namespace SAIN.Plugin
             {
                 return false;
             }
-
+            
+#if DEBUG
             if (!Components.BotController.BotExtractManager.IsBotAllowedToExfil(component))
             {
                 Logger.LogWarning($"{bot.name} is not allowed to use extracting logic.");
             }
+#endif
 
             if (!BotManagerComponent.Instance.BotExtractManager.TryFindExfilForBot(component))
             {

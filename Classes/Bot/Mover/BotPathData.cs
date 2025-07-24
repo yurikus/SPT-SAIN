@@ -74,13 +74,19 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             Util.StopVanillaMover(Bot.BotOwner.Mover);
             Bot.Mover.Prone.SetProne(Crawling);
-
+            
+#if DEBUG
             Util.DrawMoverDebug(botPosition, currentCorner.Position);
+#endif
 
             CurrentSprintStatus = GetSprintStatus(botPosition);
             SetSprint(CurrentSprintStatus == EBotSprintStatus.Running, $"{CurrentSprintStatus}");
 
-            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(currentCorner.Position - Bot.Position, Destination, Bot.PlayerComponent);
+            bool slowAtCorners = Bot.GoalEnemy != null && Bot.GoalEnemy.Events.OnSearch.Value && Bot.Info.PersonalitySettings.Search.SlowAtCorners;
+            Vector3 startSlowDestination = slowAtCorners ? currentCorner.Position : Destination;
+            float startSlowDist = slowAtCorners ? 2f : 0.85f;
+            float stopSprintDist = slowAtCorners ? 2f : 1.1f;
+            Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(currentCorner.Position - Bot.Position, startSlowDestination, Bot.PlayerComponent, startSlowDist, stopSprintDist);
 
             if (!CheckSprintSteering(currentCorner))
             {
@@ -89,7 +95,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             else
             {
                 Bot.BotOwner.ShootData.EndShoot();
-                Bot.BotOwner.ShootData.BlockFor(0.2f);
+                Bot.BotOwner.ShootData.BlockFor(0.05f);
                 Bot.Aim.LoseAimTarget();
                 Bot.ManualShoot.Reset();
                 Bot.Suppression.ResetSuppressing();
@@ -399,7 +405,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
                     Vector3 position = CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
                     Vector3 dirNormal = (position - Bot.Position).normalized;
-                    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(dirNormal, Vector3.zero, Bot.PlayerComponent);
+                    Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(position, position, Bot.PlayerComponent, 0.33f, 1.33f);
                     return true;
                 }
             }
@@ -511,7 +517,9 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             if (Physics.SphereCast(botPosition + (Vector3.up * height), sphereCastRadius, direction, out RaycastHit hit, maxDist, LayerMaskClass.PlayerStaticCollisionsMask))
             {
+#if DEBUG
                 DebugGizmos.DrawLine(botPosition + (Vector3.up * height), hit.point, Color.green, 0.1f, 3);
+#endif
                 return true;
             }
             return false;
@@ -703,7 +711,9 @@ namespace SAIN.SAINComponent.Classes.Mover
                 if (botOwnerMover.IsMoving || botOwnerMover.HasPathAndNoComplete)
                 {
                     botOwnerMover.Stop(); // Backwards sprint / moonwalking fix
+#if DEBUG
                     Logger.LogDebug($"vanilla mover stopped");
+#endif
                 }
             }
 
