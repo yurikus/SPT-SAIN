@@ -116,9 +116,9 @@ namespace SAIN.Types.TurnSmoothing
             // Scale smoothing factor by delta time and convergence boost
             var adaptiveFactor = config.SmoothingFactor * convergenceMultiplier;
 
-            // Ensure we don't overshoot with large delta times
             return adaptiveFactor;
-            return Mathf.Clamp01(adaptiveFactor * (deltaTime * 60f)); // Normalize for 60 FPS baseline
+            // Ensure we don't overshoot with large delta times
+            //return Mathf.Clamp01(adaptiveFactor * (deltaTime * 60f)); // Normalize for 60 FPS baseline
         }
 
         private static Vector3 SmoothTowardsTarget(Vector3 current, Vector3 target, float smoothingFactor, SmoothTurnConfig config)

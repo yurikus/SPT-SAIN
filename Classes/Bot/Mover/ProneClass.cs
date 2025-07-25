@@ -85,19 +85,19 @@ namespace SAIN.SAINComponent.Classes.Mover
             return Player.IsInPronePose;
 
 
-            Vector3? lastKnownPos = enemy.LastKnownPosition;
-            if (lastKnownPos == null)
-            {
-                return false;
-            }
-           // bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
-            bool isUnderDuress = false;
-            bool shallProne = isUnderDuress || !CheckShootProne(lastKnownPos.Value, enemy);
-            if (shallProne)
-            {
-                _nextChangeProneTime = Time.time + 3f;
-            }
-            return shallProne;
+            //Vector3? lastKnownPos = enemy.LastKnownPosition;
+            //if (lastKnownPos == null)
+            //{
+            //    return false;
+            //}
+           //// bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
+            //bool isUnderDuress = false;
+            //bool shallProne = isUnderDuress || !CheckShootProne(lastKnownPos.Value, enemy);
+            //if (shallProne)
+            //{
+            //    _nextChangeProneTime = Time.time + 3f;
+            //}
+            //return shallProne;
         }
 
         private bool CheckShootProne(Vector3? lastKnownPos, Enemy enemy)

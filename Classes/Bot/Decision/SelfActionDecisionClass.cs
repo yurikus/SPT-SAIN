@@ -505,24 +505,24 @@ namespace SAIN.SAINComponent.Classes.Decision
         private static bool CheckReloadByAmmoRemaining(Enemy enemy, float ammoRatio)
         {
             const float RELOAD_AMMORATIO_UPPER = 0.66f;
-            const float RELOAD_AMMORATIO_UPPER_TimeSinceSeen = 15f;
-            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose = 90f;
-            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close = 12f;
-            const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid = 6f;
+            //const float RELOAD_AMMORATIO_UPPER_TimeSinceSeen = 15f;
+            //const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryClose = 90f;
+            //const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Close = 12f;
+            //const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Mid = 6f;
             const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_Far = 3f;
             const float RELOAD_AMMORATIO_UPPER_DIST_ENEMY_VeryFar = 3f;
 
             const float RELOAD_AMMORATIO_MID = 0.5f;
-            const float RELOAD_AMMORATIO_MID_TimeSinceSeen = 20f;
-            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose = 60;
-            const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Close = 8f;
+            //const float RELOAD_AMMORATIO_MID_TimeSinceSeen = 20f;
+            //const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryClose = 60;
+            //const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Close = 8f;
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid = 4f;
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_Far = 2f;
             const float RELOAD_AMMORATIO_MID_DIST_ENEMY_VeryFar = 2f;
 
             const float RELOAD_AMMORATIO_LOW = 0.25f;
-            const float RELOAD_AMMORATIO_LOW_TimeSinceSeen = 4f;
-            const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose = 2f;
+            //const float RELOAD_AMMORATIO_LOW_TimeSinceSeen = 4f;
+            //const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_VeryClose = 2f;
             const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Close = 2f;
             const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Mid = 1f;
             const float RELOAD_AMMORATIO_LOW_DIST_ENEMY_Far = 1f;

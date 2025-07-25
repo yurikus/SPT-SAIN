@@ -70,17 +70,11 @@ namespace SAIN.SAINComponent.Classes
         private int UpdateLookForEnemies(LookAllData lookAll, float deltaTime)
         {
             int updated = 0;
-            _cachedList.Clear();
-            _cachedList.AddRange(Bot.EnemyController.Enemies.Values);
-            foreach (Enemy enemy in _cachedList)
+            foreach (Enemy enemy in Bot.EnemyController.EnemiesArray)
                 if (ShallCheckEnemy(enemy) && CheckEnemy(enemy, lookAll, deltaTime))
                     updated++;
-
-            _cachedList.Clear();
             return updated;
         }
-
-        private readonly List<Enemy> _cachedList = new();
 
         private bool ShallCheckEnemy(Enemy enemy)
         {

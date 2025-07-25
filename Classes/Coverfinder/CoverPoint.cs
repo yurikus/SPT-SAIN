@@ -419,17 +419,16 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
 
         public bool ShallUpdate(string targetProfileId)
         {
+            float timeSinceUpdated = CoverData.TimeSinceUpdated;
             if (_lastCheckedProfileId != targetProfileId)
             {
-                _lastCheckedProfileId = targetProfileId;
-                return true;
+                return timeSinceUpdated >= 0.1f;
             }
-            float delay = IsCurrent ? 0.2f : 0.5f;
-            if (CoverData.TimeSinceUpdated >= delay)
+            if (Bot.Cover.CoverInUse == this)
             {
-                return true;
+                return timeSinceUpdated >= 0.25f;
             }
-            return false;
+            return timeSinceUpdated >= 1f;
         }
 
         private string _lastCheckedProfileId;

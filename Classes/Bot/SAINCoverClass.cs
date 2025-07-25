@@ -385,7 +385,6 @@ namespace SAIN.SAINComponent.Classes
 
         public bool TrySetProneConditional(Enemy enemy)
         {
-            const float minCoverHeightToProne = 0.5f;
             var myMoveSettings = Bot.Info.FileSettings.Move;
 
             bool shallProne = myMoveSettings.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE && Bot.Mover.Prone.ShallProneHide(enemy);
@@ -395,6 +394,7 @@ namespace SAIN.SAINComponent.Classes
                 return true;
             }
 
+            //const float minCoverHeightToProne = 0.5f;
             //var point = CoverInUse;
             //if (point != null && shallProne && point.Collider.bounds.size.y < minCoverHeightToProne)
             //{

@@ -605,13 +605,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     return EBotSprintStatus.CantSprint;
                 }
 
-                const float DISTANCE_TO_DESTINATION_CAN_START_SPRINT = 1.5f;
                 bool sprintingNow = Bot.Player.MovementContext.IsSprintEnabled;
-                //if (!sprintingNow && (Destination - botPosition).sqrMagnitude < DISTANCE_TO_DESTINATION_CAN_START_SPRINT * DISTANCE_TO_DESTINATION_CAN_START_SPRINT)
-                //{
-                //    //Logger.LogDebug($"cant sprint, too close to corner");
-                //    return EBotSprintStatus.None;
-                //}
                 float stamina = Bot.Player.Physical.Stamina.NormalValue;
                 // We are out of stamina, stop sprinting.
                 if (sprintingNow && Util.ShallPauseSprintStamina(stamina, SprintUrgency))

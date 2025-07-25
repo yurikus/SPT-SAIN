@@ -10,8 +10,6 @@ namespace SAIN.SAINComponent.Classes
     {
         public float VISIONDISTANCE_UPDATE_FREQ = 5f;
         public float VISIONDISTANCE_UPDATE_FREQ_FLASHED = 0.5f;
-        public float TimeLastCheckedLOS { get; set; }
-        public float TimeSinceCheckedLOS => Time.time - TimeLastCheckedLOS;
         public FlashLightDazzleClass FlashLightDazzle { get; private set; }
         public SAINBotLookClass BotLook { get; private set; }
 

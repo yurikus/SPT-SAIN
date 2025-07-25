@@ -60,36 +60,6 @@ namespace SAIN.Patches.Movement
     }
 
     /// <summary>
-    /// for debug purposes
-    /// </summary>
-    public class PlayerEnableSprintPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BasePhysicalClass), nameof(BasePhysicalClass.Sprint));
-        }
-
-        [PatchPrefix]
-        public static bool Sprint(bool target, BasePhysicalClass __instance)
-        {
-#if DEBUG
-            if (target) return true;
-            //Logger.LogWarning("stop sprinting");
-            if (target == __instance.bool_2) return true;
-            IPlayer player = __instance.iobserverToPlayerBridge_0.iPlayer;
-            if (player?.IsAI == true &&
-                __instance.bool_2 &&
-                GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent comp) &&
-                comp.BotComponent?.Mover.Moving == true)
-            {
-                SAIN.Logger.LogError("WHO DID IT");
-            }
-#endif
-            return true;
-        }
-    }
-
-    /// <summary>
     /// Blocks pose changes when a player is sprinting for ai
     /// </summary>
     public class PlayerSetPosePatch : ModulePatch
@@ -115,25 +85,11 @@ namespace SAIN.Patches.Movement
             }
             else
             {
+#if DEBUG
                 Logger.LogError("nope");
+#endif
             }
             return true;
-        }
-    }
-
-    /// <summary>
-    /// Blocks speed changes when a player is sprinting for ai
-    /// </summary>
-    public class PlayerSetSpeedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player), nameof(Player.ChangeSpeed));
-        }
-
-        [PatchPrefix]
-        public static void Patch(ref float speedDelta, Player __instance)
-        {
         }
     }
 
@@ -153,80 +109,6 @@ namespace SAIN.Patches.Movement
             __result = false;
             return false;
         }
-    }
-
-    /// <summary>
-    /// Disables collision on doors when they open or close for a set amount of time for ai
-    /// </summary>
-    public class SetDoorCollisionPatch : ModulePatch
-    {
-        private const float NO_COLLISION_INTERVAL = 3.0f;
-        private const float BOT_DISTANCE_TO_DISABLE_COLLISION = 20f;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Door), nameof(Door.SetDoorState));
-        }
-
-        [PatchPrefix]
-        public static void Patch(Door __instance, EDoorState state)
-        {
-            switch (state)
-            {
-                case EDoorState.Open:
-                case EDoorState.Shut:
-                case EDoorState.Breaching:
-                case EDoorState.Interacting:
-                    break;
-
-                default:
-                    return;
-            }
-            if (__instance?.Collider != null)
-            {
-                for (int i = 0; i < _preAllocArray.Length; i++)
-                    _preAllocArray[i] = null;
-                Physics.OverlapSphereNonAlloc(__instance.transform.position, BOT_DISTANCE_TO_DISABLE_COLLISION, _preAllocArray, LayerMaskClass.PlayerMask);
-                foreach (var collider in _preAllocArray)
-                {
-                    if (collider != null)
-                    {
-                        Player player = Singleton<GameWorld>.Instance?.GetPlayerByCollider(collider);
-                        if (player != null && player.IsAI)
-                        {
-                            Collider playerCollider = player.CharacterController.GetCollider();
-                            if (playerCollider != null)
-                            {
-                                player.StartCoroutine(SetDoorCollisionAfterDelay(player, playerCollider, __instance.Collider, NO_COLLISION_INTERVAL));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        public static IEnumerator SetDoorCollisionAfterDelay(Player player, Collider playerCollider, Collider doorCollider, float delay)
-        {
-            if (playerCollider != null && doorCollider != null && player != null)
-            {
-                player.POM.IgnoreCollider(doorCollider, true);
-                player.MovementContext.IgnoreInteractionCollision(doorCollider, true);
-                EFTPhysicsClass.IgnoreCollision(playerCollider, doorCollider, true);
-                //Logger.LogDebug("SetDoorCollisionPatch: player set to no collision with door");
-            }
-
-            yield return new WaitForSeconds(delay);
-
-            if (playerCollider != null && doorCollider != null && player != null)
-            {
-                player.POM.IgnoreCollider(doorCollider, false);
-                player.MovementContext.IgnoreInteractionCollision(doorCollider, false);
-                EFTPhysicsClass.IgnoreCollision(playerCollider, doorCollider, false);
-                //Logger.LogDebug("SetDoorCollisionPatch: reset");
-            }
-        }
-
-        private static Collider[] _preAllocArray = new Collider[10];
     }
 
     /// <summary>
@@ -400,7 +282,7 @@ namespace SAIN.Patches.Movement
             {
 #if DEBUG
                 Logger.LogWarning($"Player is Null, can't set weight limits for AI.");
-#endif 
+#endif
                 return true;
             }
             if (!player.IsAI)

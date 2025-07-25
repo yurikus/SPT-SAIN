@@ -211,7 +211,7 @@ namespace SAIN.SAINComponent.Classes.Search
                 case ESearchMove.Wait:
                     if (WaitAtPoint())
                     {
-                        Bot.Mover.SetTargetMoveSpeed(0f);
+                        //Bot.Mover.SetTargetMoveSpeed(0f);
                         Bot.Mover.SetTargetPose(0.75f);
                         break;
                     }

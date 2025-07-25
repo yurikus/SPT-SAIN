@@ -33,12 +33,8 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
                         modifier = calcGearEffects();
                         success = true;
                     }
-                    catch (Exception e)
+                    catch //(Exception e)
                     {
-#if DEBUG
-                        if (SAINPlugin.DebugMode)
-                            Logger.LogError(e);
-#endif
                     }
 
                     if (success)

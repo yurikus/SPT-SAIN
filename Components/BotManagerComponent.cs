@@ -141,8 +141,6 @@ namespace SAIN.Components
 
         private bool _coverDrawn;
 
-        private float _debug_lastshowticktime;
-
         public void BotDeath(BotOwner bot)
         {
             if (bot?.GetPlayer != null && bot.IsDead)

@@ -61,7 +61,7 @@ namespace SAIN.SAINComponent.Classes
         {
             CheckGameEnding();
             CheckBotActive();
-            CheckStandBy();
+            //CheckStandBy();
 
             bool wasActive = SAINLayersActiveToggle.Value;
             SAINLayersActiveToggle.CheckToggle(ActiveLayer != ESAINLayer.None);

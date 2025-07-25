@@ -118,7 +118,6 @@ namespace SAIN
             new Patches.Generic.Fixes.FixItemTakerPatch2(),
             new Patches.Generic.Fixes.RotateClampPatch(),
             new Patches.Generic.Fixes.RunToEnemyUpdatePatch(),
-            //new Patches.Generic.Fixes.InfiniteMagFixPatch(),
 
             new Patches.Movement.EncumberedPatch(),
             new Patches.Movement.DoorOpenerPatch(),
@@ -129,14 +128,11 @@ namespace SAIN
             new Patches.Movement.AimStaminaPatch(),
             new Patches.Movement.GlobalShootSettingsPatch(),
             new Patches.Movement.MovementContextIsAIPatch(),
-            //new Patches.Movement.SetDoorCollisionPatch(),
             new Patches.Movement.CanBeSnappedPatch(),
             new Patches.Movement.BotMoverManualUpdatePatch(),
             new Patches.Movement.BotMoverManualFixedUpdatePatch(),
             new Patches.Movement.SprintLookDirPatch(),
             new Patches.Movement.PlayerSetPosePatch(),
-            new Patches.Movement.PlayerSetSpeedPatch(),
-            //new Patches.Movement.PlayerEnableSprintPatch(),
 
             new Patches.Hearing.TryPlayShootSoundPatch(),
             new Patches.Hearing.OnMakingShotPatch(),
@@ -176,7 +172,7 @@ namespace SAIN
             new Patches.Vision.UpdateLightEnablePatch(),
             new Patches.Vision.UpdateLightEnablePatch2(),
             new Patches.Vision.ToggleNightVisionPatch(),
-            new Patches.Vision.SetPartPriorityPatch(),
+            //new Patches.Vision.SetPartPriorityPatch(),
             new Patches.Vision.GlobalLookSettingsPatch(),
             new Patches.Vision.WeatherTimeVisibleDistancePatch(),
             new Patches.Vision.NoAIESPPatch(),
@@ -204,8 +200,6 @@ namespace SAIN
 
             new Patches.Shoot.Grenades.ResetGrenadePatch(),
             new Patches.Shoot.Grenades.SetGrenadePatch(),
-
-
         ];
 
 

@@ -79,10 +79,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.WillChaseDistantGunshots = true;
             behavior.Search.SearchBaseTime = 6;
             behavior.Search.SprintWhileSearchChance = 75;
-            behavior.Search.SearchHasEnemySpeed = 1f;
-            behavior.Search.SearchHasEnemyPose = 1f;
-            behavior.Search.SearchNoEnemySpeed = 1f;
-            behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 3f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.SearchNow;
             behavior.Search.SlowAtCorners = false;
@@ -152,10 +148,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.WillChaseDistantGunshots = true;
             behavior.Search.SearchBaseTime = 0.1f;
             behavior.Search.SprintWhileSearchChance = 90;
-            behavior.Search.SearchHasEnemySpeed = 1f;
-            behavior.Search.SearchHasEnemyPose = 1f;
-            behavior.Search.SearchNoEnemySpeed = 1f;
-            behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 1f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Charge;
             behavior.Search.SlowAtCorners = false;
@@ -223,10 +215,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.Sneaky = true;
             behavior.Search.SneakyPose = 1f;
             behavior.Search.SneakySpeed = 0.33f;
-            behavior.Search.SearchHasEnemySpeed = 1f;
-            behavior.Search.SearchHasEnemyPose = 1f;
-            behavior.Search.SearchNoEnemySpeed = 1f;
-            behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 3f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
 
@@ -293,10 +281,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.Sneaky = false;
             behavior.Search.SneakyPose = 0f;
             behavior.Search.SneakySpeed = 0f;
-            behavior.Search.SearchHasEnemySpeed = 1f;
-            behavior.Search.SearchHasEnemyPose = 1f;
-            behavior.Search.SearchNoEnemySpeed = 1f;
-            behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 1f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
             behavior.Search.SlowAtCorners = false;
@@ -366,10 +350,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.Sneaky = true;
             behavior.Search.SneakyPose = 0f;
             behavior.Search.SneakySpeed = 0f;
-            behavior.Search.SearchHasEnemySpeed = 0f;
-            behavior.Search.SearchHasEnemyPose = 0f;
-            behavior.Search.SearchNoEnemySpeed = 0f;
-            behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 1f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
 
@@ -447,10 +427,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.Sneaky = false;
             behavior.Search.SneakyPose = 0f;
             behavior.Search.SneakySpeed = 0f;
-            behavior.Search.SearchHasEnemySpeed = 0f;
-            behavior.Search.SearchHasEnemyPose = 0.75f;
-            behavior.Search.SearchNoEnemySpeed = 0f;
-            behavior.Search.SearchNoEnemyPose = 0.9f;
             behavior.Search.SearchWaitMultiplier = 0.5f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
 
@@ -571,10 +547,6 @@ namespace SAIN.Preset.Personalities
             behavior.Search.WillChaseDistantGunshots = false;
             behavior.Search.SearchBaseTime = 60f;
             behavior.Search.SprintWhileSearchChance = 10f;
-            behavior.Search.SearchHasEnemySpeed = 1f;
-            behavior.Search.SearchHasEnemyPose = 1f;
-            behavior.Search.SearchNoEnemySpeed = 1f;
-            behavior.Search.SearchNoEnemyPose = 1f;
             behavior.Search.SearchWaitMultiplier = 1f;
             behavior.Search.HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
 

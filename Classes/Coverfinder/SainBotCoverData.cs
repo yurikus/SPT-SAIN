@@ -107,6 +107,11 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                     array[i] = null;
                     continue;
                 }
+                if (_excludedColliderNames.Contains(collider.transform?.parent?.name))
+                {
+                    array[i] = null;
+                    continue;
+                }
                 // Compact valid colliders to the front of the array
                 if (validCount != i)
                 {
@@ -122,6 +127,28 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             }
             return validCount;
         }
+
+        /// <summary>
+        /// Manual collection of collider names that are known to be problematic or not useful for cover finding.
+        /// </summary>
+        private static readonly HashSet<string> _excludedColliderNames =
+        [
+            "metall_fence_2",
+            "metallstolb",
+            "stolb",
+            "fonar_stolb",
+            "fence_grid",
+            "metall_fence_new",
+            "ladder_platform",
+            "frame_L",
+            "frame_small_collider",
+            "bump2x_p3_set4x",
+            "bytovka_ladder",
+            "sign",
+            "sign17_lod",
+            "ograda1",
+            "ladder_metal"
+        ];
 
         public struct BotColliderQueryParams
         {

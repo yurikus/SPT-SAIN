@@ -47,21 +47,5 @@ namespace SAIN.Preset.Personalities
         
         [Advanced]
         public bool SlowAtCorners = true;
-
-        [Percentage0to1]
-        [Advanced]
-        public float SearchNoEnemySpeed = 1f;
-
-        [Percentage0to1]
-        [Advanced]
-        public float SearchNoEnemyPose = 1f;
-
-        [Percentage0to1]
-        [Advanced]
-        public float SearchHasEnemySpeed = 1f;
-
-        [Percentage0to1]
-        [Advanced]
-        public float SearchHasEnemyPose = 1f;
     }
 }

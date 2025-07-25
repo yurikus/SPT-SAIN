@@ -83,7 +83,7 @@ namespace SAIN.Types.Jobs
         public void Complete()
         {
             var handle = Handle;
-            handle.Complete();
+            if (!handle.IsCompleted) handle.Complete();
             Handle = handle;
         }
 
@@ -198,8 +198,9 @@ namespace SAIN.Types.Jobs
         public NativeArray<RaycastCommand> Commands { get; private set; }
 
         public void Dispose()
+        
         {
-            Handle.Complete();
+            if (!Handle.IsCompleted) Handle.Complete();
             if (Hits.IsCreated) Hits.Dispose();
             if (Commands.IsCreated) Commands.Dispose();
         }

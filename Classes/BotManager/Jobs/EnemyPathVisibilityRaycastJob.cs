@@ -32,7 +32,7 @@ namespace SAIN.Components
 
         private static int _commandsPerJob = 256;
 
-        public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : base("Path Visibility Job", botcontroller, true, 1f / 60f)
+        public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : base("Path Visibility Job", botcontroller, true, 1f / 10f)
         {
             LayerMask HighPolyWithTerrain = LayerMaskClass.HighPolyWithTerrainMask;
             LayerMask DoorLayer = LayerMaskClass.DoorLayer;
@@ -84,6 +84,11 @@ namespace SAIN.Components
                         Vector3 neutralViewPosition = new(botPosition.x, eyePosition.y, botPosition.z);
                         foreach (Enemy enemy in bot.EnemyController.KnownEnemies)
                         {
+                            if (enemy.IsVisible)
+                            {
+                                enemy.SetLastCornerAsVisiblePathPoint(enemy.EnemyPosition, 0);
+                                continue;
+                            }
                             int nodeCount = enemy.Path.AllPathNodeCount;
                             if (nodeCount > 0)
                             {
@@ -107,7 +112,8 @@ namespace SAIN.Components
             for (int i = 0; i < VisionJobs.Count; i++)
             {
                 PathVisionJob job = VisionJobs[i];
-                job.Handle.Complete();
+                if (!job.Handle.IsCompleted)
+                    job.Handle.Complete();
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)
                 {
@@ -158,7 +164,8 @@ namespace SAIN.Components
             for (int i = 0; i < ShootJobs.Count; i++)
             {
                 PathVisionJob job = ShootJobs[i];
-                job.Handle.Complete();
+                if (!job.Handle.IsCompleted)
+                    job.Handle.Complete();
                 NativeArray<RaycastHit> hits = job.Hits;
                 Enemy enemy = job.Enemy;
                 if (enemy.EnemyKnown)

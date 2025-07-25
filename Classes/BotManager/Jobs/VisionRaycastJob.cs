@@ -13,16 +13,19 @@ namespace SAIN.Components
 {
     public class VisionRaycastJob : BotManagerBase
     {
-        private const float VISION_UPDATE_INTERVAL = 1f / 20f;
+        private const float VISION_UPDATE_INTERVAL = 1f / 10f;
+        private const float VISION_JOB_INTERVAL = 1f / 15f;
 
         public VisionRaycastJob(BotManagerComponent botcontroller) : base(botcontroller)
         {
-            botcontroller.StartCoroutine(CheckVisionLoop());
+            botcontroller.StartCoroutine(EnemyVisionJob());
+            botcontroller.StartCoroutine(UpdateEFTVision());
         }
 
-        private IEnumerator CheckVisionLoop()
+        private IEnumerator EnemyVisionJob()
         {
-            WaitForSeconds wait = new(VISION_UPDATE_INTERVAL);
+            //WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
+            WaitForSeconds wait = new(VISION_JOB_INTERVAL);
             yield return wait;
             while (true)
             {
@@ -60,22 +63,43 @@ namespace SAIN.Components
                 _commands = new NativeArray<RaycastCommand>(totalRaycasts, Allocator.TempJob);
 
                 CreateCommands(_commands, enemyCount, partCount);
-                _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
+                _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 64);
 
                 yield return null;
 
                 var handle = _handle;
-                if (!handle.IsCompleted) handle.Complete();
+                if (!handle.IsCompleted)
+                    handle.Complete();
                 _handle = handle;
 
                 AnalyzeHits(_hits, enemyCount, partCount);
                 _commands.Dispose();
                 _hits.Dispose();
-                
+
+                yield return wait;
+            }
+        }
+
+        private IEnumerator UpdateEFTVision()
+        {
+            WaitForSeconds wait = new(VISION_UPDATE_INTERVAL);
+            yield return wait;
+            while (true)
+            {
+                if (BotController == null)
+                {
+                    yield return wait;
+                    continue;
+                }
+
+                HashSet<BotComponent> bots = BotController?.BotSpawnController?.SAINBots;
+                if (bots == null || bots.Count == 0)
+                {
+                    yield return wait;
+                    continue;
+                }
                 // Updates vanilla eft vision code, it'll run another raycast if this one succeeds which isn't ideal, but id rather not rewrite all their code.
-                foreach (var bot in BotController.BotSpawnController.BotGroup1) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
-                yield return null;
-                foreach (var bot in BotController.BotSpawnController.BotGroup2) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
+                foreach (var bot in bots) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
                 _timelastLook = Time.time;
                 yield return wait;
             }
@@ -107,7 +131,6 @@ namespace SAIN.Components
                 Vector3 eyePosition = transform.EyePosition;
                 Vector3 weaponFirePort = transform.WeaponData.FirePort;
                 var parts = enemy.Vision.EnemyParts.PartsArray;
-                // var partDistances = enemy.EnemyPlayerData.DistanceData.BodyPartDistances;
 
                 for (int j = 0; j < partCount; j++)
                 {
@@ -122,23 +145,27 @@ namespace SAIN.Components
                     Vector3 weaponDir = castPoint - weaponFirePort; // we should normalize this, however, setting the magnitude to 1f allows us to skip that
                     Vector3 eyeDir = castPoint - eyePosition;
 
-                    raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, new QueryParameters {
-                        layerMask = _LOSMask
-                    }, 1f);
+                    raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, _losParams, 1f);
                     commands++;
 
-                    raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, new QueryParameters {
-                        layerMask = _VisionMask
-                    }, 1f);
+                    raycastCommands[commands] = new RaycastCommand(eyePosition, eyeDir, _visParams, 1f);
                     commands++;
 
-                    raycastCommands[commands] = new RaycastCommand(weaponFirePort, weaponDir, new QueryParameters {
-                        layerMask = _ShootMask
-                    }, 1f);
+                    raycastCommands[commands] = new RaycastCommand(weaponFirePort, weaponDir, _shootParams, 1f);
                     commands++;
                 }
             }
         }
+
+        private static readonly QueryParameters _losParams = new QueryParameters {
+            layerMask = _LOSMask
+        };
+        private static readonly QueryParameters _visParams = new QueryParameters {
+            layerMask = _VisionMask
+        };
+        private static readonly QueryParameters _shootParams = new QueryParameters {
+            layerMask = _ShootMask
+        };
 
         private void AnalyzeHits(NativeArray<RaycastHit> raycastHits, int enemyCount, int partCount)
         {
@@ -150,8 +177,6 @@ namespace SAIN.Components
             {
                 var enemy = _enemies[i];
                 var parts = enemy.Vision.EnemyParts.PartsArray;
-                enemy.Bot.Vision.TimeLastCheckedLOS = time;
-
                 for (int j = 0; j < partCount; j++)
                 {
                     var part = parts[j];
@@ -167,6 +192,7 @@ namespace SAIN.Components
                     hits++;
                 }
             }
+#if DEBUG
             if (DebugSettings.Instance.Gizmos.DrawLineOfSightGizmos)
             {
                 hits = 0;
@@ -199,12 +225,13 @@ namespace SAIN.Components
                     }
                 }
             }
+#endif
         }
 
         private const int RAYCAST_CHECKS = 3;
-        private readonly LayerMask _LOSMask = LayerMaskClass.HighPolyWithTerrainMask;
-        private readonly LayerMask _VisionMask = LayerMaskClass.AI;
-        private readonly LayerMask _ShootMask = LayerMaskClass.HighPolyWithTerrainMask;
+        private static readonly LayerMask _LOSMask = LayerMaskClass.HighPolyWithTerrainMask;
+        private static readonly LayerMask _VisionMask = LayerMaskClass.AI;
+        private static readonly LayerMask _ShootMask = LayerMaskClass.HighPolyWithTerrainMask;
 
         private readonly List<EBodyPartColliderType> _colliderTypes = [];
         private readonly List<Vector3> _castPoints = [];
@@ -217,7 +244,7 @@ namespace SAIN.Components
                     foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                     {
                         if (enemy == null || enemy.Player == null || !enemy.Player.HealthController.IsAlive) continue;
-                        //if (enemy.RealDistance > EnemyVisionClass.AIVisionRangeLimit(enemy)) continue;
+                        if (enemy.RealDistance > EnemyVisionClass.AIVisionRangeLimit(enemy)) continue;
                         enemies.Add(enemy);
                     }
         }

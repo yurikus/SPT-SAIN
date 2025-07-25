@@ -29,6 +29,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float GainSightCoef { get; private set; }
         public float VisionDistance => _visionDistance.Value;
 
+        private float _nextRaycastTime = 0f;
+
         public EnemyAnglesClass Angles { get; } = new();
 
         public KeyValuePair<EnemyPart, EnemyPartData> _bodyPart;

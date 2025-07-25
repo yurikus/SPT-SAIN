@@ -184,7 +184,7 @@ namespace SAIN.SAINComponent.Classes.Debug
         private const float PathLengthCoef = 1.25f;
         private const float MinDistancePathLength = MinDistance * PathLengthCoef;
 
-        private Coroutine TeleportCoroutine;
+        //private Coroutine TeleportCoroutine;
 
         private IEnumerator CheckIfTeleport()
         {
