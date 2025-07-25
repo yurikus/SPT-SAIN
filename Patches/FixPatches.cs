@@ -1,6 +1,7 @@
 ﻿using EFT;
 using HarmonyLib;
 using SAIN.Components;
+using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
 using SPT.Reflection.Patching;
@@ -129,6 +130,28 @@ namespace SAIN.Patches.Generic.Fixes
                 return;
 
             aiControlled = false;
+        }
+    }
+
+    internal class DisableGrenadesPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotGrenadeToPortal), nameof(BotGrenadeToPortal.method_0));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(BotGrenadeToPortal __instance)
+        {
+            var settings = GlobalSettingsClass.Instance.General;
+            if (!settings.BotsUseGrenades) return false;
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent bot))
+            {
+                var goalEnemy = bot.EnemyController.GoalEnemy;
+                if (goalEnemy == null) return false;
+                if (!settings.BotVsBotGrenade && goalEnemy.IsAI) return false;
+            }
+            return true;
         }
     }
 

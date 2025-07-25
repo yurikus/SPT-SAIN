@@ -118,6 +118,7 @@ namespace SAIN
             new Patches.Generic.Fixes.FixItemTakerPatch2(),
             new Patches.Generic.Fixes.RotateClampPatch(),
             new Patches.Generic.Fixes.RunToEnemyUpdatePatch(),
+            new Patches.Generic.Fixes.DisableGrenadesPatch(),
 
             new Patches.Movement.EncumberedPatch(),
             new Patches.Movement.DoorOpenerPatch(),
