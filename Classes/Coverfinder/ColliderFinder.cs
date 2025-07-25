@@ -49,7 +49,9 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
                     int hits = coverData.OverlapBoxAndFilter(queryParams);
                     if (hits >= config.HitThreshold)
                     {
+#if DEBUG
                         Logger.LogDebug(hits + " colliders found in Layer: [" + mask.MaskToString() + "] after " + (j + 1) + " iterations");
+#endif
                         yield break;
                     }
                     boxOrigin += Vector3.down * config.HeightDecreasePerIncrement;
