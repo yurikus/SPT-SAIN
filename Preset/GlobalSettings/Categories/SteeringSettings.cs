@@ -12,12 +12,12 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Enemy Path Visibility System")]
         [MinMax(5f, 500f, 1)]
         [Advanced]
-        public float DistToCheckVision = 50.0f;
+        public float DistToCheckVision = 40.0f;
 
         [Hidden]
         public float characterHeight = 1.5f;
         [Hidden]
-        public float startHeight = 0.5f;
+        public float startHeight = 0.33f;
 
         [Name("Path Nodes Stack Height")]
         [Description("X number of points will be generated above each node in the path")]
@@ -39,12 +39,12 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Random Sway")]
         [MinMax(0f, 1f, 1000f)]
         [Advanced]
-        public float RANDOMSWAY_CIRCLE_RADIUS = 0.025f;
+        public float RANDOMSWAY_CIRCLE_RADIUS = 0.02f;
 
         [Category("Random Sway")]
         [MinMax(0f, 10f, 10f)]
         [Advanced]
-        public float RANDOMSWAY_LOOP_DURATION = 5f;
+        public float RANDOMSWAY_LOOP_DURATION = 4f;
 
         [Category("Random Sway")]
         [MinMax(0f, 1f, 1000f)]
@@ -66,10 +66,10 @@ namespace SAIN.Preset.GlobalSettings
         public Dictionary<EBotLookMode, TurnSettings> SMOOTHING_BY_STATE = new() {
             { EBotLookMode.RandomLook, new TurnSettings(0.040f, 120f ) },
             { EBotLookMode.Peace, new TurnSettings(0.050f, 240) },
-            { EBotLookMode.Combat, new TurnSettings(0.060f, 300f) },
-            { EBotLookMode.CombatSprint, new TurnSettings(0.060f, 300f) },
-            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.070f, 300f) },
-            { EBotLookMode.Aiming, new TurnSettings(0.070f, 360f ) },
+            { EBotLookMode.Combat, new TurnSettings(0.065f, 300f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.065f, 300f) },
+            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.080f, 360f) },
+            { EBotLookMode.Aiming, new TurnSettings(0.080f, 360f ) },
         };
 
         [MinMax(0f, 3f, 1000f)]

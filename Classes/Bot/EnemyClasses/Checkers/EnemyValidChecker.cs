@@ -21,28 +21,31 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         private bool isValid()
         {
-            var component = EnemyPlayerComponent;
-            if (component == null)
+            var enemyPlayerComp = EnemyPlayerComponent;
+            if (enemyPlayerComp == null || enemyPlayerComp.Player == null)
             {
                 //Logger.LogError($"Enemy {Enemy.EnemyName} PlayerComponent is Null");
                 return false;
             }
-            if (component.Player?.HealthController?.IsAlive != true)
+            if (!enemyPlayerComp.Player.HealthController.IsAlive)
             {
                 //Logger.LogDebug("Enemy Player Is Dead");
                 return false;
             }
             // Checks specific to bots
-            BotOwner botOwner = component.BotOwner;
-            if (component?.IsAI == true && botOwner == null)
+            BotOwner enemyBotOwner = enemyPlayerComp.BotOwner;
+            if (enemyPlayerComp.IsAI && enemyBotOwner == null)
             {
-                //Logger.LogDebug("Enemy is AI, but BotOwner is null. Removing...");
-                return false;
-            }
-            if (botOwner != null && botOwner.ProfileId == BotOwner.ProfileId)
-            {
-                //Logger.LogWarning("Enemy has same profile id as Bot? Removing...");
-                return false;
+                if (enemyBotOwner == null)
+                {
+                    //Logger.LogDebug("Enemy is AI, but BotOwner is null. Removing...");
+                    return false;
+                }
+                if (enemyBotOwner.ProfileId == BotOwner.ProfileId)
+                {
+                    //Logger.LogWarning("Enemy has same profile id as Bot? Removing...");
+                    return false;
+                }
             }
             return true;
         }

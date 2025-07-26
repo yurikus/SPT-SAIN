@@ -3,7 +3,6 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SAIN.Components
 {
@@ -139,17 +138,6 @@ namespace SAIN.Components
 
         private static class PartToBoneTypes
         {
-            public static readonly EBodyPart[] PartTypes =
-            [
-                EBodyPart.Head,
-                EBodyPart.Chest,
-                EBodyPart.Stomach,
-                EBodyPart.LeftArm,
-                EBodyPart.RightArm,
-                EBodyPart.LeftLeg,
-                EBodyPart.RightLeg,
-            ];
-
             private static readonly EBodyPartColliderType[] _headParts = [
                 //EBodyPartColliderType.ParietalHead,
                 EBodyPartColliderType.BackHead,

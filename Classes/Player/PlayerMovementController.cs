@@ -17,30 +17,23 @@ namespace SAIN.Classes
 
         public BotTurnData TurnData { get; set; } = new(Vector3.forward);
 
-        public void TickBotSteering(float deltaTime, BotOwner botOwner, BotComponent botComponent)
+        public void TickBotSteering(float deltaTime, BotOwner botOwner, BotComponent botComponent, bool randomSwayEnabled)
         {
+            var settings = GetTurnSettings(botOwner, botComponent);
             BotTurnData turnData = TurnData;
-            var globalSettings = GlobalSettingsClass.Instance.Steering;
-            var turnSettings = GetTurnSettings(botOwner, botComponent);
-            turnData.Config = new(
-            turnSettings.SmoothingValue,
-            turnSettings.MaxTurnSpeed,
-            globalSettings.PredictionStrength,
-            globalSettings.ConvergenceBoost,
-            globalSettings.MIN_STEERING_PITCH
-            );
-            TurnData = PredictiveLookSmoothing.UpdateSmoothedDirection(turnData, deltaTime);
-
-            UpdateRandomSway(deltaTime, botOwner.GetPlayer, botOwner, botComponent, globalSettings);
+            turnData.Config.SmoothingFactor = settings.SmoothingValue;
+            turnData.Config.MaxAngularVelocity = settings.MaxTurnSpeed;
+            TurnData = PredictiveLookSmoothing.UpdateSmoothedDirection(TurnData, deltaTime);
+            UpdateRandomSway(deltaTime, botOwner.GetPlayer, botOwner, botComponent, randomSwayEnabled);
 
             Vector3 dir = TurnData.CurrentLookDirection + RandomSwayOffset;
             SetXAngle(botOwner, dir);
             SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
         }
 
-        private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, SteeringSettings settings)
+        private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, bool randomSwayEnabled)
         {
-            if (settings.RANDOMSWAY_TOGGLE) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
+            if (randomSwayEnabled) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
             else RandomSwayOffset = Vector3.zero;
         }
 
@@ -231,66 +224,43 @@ namespace SAIN.Classes
 
         private static TurnSettings GetTurnSettings(BotOwner botOwner, BotComponent botComponent)
         {
-            TurnSettings turnSettings;
             var settings = GlobalSettingsClass.Instance?.Steering;
             if (settings?.SMOOTHING_BY_STATE != null && botOwner != null)
             {
                 if (botOwner.AimingManager?.CurrentAiming?.IsReady == true || botOwner.AimingManager?.CurrentAiming is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
                 {
-                    if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Aiming, out turnSettings))
-                    {
-                        return turnSettings;
-                    }
-                    return new TurnSettings(0.065f, 300f);
+                    return settings.SMOOTHING_BY_STATE[EBotLookMode.Aiming];
                 }
                 if (botComponent != null)
                 {
                     if (botComponent.Mover?.Running == true)
                     {
-                        if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
-                            return turnSettings;
-                        return new TurnSettings(0.065f, 300f);
+                        return settings.SMOOTHING_BY_STATE[EBotLookMode.CombatSprint];
                     }
                     if (botComponent.Steering?.CurrentSteerPriority == Models.Enums.ESteerPriority.RandomLook)
                     {
-                        if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.RandomLook, out turnSettings))
-                            return turnSettings;
-                        return new TurnSettings(0.065f, 300f);
+                        return settings.SMOOTHING_BY_STATE[EBotLookMode.RandomLook];
                     }
                     Enemy enemy = botComponent.GoalEnemy;
                     if (enemy != null)
                     {
                         if (enemy.IsVisible)
                         {
-                            if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.CombatVisibleEnemy, out turnSettings))
-                                return turnSettings;
-                            return new TurnSettings(0.065f, 300f);
+                            return settings.SMOOTHING_BY_STATE[EBotLookMode.CombatVisibleEnemy];
                         }
-                        if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
-                            return turnSettings;
-                        return new TurnSettings(0.065f, 300f);
+                        return settings.SMOOTHING_BY_STATE[EBotLookMode.Combat];
                     }
                 }
                 else if (botOwner.Memory?.GoalEnemy != null)
                 {
-                    if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Combat, out turnSettings))
-                    {
-                        return turnSettings;
-                    }
-                    return new TurnSettings(0.065f, 300f);
+                    return settings.SMOOTHING_BY_STATE[EBotLookMode.Combat];
                 }
                 else if (botOwner.Mover?.Sprinting == true)
                 {
-                    if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.CombatSprint, out turnSettings))
-                        return turnSettings;
-                    return new TurnSettings(0.065f, 300f);
-                }
-                if (settings.SMOOTHING_BY_STATE.TryGetValue(EBotLookMode.Peace, out turnSettings))
-                {
-                    return turnSettings;
+                    return settings.SMOOTHING_BY_STATE[EBotLookMode.CombatSprint];
                 }
             }
-            return new TurnSettings(0.065f, 300f);
+            return settings.SMOOTHING_BY_STATE[EBotLookMode.Peace];
         }
 
         public static class Util

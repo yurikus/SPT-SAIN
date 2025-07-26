@@ -110,36 +110,36 @@ namespace SAIN.Components
                         string name = child.name.ToLower();
                         if (!foundWhiteLight && name.StartsWith("light_0"))
                         {
-                            foundWhiteLight = true;
 #if DEBUG
                             if (_debugMode)
-                                Logger.LogDebug($"Found Light! Name:{name}");
+                                Logger.LogDebug($"[{player.name}] Found WhiteLight : Name:{name}");
 #endif
+                            foundWhiteLight = true;
                             ActiveModes.Add(DeviceMode.WhiteLight);
                         }
                         if (!foundVisibleLaser && name.StartsWith("vis_0"))
                         {
 #if DEBUG
-                            foundVisibleLaser = true;
                             if (_debugMode)
-                                Logger.LogDebug($"Found Visible Laser! Name:{name}");
+                                Logger.LogDebug($"[{player.name}] Found VisibleLaser : Name:{name}");
 #endif
+                            foundVisibleLaser = true;
                             ActiveModes.Add(DeviceMode.VisibleLaser);
                         }
                         if (!foundIRLight && name.StartsWith("il_0"))
                         {
 #if DEBUG
-                            foundIRLight = true;
                             if (_debugMode)
-                                Logger.LogDebug($"Found IR Light! Name:{name}");
+                                Logger.LogDebug($"[{player.name}] Found IRLight : Name:{name}");
 #endif
+                            foundIRLight = true;
                             ActiveModes.Add(DeviceMode.IRLight);
                         }
                         if (!FoundIRLaser && name.StartsWith("ir_0"))
                         {
 #if DEBUG
                             if (_debugMode)
-                                Logger.LogDebug($"Found IR Laser! Name:{name}");
+                                Logger.LogDebug($"[{player.name}] Found IRLaser : Name:{name}");
 #endif
                             FoundIRLaser = true;
                             ActiveModes.Add(DeviceMode.IRLaser);

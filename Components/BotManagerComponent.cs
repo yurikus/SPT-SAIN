@@ -94,26 +94,6 @@ namespace SAIN.Components
             HashSet<BotComponent> BotsArray = BotSpawnController.SAINBots;
                 foreach (BotComponent BotComponent in BotsArray)
                     BotComponent?.ManualUpdate(currentTime, deltaTime);
-#if DEBUG
-            if (SAINPlugin.DebugMode)
-            {
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                foreach (BotComponent BotComponent in BotsArray)
-                    BotComponent?.ManualUpdate(currentTime, deltaTime);
-                stopwatch.Stop();
-                if (Time.time - _debug_lastshowticktime > 10 || stopwatch.ElapsedMilliseconds > 10)
-                {
-                    _debug_lastshowticktime = Time.time;
-                    Logger.LogDebug($"Bot Tick Time [{stopwatch.ElapsedMilliseconds}.ms]");
-                }
-            }
-            else
-            {
-                foreach (BotComponent BotComponent in BotsArray)
-                    BotComponent?.ManualUpdate(currentTime, deltaTime);
-            }
-            //drawCover();
-#endif
         }
 
         private void drawCover()

@@ -1,9 +1,6 @@
 ﻿using SAIN.Preset.GlobalSettings;
-using SAIN.Preset;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
-using SAIN.Classes.Transform;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -35,7 +32,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public KeyValuePair<EnemyPart, EnemyPartData> _bodyPart;
         public KeyValuePair<EnemyPart, EnemyPartData> _headPart;
-        
+
         public bool LineOfSight => EnemyParts.LineOfSight;
         public EnemyPartsClass EnemyParts { get; } = new EnemyPartsClass(enemy.EnemyPlayerComponent);
 
@@ -43,12 +40,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public static float AIVisionRangeLimit(Enemy enemy)
         {
-            float max = CheckMaxVisionRangeAI(enemy);
-            if (!enemy.EnemyKnown && max > MAX_RANGE_VISION_UNKNOWN)
-            {
-                return MAX_RANGE_VISION_UNKNOWN;
-            }
-            return max;
+            return CheckMaxVisionRangeAI(enemy);
         }
 
         private static float CheckMaxVisionRangeAI(Enemy enemy)
@@ -66,24 +58,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 return float.MaxValue;
             }
-            var enemyBot = enemy.EnemyPlayerComponent.BotComponent;
-            if (enemyBot == null)
+            if (enemy.IsCurrentEnemy)
             {
-                // if an enemy bot is not a sain bot, but has this bot as an enemy, dont limit at all.
-                if (enemy.EnemyPlayerComponent.BotOwner?.Memory.GoalEnemy?.ProfileId == enemy.Bot.ProfileId)
-                {
-                    return float.MaxValue;
-                }
-                return GetMaxVisionRange(enemy.Bot.CurrentAILimit);
+                return float.MaxValue;
             }
-            else
-            {
-                if (enemyBot.GoalEnemy?.EnemyProfileId == enemy.Bot.ProfileId)
-                {
-                    return float.MaxValue;
-                }
-                return GetMaxVisionRange(enemyBot.CurrentAILimit);
-            }
+            var myBot = enemy.Bot;
+            return GetMaxVisionRange(myBot.CurrentAILimit);
         }
 
         private static float GetMaxVisionRange(AILimitSetting aiLimit)
@@ -148,7 +128,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             bool iamCurrentEnemy = Enemy.IsCurrentEnemy;
             if (iamCurrentEnemy && !IsVisible && wasVisible)
             {
-               // try { BotOwner.CalcGoal(); } catch { /* eft code */  }
+                // try { BotOwner.CalcGoal(); } catch { /* eft code */  }
             }
             else if (!iamCurrentEnemy && IsVisible && Bot.GoalEnemy?.IsVisible != true)
             {

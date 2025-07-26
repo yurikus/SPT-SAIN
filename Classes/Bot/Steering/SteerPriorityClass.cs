@@ -98,11 +98,11 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             EnemyPlace lastKnownPlace = Bot.GoalEnemy?.KnownPlaces?.LastKnownPlace;
 
-            if (lastKnownPlace != null && lastKnownPlace.TimeSincePositionUpdated < Steer_TimeSinceLocationKnown_Threshold)
-                return ESteerPriority.EnemyLastKnown;
-
             if (HeardThreat())
                 return ESteerPriority.HeardThreat;
+
+            if (lastKnownPlace != null && lastKnownPlace.TimeSincePositionUpdated < Steer_TimeSinceLocationKnown_Threshold)
+                return ESteerPriority.EnemyLastKnown;
 
             if (lastKnownPlace != null && lastKnownPlace.TimeSincePositionUpdated < Steer_TimeSinceSeen_Long)
                 return ESteerPriority.EnemyLastKnownLong;

@@ -177,7 +177,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 var member = BotOwner.BotsGroup.Member(i);
                 if (member == null) continue;
-                if (member == botOwner) return true;
+                if (member.ProfileId == botOwner.ProfileId) return true;
             }
             return false;
         }

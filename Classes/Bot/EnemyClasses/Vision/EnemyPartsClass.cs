@@ -37,13 +37,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public EnemyPartDataClass GetNextPart()
-        {
-            _index++;
-            if (_index == PartsArray.Length) _index = 0;
-            return PartsArray[_index];
-        }
-
         private void CreatePartDatas(PlayerComponent enemyPlayer)
         {
             var parts = enemyPlayer.BodyParts.Parts;
@@ -52,6 +45,5 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Parts.Add(bodyPart.Key, new EnemyPartDataClass(bodyPart.Key, bodyPart.Value.Transform, bodyPart.Value.Colliders));
             }
         }
-        private int _index;
     }
 }

@@ -35,6 +35,11 @@ namespace SAIN.Components.PlayerComponentSpace
                 playerTracker.OnPlayerAdded -= PlayerAdded;
                 playerTracker.OnPlayerRemoved -= PlayerRemoved;
             }
+
+            foreach (OtherPlayerData data in DataHashSet)
+            {
+                data.Dispose();
+            }
             DataDictionary.Clear();
             DataHashSet.Clear();
             DataList.Clear();
@@ -80,6 +85,7 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (DataDictionary.TryGetValue(profileId, out OtherPlayerData Data))
             {
+                Data.Dispose();
                 DataHashSet.Remove(Data);
                 DataDictionary.Remove(profileId);
                 DataList.Remove(Data);

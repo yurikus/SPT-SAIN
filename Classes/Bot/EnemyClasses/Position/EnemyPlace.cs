@@ -113,6 +113,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
         {
             PlaceData = placeData;
+            Visible = placeData.OwnerEnemy.InLineOfSight;
             IsDanger = isDanger;
             PlaceType = placeType;
             SoundType = soundType;
@@ -122,6 +123,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public EnemyPlace(PlaceData placeData, SAINHearingReport report)
         {
             PlaceData = placeData;
+            Visible = placeData.OwnerEnemy.InLineOfSight;
             IsDanger = report.isDanger;
             PlaceType = report.placeType;
             SoundType = report.soundType;
@@ -168,7 +170,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             _position = value;
             _timeLastUpdated = Time.time;
             BotPositionWhenUpdated = PlaceData.Owner.Position;
-            Visible = false;
+            Visible = PlaceData.OwnerEnemy.InLineOfSight;
             SetLastKnownPartPositions(PlaceData.OwnerEnemy);
             HasArrivedPersonal = false;
             HasArrivedSquad = false;

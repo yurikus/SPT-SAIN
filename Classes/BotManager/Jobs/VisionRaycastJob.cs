@@ -20,6 +20,51 @@ namespace SAIN.Components
         {
             botcontroller.StartCoroutine(EnemyVisionJob());
             botcontroller.StartCoroutine(UpdateEFTVision());
+            //botcontroller.StartCoroutine(EnemyLoSChecker());
+        }
+
+        private readonly List<JobHandle> _handles = [];
+
+        /// <summary>
+        /// Test
+        /// </summary>
+        private IEnumerator EnemyLoSChecker()
+        {
+            WaitForSeconds waitDelay = new(1f / 20f);
+            while (BotController != null)
+            {
+                yield return waitDelay;
+                HashSet<BotComponent> bots = BotController?.BotSpawnController?.SAINBots;
+                if (bots != null && bots.Count > 0)
+                {
+                    foreach (BotComponent bot in bots)
+                    {
+                        Vector3 eyePosition = bot.Transform.EyePosition;
+                        var otherPlayers = bot.PlayerComponent.OtherPlayersData.DataList;
+                        foreach (var otherPlayer in otherPlayers)
+                        {
+                            _handles.Add(otherPlayer.LoSData.ScheduleRaycasts(eyePosition, _losParams));
+                        }
+                    }
+                    if (_handles.Count > 0)
+                    {
+                        yield return null;
+                        for (int i = 0; i < _handles.Count; i++)
+                        {
+                            _handles[i].Complete();
+                        }
+                        _handles.Clear();
+                        foreach (BotComponent bot in bots)
+                        {
+                            var otherPlayers = bot.PlayerComponent.OtherPlayersData.DataList;
+                            foreach (var otherPlayer in otherPlayers)
+                            {
+                                otherPlayer.LoSData.ReadLoSRaycastResults();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private IEnumerator EnemyVisionJob()
@@ -27,54 +72,35 @@ namespace SAIN.Components
             //WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
             WaitForSeconds wait = new(VISION_JOB_INTERVAL);
             yield return wait;
-            while (true)
+            while (BotController != null)
             {
-                if (BotController == null)
+                HashSet<BotComponent> bots = BotController.BotSpawnController?.SAINBots;
+                if (bots != null && bots.Count > 0)
                 {
-                    yield return wait;
-                    continue;
+                    FindEnemies(bots, _enemies);
+                    int enemyCount = _enemies.Count;
+                    if (enemyCount > 0)
+                    {
+                        int partCount = _enemies[0].Vision.EnemyParts.PartsArray.Length;
+                        int totalRaycasts = enemyCount * partCount * RAYCAST_CHECKS;
+
+                        _hits = new NativeArray<RaycastHit>(totalRaycasts, Allocator.TempJob);
+                        _commands = new NativeArray<RaycastCommand>(totalRaycasts, Allocator.TempJob);
+
+                        CreateCommands(_commands, enemyCount, partCount);
+                        _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
+
+                        yield return null;
+
+                        var handle = _handle;
+                        handle.Complete();
+                        _handle = handle;
+
+                        AnalyzeHits(_hits, enemyCount, partCount);
+                        _commands.Dispose();
+                        _hits.Dispose();
+                    }
                 }
-
-                HashSet<BotComponent> bots = BotController?.BotSpawnController?.SAINBots;
-                if (bots == null || bots.Count == 0)
-                {
-                    yield return wait;
-                    continue;
-                }
-
-                if (BotController.BotGame?.Status == EFT.GameStatus.Stopping)
-                {
-                    yield return wait;
-                    continue;
-                }
-
-                FindEnemies(bots, _enemies);
-                int enemyCount = _enemies.Count;
-                if (enemyCount == 0)
-                {
-                    yield return wait;
-                    continue;
-                }
-
-                int partCount = _enemies[0].Vision.EnemyParts.PartsArray.Length;
-                int totalRaycasts = enemyCount * partCount * RAYCAST_CHECKS;
-
-                _hits = new NativeArray<RaycastHit>(totalRaycasts, Allocator.TempJob);
-                _commands = new NativeArray<RaycastCommand>(totalRaycasts, Allocator.TempJob);
-
-                CreateCommands(_commands, enemyCount, partCount);
-                _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 64);
-
-                yield return null;
-
-                var handle = _handle;
-                if (!handle.IsCompleted)
-                    handle.Complete();
-                _handle = handle;
-
-                AnalyzeHits(_hits, enemyCount, partCount);
-                _commands.Dispose();
-                _hits.Dispose();
 
                 yield return wait;
             }
@@ -160,9 +186,11 @@ namespace SAIN.Components
         private static readonly QueryParameters _losParams = new QueryParameters {
             layerMask = _LOSMask
         };
+
         private static readonly QueryParameters _visParams = new QueryParameters {
             layerMask = _VisionMask
         };
+
         private static readonly QueryParameters _shootParams = new QueryParameters {
             layerMask = _ShootMask
         };
@@ -243,7 +271,7 @@ namespace SAIN.Components
                 if (bot != null && bot.BotActive)
                     foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
                     {
-                        if (enemy == null || enemy.Player == null || !enemy.Player.HealthController.IsAlive) continue;
+                        if (!enemy.CheckValid()) continue;
                         if (enemy.RealDistance > EnemyVisionClass.AIVisionRangeLimit(enemy)) continue;
                         enemies.Add(enemy);
                     }
