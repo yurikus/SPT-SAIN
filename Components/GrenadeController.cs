@@ -82,7 +82,7 @@ namespace SAIN.Components
         {
             // Play a sound with the input range.
             Singleton<BotEventHandler>.Instance?.PlaySound(player, explosionPosition, range, AISoundType.gun);
-
+            float currentTime = Time.time;
             // We dont want bots to think the grenade explosion was a place they heard an enemy, so set this manually.
             foreach (var bot in Bots.Values)
             {
@@ -106,7 +106,7 @@ namespace SAIN.Components
                                 isDanger = distance < 100f || enemy.InLineOfSight,
                                 shallReportToSquad = true,
                             };
-                            enemy.Hearing.SetHeard(report);
+                            enemy.Hearing.SetHeard(report, currentTime);
                         }
                     }
                 }

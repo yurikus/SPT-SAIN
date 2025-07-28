@@ -36,6 +36,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
             if (enemy.IsVisible && enemy.CanShoot)
             {
+                if (_blindFire != 0) return true; // dont stop blindfiring suddenly
                 return false;
             }
 

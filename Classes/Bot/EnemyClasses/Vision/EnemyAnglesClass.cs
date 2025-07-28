@@ -19,9 +19,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float AngleToEnemyVertical { get; private set; }
         public float AngleToEnemyVerticalSigned { get; private set; }
 
-        public void CalcAngles(Enemy Enemy)
+        public void CalcAngles(Enemy Enemy, float currentTime)
         {
-            if (_calcAngleTime < Time.time)
+            if (_calcAngleTime < currentTime)
             {
                 float delay;
                 if (Enemy.IsAI)
@@ -32,7 +32,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 if (Enemy.IsCurrentEnemy)
                     delay *= CALC_ANGLE_CURRENT_COEF;
 
-                _calcAngleTime = Time.time + delay;
+                _calcAngleTime = currentTime + delay;
 
                 MaxVisionAngle = Enemy.Bot.Info.FileSettings.Core.VisibleAngle / 2f;
 

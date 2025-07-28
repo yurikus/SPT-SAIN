@@ -19,7 +19,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public HashSet<Enemy> EnemiesArray => _listController.EnemiesArray;
 
         public EnemyList KnownEnemies { get; private set; } = new("Known Enemies");
-        public EnemyList ActiveThreats { get; private set; } = new("Active Threats");
         public EnemyList EnemiesInLineOfSight { get; private set; } = new("Enemies In LoS");
         public EnemyList VisibleEnemies { get; private set; } = new("Visible Enemies");
 
@@ -38,7 +37,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void ManualUpdate()
         {
-            UpdateEnemies(Bot);
+            UpdateEnemies(Bot, UnityEngine.Time.time);
             _listController.ManualUpdate();
             checkDiscrepency();
             base.ManualUpdate();
@@ -77,7 +76,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Events.OnEnemyAdded -= EnemyAdded;
             Events.OnEnemyRemoved -= EnemyRemoved;
             KnownEnemies.Clear();
-            ActiveThreats.Clear();
             EnemiesInLineOfSight.Clear();
             VisibleEnemies.Clear();
             base.Dispose();
@@ -99,7 +97,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             EnemyEvents events = enemy.Events;
             KnownEnemies.Subscribe(ref events.OnEnemyKnownChanged.OnToggle);
-            ActiveThreats.Subscribe(ref events.OnActiveThreatChanged.OnToggle);
             EnemiesInLineOfSight.Subscribe(ref events.OnVisionChange.OnToggle);
             VisibleEnemies.Subscribe(ref events.OnEnemyLineOfSightChanged.OnToggle);
         }
@@ -108,11 +105,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             EnemyEvents events = enemy.Events;
             KnownEnemies.Unsubscribe(ref events.OnEnemyKnownChanged.OnToggle, enemy);
-            ActiveThreats.Unsubscribe(ref events.OnActiveThreatChanged.OnToggle, enemy);
             EnemiesInLineOfSight.Unsubscribe(ref events.OnVisionChange.OnToggle, enemy);
             VisibleEnemies.Unsubscribe(ref events.OnEnemyLineOfSightChanged.OnToggle, enemy);
             KnownEnemies.RemoveEnemy(enemy);
-            ActiveThreats.RemoveEnemy(enemy);
             EnemiesInLineOfSight.RemoveEnemy(enemy);
             VisibleEnemies.RemoveEnemy(enemy);
             if (GoalEnemy != null && GoalEnemy == enemy)
@@ -125,11 +120,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public void UpdateEnemies(BotComponent bot)
+        public void UpdateEnemies(BotComponent bot, float currentTime)
         {
-#if DEBUG
-            UnityEngine.Profiling.Profiler.BeginSample("Enemy Updater");
-#endif
             List<IPlayer> Allies = bot.BotOwner?.BotsGroup?.Allies;
             if (Allies == null)
             {
@@ -138,6 +130,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 #endif
                 return;
             }
+            bool searching = bot.Decision.CurrentCombatDecision == ECombatDecision.Search;
+            float forgetEnemyTime = bot.Info.ForgetEnemyTime;
             foreach (Enemy Enemy in EnemiesArray)
             {
                 if (!Enemy.CheckValid())
@@ -155,7 +149,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                     _allyIdsToRemove.Add(Enemy.EnemyProfileId);
                     continue;
                 }
-                Enemy.ManualUpdate();
+                Enemy.TickEnemy(currentTime, forgetEnemyTime, searching);
             }
 
             if (_invalidIdsToRemove.Count > 0)
@@ -178,10 +172,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 #endif
                 _allyIdsToRemove.Clear();
             }
-            
-#if DEBUG
-            UnityEngine.Profiling.Profiler.EndSample();
-#endif
         }
 
         public Enemy GoalEnemy {
@@ -240,7 +230,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 return dogFightEnemy;
             }
-            const float CHANGE_ENEMY_DIST_RATIO_SHOOTER = 0.66f;
+            const float CHANGE_ENEMY_DIST_RATIO_SHOOTER = 0.75f;
             const float CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER = 0.33f;
             const float CHANGE_ENEMY_KNOWN_KNOWN_DIST_RATIO = 0.5f;
             const float CHANGE_ENEMY_KNOWN_SHOT_AT_ME_DIST_RATIO = 0.5f;
@@ -380,75 +370,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return closestVisibleEnemy;
         }
 
-        private void checkGoalEnemy(out Enemy enemy)
-        {
-            enemy = null;
-
-            EnemyInfo eftEnemy = BotOwner.Memory.GoalEnemy;
-            Enemy sainEnemy = GoalEnemy;
-
-            if (eftEnemy?.Person != null && !eftEnemy.Person.HealthController.IsAlive)
-            {
-                try { BotOwner.Memory.GoalEnemy = null; }
-                catch
-                { // Sometimes bsg code throws an error here :D
-                }
-                eftEnemy = null;
-            }
-
-            // Bot has no goal enemy, set active enemy to null if they aren't already, and if they aren't currently visible or shot at me
-            if (eftEnemy == null)
-            {
-                if (sainEnemy == null)
-                {
-                    return;
-                }
-                if (sainEnemy.CheckValid() &&
-                    Enemy.IsEnemyActive(sainEnemy) &&
-                    (sainEnemy.Status.ShotAtMeRecently || sainEnemy.IsVisible))
-                {
-                    enemy = sainEnemy;
-                }
-                return;
-            }
-
-            // if the bot's active enemy already matches goal enemy, do nothing
-            if (sainEnemy != null &&
-                sainEnemy.EnemyInfo.ProfileId == eftEnemy.ProfileId)
-            {
-                enemy = sainEnemy;
-                return;
-            }
-
-            // our enemy is changing.
-            sainEnemy = CheckAddEnemy(eftEnemy?.Person);
-
-            if (sainEnemy == null)
-            {
-                Logger.LogError($"{eftEnemy?.Person?.ProfileId} not SAIN enemy!");
-                return;
-            }
-
-            if (sainEnemy.CheckValid() && Enemy.IsEnemyActive(sainEnemy))
-            {
-                enemy = sainEnemy;
-            }
-            else
-            {
-                enemy = null;
-            }
-        }
-
         private void setGoalEnemy(EnemyInfo enemyInfo)
         {
-            BotOwner.Memory.IsPeace = enemyInfo == null;
+            if (enemyInfo != null)
+                BotOwner.Memory.IsPeace = false;
             if (BotOwner.Memory.GoalEnemy != enemyInfo)
             {
                 try
                 {
                     BotOwner.Memory.GoalEnemy = enemyInfo;
-                    BotOwner.Memory.IsPeace = enemyInfo == null;
-                    //BotOwner.CalcGoal();
                 }
                 catch
                 {

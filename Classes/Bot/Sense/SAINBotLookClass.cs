@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Classes.Transform;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections.Generic;
@@ -12,36 +13,23 @@ namespace SAIN.SAINComponent.Classes
 {
     public class SAINBotLookClass : BotBase
     {
-        private const float VISION_FREQ_INACTIVE_BOT_COEF = 5f;
-        private const float VISION_FREQ_ACTIVE_BOT_COEF = 2f;
-        private const float VISION_FREQ_CURRENT_ENEMY = 0.04f;
-        private const float VISION_FREQ_UNKNOWN_ENEMY = 0.1f;
-        private const float VISION_FREQ_KNOWN_ENEMY = 0.05f;
-
         public SAINBotLookClass(BotComponent component) : base(component)
         {
             LookData = new LookAllData();
         }
 
-        public override void Init()
-        {
-            _enemies = Bot.EnemyController.Enemies;
-            base.Init();
-        }
-
-        private Dictionary<string, Enemy> _enemies;
         public readonly LookAllData LookData;
 
         // This (And the methods it calls) mirrors a large part of BSG's LookSensor
         // Look at that for potential changes between versions
-        public int UpdateLook(float deltaTime)
+        public int UpdateLook(float currentTime)
         {
             if (BotOwner.LeaveData == null || BotOwner.LeaveData.LeaveComplete)
             {
                 return 0;
             }
 
-            int numUpdated = UpdateLookForEnemies(LookData, deltaTime);
+            int numUpdated = UpdateLookForEnemies(LookData, currentTime, Bot);
             UpdateLookData(LookData);
             return numUpdated;
         }
@@ -67,79 +55,43 @@ namespace SAIN.SAINComponent.Classes
             lookData.Reset();
         }
 
-        private int UpdateLookForEnemies(LookAllData lookAll, float deltaTime)
+        private static int UpdateLookForEnemies(LookAllData lookAll, float currentTime, BotComponent bot)
         {
             int updated = 0;
-            foreach (Enemy enemy in Bot.EnemyController.EnemiesArray)
-                if (ShallCheckEnemy(enemy) && CheckEnemy(enemy, lookAll, deltaTime))
-                    updated++;
-            return updated;
-        }
+            var lookSensor = bot.BotOwner.LookSensor;
 
-        private bool ShallCheckEnemy(Enemy enemy)
-        {
-            if (enemy == null) return false;
-            if (!enemy.CheckValid() || !Enemy.IsEnemyActive(enemy)) return false;
-            if (!enemy.Vision.EnemyParts.CanBeSeen || !enemy.Vision.Angles.CanBeSeen)
-            {
-                SetNotVis(enemy);
-                return false;
-            }
-            return true;
+            var transform = bot.Transform;
+            Vector3 viewPosition = transform.EyePosition;
+            var weaponRoot = transform.WeaponRoot;
+
+            // Update look sensors fields since we are not calling the original botowner code that does this.
+            // We should check for changes between tarkov updates.
+			lookSensor._weaponRootPoint = weaponRoot;
+			lookSensor._lookSensorShootPosition.UpdateShootPosition(weaponRoot);
+			lookSensor._headPoint = viewPosition;
+
+            lookAll.Reset();
+            var enemies = bot.EnemyController.EnemiesArray;
+            foreach (Enemy enemy in enemies)
+                if (enemy.ShallCheckLook(currentTime, out float deltaTime))
+                {
+                    enemy.EnemyInfo.CheckLookEnemy(lookAll, deltaTime);
+                    updated++;
+                }
+            return updated;
         }
 
         private void SetNotVis(Enemy enemy)
         {
             foreach (var part in enemy.EnemyInfo.AllActiveParts.Values)
             {
-                if (part.IsVisible || part.VisibleType == EEnemyPartVisibleType.Sence)
-                {
-                    part.UpdateVisibility(BotOwner, false, false, false, Time.fixedDeltaTime);
-                }
+                part.UpdateVisibility(BotOwner, false, false, false, Time.fixedDeltaTime);
             }
 
             if (enemy.EnemyInfo.IsVisible)
             {
                 enemy.EnemyInfo.SetVisible(false);
             }
-        }
-
-        private bool CheckEnemy(Enemy enemy, LookAllData lookAll, float deltaTime)
-        {
-            // ArchangelWTF: In AITaskManager.UpdateGroup timeSince is passed here
-            enemy.EnemyInfo.CheckLookEnemy(lookAll, deltaTime);
-            return true;
-        }
-
-        private float GetDelay(Enemy enemy)
-        {
-            float updateFreqCoef = enemy.UpdateFrequencyCoefNormal + 1f;
-            float baseDelay = CalcBaseDelay(enemy) * updateFreqCoef;
-            if (!enemy.IsAI)
-            {
-                return baseDelay;
-            }
-            var active = Bot.BotActivation;
-            if (!active.BotActive || active.BotInStandBy)
-            {
-                return baseDelay * VISION_FREQ_INACTIVE_BOT_COEF;
-            }
-            return baseDelay * VISION_FREQ_ACTIVE_BOT_COEF;
-        }
-
-        private float CalcBaseDelay(Enemy enemy)
-        {
-            if (enemy.IsCurrentEnemy)
-            {
-                return VISION_FREQ_CURRENT_ENEMY;
-            }
-
-            if (enemy.EnemyKnown)
-            {
-                return VISION_FREQ_KNOWN_ENEMY;
-            }
-
-            return VISION_FREQ_UNKNOWN_ENEMY;
         }
     }
 }

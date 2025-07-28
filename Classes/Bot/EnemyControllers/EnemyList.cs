@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
@@ -18,9 +19,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public string Name { get; } = name;
 
-        public event Action<bool> OnListEmptyOrGetFirst;
+        public event Action<bool, float> OnListEmptyOrGetFirst;
 
-        public event Action<bool> OnListEmptyOrGetFirstHuman;
+        public event Action<bool, float> OnListEmptyOrGetFirstHuman;
 
         public void Subscribe(ref Action<bool, Enemy> action)
         {
@@ -107,7 +108,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             if (this.Count == 1)
             {
-                OnListEmptyOrGetFirst?.Invoke(true);
+                OnListEmptyOrGetFirst?.Invoke(true, Time.time);
             }
 
             if (!enemy.IsAI)
@@ -115,7 +116,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Humans++;
                 if (Humans == 1)
                 {
-                    OnListEmptyOrGetFirstHuman?.Invoke(true);
+                    OnListEmptyOrGetFirstHuman?.Invoke(true, Time.time);
                 }
             }
             else
@@ -136,7 +137,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 Humans--;
                 if (Humans == 0)
                 {
-                    OnListEmptyOrGetFirstHuman?.Invoke(false);
+                    OnListEmptyOrGetFirstHuman?.Invoke(false, Time.time);
                 }
             }
             else
@@ -155,7 +156,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
             if (this.Count == 0)
             {
-                OnListEmptyOrGetFirst?.Invoke(false);
+                OnListEmptyOrGetFirst?.Invoke(false, Time.time);
             }
         }
 

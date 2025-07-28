@@ -60,7 +60,9 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
             }
         }
 
+#if DEBUG
         private static float _nextLogTime;
+#endif
 
         private float calcGearEffects()
         {

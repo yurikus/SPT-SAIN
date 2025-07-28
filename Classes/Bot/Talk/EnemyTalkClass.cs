@@ -447,7 +447,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             }
 
             bool isPain = phrase == EPhraseTrigger.OnAgony || phrase == EPhraseTrigger.OnBeingHurt;
-            float painRange = 50f;
+            float painRange = 40f;
             float breathRange = player.HeavyBreath ? 35f : 15f;
 
             Enemy enemy = Bot.EnemyController.GetEnemy(player.ProfileId, true);
@@ -475,7 +475,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                         isDanger = enemy.RealDistance < 25f || enemy.InLineOfSight,
                         shallReportToSquad = true,
                     };
-                    enemy.Hearing.SetHeard(report);
+                    enemy.Hearing.SetHeard(report, Time.time);
                 }
                 return;
             }
@@ -492,12 +492,12 @@ namespace SAIN.SAINComponent.Classes.Talk
                         isDanger = enemy.RealDistance < 25f || enemy.InLineOfSight,
                         shallReportToSquad = true,
                     };
-                    enemy.Hearing.SetHeard(report);
+                    enemy.Hearing.SetHeard(report, Time.time);
                 }
                 return;
             }
 
-            if (enemy.RealDistance <= 65f)
+            if (enemy.RealDistance <= 50f)
             {
                 Vector3 randomizedPos = randomizePos(player.Position, enemy.RealDistance, 20f);
                 SAINHearingReport report = new()
@@ -508,7 +508,7 @@ namespace SAIN.SAINComponent.Classes.Talk
                     isDanger = enemy.RealDistance < 25f || enemy.InLineOfSight,
                     shallReportToSquad = true,
                 };
-                enemy.Hearing.SetHeard(report);
+                enemy.Hearing.SetHeard(report, Time.time);
             }
 
             if (Bot.Talk.IsSpeaking)

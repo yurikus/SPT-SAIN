@@ -1,11 +1,12 @@
-﻿using SAIN.Helpers.Events;
+﻿using EFT;
+using SAIN.Helpers.Events;
 using SAIN.Models.Enums;
 using System;
 using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class EnemyEvents : EnemyBase, IBotClass
+    public class EnemyEvents
     {
         public EnemyToggleEventTimeTracked OnEnemyLineOfSightChanged { get; }
         public EnemyToggleEventTimeTracked OnEnemyKnownChanged { get; }
@@ -22,28 +23,27 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public event Action<Enemy, SAINSoundType, bool, EnemyPlace> OnEnemyHeard;
         public event Action<Enemy, ETagStatus> OnHealthStatusChanged;
 
-        public EnemyEvents(EnemyData enemy) : base(enemy)
+        public EnemyEvents(EnemyData enemy)
         {
+            Enemy = enemy.Enemy;
             OnEnemyLineOfSightChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
             OnEnemyKnownChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
             OnActiveThreatChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
             OnVisionChange = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
             OnSearch = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
             OnEnemyCanShootChanged = new EnemyToggleEventTimeTracked(enemy.Enemy, false);
-            CanEverTick = false;
         }
 
-        public override void Init()
+        private readonly Enemy Enemy;
+
+        public void Init(Player enemyPlayer)
         {
-            EnemyPlayer.BeingHitAction += enemyHit;
-            base.Init();
+            enemyPlayer.BeingHitAction += enemyHit;
         }
 
-        public override void Dispose()
+        public void Dispose(Player enemyPlayer)
         {
-            var player = EnemyPlayer;
-            if (player != null) player.BeingHitAction -= enemyHit;
-            base.Dispose();
+            if (enemyPlayer != null) enemyPlayer.BeingHitAction -= enemyHit;
         }
 
         public void EnemyLocationsSearched()
@@ -51,10 +51,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             OnEnemyLocationsSearched?.Invoke(Enemy);
         }
 
-        public void LastKnownUpdated(EnemyPlace place)
+        public void LastKnownUpdated(EnemyPlace place, float currentTime)
         {
             OnPositionUpdated?.Invoke(Enemy, place);
-            OnEnemyKnownChanged.CheckToggle(true);
+            OnEnemyKnownChanged.CheckToggle(true, currentTime);
         }
 
         public void ShotByEnemy()
@@ -84,7 +84,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 return;
             }
-            if (damageSource.ProfileId == Bot.ProfileId)
+            if (damageSource.ProfileId == Enemy.Bot.ProfileId)
             {
                 OnEnemyShot?.Invoke(Enemy);
             }

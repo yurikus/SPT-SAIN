@@ -20,7 +20,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
         public static bool PatchPrefix(ShootData __instance)
         {
             BotOwner botOwner = __instance._owner;
-            if (!SAINEnableClass.GetSAIN(botOwner, out BotComponent bot) || !bot.SAINLayersActive)
+            if (!SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent bot) || !bot.SAINLayersActive)
             {
                 return true;
             }
@@ -42,7 +42,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
         public static bool PatchPrefix(ShootData __instance)
         {
             BotOwner botOwner = __instance._owner;
-            if (!SAINEnableClass.GetSAIN(botOwner, out BotComponent bot) || !bot.SAINLayersActive)
+            if (!SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent bot) || !bot.SAINLayersActive)
             {
                 return true;
             }
@@ -65,7 +65,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
         public static bool PatchPrefix(ShootData __instance, ref bool __result)
         {
             BotOwner botOwner = __instance._owner;
-            if (!SAINEnableClass.GetSAIN(botOwner, out BotComponent bot))
+            if (!SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent bot))
             {
                 return true;
             }

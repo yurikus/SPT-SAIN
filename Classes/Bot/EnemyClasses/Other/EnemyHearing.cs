@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 {
-    public class EnemyHearing : EnemyBase, IBotEnemyClass
+    public class EnemyHearing(EnemyData enemyData) : EnemyBase(enemyData, enemyData.Enemy.Bot)
     {
         public bool Heard { get; private set; }
         public bool EnemyHeardFromPeace { get; set; }
@@ -17,23 +17,18 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         private const float REPORT_HEARD_FREQUENCY = 1f;
 
-        public EnemyHearing(EnemyData enemy) : base(enemy)
-        {
-        }
-
         public override void Init()
         {
             Enemy.Events.OnFirstSeen += resetHeardFromPeace;
             base.Init();
         }
 
-        public override void ManualUpdate()
+        public void TickEnemy(float currentTime)
         {
             if (Enemy.Seen && EnemyHeardFromPeace)
             {
                 EnemyHeardFromPeace = false;
             }
-            base.ManualUpdate();
         }
 
         private void resetHeardFromPeace(Enemy enemy)
@@ -47,7 +42,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             base.Dispose();
         }
 
-        public void OnEnemyKnownChanged(bool known, Enemy enemy)
+        protected override void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
             if (!known)
             {
@@ -59,7 +54,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             }
         }
 
-        public EnemyPlace SetHeard(SAINHearingReport report)
+        public EnemyPlace SetHeard(SAINHearingReport report, float currentTime)
         {
             if (Enemy.IsVisible)
             {
@@ -71,7 +66,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             Enemy.Status.HeardRecently = true;
             _timeLastHeard = Time.time;
 
-            EnemyPlace place = UpdateHeardPosition(report);
+            EnemyPlace place = UpdateHeardPosition(report, currentTime);
 
             if (!Bot.HasEnemy)
                 EnemyHeardFromPeace = true;
@@ -83,11 +78,11 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             {
                 return place;
             }
-            updateEnemyAction(report.soundType, report.position);
+            updateEnemyAction(report.soundType, report.position, currentTime);
             return place;
         }
 
-        private void updateEnemyAction(SAINSoundType soundType, Vector3 soundPosition)
+        private void updateEnemyAction(SAINSoundType soundType, Vector3 soundPosition, float currentTime)
         {
             EEnemyAction action;
             switch (soundType)
@@ -122,57 +117,24 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
             if (action != EEnemyAction.None)
             {
                 Enemy.Status.SetVulnerableAction(action);
-                Bot.Squad.SquadInfo.UpdateSharedEnemyStatus(EnemyPlayer, action, Bot, soundType, soundPosition);
+                Bot.Squad.SquadInfo.UpdateSharedEnemyStatus(EnemyPlayer, action, Bot, soundType, soundPosition, currentTime);
             }
         }
 
-        public EnemyPlace UpdateHeardPosition(SAINHearingReport report)
+        public EnemyPlace UpdateHeardPosition(SAINHearingReport report, float currentTime)
         {
-            EnemyPlace place = Enemy.KnownPlaces.UpdatePersonalHeardPosition(report);
+            EnemyPlace place = Enemy.KnownPlaces.UpdatePersonalHeardPosition(report, currentTime);
             if (report.shallReportToSquad &&
                 place != null &&
-                _nextReportHeardTime < Time.time)
+                _nextReportHeardTime < currentTime)
             {
-                _nextReportHeardTime = Time.time + REPORT_HEARD_FREQUENCY;
-                Bot.Squad?.SquadInfo?.ReportEnemyPosition(Enemy, place, false);
+                _nextReportHeardTime = currentTime + REPORT_HEARD_FREQUENCY;
+                Bot.Squad?.SquadInfo?.ReportEnemyPosition(Enemy, place, false, currentTime);
             }
             return place;
         }
 
         private float _nextReportHeardTime;
-
-        public void OnEnemyKnownChanged(Enemy enemy, bool known)
-        {
-        }
-
-        public float DispersionModifier
-        {
-            get
-            {
-                return 1f;
-            }
-        }
-
-        private float angleModifier()
-        {
-            return 1f;
-        }
-
-        private float distanceModifier()
-        {
-            return 1f;
-        }
-
-        private float soundTypeModifier(SAINSoundType soundType)
-        {
-            return 1f;
-        }
-
-        private float weaponTypeModifier()
-        {
-            return 1f;
-        }
-
         private float _timeLastHeard;
     }
 }

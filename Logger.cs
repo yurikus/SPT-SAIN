@@ -141,8 +141,10 @@ namespace SAIN
             }
             SAINLogger.Log(level, result);
         }
-
+        
+#if DEBUG
         private static float _nextNotification;
+#endif
 
         private static int GetMaxFrames(LogLevel level)
         {

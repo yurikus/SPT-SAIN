@@ -185,7 +185,7 @@ namespace SAIN.Components
                     if (vision != null)
                     {
                         bool forceOff = true;
-                        vision.UpdateVisibleState(forceOff);
+                        vision.UpdateVisibleState(Time.time, forceOff);
                     }
                 }
             }

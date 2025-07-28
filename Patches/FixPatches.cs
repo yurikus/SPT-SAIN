@@ -20,7 +20,7 @@ namespace SAIN.Patches.Generic.Fixes
         [PatchPrefix]
         public static bool Patch(BotMeleeWeaponData __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent bot) && bot.SAINLayersActive)
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out BotComponent bot) && bot.SAINLayersActive)
             {
                 Enemy enemy = bot.GoalEnemy;
                 if (enemy == null)
@@ -145,7 +145,7 @@ namespace SAIN.Patches.Generic.Fixes
         {
             var settings = GlobalSettingsClass.Instance.General;
             if (!settings.BotsUseGrenades) return false;
-            if (SAINEnableClass.GetSAIN(__instance.botOwner_0, out BotComponent bot))
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out BotComponent bot))
             {
                 var goalEnemy = bot.EnemyController.GoalEnemy;
                 if (goalEnemy == null) return false;

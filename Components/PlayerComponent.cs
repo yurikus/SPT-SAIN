@@ -227,7 +227,9 @@ namespace SAIN.Components.PlayerComponentSpace
                 if (!isAI ||
                     (BotOwner.BotState == EBotState.Active && BotOwner.StandBy.StandByType == BotStandByType.active))
                 {
+#if DEBUG
                     drawTransformGizmos();
+#endif
                     Flashlight.Update();
                     Equipment.Update();
                 }
@@ -260,10 +262,6 @@ namespace SAIN.Components.PlayerComponentSpace
 
         public void OnMakingShot(IWeapon Weapon, Vector3 Force)
         {
-            if (Player.IsYourPlayer)
-            {
-                //Logger.LogDebug($"Shoot");
-            }
             if (IsActive)
             {
                 WeaponInfo WeaponInfo = Equipment.CurrentWeaponInfo;
@@ -271,19 +269,7 @@ namespace SAIN.Components.PlayerComponentSpace
                 {
                     OnShoot?.Invoke(WeaponInfo, Force);
                     PlayAISound(WeaponInfo.SoundType, Transform.WeaponData.FirePort, WeaponInfo.CalculatedAudibleRange, 1);
-                    if (Player.IsYourPlayer)
-                    {
-                        //Logger.LogDebug($"Shoot");
-                    }
                 }
-                else
-                {
-                    //Logger.LogError("WeaponInfo Null");
-                }
-            }
-            else
-            {
-                //Logger.LogDebug("Player Not Active");
             }
         }
 
@@ -614,7 +600,7 @@ namespace SAIN.Components.PlayerComponentSpace
         {
             if (SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
             {
-                DebugGizmos.DrawSphere(Transform.EyePosition, 0.05f, Color.white, 0.1f, "Eye");
+                DebugGizmos.DrawSphere(Transform.EyePosition, 0.1f, Color.white, 0.1f, "Eye");
                 DebugGizmos.Ray(Transform.EyePosition, Transform.LookDirection, Color.white, 1f, 0.025f, 0.1f);
 
                 DebugGizmos.DrawSphere(Transform.WeaponData.WeaponRoot, 0.075f, Color.magenta, 0.1f, "WeaponRoot");

@@ -515,7 +515,7 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         private float _nextJumpTime = 0f;
 
-        private const float CHANGE_STANCE_INTERVAL = 0.5f;
+        private const float CHANGE_STANCE_INTERVAL = 0.25f;
         private float _nextChangeStanceTime;
     }
 }

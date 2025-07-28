@@ -14,7 +14,7 @@ namespace SAIN.SAINComponent.Classes
 {
     public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
     {
-        private const float BOT_DEAF_TIME_INTERVAL = 1.5f;
+        private const float BOT_DEAF_TIME_INTERVAL = 0.75f;
         private const float DeafenCoef_Gunfire = 0.33f;
         private const float DeafenCoef_Suppressed = 0.33f;
         private const float DeafenCoef_Convo = 0.4f;
@@ -269,7 +269,8 @@ namespace SAIN.SAINComponent.Classes
             {
                 return;
             }
-            if (_nextHearImpactTime > Time.time)
+            float currentTime = Time.time;
+            if (_nextHearImpactTime > currentTime)
             {
                 return;
             }
@@ -298,10 +299,10 @@ namespace SAIN.SAINComponent.Classes
             float distance = (bullet.CurrentPosition - Bot.Position).sqrMagnitude;
             if (distance > IMPACT_MAX_HEAR_DISTANCE)
             {
-                _nextHearImpactTime = Time.time + IMPACT_HEAR_FREQUENCY_FAR;
+                _nextHearImpactTime = currentTime + IMPACT_HEAR_FREQUENCY_FAR;
                 return;
             }
-            _nextHearImpactTime = Time.time + IMPACT_HEAR_FREQUENCY;
+            _nextHearImpactTime = currentTime + IMPACT_HEAR_FREQUENCY;
 
             float dispersion = distance / IMPACT_DISPERSION;
             Vector3 random = UnityEngine.Random.onUnitSphere;
@@ -316,7 +317,7 @@ namespace SAIN.SAINComponent.Classes
                 isDanger = distance < 25f * 25f,
                 shallReportToSquad = true,
             };
-            enemy.Hearing.SetHeard(report);
+            enemy.Hearing.SetHeard(report, currentTime);
         }
 
         private bool canHearSounds()

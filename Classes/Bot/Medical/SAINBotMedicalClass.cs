@@ -85,8 +85,6 @@ namespace SAIN.SAINComponent.Classes
             return true;
         }
 
-        private float _startUseTime;
-
         private MedsItemClass SelectItemToUse()
         {
             MedsItemClass item;

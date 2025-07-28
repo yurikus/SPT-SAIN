@@ -105,9 +105,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             return result;
         }
 
-        public void SetADS(bool value)
+        public void SetADS(bool value, bool force = false)
         {
-            if (Time.time - _timeLastADSUpdate < ADS_UPDATE_COOLDOWN)
+            if (!force && Time.time - _timeLastADSUpdate < ADS_UPDATE_COOLDOWN)
             {
                 return; // Avoid rapid toggling of ADS
             }

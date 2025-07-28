@@ -51,7 +51,7 @@ namespace SAIN.SAINComponent.SubComponents
                 var collisionSound = Grenade.GrenadeSettings.CollisionSound;
                 bool isFrag = collisionSound == GrenadeSettings.CollisionSounds.frag;
                 var trigger = isFrag ? EPhraseTrigger.OnEnemyGrenade : EPhraseTrigger.Look;
-                Bot.Talk.GroupSay(trigger, ETagStatus.Combat, false, 70);
+                Bot.Talk.GroupSay(trigger, ETagStatus.Combat, false, 100);
 
                 Vector3 pos = DangerPoint;
                 BotOwner.BewareGrenade.AddGrenadeDanger(pos, Grenade);
@@ -93,17 +93,16 @@ namespace SAIN.SAINComponent.SubComponents
 
         private bool checkVisibility()
         {
+            Vector3 lookPoint = Bot.Transform.WeaponRoot;
+            Vector3 lookDir = Bot.LookDirection;
+
             Vector3 grenadePos = Grenade.transform.position + (Vector3.up * 0.05f);
-
-            if (!BotOwner.LookSensor.IsPointInVisibleSector(grenadePos))
+            Vector3 grenadeDir = grenadePos - lookPoint;
+            if (Vector3.Dot(lookDir, grenadeDir.normalized) < 0.25f)
             {
-                return false;
+                return false; // Not looking in the right direction
             }
-
-            Vector3 headPos = BotOwner.LookSensor._headPoint;
-            Vector3 grenadeDir = grenadePos - headPos;
-
-            return !Physics.Raycast(headPos, grenadeDir.normalized, grenadeDir.magnitude, LayerMaskClass.HighPolyWithTerrainMaskAI);
+            return !Physics.Raycast(lookPoint, grenadeDir, 1f, LayerMaskClass.HighPolyWithTerrainMaskAI);
         }
 
         public void UpdateGrenadeDanger(Vector3 Danger)

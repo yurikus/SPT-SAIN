@@ -81,7 +81,7 @@ namespace SAIN.BotController.Classes
             _maxReportActionRangeSqr = preset.GlobalSettings.Hearing.MaxRangeToReportEnemyActionNoHeadset.Sqr();
         }
 
-        public void ReportEnemyPosition(Enemy reportedEnemy, EnemyPlace place, bool seen)
+        public void ReportEnemyPosition(Enemy reportedEnemy, EnemyPlace place, bool seen, float currentTime)
         {
             if (Members == null || Members.Count <= 1)
             {
@@ -113,7 +113,7 @@ namespace SAIN.BotController.Classes
                         && reportedEnemy.EnemyPlayer != null
                         && reportedEnemy.Player.ProfileId != member.ProfileId)
                     {
-                        member.EnemyController.GetEnemy(reportedEnemy.EnemyPlayer.ProfileId, true)?.EnemyPositionReported(place, seen);
+                        member.EnemyController.GetEnemy(reportedEnemy.EnemyPlayer.ProfileId, true)?.EnemyPositionReported(place, seen, currentTime);
                     }
                 }
             }
@@ -156,7 +156,7 @@ namespace SAIN.BotController.Classes
 
         public void AddPointToSearch(Enemy Enemy, Vector3 EstimatedPosition, AISoundData Sound, BotComponent sain)
         {
-            AddPlaceForCheck(EstimatedPosition, Sound.SoundType, sain, Enemy, true, CheckSoundIsDanger(Sound));
+            AddPlaceForCheck(EstimatedPosition, Sound.SoundType, sain, Enemy, true, CheckSoundIsDanger(Sound), Time.time);
         }
 
         private static bool CheckSoundIsDanger(AISoundData sound)
@@ -179,7 +179,7 @@ namespace SAIN.BotController.Classes
         private const float SOUND_DIST_ALWAYS_DANGER = 25f;
         private const float SOUND_DIST_GUNSHOT_ALWAYS_DANGER = 100f;
 
-        private void AddPlaceForCheck(Vector3 position, SAINSoundType soundType, BotComponent bot, Enemy enemy, bool heard, bool isDanger)
+        private void AddPlaceForCheck(Vector3 position, SAINSoundType soundType, BotComponent bot, Enemy enemy, bool heard, bool isDanger, float currentTime)
         {
             BotsGroup ??= bot.BotOwner.BotsGroup;
 
@@ -198,7 +198,7 @@ namespace SAIN.BotController.Classes
                 isDanger = isDanger,
                 shallReportToSquad = true,
             };
-            EnemyPlace place = enemy.Hearing.SetHeard(report);
+            EnemyPlace place = enemy.Hearing.SetHeard(report, currentTime);
 
             if (heard && place != null)
                 OnMemberHeardEnemy?.Invoke(place, enemy, soundType);
@@ -214,7 +214,7 @@ namespace SAIN.BotController.Classes
             }
 
             bool isDanger = (position - sain.Position).sqrMagnitude < SOUND_DIST_ALWAYS_DANGER * SOUND_DIST_ALWAYS_DANGER;
-            AddPlaceForCheck(position, soundType.Convert(), sain, enemy, false, isDanger);
+            AddPlaceForCheck(position, soundType.Convert(), sain, enemy, false, isDanger, Time.time);
         }
 
         private PlaceForCheck addNewPlaceForCheck(BotOwner botOwner, Vector3 position, PlaceForCheckType checkType, IPlayer player)
@@ -487,7 +487,7 @@ namespace SAIN.BotController.Classes
             return false;
         }
 
-        public void UpdateSharedEnemyStatus(IPlayer player, EEnemyAction action, BotComponent sain, SAINSoundType soundType, Vector3 position)
+        public void UpdateSharedEnemyStatus(IPlayer player, EEnemyAction action, BotComponent sain, SAINSoundType soundType, Vector3 position, float currentTime)
         {
             if (sain == null)
             {
@@ -519,7 +519,7 @@ namespace SAIN.BotController.Classes
                     shallReportToSquad = false,
                 };
 
-                memberEnemy.Hearing.SetHeard(report);
+                memberEnemy.Hearing.SetHeard(report, currentTime);
                 if (action != EEnemyAction.None)
                 {
                     memberEnemy.Status.SetVulnerableAction(action);

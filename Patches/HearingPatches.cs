@@ -61,9 +61,11 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void Patch(Vector3 soundPosition, BetterSource source, IPlayerOwner player, SoundBank ____soundBank)
         {
-            if (player.iPlayer != null) {
+            if (player.iPlayer != null)
+            {
                 float baseRange = 50f;
-                if (____soundBank != null) {
+                if (____soundBank != null)
+                {
                     baseRange = ____soundBank.Rolloff * player.SoundRadius * 0.8f;
                 }
                 //Logger.LogDebug($"Playing Bush Sound Range: {baseRange}");
@@ -221,7 +223,7 @@ namespace SAIN.Patches.Hearing
 
     public class SpecificStepAudioControllerPatch : ModulePatch
     {
-        protected readonly static FieldInfo NestedStepSoundSourceField = AccessTools.Field(typeof(Player), "NestedStepSoundSource");
+        protected static readonly FieldInfo NestedStepSoundSourceField = AccessTools.Field(typeof(Player), "NestedStepSoundSource");
 
         protected override MethodBase GetTargetMethod()
         {
@@ -232,17 +234,21 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static bool Patch(StepAudioController __instance, IPlayer ___iplayer_0, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
         {
-            if (movementState == EAudioMovementState.None) {
+            if (movementState == EAudioMovementState.None)
+            {
                 return false;
             }
             float volume = baseStepVolume;
             bool IsUnderRoof = __instance.bool_0;
-            if (!IsUnderRoof && environment != EnvironmentType.Indoor && movementState != EAudioMovementState.None) {
-                if (__instance.method_3(movementState, out SoundBank soundBank)) {
+            if (!IsUnderRoof && environment != EnvironmentType.Indoor && movementState != EAudioMovementState.None)
+            {
+                if (__instance.method_3(movementState, out SoundBank soundBank))
+                {
                     volume = __instance.CalculateFinalVolume(baseStepVolume, soundBank);
                     soundBank.Play(__instance.betterSource_0, EnvironmentType.Outdoor, distance, volume, blendParameter, stereo, true);
                 }
-                else {
+                else
+                {
                     Debug.LogError(string.Format("Can't find bank for movement state: {0}", movementState));
                 }
             }
@@ -256,28 +262,36 @@ namespace SAIN.Patches.Hearing
                 _ => SAINSoundType.Generic,
             };
 
-            if (___iplayer_0 is Player player) {
-                if (NestedStepSoundSourceField != null) {
+            if (___iplayer_0 is Player player)
+            {
+                if (NestedStepSoundSourceField != null)
+                {
                     object StepSourceObj = NestedStepSoundSourceField.GetValue(player);
-                    if (StepSourceObj != null) {
-                        if (StepSourceObj is BetterSource NestedStepSoundSource) {
+                    if (StepSourceObj != null)
+                    {
+                        if (StepSourceObj is BetterSource NestedStepSoundSource)
+                        {
                             BotManagerComponent.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
                             //if (player.IsYourPlayer)
                             //    Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                         }
-                        else {
+                        else
+                        {
                             Logger.LogError("StepSourceObj is not BetterSource NestedStepSoundSource");
                         }
                     }
-                    else {
+                    else
+                    {
                         Logger.LogError("StepSourceObj is null");
                     }
                 }
-                else {
+                else
+                {
                     Logger.LogError("NestedStepSoundSourceField is null");
                 }
             }
-            else {
+            else
+            {
                 Logger.LogError("___iplayer_0 is not Player player");
             }
             return false;
@@ -309,10 +323,12 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static bool PatchPrefix(BotOwner ____botOwner)
         {
-            if (____botOwner == null || ____botOwner.GetPlayer == null) {
+            if (____botOwner == null || ____botOwner.GetPlayer == null)
+            {
                 return false;
             }
-            if (!SAINPlugin.IsBotExluded(____botOwner)) {
+            if (!SAINEnableClass.GetSAIN(____botOwner.ProfileId, out _))
+            {
                 return false;
             }
             return true;
@@ -350,7 +366,7 @@ namespace SAIN.Patches.Hearing
             }
         }
     }
-    
+
     public class RegisterShotPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -397,7 +413,8 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static void PatchPrefix(string soundName, BaseSoundPlayer __instance)
         {
-            if (BotManagerComponent.Instance != null) {
+            if (BotManagerComponent.Instance != null)
+            {
                 object playerBridge = _PlayerBridge.GetValue(__instance);
                 Player player = _Player.Invoke(playerBridge, null) as Player;
                 SAINSoundTypeHandler.AISoundFileChecker(soundName, player);
@@ -415,9 +432,11 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static void PatchPrefix(string soundName, BaseSoundPlayer __instance)
         {
-            if (soundName == FUSE) {
+            if (soundName == FUSE)
+            {
                 BaseSoundPlayer.SoundElement soundElement = __instance.AdditionalSounds.Find((BaseSoundPlayer.SoundElement elem) => elem.EventName == FUSE || elem.EventName == "Snd" + FUSE);
-                if (soundElement != null) {
+                if (soundElement != null)
+                {
                     soundElement.RollOff = 60;
                     soundElement.Volume = 1;
                 }
@@ -437,7 +456,8 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(Player __instance, bool previousState, bool isOn, Vector3 ___SpeechLocalPosition)
         {
-            if (previousState != isOn) {
+            if (previousState != isOn)
+            {
                 float baseRange = 10f;
                 BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, baseRange, 1f);
             }
@@ -485,7 +505,8 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(Player __instance, BetterSource ____searchSource)
         {
-            if (____searchSource == null) {
+            if (____searchSource == null)
+            {
                 return;
             }
             float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Looting;
@@ -505,7 +526,8 @@ namespace SAIN.Patches.Hearing
         {
             if (soundBank == "Prone"
                 && __instance.SinceLastStep >= 0.5f
-                && __instance.CheckSurface(____runSurfaceCheck)) {
+                && __instance.CheckSurface(____runSurfaceCheck))
+            {
                 float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Prone;
                 BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Prone, __instance.Position, range, 1f);
             }
@@ -537,7 +559,8 @@ namespace SAIN.Patches.Hearing
         [PatchPostfix]
         public static void PatchPostfix(EftBulletClass info)
         {
-            if (BotManagerComponent.Instance != null) {
+            if (BotManagerComponent.Instance != null)
+            {
                 BotManagerComponent.Instance.BotHearing.BulletImpacted(info);
             }
         }

@@ -12,7 +12,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Enemy Path Visibility System")]
         [MinMax(5f, 500f, 1)]
         [Advanced]
-        public float DistToCheckVision = 40.0f;
+        public float MaxPathLengthPathVision = 75.0f;
 
         [Hidden]
         public float characterHeight = 1.5f;

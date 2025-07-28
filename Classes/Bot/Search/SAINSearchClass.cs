@@ -33,6 +33,7 @@ namespace SAIN.SAINComponent.Classes.Search
 
         public void ToggleSearch(bool value, Enemy target)
         {
+            float currentTime = Time.time;
             if (value)
             {
                 if (SearchTarget != null)
@@ -42,12 +43,12 @@ namespace SAIN.SAINComponent.Classes.Search
                         SearchActive = true;
                         return;
                     }
-                    SearchTarget.Events.OnSearch.CheckToggle(false);
+                    SearchTarget.Events.OnSearch.CheckToggle(false, currentTime);
                     SearchTarget = null;
                 }
                 if (target != null)
                 {
-                    target.Events.OnSearch.CheckToggle(true);
+                    target.Events.OnSearch.CheckToggle(true, currentTime);
                     SearchTarget = target;
                 }
                 SearchActive = true;
@@ -55,7 +56,7 @@ namespace SAIN.SAINComponent.Classes.Search
             }
             if (SearchTarget != null)
             {
-                SearchTarget.Events.OnSearch.CheckToggle(false);
+                SearchTarget.Events.OnSearch.CheckToggle(false, currentTime);
                 SearchTarget = null;
             }
             SearchActive = false;

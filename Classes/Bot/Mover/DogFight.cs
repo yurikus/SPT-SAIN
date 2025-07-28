@@ -92,13 +92,11 @@ namespace SAIN.SAINComponent.Classes.Mover
             //}
             if (HasEnemy && BackUpFromEnemy(Enemy))
             {
-                _backingUp = true;
                 Status = EDogFightStatus.BackingUp;
                 float baseTime = Enemy.IsVisible ? 0.75f : 1f;
                 _updateDogFightTimer = Time.time + baseTime * UnityEngine.Random.Range(0.66f, 1.33f);
                 return;
             }
-            _backingUp = false;
 
             if (!aggressive)
             {
@@ -118,17 +116,6 @@ namespace SAIN.SAINComponent.Classes.Mover
             }
             _updateDogFightTimer = Time.time + 0.33f;
         }
-
-        private bool stopMoveToShoot(Enemy Enemy)
-        {
-            return Status == EDogFightStatus.MovingToEnemy &&
-                Enemy.IsVisible && Enemy.CanShoot;
-            //&&
-            //(Enemy.InLineOfSight || Enemy.IsVisible) &&
-            //Enemy.CanShoot;
-        }
-
-        private bool _backingUp;
 
         public bool BackUpFromEnemy(Enemy Enemy)
         {

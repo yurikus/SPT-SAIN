@@ -422,7 +422,12 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder
             float timeSinceUpdated = CoverData.TimeSinceUpdated;
             if (_lastCheckedProfileId != targetProfileId)
             {
-                return timeSinceUpdated >= 0.1f;
+                if (timeSinceUpdated >= 0.1f)
+                {
+                    _lastCheckedProfileId = targetProfileId;
+                    return true;
+                }
+                return false;
             }
             if (Bot.Cover.CoverInUse == this)
             {

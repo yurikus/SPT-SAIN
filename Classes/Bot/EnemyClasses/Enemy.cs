@@ -6,23 +6,75 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
-using SAIN.Types.Jobs;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public enum EEnemyTag
-    {
-        EnemyKnown,
-        CurrentEnemy,
-        ShallDogFight,
-    }
-
     public class Enemy : BotBase, ISPlayer
     {
+        public bool ShallCheckLook(float currentTime, out float deltaTime)
+        {
+            if (_nextCheckLookTime < currentTime)
+            {
+                if (!CheckValid())
+                {
+                    deltaTime = 0f;
+                    return false;
+                }
+                deltaTime = currentTime - _nextCheckLookTime;
+                _nextCheckLookTime = currentTime + LookUpdateInterval();
+                return true;
+            }
+            deltaTime = 0f;
+            return false;
+        }
+
+        public bool ShallCheckLoS(float currentTime)
+        {
+            if (_nextCheckLoSTime < currentTime)
+            {
+                if (!CheckValid()) return false;
+                _nextCheckLoSTime = currentTime + LookUpdateInterval();
+                return true;
+            }
+            return false;
+        }
+
+        private float LookUpdateInterval()
+        {
+            float interval;
+            if (!Bot.BotActive || !IsEnemyActive(this))
+            {
+                interval = 0.5f;
+            }
+            else if (IsCurrentEnemy)
+            {
+                interval = IsAI ? 1f / 15f : 1f / 30f;
+            }
+            else if (RealDistance > 200f)
+            {
+                interval = IsAI ? 1f / 4f : 1f / 12f;
+            }
+            else if (RealDistance > 100f)
+            {
+                interval = IsAI ? 1f / 6f : 1f / 12f;
+            }
+            else if (RealDistance > 50f)
+            {
+                interval = IsAI ? 1f / 8f : 1f / 12f;
+            }
+            else
+            {
+                interval = IsAI ? 1f / 12f : 1f / 16f;
+            }
+            return interval * UnityEngine.Random.Range(0.75f, 1.25f);
+        }
+
+        private float _nextCheckLookTime = 0f;
+        private float _nextCheckLoSTime = 0f;
+
         public Vector3 NavMeshPosition => EnemyTransform.NavData.Position;
 
         /// <summary>
@@ -32,7 +84,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             return EnemyPlayerComponent.GetDistanceToPlayer(ProfileId);
         }
-        
+
         /// <summary>
         /// Enemy player to ProfileId player
         /// </summary>
@@ -42,27 +94,23 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return playerDistance <= maxDistance;
         }
 
-        public override void ManualUpdate()
+        public void TickEnemy(float currentTime, float forgetEnemyTime, bool botSearching)
         {
-            CalcFrequencyCoef();
             UpdateDistAndDirection();
-            UpdateSniperStatus();
+            if (IsSniper) IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
+            KnownChecker.TickEnemy(currentTime, forgetEnemyTime, botSearching);
+            Vision.TickEnemy(currentTime);
+            Hearing.TickEnemy(currentTime);
+            KnownPlaces.TickEnemy(currentTime);
+            Status.TickEnemy(currentTime);
 
-            KnownChecker.ManualUpdate();
-            ActiveThreatChecker.ManualUpdate();
-            UpdateActiveState();
-            Vision.ManualUpdate();
-            KnownPlaces.ManualUpdate();
-            Path.ManualUpdate();
-            Status.ManualUpdate();
-
+#if DEBUG
             if (IsCurrentEnemy && GetVisibilePathPoint(out Vector3 point))
             {
                 DebugGizmos.DrawSphere(point, 0.06f, Color.red, 0.02f);
                 DebugGizmos.DrawLine(point, Bot.Transform.EyePosition, Color.red, 0.015f, 0.02f);
             }
-
-            base.ManualUpdate();
+#endif
         }
 
         public event Action OnEnemyDisposed;
@@ -101,7 +149,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool IsCurrentEnemy => Bot.EnemyController.GoalEnemy == this;
 
-        public float RealDistance => EnemyPlayerData.DistanceData.Distance;
+        public float RealDistance { get; private set; }
         public bool IsSniper { get; private set; }
         public Vector3? VisiblePathPoint { get; private set; }
         public float VisiblePathPointDistanceToBot { get; private set; }
@@ -130,11 +178,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool EnemyKnown => Events.OnEnemyKnownChanged.Value;
         public bool EnemyNotLooking => IsVisible && !Status.EnemyLookAtMe && !Status.ShotAtMeRecently;
-        public bool WasValid => ValidChecker.WasValid;
+        public bool WasValid { get; private set; } = true;
 
         public Vector3 CenterMass => FindCenterMass(EnemyPlayerComponent);
-
-        public HashSet<EEnemyTag> Tags { get; } = [];
 
         public bool FirstContactOccured => Vision.FirstContactOccured;
 
@@ -144,8 +190,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public Vector3? LastKnownPosition => KnownPlaces.LastKnownPosition;
 
         public Vector3 EnemyPosition => EnemyTransform.Position;
-        public Vector3 EnemyDirection => EnemyPlayerData.DistanceData.Direction;
-        public Vector3 EnemyDirectionNormal => EnemyPlayerData.DistanceData.DirectionNormal;
+        public Vector3 EnemyDirection { get; private set; }
+        public Vector3 EnemyDirectionNormal { get; private set; }
 
         public float TimeSinceLastKnownUpdated => KnownPlaces.TimeSinceLastKnownUpdated;
         public bool InLineOfSight => Vision.InLineOfSight;
@@ -157,15 +203,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool EnemyLookingAtMe => Status.EnemyLookAtMe;
         public float TimeSinceSeen => Vision.TimeSinceSeen;
         public float TimeSinceHeard => Hearing.TimeSinceHeard;
-        public float UpdateFrequencyCoef { get; private set; }
-        public float UpdateFrequencyCoefNormal { get; private set; }
 
-        public float TimeSinceCurrentEnemy => _hasBeenActive ? Time.time - _timeLastActive : float.MaxValue;
-
-        private const float ENEMY_UPDATEFREQUENCY_MAX_SCALE = 5f;
-        private const float ENEMY_UPDATEFREQUENCY_MAX_DIST = 500f;
-        private const float ENEMY_UPDATEFREQUENCY_MIN_DIST = 50f;
-        private const float SQUADREPORT_SIGHT_INTERVAL = 0.5f;
+        private const float SQUADREPORT_SIGHT_INTERVAL = 0.25f;
 
         public static bool IsEnemyActive(Enemy enemy)
         {
@@ -189,14 +228,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             EnemyName = $"{enemyComponent.Name} ({enemyComponent.Player.Profile.Nickname})";
             EnemyInfo = enemyInfo;
             EnemyProfileId = enemyComponent.ProfileId;
+            OwnerProfileId = bot.ProfileId;
 
             EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[enemyComponent.ProfileId];
+            UpdateDistAndDirection();
 
             var _enemyData = new EnemyData(this);
             Events = new EnemyEvents(_enemyData);
             Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            ActiveThreatChecker = new EnemyActiveThreatChecker(_enemyData);
-            ValidChecker = new EnemyValidChecker(_enemyData);
             KnownChecker = new EnemyKnownChecker(_enemyData);
             Status = new SAINEnemyStatus(_enemyData);
             Vision = new EnemyVisionClass(_enemyData);
@@ -205,15 +244,15 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             Aim = new EnemyAim(_enemyData);
             Hearing = new EnemyHearing(_enemyData);
 
-            UpdateDistAndDirection();
+            _nextCheckLookTime = Time.time + UnityEngine.Random.Range(0, 1f);
         }
+
+        private readonly string OwnerProfileId;
 
         public override void Init()
         {
-            Events.Init();
-            ValidChecker.Init();
-            KnownChecker.Init();
-            ActiveThreatChecker.Init();
+            Events.Init(EnemyPlayer);
+            KnownChecker.Init(Bot);
             KnownPlaces.Init();
             Vision.Init();
             Path.Init();
@@ -225,11 +264,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public override void Dispose()
         {
             OnEnemyDisposed?.Invoke();
-            Events.Dispose();
+            Events.Dispose(EnemyPlayer);
             Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
-            ValidChecker.Dispose();
-            KnownChecker.Dispose();
-            ActiveThreatChecker.Dispose();
+            KnownChecker.Dispose(Bot);
             KnownPlaces.Dispose();
             Vision.Dispose();
             Path.Dispose();
@@ -285,12 +322,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             pathPoint = Vector3.zero;
             return false;
         }
-
-        public bool AddTag(EEnemyTag tag) => Tags.Add(tag);
-
-        public bool RemoveTag(EEnemyTag tag) => Tags.Remove(tag);
-
-        public bool HasTag(EEnemyTag tag) => Tags.Contains(tag);
 
         public void ClearVisiblePathPoint()
         {
@@ -370,7 +401,49 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public bool CheckValid()
         {
-            return ValidChecker.CheckValid();
+            if (!WasValid) return false;
+            WasValid = IsEnemyValid(OwnerProfileId, EnemyPlayerComponent);
+            return WasValid;
+        }
+
+        public static bool IsEnemyValid(string botProfileId, PlayerComponent enemyPlayerComp)
+        {
+            if (enemyPlayerComp == null)
+            {
+                //Logger.LogError($"Enemy {Enemy.EnemyName} PlayerComponent is Null");
+                return false;
+            }
+            var Player = enemyPlayerComp.Player;
+            if (Player == null)
+            {
+                //Logger.LogError($"Enemy {Enemy.EnemyName} PlayerComponent is Null");
+                return false;
+            }
+            if (!Player.HealthController.IsAlive)
+            {
+                //Logger.LogDebug("Enemy Player Is Dead");
+                return false;
+            }
+            // Checks specific to bots
+            BotOwner enemyBotOwner = enemyPlayerComp.BotOwner;
+            if (enemyPlayerComp.IsAI && enemyBotOwner == null)
+            {
+                if (enemyBotOwner == null)
+                {
+#if DEBUG
+                    Logger.LogDebug("Enemy is AI, but BotOwner is null");
+#endif
+                    return false;
+                }
+                if (enemyBotOwner.ProfileId == botProfileId)
+                {
+#if DEBUG
+                    Logger.LogWarning("Enemy has same profile id as Bot?");
+#endif
+                    return false;
+                }
+            }
+            return true;
         }
 
         private bool IsTargetInSuppRange(Vector3 target, Vector3 suppressPoint)
@@ -398,6 +471,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private void UpdateDistAndDirection()
         {
+            var data = EnemyPlayerData.DistanceData;
+            RealDistance = data.Distance;
+            EnemyDirection = data.Direction;
+            EnemyDirectionNormal = data.DirectionNormal;
             try
             {
                 EnemyInfo.Direction = EnemyDirection;
@@ -405,66 +482,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
             catch
             { // EFT code loves throwing random errors
-            }
-        }
-
-        private void UpdateSniperStatus()
-        {
-            if (IsSniper)
-            {
-                if (!EnemyKnown)
-                {
-                    IsSniper = false;
-                    return;
-                }
-                IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
-            }
-        }
-
-        private void CalcFrequencyCoef()
-        {
-            if (_nextUpdateCoefTime < Time.time)
-            {
-                _nextUpdateCoefTime = Time.time + 0.1f;
-                UpdateFrequencyCoef = CalcUpdateFrequencyCoef(out float normal);
-                UpdateFrequencyCoefNormal = normal;
-            }
-        }
-
-        private float CalcUpdateFrequencyCoef(out float normal)
-        {
-            float enemyDist = RealDistance;
-            float min = ENEMY_UPDATEFREQUENCY_MIN_DIST;
-            if (enemyDist <= min)
-            {
-                normal = 0;
-                return 1f;
-            }
-            float max = ENEMY_UPDATEFREQUENCY_MAX_DIST;
-            if (enemyDist >= max)
-            {
-                normal = 1f;
-                return max;
-            }
-
-            float num = max - min;
-            float num2 = enemyDist - min;
-            normal = num2 / num;
-            float result = Mathf.Lerp(1f, ENEMY_UPDATEFREQUENCY_MAX_SCALE, normal);
-            return result;
-        }
-
-        private void UpdateActiveState()
-        {
-            if (IsCurrentEnemy &&
-                !_hasBeenActive)
-            {
-                _hasBeenActive = true;
-            }
-
-            if (IsCurrentEnemy || IsVisible || Status.HeardRecently)
-            {
-                _timeLastActive = Time.time;
             }
         }
 
@@ -476,9 +493,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return centerMass;
         }
 
-        public void UpdateLastSeenPosition(Vector3 position)
+        public void UpdateLastSeenPosition(Vector3 position, float currentTime)
         {
-            var place = KnownPlaces.UpdateSeenPlace(position);
+            var place = KnownPlaces.UpdateSeenPlace(position, currentTime);
             if (place == null)
             {
 #if DEBUG
@@ -486,28 +503,28 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 #endif
                 return;
             }
-            Bot.Squad.SquadInfo?.ReportEnemyPosition(this, place, true);
+            Bot.Squad.SquadInfo?.ReportEnemyPosition(this, place, true, currentTime);
         }
 
-        public void UpdateCurrentEnemyPos(Vector3 position)
+        public void UpdateCurrentEnemyPos(Vector3 position, float currentTime)
         {
-            var place = KnownPlaces.UpdateSeenPlace(position);
-            if (_nextReportSightTime < Time.time)
+            var place = KnownPlaces.UpdateSeenPlace(position, currentTime);
+            if (_nextReportSightTime < currentTime)
             {
-                _nextReportSightTime = Time.time + SQUADREPORT_SIGHT_INTERVAL;
-                Bot.Squad.SquadInfo?.ReportEnemyPosition(this, place, true);
+                _nextReportSightTime = currentTime + SQUADREPORT_SIGHT_INTERVAL;
+                Bot.Squad.SquadInfo?.ReportEnemyPosition(this, place, true, currentTime);
             }
         }
 
-        public void EnemyPositionReported(EnemyPlace place, bool seen)
+        public void EnemyPositionReported(EnemyPlace place, bool seen, float currentTime)
         {
             if (seen)
             {
-                KnownPlaces.UpdateSquadSeenPlace(place);
+                KnownPlaces.UpdateSquadSeenPlace(place, currentTime);
             }
             else
             {
-                KnownPlaces.UpdateSquadHeardPlace(place);
+                KnownPlaces.UpdateSquadHeardPlace(place, currentTime);
             }
         }
 
@@ -521,14 +538,9 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         }
 
         private EnemyKnownChecker KnownChecker { get; }
-        private EnemyActiveThreatChecker ActiveThreatChecker { get; }
-        private EnemyValidChecker ValidChecker { get; }
 
         private bool _visPathPointIsCorner;
         public float NextCheckFlashLightTime;
-        private float _nextUpdateCoefTime;
-        private bool _hasBeenActive;
         private float _nextReportSightTime;
-        private float _timeLastActive;
     }
 }

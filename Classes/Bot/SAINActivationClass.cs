@@ -35,21 +35,23 @@ namespace SAIN.SAINComponent.Classes
 
         public void SetActive(bool botActive)
         {
-            BotActiveToggle.CheckToggle(botActive);
+            float time = Time.time;
+            BotActiveToggle.CheckToggle(botActive, time);
 
             if (!botActive)
             {
-                BotStandByToggle.CheckToggle(true);
+                BotStandByToggle.CheckToggle(true, time);
                 ActiveLayer = ESAINLayer.None;
-                SAINLayersActiveToggle.CheckToggle(false);
+                SAINLayersActiveToggle.CheckToggle(false, time);
                 Bot.Mover.Stop();
+                Bot.AimDownSightsController.SetADS(false, true);
                 CurrentAction = null;
             }
         }
 
         public void SetInCombat(bool inCombat)
         {
-            BotInCombatToggle.CheckToggle(inCombat);
+            BotInCombatToggle.CheckToggle(inCombat, Time.time);
         }
 
         public void SetActiveLayer(ESAINLayer layer)
@@ -64,11 +66,12 @@ namespace SAIN.SAINComponent.Classes
             //CheckStandBy();
 
             bool wasActive = SAINLayersActiveToggle.Value;
-            SAINLayersActiveToggle.CheckToggle(ActiveLayer != ESAINLayer.None);
+            SAINLayersActiveToggle.CheckToggle(ActiveLayer != ESAINLayer.None, Time.time);
             bool activeNow = SAINLayersActiveToggle.Value;
             if (wasActive && !activeNow)
             {
                 Bot.Mover.Stop();
+                Bot.AimDownSightsController.SetADS(false, true);
                 CurrentAction = null;
             }
         }
@@ -118,7 +121,7 @@ namespace SAIN.SAINComponent.Classes
                 CurrentAction = null;
             }
 
-            BotStandByToggle.CheckToggle(standby);
+            BotStandByToggle.CheckToggle(standby, Time.time);
         }
 
         private bool CheckAllEnemies()
@@ -144,7 +147,7 @@ namespace SAIN.SAINComponent.Classes
         {
             var botGame = Singleton<IBotGame>.Instance;
             bool gameEnding = botGame == null || botGame.Status == GameStatus.Stopping;
-            GameEndingToggle.CheckToggle(gameEnding);
+            GameEndingToggle.CheckToggle(gameEnding, Time.time);
         }
 
         public override void Init()

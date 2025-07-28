@@ -5,41 +5,28 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class SAINEnemyStatus : EnemyBase, IBotEnemyClass
+    public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyData.Enemy.Bot)
     {
         public event Action<Enemy> OnEnemyShotAtMe;
 
         public ETagStatus EnemyHealthStatus { get; private set; }
         public EEnemyAction VulnerableAction { get; private set; }
 
-        public override void Init()
-        {
-            Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            base.Init();
-        }
-
-        public override void ManualUpdate()
+        public void TickEnemy(float currentTime)
         {
             if (Enemy.EnemyKnown)
             {
                 const float DOT_THRESHOLD_LOOK_AT_ME = 0.75f;
                 const float DOT_THRESHOLD_POINTWEAPON_AT_ME = 0.75f;
-                if (_nextCheckEnemyLookTime < Time.time)
+                if (_nextCheckEnemyLookTime < currentTime)
                 {
-                    _nextCheckEnemyLookTime = Time.time + 0.25f;
+                    _nextCheckEnemyLookTime = currentTime + 0.25f;
                     EnemyLookAtMe = Vector3.Dot((Bot.Position - EnemyTransform.WeaponRoot).normalized, EnemyTransform.LookDirection) >= DOT_THRESHOLD_LOOK_AT_ME;
                     PointingWeaponAtMe = Enemy.IsShooter() && Vector3.Dot((Bot.Position - EnemyTransform.WeaponData.FirePort).normalized, EnemyTransform.WeaponData.PointDirection) < DOT_THRESHOLD_POINTWEAPON_AT_ME;
                 }
                 UpdateVulnerableState();
                 updateHealthStatus();
             }
-            base.ManualUpdate();
-        }
-
-        public override void Dispose()
-        {
-            Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
-            base.Dispose();
         }
 
         private void updateHealthStatus()
@@ -58,7 +45,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public void OnEnemyKnownChanged(bool known, Enemy enemy)
+        protected override void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
             if (!known)
             {
@@ -322,10 +309,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float TimeFirstShotAtMe { get; private set; } = -1f;
         public float TimeLastShotAtMe { get; private set; } = -1f;
 
-        public SAINEnemyStatus(EnemyData enemy) : base(enemy)
-        {
-        }
-
         public void RegisterEnemyFlyBy()
         {
             float time = Time.time;
@@ -338,6 +321,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             TimeLastShotAtMe = time;
             OnEnemyShotAtMe?.Invoke(Enemy);
         }
+
 
         private readonly ExpirableBool _heardRecently = new(2f, 0.5f, 1.5f);
         private readonly ExpirableBool _enemyIsReloading = new(4f, 0.5f, 1.5f);

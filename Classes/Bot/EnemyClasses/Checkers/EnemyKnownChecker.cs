@@ -1,65 +1,56 @@
 ﻿using SAIN.SAINComponent.Classes.EnemyClasses;
+using UnityEngine;
 
 namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 {
-    public class EnemyKnownChecker(EnemyData enemy) : EnemyBase(enemy), IBotClass
+    public class EnemyKnownChecker(EnemyData enemyData)
     {
-        public override void Init()
+        private readonly Enemy Enemy = enemyData.Enemy;
+        public void Init(BotComponent bot)
         {
-            Bot.BotActivation.BotActiveToggle.OnToggle += BotStateChanged;
-            base.Init();
+            bot.BotActivation.BotActiveToggle.OnToggle += BotStateChanged;
         }
 
-        public override void ManualUpdate()
+        public void TickEnemy(float currentTime, float forgetEnemyTime, bool botSearching)
         {
-            bool enemyKnown = ShallKnowEnemy();
-            SetEnemyKnown(enemyKnown);
-            base.ManualUpdate();
+            bool enemyKnown = ShallKnowEnemy(currentTime, forgetEnemyTime, botSearching);
+            SetEnemyKnown(enemyKnown, currentTime);
         }
 
-        public override void Dispose()
+        public void Dispose(BotComponent bot)
         {
-            Bot.BotActivation.BotActiveToggle.OnToggle -= BotStateChanged;
-            base.Dispose();
+            bot.BotActivation.BotActiveToggle.OnToggle -= BotStateChanged;
         }
 
         private void BotStateChanged(bool botActive)
         {
             if (!botActive)
             {
-                SetEnemyKnown(false);
+                SetEnemyKnown(false, Time.time);
             }
         }
 
-        public void SetEnemyKnown(bool enemyKnown)
+        public void SetEnemyKnown(bool enemyKnown, float currentTime)
         {
-            Enemy.Events.OnEnemyKnownChanged.CheckToggle(enemyKnown);
+            Enemy.Events.OnEnemyKnownChanged.CheckToggle(enemyKnown, currentTime);
         }
 
-        private bool ShallKnowEnemy()
+        private bool ShallKnowEnemy(float currentTime, float forgetEnemyTime, bool searching)
         {
-            if (!Enemy.CheckValid())
+            if (!Enemy.IsEnemyActive(Enemy))
             {
-                //if (Enemy.EnemyKnown)
-                //    Logger.LogDebug("enemy not valid");
                 return false;
             }
 
-            if (!EnemyPlayerComponent.IsActive)
-            {
-                //if (Enemy.EnemyKnown)
-                //    Logger.LogDebug("enemy not active");
-                return false;
-            }
-
-            if (Enemy.LastKnownPosition == null)
+            var places = Enemy.KnownPlaces;
+            if (places.LastKnownPlace == null)
             {
                 //if (Enemy.EnemyKnown)
                 //    Logger.LogDebug("enemy null lastknown");
                 return false;
             }
 
-            float timeSinceUpdate = Enemy.KnownPlaces.TimeSinceLastKnownUpdated;
+            float timeSinceUpdate = currentTime - places.TimeLastKnownUpdated;
 
             //if (Enemy.EnemyKnown && Enemy.EnemyPlayer.IsYourPlayer)
             //    Logger.LogDebug($"timesince update [{timeSinceUpdate}]");
@@ -72,10 +63,10 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
                 return false;
             }
 
-            if (timeSinceUpdate <= Bot.Info.ForgetEnemyTime)
+            if (timeSinceUpdate <= forgetEnemyTime)
                 return true;
 
-            if (BotIsSearchingForMe())
+            if (searching && BotIsSearchingForMe())
                 return true;
 
             //if (Enemy.EnemyKnown)
@@ -88,28 +79,9 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses
 
         public bool BotIsSearchingForMe()
         {
-            if (!IsBotSearching())
-            {
-                return false;
-            }
             if (Enemy.Events.OnSearch.Value)
             {
                 return !Enemy.KnownPlaces.SearchedAllKnownLocations;
-            }
-            return false;
-        }
-
-        private bool IsBotSearching()
-        {
-            if (Bot.Decision.CurrentCombatDecision == ECombatDecision.Search)
-            {
-                return true;
-            }
-            var squadDecision = Bot.Decision.CurrentSquadDecision;
-            if (squadDecision == ESquadDecision.Search ||
-                squadDecision == ESquadDecision.GroupSearch)
-            {
-                return true;
             }
             return false;
         }

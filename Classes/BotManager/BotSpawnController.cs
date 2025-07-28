@@ -90,7 +90,7 @@ namespace SAIN.Components.BotController
                 playerComponent.InitializeBotOwner(botOwner);
 
                 //Logger.LogDebug($"Checking if {botOwner.name} excluded...");
-                if (SAINPlugin.IsBotExluded(botOwner))
+                if (SAINEnableClass.IsSAINDisabledForBot(botOwner))
                 {
                     //Logger.LogDebug($"{botOwner.name} is excluded");
                     botOwner.gameObject.AddComponent<SAINNoBushESP>().Init(botOwner);
@@ -131,15 +131,18 @@ namespace SAIN.Components.BotController
             bot.OnBotActivated -= OnBotActivated;
 
             SAINBots.Add(bot);
-            if (_useGroup1)
+            if (BotGroup1.Count < BotGroup2.Count)
             {
                 BotGroup1.Add(bot);
             }
-            else
+            else if (BotGroup1.Count > BotGroup2.Count)
             {
                 BotGroup2.Add(bot);
             }
-            _useGroup1 = !_useGroup1;
+            else
+            {
+                BotGroup1.Add(bot);
+            }
 
             BotDictionary.Add(bot.ProfileId, bot);
             bot.PlayerComponent.InitializeBotComponent(bot);
@@ -230,7 +233,7 @@ namespace SAIN.Components.BotController
                         OnBotRemoved?.Invoke(botComponent);
                         SAINBots.Remove(botComponent);
                         BotGroup1.Remove(botComponent);
-                        BotGroup1.Remove(botComponent);
+                        BotGroup2.Remove(botComponent);
                         botComponent.Dispose();
                     }
                     BotDictionary.Remove(botOwner.ProfileId);
@@ -239,7 +242,7 @@ namespace SAIN.Components.BotController
                         OnBotRemoved?.Invoke(botComponent);
                         SAINBots.Remove(botComponent);
                         BotGroup1.Remove(botComponent);
-                        BotGroup1.Remove(botComponent);
+                        BotGroup2.Remove(botComponent);
 
                         component.Dispose();
                     }

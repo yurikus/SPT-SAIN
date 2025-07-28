@@ -42,17 +42,10 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        private string _lastInteractionName;
-
         private void checkBusyHands()
         {
             if (Player.HandsController is ItemHandsController itemHandsController)
             {
-                string interactionName = itemHandsController.CurrentHandsOperationName;
-                if (interactionName != _lastInteractionName)
-                {
-                    Logger.LogWarning(interactionName);
-                }
                 _isInInteraction = itemHandsController.CurrentHandsOperation.State == EOperationState.Executing;
                 _isInInteractionStrictCheck = itemHandsController.IsInInteractionStrictCheck();
                 bool inInteraction = _isInInteraction || _isInInteractionStrictCheck;

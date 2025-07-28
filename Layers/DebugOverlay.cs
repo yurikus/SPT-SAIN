@@ -91,12 +91,10 @@ namespace SAIN.Layers
                     var known = enemyCon.KnownEnemies;
                     var vis = enemyCon.VisibleEnemies;
                     var los = enemyCon.EnemiesInLineOfSight;
-                    var threats = enemyCon.ActiveThreats;
                     stringBuilder.AppendLine($"EnemyList[bots/human]: " +
                         $"Known[{known.Bots}/{known.Humans}] " +
                         $"Visible[{vis.Bots}/{vis.Humans}] " +
-                        $"InLOS[{los.Bots}/{los.Humans}] " +
-                        $"ActvThreat [{threats.Bots}/{threats.Humans}]");
+                        $"InLOS[{los.Bots}/{los.Humans}]");
                 }
 
                 if (debug.OverLay_AimInfo)
@@ -250,7 +248,7 @@ namespace SAIN.Layers
             stringBuilder.AppendLine($"Visible [{enemy.IsVisible}] Seen [{enemy.Seen}]");
 
             stringBuilder.AppendLine($"Aim/Scatter Multi [{enemy.Aim.AimAndScatterMultiplier}]");
-            stringBuilder.AppendLabeledValue("Time To Spot", $"{(1 / enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue("LastGainSightResult", $"{(enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
             float highestPercent = getPercentSpotted(enemy, out var partType);
             if (highestPercent > 0)
                 stringBuilder.AppendLabeledValue("Percent Spotted", $"{partType} : {highestPercent}", Color.white, Color.yellow, true);
@@ -264,10 +262,11 @@ namespace SAIN.Layers
             if (_expandedEnemyInfo)
             {
                 stringBuilder.AppendLine($"HorizAngle [{enemy.Vision.Angles.AngleToEnemyHorizontalSigned.Round100()}] VertiAngle [{enemy.Vision.Angles.AngleToEnemyVerticalSigned.Round100()}]");
-                stringBuilder.AppendLine($"GainSightMod [{enemy.Vision.GainSightCoef.Round100()}] VisionDistance [{(enemy.Bot.BotOwner.Settings.FileSettings.Core.VisibleDistance + enemy.Vision.VisionDistance).Round100()}]");
+                stringBuilder.AppendLine($"GainSightMod [{EnemyGainSightClass.GetGainSightModifier(enemy).Round1000()}] VisionDistance [{(enemy.Bot.BotOwner.Settings.FileSettings.Core.VisibleDistance + enemy.Vision._visionDistance.Value).Round100()}]");
             }
             stringBuilder.AppendLine();
-
+            
+            stringBuilder.AppendLabeledValue("Can Be Seen", $"{enemy.Vision.Angles.CanBeSeen} : {enemy.Vision.EnemyParts.CanBeSeen}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Can Shoot", $"{enemy.CanShoot}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("In Line of Sight", $"{enemy.InLineOfSight}", Color.white, Color.yellow, true);
             if (_expandedEnemyInfo)

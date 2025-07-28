@@ -413,22 +413,5 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private float _nextCompareListsTime;
         private const float COMPARE_ENEMY_LIST_FREQ = 1;
-
-        private string getBotInfo(Player player)
-        {
-            return $" [{player.Profile.Nickname}, {player.Profile.Info.Settings.Role}, {player.ProfileId}] ";
-        }
-
-        private string getBotInfo(IPlayer player)
-        {
-            return $" [{player.Profile.Nickname}, {player.Profile.Info.Settings.Role}, {player.ProfileId}] ";
-        }
-
-        private string findSourceDebug(string debugString)
-        {
-            StackTrace stackTrace = new();
-            debugString += $" StackTrace: [{stackTrace.ToString()}]";
-            return debugString;
-        }
     }
 }

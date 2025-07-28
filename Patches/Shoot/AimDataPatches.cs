@@ -43,7 +43,7 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 __result *= MOA_FULLAUTO_COEF;
             }
-            if (SAINEnableClass.GetSAIN(botOwner, out BotComponent botComponent))
+            if (SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent botComponent))
             {
                 Enemy lastShotEnemy = botComponent.Shoot.LastShotEnemy;
                 if (lastShotEnemy != null)
@@ -170,7 +170,7 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 return true;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out var bot))
+            if (SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out var bot))
             {
                 __result = bot.Medical.HitReaction.AimHitEffect.ApplyEffect(dir);
                 return false;
@@ -193,7 +193,7 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 return true;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0, out var bot))
+            if (SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out var bot))
             {
                 return false;
             }
@@ -244,7 +244,7 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool PatchPrefix(BotAimingClass __instance, float dist, float ang, ref float __result)
         {
-            if (!SAINEnableClass.GetSAIN(__instance.botOwner_0, out var bot))
+            if (!SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out var bot))
             {
                 return true;
             }
@@ -426,11 +426,11 @@ namespace SAIN.Patches.Shoot.Aim
                         break;
 
                     case EBotSteering.ToMovingDirection:
-                        if (!__instance.CanSteerToMovingDirection())
-                        {
-                            newTargetLookDirection = __instance._customDirection;
-                            break;
-                        }
+                        //if (!__instance.CanSteerToMovingDirection())
+                        //{
+                        //    newTargetLookDirection = __instance._customDirection;
+                        //    break;
+                        //}
                         newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Mover.RealDestPoint);
                         break;
 
@@ -451,7 +451,6 @@ namespace SAIN.Patches.Shoot.Aim
             {
                 newTargetLookDirection.y = 0;
             }
-            newTargetLookDirection.Normalize();
             playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection, botOwner, playerComponent.BotComponent);
             __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
             return false;
@@ -479,7 +478,7 @@ namespace SAIN.Patches.Shoot.Aim
         {
             if (!__instance.Person.IsAI)
             {
-                if (SAINEnableClass.GetSAIN(__instance.Owner, out BotComponent bot))
+                if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent bot))
                 {
                     var aim = bot.Info.FileSettings.Aiming;
                     canBehead = EFTMath.RandomBool(aim.AimForHeadChance) && aim.AimForHead;
@@ -494,11 +493,6 @@ namespace SAIN.Patches.Shoot.Aim
                 canBehead = true;
                 withLegs = true;
             }
-        }
-
-        private static bool IsPMC(EnemyInfo __instance)
-        {
-            return EnumValues.WildSpawn.IsPMC(__instance.Owner.Profile.Info.Settings.Role);
         }
     }
 }

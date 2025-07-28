@@ -171,6 +171,7 @@ namespace SAIN
             new Patches.Vision.BotLightTurnOnPatch(),
             new Patches.Vision.VisionSpeedPatch(),
             new Patches.Vision.WeatherVisionPatch(),
+            new Patches.Vision.IsPointInVisibleSectorPatch(),
             new Patches.Vision.VisionDistancePatch(),
             new Patches.Vision.CheckFlashlightPatch(),
 
@@ -216,12 +217,5 @@ namespace SAIN
         public void LateUpdate() => SAINEditor.LateUpdate();
 
         public void OnGUI() => SAINEditor.OnGUI();
-
-        /// <summary>
-        /// Checks if this bot has SAIN enabled or if it is a vanilla bot.
-        /// </summary>
-        /// <param name="botOwner">The bot to check.</param>
-        /// <returns>True if the bot is Vanilla; false if they are a SAIN bot.</returns>
-        public static bool IsBotExluded(BotOwner botOwner) => SAINEnableClass.IsSAINDisabledForBot(botOwner);
     }
 }

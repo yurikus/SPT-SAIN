@@ -22,15 +22,14 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public EnemyPartDataClass[] PartsArray { get; private set; }
 
-        public void Update()
+        public void Update(float currentTime)
         {
-            float time = Time.time;
             CanBeSeen = false;
             LineOfSight = false;
             CanShoot = false;
             foreach (var part in PartsArray)
             {
-                part.Update(time);
+                part.Update(currentTime);
                 if (!CanShoot && part.CanShoot) CanShoot = true;
                 if (!LineOfSight && part.LineOfSight) LineOfSight = true;
                 if (!CanBeSeen && part.CanBeSeen) CanBeSeen = true;

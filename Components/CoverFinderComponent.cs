@@ -238,7 +238,6 @@ namespace SAIN.Components.CoverFinder
 
         private int _totalChecked;
         private float _debugLogTimer = 0f;
-        private float _nextClearSpottedTime;
         private Coroutine _findCoverPointsCoroutine;
 
         public static bool PerformanceMode { get; private set; } = false;

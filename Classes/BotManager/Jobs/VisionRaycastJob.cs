@@ -13,8 +13,8 @@ namespace SAIN.Components
 {
     public class VisionRaycastJob : BotManagerBase
     {
-        private const float VISION_UPDATE_INTERVAL = 1f / 10f;
-        private const float VISION_JOB_INTERVAL = 1f / 15f;
+        private const float VISION_UPDATE_INTERVAL = 1f / 30f;
+        private const float VISION_JOB_INTERVAL = 1f / 30f;
 
         public VisionRaycastJob(BotManagerComponent botcontroller) : base(botcontroller)
         {
@@ -109,29 +109,29 @@ namespace SAIN.Components
         private IEnumerator UpdateEFTVision()
         {
             WaitForSeconds wait = new(VISION_UPDATE_INTERVAL);
+            WaitForFixedUpdate waitForFixedUpdate = new();
             yield return wait;
-            while (true)
+            while (BotController != null)
             {
-                if (BotController == null)
+                yield return waitForFixedUpdate;
+                HashSet<BotComponent> botGroup1 = BotController.BotSpawnController.BotGroup1;
+                if (botGroup1.Count > 0)
                 {
-                    yield return wait;
-                    continue;
+                    float currentTime = Time.time;
+                    foreach (var bot in botGroup1) bot.Vision.BotLook.UpdateLook(currentTime);
                 }
+                yield return null;
 
-                HashSet<BotComponent> bots = BotController?.BotSpawnController?.SAINBots;
-                if (bots == null || bots.Count == 0)
+                yield return waitForFixedUpdate;
+                HashSet<BotComponent> botGroup2 = BotController.BotSpawnController.BotGroup2;
+                if (botGroup2.Count > 0)
                 {
-                    yield return wait;
-                    continue;
+                    float currentTime = Time.time;
+                    foreach (var bot in botGroup2) bot.Vision.BotLook.UpdateLook(currentTime);
                 }
-                // Updates vanilla eft vision code, it'll run another raycast if this one succeeds which isn't ideal, but id rather not rewrite all their code.
-                foreach (var bot in bots) bot?.Vision.BotLook.UpdateLook(Time.time - _timelastLook);
-                _timelastLook = Time.time;
-                yield return wait;
+                yield return null;
             }
         }
-
-        private float _timelastLook = 0;
 
         public void Dispose()
         {
@@ -153,9 +153,9 @@ namespace SAIN.Components
             for (int i = 0; i < enemyCount; i++)
             {
                 var enemy = _enemies[i];
-                var transform = enemy.Bot.Transform;
-                Vector3 eyePosition = transform.EyePosition;
-                Vector3 weaponFirePort = transform.WeaponData.FirePort;
+                var botTransform = enemy.Bot.Transform;
+                Vector3 eyePosition = botTransform.EyePosition;
+                Vector3 weaponFirePort = botTransform.WeaponData.FirePort;
                 var parts = enemy.Vision.EnemyParts.PartsArray;
 
                 for (int j = 0; j < partCount; j++)
@@ -183,17 +183,11 @@ namespace SAIN.Components
             }
         }
 
-        private static readonly QueryParameters _losParams = new QueryParameters {
-            layerMask = _LOSMask
-        };
+        private static readonly QueryParameters _losParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
 
-        private static readonly QueryParameters _visParams = new QueryParameters {
-            layerMask = _VisionMask
-        };
+        private static readonly QueryParameters _visParams = new(LayerMaskClass.AI);
 
-        private static readonly QueryParameters _shootParams = new QueryParameters {
-            layerMask = _ShootMask
-        };
+        private static readonly QueryParameters _shootParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
 
         private void AnalyzeHits(NativeArray<RaycastHit> raycastHits, int enemyCount, int partCount)
         {
@@ -257,24 +251,19 @@ namespace SAIN.Components
         }
 
         private const int RAYCAST_CHECKS = 3;
-        private static readonly LayerMask _LOSMask = LayerMaskClass.HighPolyWithTerrainMask;
-        private static readonly LayerMask _VisionMask = LayerMaskClass.AI;
-        private static readonly LayerMask _ShootMask = LayerMaskClass.HighPolyWithTerrainMask;
 
         private readonly List<EBodyPartColliderType> _colliderTypes = [];
         private readonly List<Vector3> _castPoints = [];
 
         private static void FindEnemies(HashSet<BotComponent> bots, List<Enemy> enemies)
         {
+            float currentTime = Time.time;
             enemies.Clear();
             foreach (BotComponent bot in bots)
-                if (bot != null && bot.BotActive)
+                if (bot != null)
                     foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
-                    {
-                        if (!enemy.CheckValid()) continue;
-                        if (enemy.RealDistance > EnemyVisionClass.AIVisionRangeLimit(enemy)) continue;
-                        enemies.Add(enemy);
-                    }
+                        if (enemy.ShallCheckLoS(currentTime))
+                            enemies.Add(enemy);
         }
 
         private readonly List<Enemy> _enemies = [];

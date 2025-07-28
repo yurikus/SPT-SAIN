@@ -37,7 +37,6 @@ namespace SAIN.SAINComponent.Classes.Mover
 
     public class HeardSoundSteeringClass : BotSubClass<SAINSteeringClass>, IBotClass
     {
-        public bool HasDangerToLookAt => LastHeardVisibleDanger?.ShallLook == true || LastHeardDanger?.ShallLook == true;
         public SoundStruct? LastHeardDanger { get; private set; }
         public SoundStruct? LastHeardVisibleDanger { get; private set; }
 
@@ -105,7 +104,17 @@ namespace SAIN.SAINComponent.Classes.Mover
             var visibleDanger = LastHeardVisibleDanger;
             if (visibleDanger?.ShallLook == true)
             {
-                BaseClass.LookToPoint(visibleDanger.Value.Position + BaseClass.WeaponRootOffset);
+                if (visibleDanger.Value.Enemy.InLineOfSight)
+                {
+                    BaseClass.LookToFloorPoint(visibleDanger.Value.Position);
+                    return;
+                }
+                if (visibleDanger.Value.Enemy.GetVisibilePathPoint(out Vector3 point))
+                {
+                    BaseClass.LookToPoint(point);
+                    return;
+                }
+                BaseClass.LookToFloorPoint(visibleDanger.Value.Position);
                 return;
             }
             var heardSound = LastHeardDanger;
@@ -113,7 +122,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             {
                 if (heardSound.Value.Enemy.InLineOfSight)
                 {
-                    BaseClass.LookToPoint(heardSound.Value.Position + BaseClass.WeaponRootOffset);
+                    BaseClass.LookToFloorPoint(heardSound.Value.Position);
                     return;
                 }
                 if (heardSound.Value.Enemy.GetVisibilePathPoint(out Vector3 point))
@@ -121,7 +130,7 @@ namespace SAIN.SAINComponent.Classes.Mover
                     BaseClass.LookToPoint(point);
                     return;
                 }
-                BaseClass.LookToPoint(heardSound.Value.Position + BaseClass.WeaponRootOffset);
+                BaseClass.LookToFloorPoint(heardSound.Value.Position);
                 return;
             }
             BaseClass.LookToRandomPosition();

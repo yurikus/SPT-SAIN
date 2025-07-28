@@ -3,6 +3,7 @@ using SAIN.Components;
 using SAIN.Components.BotController;
 using SAIN.Preset.GlobalSettings;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using static SAIN.Helpers.EnumValues;
 
@@ -109,8 +110,7 @@ namespace SAIN
         /// </summary>
         public static bool IsBotExcluded(string profileId)
         {
-            if (!EnabledBots.Contains(profileId)) return false;
-            return true;
+            return !EnabledBots.Contains(profileId);
         }
         
         /// <summary>
@@ -218,30 +218,19 @@ namespace SAIN
         /// <returns></returns>
         public static bool IsBotInCombat(IPlayer player)
         {
-            BotComponent bot = BotManagerComponent.Instance?.BotSpawnController?.GetSAIN(player.ProfileId);
+            GetSAIN(player.ProfileId, out var bot);
             if (bot == null) return false;
             if (bot.SAINLayersActive) return true;
             if (bot.HasEnemy) return true;
             return false;
         }
 
-        public static bool GetSAIN(BotOwner botOwner, out BotComponent sain)
+        public static bool GetSAIN(string profileId, out BotComponent sain)
         {
             sain = null;
-            string profileId = botOwner?.ProfileId;
-            if (IsBotExcluded(profileId)) {
-                return false;
-            }
-            if (BotManagerComponent.Instance == null) {
-                //Logger.LogError($"Bot Controller Null");
-                return false;
-            }
-            return BotManagerComponent.Instance.GetSAIN(botOwner, out sain);
-        }
-
-        public static bool GetSAIN(Player player, out BotComponent sain)
-        {
-            return GetSAIN(player?.AIData?.BotOwner, out sain);
+            if (profileId.IsNullOrEmpty()) return false;
+            if (!EnabledBots.Contains(profileId)) return false;
+            return BotManagerComponent.Instance != null && BotManagerComponent.Instance.BotSpawnController.BotDictionary.TryGetValue(profileId, out sain);
         }
 
         private static VanillaBotSettings SAINEnabled => SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots;

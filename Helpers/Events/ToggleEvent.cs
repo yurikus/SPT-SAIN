@@ -6,8 +6,8 @@ namespace SAIN.Helpers.Events
     public abstract class ToggleEventBase
     {
         public bool Value { get; protected set; }
-        public ToggleEventBase(bool defaultValue) => SetValue(defaultValue);
-        protected virtual void SetValue(bool value) => Value = value;
+        public ToggleEventBase(bool defaultValue) => SetValue(defaultValue, 0f);
+        protected virtual void SetValue(bool value, float currentTime) => Value = value;
     }
 
     public abstract class ToggleEventTimeTrackBase : ToggleEventBase
@@ -19,14 +19,14 @@ namespace SAIN.Helpers.Events
         public float TimeSinceTrue => Time.time - TimeLastTrue;
         public float TimeSinceFalse => Time.time - TimeLastFalse;
 
-        protected override void SetValue(bool value)
+        protected override void SetValue(bool value, float currentTime)
         {
             if (value)
-                TimeLastTrue = Time.time;
+                TimeLastTrue = currentTime;
             else
-                TimeLastFalse = Time.time;
+                TimeLastFalse = currentTime;
 
-            base.SetValue(value);
+            base.SetValue(value, currentTime);
         }
     }
 
@@ -34,11 +34,11 @@ namespace SAIN.Helpers.Events
     {
         public Action<bool, T> OnToggle;
 
-        public void CheckToggle(bool value)
+        public void CheckToggle(bool value, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 OnToggle?.Invoke(value, Object);
             }
         }
@@ -55,11 +55,11 @@ namespace SAIN.Helpers.Events
     {
         public Action<bool, T> OnToggle;
 
-        public bool CheckToggle(bool value)
+        public bool CheckToggle(bool value, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 OnToggle?.Invoke(value, Object);
                 return true;
             }
@@ -78,11 +78,11 @@ namespace SAIN.Helpers.Events
     {
         public Action<bool> OnToggle;
 
-        public void CheckToggle(bool value)
+        public void CheckToggle(bool value, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 OnToggle?.Invoke(value);
             }
         }
@@ -94,11 +94,11 @@ namespace SAIN.Helpers.Events
     {
         public Action<bool> OnToggle;
 
-        public void CheckToggle(bool value)
+        public void CheckToggle(bool value, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 OnToggle?.Invoke(value);
             }
         }
@@ -112,11 +112,11 @@ namespace SAIN.Helpers.Events
 
         public A TypeValue { get; private set; }
 
-        public void CheckToggle(bool value, A a)
+        public void CheckToggle(bool value, A a, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 TypeValue = a;
                 OnToggle?.Invoke(value, a);
             }
@@ -129,11 +129,11 @@ namespace SAIN.Helpers.Events
     {
         public Action<bool, A, B> OnToggle;
 
-        public void CheckToggle(bool value, A a, B b)
+        public void CheckToggle(bool value, A a, B b, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 OnToggle?.Invoke(value, a, b);
             }
         }
@@ -145,11 +145,11 @@ namespace SAIN.Helpers.Events
     {
         public Action<bool, A, B, C> OnToggle;
 
-        public void CheckToggle(bool value, A a, B b, C c)
+        public void CheckToggle(bool value, A a, B b, C c, float currentTime)
         {
             if (Value != value)
             {
-                base.SetValue(value);
+                base.SetValue(value, currentTime);
                 OnToggle?.Invoke(value, a, b, c);
             }
         }

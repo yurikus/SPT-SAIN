@@ -20,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         {
             characterHeight = settings.characterHeight;
             startHeight = settings.startHeight;
-            maxPathLength = settings.DistToCheckVision;
+            maxPathLength = settings.MaxPathLengthPathVision;
             distanceBetweenPoints = settings.DistanceBetweenPoints;
             stackHeight = Mathf.RoundToInt(settings.GeneratePointStackHeight);
 
@@ -61,7 +61,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public readonly int CornerEndIndex;
     }
 
-    public class SAINEnemyPath(EnemyData enemy) : EnemyBase(enemy), IBotEnemyClass
+    public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData.Enemy.Bot)
     {
         public EPathDistance EPathDistance {
             get
@@ -100,18 +100,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public NavMeshPathStatus PathToEnemyStatus => PathToEnemy.status;
         public Vector3[] PathCorners => PathToEnemy.corners;
 
-        public BotVisiblePathNode[] AllPathNodes { get; } = new BotVisiblePathNode[512];
+        public BotVisiblePathNode[] AllPathNodes { get; } = enemyData.EnemyPlayer.IsAI ? new BotVisiblePathNode[512] : new BotVisiblePathNode[1024];
         public List<BotVisiblePathNode> VisibleNodes { get; } = [];
 
         public int AllPathNodeCount { get; private set; } = 0;
 
-        public override void Init()
-        {
-            Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            base.Init();
-        }
-
-        public void OnEnemyKnownChanged(bool known, Enemy enemy)
+        protected override void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
             if (!known)
             {
@@ -121,19 +115,18 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         public override void Dispose()
         {
-            Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
             Clear();
             base.Dispose();
         }
 
-        public void CheckCalcPath(PathVisibilityConfig pathVisibilityConfig)
+        public void CheckCalcPath(PathVisibilityConfig pathVisibilityConfig, float currentTime)
         {
-            if (ShallCalcNewPath())
+            if (ShallCalcNewPath(currentTime))
             {
                 Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
                 PathToEnemy.ClearCorners();
                 NavMesh.CalculatePath(Bot.Position, enemyPosition, -1, PathToEnemy);
-                //int max = Enemy.IsCurrentEnemy ? AllPathNodes.Length - 1 : 256 - 1;
+                _newPath = true;
                 int max = AllPathNodes.Length;
                 PathLength = CalcPathLengthCreateVisionNodes(pathVisibilityConfig, AllPathNodes, PathCorners, out int nodeCount, max);
                 AllPathNodeCount = nodeCount;
@@ -144,7 +137,44 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             }
         }
 
-        public bool ShallCalcNewPath()
+        public bool ShallCheckPathVision(float currentTime, Vector3 botWeaponRoot)
+        {
+            if (!Enemy.WasValid || !Enemy.EnemyKnown) return false;
+            if (_newPath || _nextPathVisionCheck > currentTime) return false;
+            float interval;
+            if (Enemy.IsAI)
+            {
+                interval = Enemy.IsCurrentEnemy ? 1f / 12f : 1f / 2f;
+            }
+            else
+            {
+                interval = Enemy.IsCurrentEnemy ? 1f / 20f : 1f / 4f;
+            }
+            _nextPathVisionCheck = currentTime + (interval * UnityEngine.Random.Range(0.85f, 1.15f));
+
+            if (!Enemy.IsEnemyActive(Enemy))
+            {
+                return false;
+            }
+            if (_newPath)
+            {
+                _newPath = false;
+                _lastBotHeadPos = botWeaponRoot;
+                return true;
+            }
+            if ((botWeaponRoot - _lastBotHeadPos).sqrMagnitude < 0.01f)
+            {
+                return false;
+            }
+            _lastBotHeadPos = botWeaponRoot;
+            return true;
+        }
+
+        private bool _newPath = false;
+        private Vector3 _lastBotHeadPos;
+        private float _nextPathVisionCheck;
+
+        public bool ShallCalcNewPath(float currentTime)
         {
             if (Enemy?.EnemyKnown == false)
             {
@@ -169,11 +199,11 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 return false;
             }
 
-            if (_calcPathTime + calcDelayOnDistance() > Time.time)
+            if (_calcPathTime + calcDelayOnDistance() > currentTime)
             {
                 return false;
             }
-            _calcPathTime = Time.time;
+            _calcPathTime = currentTime;
             return true;
         }
 
@@ -202,6 +232,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 {
                     if (pathLength < maxPathLength)
                     {
+                        GeneratePoints(allPathPoints, cornerA, stackHeight, startHeightOffset, heightStep, ref nodeCount, ref full, i, i + 1, max);
+                        if (full) continue;
                         // Create Equal dist points along the line between two corners.
                         if (magnitude > minGenerationMagnitude)
                         {
@@ -214,7 +246,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                                 if (full) break;
                             }
                         }
-                        else
+                        else if (magnitude > distanceBetweenPoints)
                         {
                             GeneratePoints(allPathPoints, cornerA + direction * 0.5f, stackHeight, startHeightOffset, heightStep, ref nodeCount, ref full, i, i + 1, max);
                         }
@@ -314,10 +346,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             return clampedResult;
         }
 
-        private float _nextLogTime;
-
-        private const float ACTIVE_SEARCH_COEF = 0.5f;
-
         private const float MAX_FREQ_CALCPATH = 3f;
         private const float MAX_FREQ_CALCPATH_AI = 6f;
         private const float MAX_FREQ_CALCPATH_DISTANCE = 250f;
@@ -341,10 +369,6 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 
         private bool checkPositionsChanged(Vector3 botPosition, Vector3 enemyPosition)
         {
-            if (Enemy.Events.OnSearch.Value)
-            {
-                return true;
-            }
             // Did we already check the current enemy position and has the bot not moved? dont recalc path then
             if (_enemyLastPosChecked != null
                 && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.1f

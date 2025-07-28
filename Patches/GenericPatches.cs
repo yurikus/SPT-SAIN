@@ -2,6 +2,7 @@
 using EFT;
 using EFT.EnvironmentEffect;
 using EFT.InventoryLogic;
+using EFT.UI.Ragfair;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
@@ -235,7 +236,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool PatchPrefix(BotOwner __instance)
         {
-            if (SAINPlugin.IsBotExluded(__instance))
+            if (SAINEnableClass.IsSAINDisabledForBot(__instance))
             {
                 return true;
             }
@@ -282,7 +283,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool PatchPrefix(BotsGroup __instance, BotOwner owner)
         {
-            return SAINPlugin.IsBotExluded(owner);
+            return !SAINEnableClass.GetSAIN(owner.ProfileId, out _);
         }
     }
 
@@ -296,7 +297,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool PatchPrefix(BotOwner ___botOwner_0)
         {
-            return SAINPlugin.IsBotExluded(___botOwner_0);
+            return !SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out _);
         }
     }
 
@@ -314,7 +315,7 @@ namespace SAIN.Patches.Generic
             {
                 return;
             }
-            if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain)
+            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var sain)
                 //&& sain.Info.Profile.IsPMC
                 && sain.EnemyController.CheckAddEnemy(__instance.Person)?.EnemyKnown == true)
             {
@@ -348,7 +349,7 @@ namespace SAIN.Patches.Generic
         [PatchPostfix]
         public static void PatchPostfix(EnemyInfo __instance, ref bool __result)
         {
-            if (!SAINEnableClass.GetSAIN(__instance.Owner, out var botComponent))
+            if (!SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var botComponent))
             {
                 return;
             }
@@ -367,7 +368,7 @@ namespace SAIN.Patches.Generic
         [PatchPostfix]
         public static void PatchPostfix(EnemyInfo __instance, ref bool __result)
         {
-            if (!SAINEnableClass.GetSAIN(__instance.Owner, out var botComponent))
+            if (!SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var botComponent))
             {
                 return;
             }
@@ -389,7 +390,7 @@ namespace SAIN.Patches.Generic
             Vector3 danger = Vector.DangerPoint(position, force, mass);
             foreach (BotOwner bot in __instance.Bots.BotOwners)
             {
-                if (SAINPlugin.IsBotExluded(bot))
+                if (!SAINEnableClass.GetSAIN(bot.ProfileId, out _))
                 {
                     bot.BewareGrenade.AddGrenadeDanger(danger, grenade);
                 }

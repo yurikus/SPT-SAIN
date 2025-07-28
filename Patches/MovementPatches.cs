@@ -289,7 +289,7 @@ namespace SAIN.Patches.Movement
             {
                 return true;
             }
-            if (SAINPlugin.IsBotExluded(player.AIData.BotOwner))
+            if (SAINEnableClass.IsSAINDisabledForBot(player.AIData.BotOwner))
             {
                 return true;
             }
@@ -320,7 +320,7 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(ref BotOwner ____owner, ref bool __result)
+        public static bool PatchPrefix(BotOwner ____owner, ref bool __result)
         {
             var settings = GlobalSettingsClass.Instance.General.Doors;
             if (settings.DisableAllDoors && !ModDetection.ProjectFikaLoaded)
@@ -328,7 +328,7 @@ namespace SAIN.Patches.Movement
                 __result = false;
                 return false;
             }
-            if (SAINEnableClass.GetSAIN(____owner, out var botComponent) &&
+            if (SAINEnableClass.GetSAIN(____owner.ProfileId, out var botComponent) &&
                 (botComponent.SAINLayersActive || botComponent.HasEnemy))
             {
                 __result = false;

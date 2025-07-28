@@ -16,33 +16,24 @@ namespace SAIN.Helpers
 
             if (bot.ManualShoot.Reason != EShootReason.None && bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
             {
-                return 0.75f;
+                return 0.75f* Random.Range(0.66f, 1.33f);
             }
 
-            float scaledBurstLength = 1f - (Mathf.Clamp(distance, 0f, 30f) / 30f);
+            float scaledBurstLength = 1f - (Mathf.Clamp(distance, 0f, 50f) / 50f);
             scaledBurstLength /= bot.Info.WeaponInfo.FinalModifier;
             scaledBurstLength *= bot.Info.FileSettings.Shoot.BurstMulti;
-            scaledBurstLength = Mathf.Clamp(scaledBurstLength, 0.001f, 1f);
+            scaledBurstLength = Mathf.Clamp(scaledBurstLength, 0.001f, 2f);
 
-            if (distance > 30f)
+            if (distance > 50f)
             {
                 scaledBurstLength = 0.001f;
             }
-            else if (distance < 5f)
+            else if (distance < 10f)
             {
-                scaledBurstLength = 1f;
+                scaledBurstLength = 2f;
             }
 
-            return scaledBurstLength;
-        }
-
-        public static float FullAutoTimePerShot(int bFirerate)
-        {
-            float roundspersecond = bFirerate / 60;
-
-            float secondsPerShot = 1f / roundspersecond;
-
-            return secondsPerShot;
+            return scaledBurstLength * Random.Range(0.66f, 1.33f);
         }
 
         public static float InverseScaleWithLogisticFunction(float originalValue, float k, float x0 = 20f)

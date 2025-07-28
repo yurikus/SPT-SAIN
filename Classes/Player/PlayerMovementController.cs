@@ -33,6 +33,11 @@ namespace SAIN.Classes
 
         private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, bool randomSwayEnabled)
         {
+            if (player.HandsController is Player.FirearmController firearmController && firearmController.IsAiming)
+            {
+                RandomSwayOffset = Vector3.zero; // Disable random sway while aiming
+                return;
+            }
             if (randomSwayEnabled) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
             else RandomSwayOffset = Vector3.zero;
         }
@@ -206,10 +211,8 @@ namespace SAIN.Classes
             bool noStamina = player.Physical.Stamina.NormalValue <= 0.1f;
             bool moving = botComponent?.Mover?.Moving == true || botOwner.Mover?.IsMoving == true;
             bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
-            bool aimingDownSights = botOwner.WeaponManager.ShootController?.IsAiming == true;
 
-            if (aiming) result *= 0.33f;
-            if (aimingDownSights) result *= 0.15f;
+            if (aiming) result *= 0.25f;
             if (moving) result *= 1.15f;
             if (armsDamaged) result *= 1.33f;
             if (noStamina) result *= 1.33f;

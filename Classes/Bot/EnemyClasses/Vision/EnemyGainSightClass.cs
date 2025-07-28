@@ -116,9 +116,22 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 unknownMod *
                 poseMod;
 
-            //if (EnemyPlayer.IsYourPlayer && result != 1f)
+            //if (enemy.EnemyPlayer.IsYourPlayer)
             //{
-            //    Logger.LogWarning($"GainSight Time Result: [{result}] : partMod {partMod} : gearMod {gearMod} : flareMod {flareMod} : moveMod {moveMod} : elevMod {elevMod} : posFlareMod {posFlareMod} : thirdPartyMod {thirdPartyMod} : angleMod {angleMod} : notLookMod {notLookMod} ");
+            //    Logger.LogWarning($"GainSight Time Result: [{result}] :" +
+            //        $": underFireMod {underFireMod} " +
+            //        $": partMod {partMod} " +
+            //        $": gearMod {gearMod} " +
+            //        $": weatherMod {weatherMod} " +
+            //        $": timeMod {timeMod} " +
+            //        $": moveMod {moveMod} " +
+            //        $": elevMod {elevMod} " +
+            //        $": thirdPartyMod {thirdPartyMod} " +
+            //        $": angleMod {angleMod} " +
+            //        $": notLookMod {notLookMod} " +
+            //        $": unknownMod {unknownMod} " +
+            //        $": poseMod {poseMod} " +
+            //        "");
             //}
 
             return result;

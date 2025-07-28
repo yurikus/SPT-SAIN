@@ -186,8 +186,8 @@ namespace SAIN.SAINComponent.Classes.Decision
                     BotOwner.PatrollingData.Pause();
                 }
 
-                HasDecisionToggle.CheckToggle(hasDecision);
                 ChangeDecisionTime = Time.time;
+                HasDecisionToggle.CheckToggle(hasDecision, ChangeDecisionTime);
                 OnDecisionMade?.Invoke(solo, squad, self, enemy, Bot);
             }
         }
@@ -216,8 +216,8 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
                 bool hasDecision = decision.CombatDecision != ECombatDecision.None || decision.SelfAction != ESelfActionType.None || decision.SquadDecision != ESquadDecision.None;
 
-                HasDecisionToggle.CheckToggle(hasDecision);
                 ChangeDecisionTime = Time.time;
+                HasDecisionToggle.CheckToggle(hasDecision, ChangeDecisionTime);
                 CurrentDecision = decision;
                 OnDecisionMade?.Invoke(decision.CombatDecision, decision.SquadDecision, decision.SelfAction, decision.Enemy, Bot);
             }

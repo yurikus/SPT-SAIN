@@ -77,8 +77,7 @@ namespace SAIN.Patches.Talk
 
             if (__instance.IsAI)
             {
-                if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching ||
-                    SAINPlugin.IsBotExluded(__instance.AIData?.BotOwner))
+                if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching || !SAINEnableClass.GetSAIN(__instance.ProfileId, out _))
                 {
                     BotManagerComponent.Instance?.BotHearing.PlayerTalked(phrase, mask, __instance);
                     return true;
@@ -120,7 +119,7 @@ namespace SAIN.Patches.Talk
                 default:
                     break;
             }
-            if (!SAINEnableClass.GetSAIN(___botOwner_0, out BotComponent bot))
+            if (!SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out BotComponent bot))
             {
                 return true;
             }
@@ -146,11 +145,11 @@ namespace SAIN.Patches.Talk
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotOwner ___botOwner_0)
+        public static bool PatchPrefix(BotTalk __instance)
         {
             // If handling of bots talking is disabled, let the original method run
             return SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching ||
-                SAINPlugin.IsBotExluded(___botOwner_0);
+                !SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out _);
         }
     }
 }

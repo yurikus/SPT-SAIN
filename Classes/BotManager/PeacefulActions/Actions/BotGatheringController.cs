@@ -92,6 +92,8 @@ namespace SAIN.Components.BotController.PeacefulActions
         private readonly List<BotComponent> _localList = new();
         private readonly List<BotComponent> _selectedBots = new();
         private float _nextCheckTime;
+#if DEBUG
         private int _gatherings;
+#endif
     }
 }

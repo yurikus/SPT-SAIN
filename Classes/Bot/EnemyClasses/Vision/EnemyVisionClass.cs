@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
-    public class EnemyVisionClass(EnemyData enemy) : EnemyBase(enemy), IBotEnemyClass
+    public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyData.Enemy.Bot)
     {
         private const float _repeatContactMinSeenTime = 12f;
         private const float _lostContactMinSeenTime = 12f;
@@ -22,21 +22,10 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public float TimeFirstSeen { get; private set; }
         public float TimeLastSeen { get; private set; }
         public float LastChangeVisionTime { get; private set; }
-        public float LastGainSightResult { get; set; }
-        public float GainSightCoef { get; private set; }
-        public float VisionDistance => _visionDistance.Value;
-
-        private float _nextRaycastTime = 0f;
+        public float LastGainSightResult { get; set; } = 1f;
 
         public EnemyAnglesClass Angles { get; } = new();
-
-        public KeyValuePair<EnemyPart, EnemyPartData> _bodyPart;
-        public KeyValuePair<EnemyPart, EnemyPartData> _headPart;
-
-        public bool LineOfSight => EnemyParts.LineOfSight;
-        public EnemyPartsClass EnemyParts { get; } = new EnemyPartsClass(enemy.EnemyPlayerComponent);
-
-        private const float MAX_RANGE_VISION_UNKNOWN = 300f;
+        public EnemyPartsClass EnemyParts { get; } = new EnemyPartsClass(enemyData.EnemyPlayerComponent);
 
         public static float AIVisionRangeLimit(Enemy enemy)
         {
@@ -76,39 +65,23 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             };
         }
 
-        public override void Init()
+        public void TickEnemy(float currentTime)
         {
-            _bodyPart = Enemy.EnemyInfo._bodyPart;
-            _headPart = Enemy.EnemyInfo._headPart;
-            Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
-            base.Init();
+            Angles.CalcAngles(Enemy, currentTime);
+            EnemyParts.Update(currentTime);
+            Enemy.Events.OnEnemyLineOfSightChanged.CheckToggle(InLineOfSight, currentTime);
+            UpdateVisibleState(currentTime);
         }
 
-        public override void ManualUpdate()
-        {
-            Angles.CalcAngles(Enemy);
-            EnemyParts.Update();
-            Enemy.Events.OnEnemyLineOfSightChanged.CheckToggle(LineOfSight);
-            GainSightCoef = EnemyGainSightClass.GetGainSightModifier(Enemy);
-            UpdateVisibleState();
-            base.ManualUpdate();
-        }
-
-        public override void Dispose()
-        {
-            Enemy.Events.OnEnemyKnownChanged.OnToggle -= OnEnemyKnownChanged;
-            base.Dispose();
-        }
-
-        public void OnEnemyKnownChanged(bool known, Enemy enemy)
+        protected override void OnEnemyKnownChanged(bool known, Enemy enemy)
         {
             if (!known)
             {
-                UpdateVisibleState(true);
+                UpdateVisibleState(Time.time, true);
             }
         }
 
-        public void UpdateVisibleState(bool forceOff = false)
+        public void UpdateVisibleState(float currentTime, bool forceOff = false)
         {
             bool wasVisible = IsVisible;
             if (forceOff)
@@ -125,21 +98,12 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 IsVisible = EnemyInfo.IsVisible;
             }
 
-            bool iamCurrentEnemy = Enemy.IsCurrentEnemy;
-            if (iamCurrentEnemy && !IsVisible && wasVisible)
-            {
-                // try { BotOwner.CalcGoal(); } catch { /* eft code */  }
-            }
-            else if (!iamCurrentEnemy && IsVisible && Bot.GoalEnemy?.IsVisible != true)
-            {
-                //try { BotOwner.CalcGoal(); } catch { /* eft code */  }
-            }
-
             if (IsVisible)
             {
+                BotOwner.Memory.SetLastTimeSeeEnemy();
                 if (!wasVisible)
                 {
-                    VisibleStartTime = Time.time;
+                    VisibleStartTime = currentTime;
                     if (Seen && TimeSinceSeen >= _repeatContactMinSeenTime)
                     {
                         ShallReportRepeatContact = true;
@@ -148,38 +112,38 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
                 if (!Seen)
                 {
                     FirstContactOccured = true;
-                    TimeFirstSeen = Time.time;
+                    TimeFirstSeen = currentTime;
                     Seen = true;
                     Enemy.Events.EnemyFirstSeen();
                 }
 
-                TimeLastSeen = Time.time;
-                Enemy.UpdateCurrentEnemyPos(EnemyTransform.Position);
+                TimeLastSeen = currentTime;
+                Enemy.UpdateCurrentEnemyPos(EnemyTransform.Position, currentTime);
             }
 
             if (!IsVisible)
             {
                 if (wasVisible)
-                    Enemy.UpdateLastSeenPosition(EnemyTransform.Position);
+                    Enemy.UpdateLastSeenPosition(EnemyTransform.Position, currentTime);
 
                 if (Seen &&
                     TimeSinceSeen > _lostContactMinSeenTime &&
-                    _nextReportLostVisualTime < Time.time)
+                    _nextReportLostVisualTime < currentTime)
                 {
-                    _nextReportLostVisualTime = Time.time + 20f;
+                    _nextReportLostVisualTime = currentTime + 20f;
                     ShallReportLostVisual = true;
                 }
                 VisibleStartTime = -1f;
             }
 
-            Enemy.Events.OnVisionChange.CheckToggle(IsVisible);
+            Enemy.Events.OnVisionChange.CheckToggle(IsVisible, currentTime);
             if (IsVisible != wasVisible)
             {
-                LastChangeVisionTime = Time.time;
+                LastChangeVisionTime = currentTime;
             }
         }
 
-        private readonly EnemyVisionDistanceClass _visionDistance = new EnemyVisionDistanceClass(enemy);
+        public readonly EnemyVisionDistanceClass _visionDistance = new(enemyData);
         private float _nextReportLostVisualTime;
     }
 }

@@ -61,13 +61,6 @@ namespace SAIN.SAINComponent.Classes
                     }
                 }
 
-                //var curve = botOwner.Settings.Curv.StandartVisionSettings;
-                //if (curve != null) {
-                //    if (!JsonUtility.Load.LoadObject(out AnimationCurve importedCurve, "StandardVisionCurve")) {
-                //        JsonUtility.SaveObjectToJson(curve, "StandardVisionCurve");
-                //    }
-                //}
-
                 float currentVisionDistance = BotOwner.Settings.Current.CurrentVisibleDistance;
                 // Sets a minimum cap based on weather conditions to avoid bots having too low of a vision Distance while at peace in bad weather
                 float currentVisionDistanceCapped = Mathf.Clamp(currentVisionDistance * weatherMod, timeSettings.VISION_WEATHER_MIN_DIST_METERS, currentVisionDistance);

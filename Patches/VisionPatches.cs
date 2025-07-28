@@ -7,6 +7,7 @@ using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -203,7 +204,7 @@ namespace SAIN.Patches.Vision
             }
 
             if (!isAI &&
-                SAINEnableClass.GetSAIN(__instance.Owner, out BotComponent botComponent))
+                SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent botComponent))
             {
                 Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
                 if (enemy != null)
@@ -226,17 +227,22 @@ namespace SAIN.Patches.Vision
         }
     }
 
+    /// <summary>
+    /// Disable the ai task registration of SAIN bots for vision updates.
+    /// </summary>
     public class DisableLookUpdatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(LookSensor), nameof(LookSensor.CheckAllEnemies));
+            return AccessTools.Method(typeof(LookSensor), nameof(LookSensor.Activate));
         }
 
         [PatchPrefix]
         public static bool Patch(LookSensor __instance)
         {
-            return SAINEnableClass.IsBotExcluded(__instance._botOwner);
+            if (SAINEnableClass.IsBotExcluded(__instance._botOwner)) return true;
+            __instance.method_2();
+            return false;
         }
     }
 
@@ -358,27 +364,17 @@ namespace SAIN.Patches.Vision
         [PatchPostfix]
         public static void PatchPostfix(ref float __result, EnemyInfo __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain))
+            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var sain))
             {
-                Enemy enemy = sain.EnemyController.GetEnemy(__instance.Person.ProfileId, true);
+                Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, false);
+                enemy ??= sain.EnemyController.CheckAddEnemy(__instance.Person);
                 if (enemy != null)
                 {
-                    // float old = __result;
-                    if (!enemy.Vision.Angles.CanBeSeen)
-                        __result = 0;
-                    else
-                        __result /= enemy.Vision.GainSightCoef;
+                    float sainMod = EnemyGainSightClass.GetGainSightModifier(enemy);
+                    __result /= sainMod;
                     enemy.Vision.LastGainSightResult = __result;
-                    // Logger.LogInfo($"Vision speed: {old} -> {__result} ({enemy.Vision.GainSightCoef})");
-                }
-
-                float minSpeed = sain.Info.FileSettings.Look.MinimumVisionSpeed;
-                if (minSpeed > 0)
-                {
-                    __result = Mathf.Min(__result, 1 / minSpeed);
                 }
             }
-            //__result = Mathf.Clamp(__result, 0.1f, 8888f);
         }
     }
 
@@ -402,27 +398,69 @@ namespace SAIN.Patches.Vision
         }
     }
 
+
+    //public class CheckPartLineOfSightPatch : ModulePatch
+    //{
+    //    protected override MethodBase GetTargetMethod()
+    //    {
+    //        return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.CheckPartLineOfSight));
+    //    }
+    //
+    //    [PatchPrefix]
+    //    public static bool PatchPrefix(EnemyInfo __instance, ref bool __result, KeyValuePair<EnemyPart, EnemyPartData> part, LayerMask lookSensorMask, float addSensorDistance, ref float visibilityChangeSpeedK)
+    //    {
+    //        if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain))
+    //        {
+    //            Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, true);
+    //            if (enemy != null)
+    //            {
+    //                __result = enemy.Vision.Angles.CanBeSeen;
+    //                return false;
+    //            }
+    //        }
+    //        return true;
+    //    }
+    //}
+
+    public class IsPointInVisibleSectorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.IsPointInVisibleSector));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(EnemyInfo __instance, ref bool __result)
+        {
+            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var sain))
+            {
+                Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, false);
+                if (enemy != null)
+                {
+                    __result = enemy.Vision.Angles.CanBeSeen && enemy.Vision.EnemyParts.CanBeSeen;
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
     public class VisionDistancePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.CheckPartLineOfSight));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_0));
         }
 
-        [PatchPrefix]
-        public static void PatchPrefix(ref float addSensorDistance, EnemyInfo __instance)
+        [PatchPostfix]
+        public static void PatchPrefix(ref float __result, EnemyInfo __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain))
+            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var sain))
             {
-                Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, true);
+                Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, false);
                 if (enemy != null)
                 {
-                    if (!enemy.Vision.Angles.CanBeSeen)
-                    {
-                        addSensorDistance = float.MinValue;
-                        return;
-                    }
-                    addSensorDistance += enemy.Vision.VisionDistance;
+                    __result += enemy.Vision._visionDistance.Value;
                 }
             }
         }

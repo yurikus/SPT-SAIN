@@ -11,7 +11,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         private const float CALC_SCATTER_FREQ = 0.025f;
         private const float CALC_SCATTER_FREQ_AI = 0.1f;
 
-        public EnemyAim(EnemyData enemy) : base(enemy)
+        public EnemyAim(EnemyData enemyData) : base(enemyData, enemyData.Enemy.Bot)
         {
         }
 
