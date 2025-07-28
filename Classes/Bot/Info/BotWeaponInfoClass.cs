@@ -13,7 +13,6 @@ namespace SAIN.SAINComponent.Classes.Info
 {
     public class BotWeaponInfoClass : BotBase
     {
-        private const float MACHINEGUN_SWAPDIST_MULTI = 1.5f;
         public float FinalModifier { get; private set; }
         public EWeaponClass EWeaponClass { get; private set; }
         public ECaliber ECaliber { get; private set; }
@@ -103,10 +102,6 @@ namespace SAIN.SAINComponent.Classes.Info
         {
             if (_shootSettings.AmmoCaliberFullAutoMaxDistances.TryGetValue(caliber, out var caliberDist))
             {
-                if (weaponClass == EWeaponClass.machinegun)
-                {
-                    return caliberDist * MACHINEGUN_SWAPDIST_MULTI;
-                }
                 return caliberDist;
             }
             return 55f;
@@ -176,25 +171,10 @@ namespace SAIN.SAINComponent.Classes.Info
             }
         }
 
-        public float PreferedShootDistance {
-            get
-            {
-                return EffectiveWeaponDistance * 0.66f;
-            }
-        }
-
         public bool IsFireModeSet(EFireMode mode)
         {
             return SelectedFireMode == mode;
         }
-
-        public bool HasFullAuto => HasFireMode(EFireMode.fullauto);
-
-        public bool HasBurst => HasFireMode(EFireMode.burst);
-
-        public bool HasSemi => HasFireMode(EFireMode.single);
-
-        public bool HasDoubleAction => HasFireMode(EFireMode.doubleaction);
 
         public bool HasFireMode(EFireMode fireMode)
         {

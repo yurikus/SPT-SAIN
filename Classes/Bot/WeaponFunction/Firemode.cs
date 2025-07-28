@@ -25,37 +25,29 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 var manager = bot.BotOwner.WeaponManager;
                 if (manager.Selector?.IsWeaponReady == true &&
                     manager.Reload?.Reloading == false &&
-                    !bot.BotOwner.ShootData.Shooting)
+                    !bot.BotOwner.ShootData.Shooting && 
+                    manager.Stationary?.Taken == false)
                 {
-                    if (CheckSwapMachineGun(weaponInfo, player))
-                        return;
-
-                    if (manager.Stationary?.Taken == false)
+                    if (GetModeToSwap(bot.IsCheater, weaponInfo, out EFireMode mode) && CanSetMode(mode, weaponInfo))
                     {
-                        if (GetModeToSwap(bot.IsCheater, weaponInfo, out EFireMode mode) && CanSetMode(mode, weaponInfo))
-                        {
-                            SetFireMode(mode, weaponInfo.CurrentWeapon, player);
-                            return;
-                        }
-
-                        TryCheckWeapon(player, bot.GoalEnemy);
+                        SetFireMode(mode, weaponInfo.CurrentWeapon, player);
+                        return;
                     }
+
+                    TryCheckWeapon(player, bot.GoalEnemy);
                 }
             }
         }
 
-        private bool CheckSwapMachineGun(BotWeaponInfoClass weaponInfo, Player player)
-        {
-            if (weaponInfo.EWeaponClass == EWeaponClass.machinegun && CanSetMode(EFireMode.fullauto, weaponInfo))
-            {
-                SetFireMode(EFireMode.fullauto, weaponInfo.CurrentWeapon, player);
-                return true;
-            }
-            return false;
-        }
-
         private static bool GetModeToSwap(bool isCheater, BotWeaponInfoClass weaponInfo, out EFireMode mode)
         {
+            if (weaponInfo.EWeaponClass == EWeaponClass.machinegun &&
+                weaponInfo.HasFireMode(EFireMode.fullauto))
+            {
+                mode = EFireMode.fullauto;
+                return true;
+            }
+
             if (isCheater)
             {
                 if (weaponInfo.HasFireMode(EFireMode.fullauto))
@@ -71,6 +63,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 mode = EFireMode.doublet;
                 return false;
             }
+
+
             float distanceToTarget = weaponInfo.Bot.DistanceToAimTarget;
             mode = EFireMode.doublet;
             if (distanceToTarget > weaponInfo.SwapToSemiDist || GlobalSettingsClass.Instance.Shoot.ONLY_SEMIAUTO_TOGGLE)

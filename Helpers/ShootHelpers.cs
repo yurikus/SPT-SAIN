@@ -14,9 +14,14 @@ namespace SAIN.Helpers
                 return 1f;
             }
 
-            if (bot.ManualShoot.Reason != EShootReason.None && bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
+            if (bot.Suppression.SuppressingTarget && bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
             {
-                return 0.75f* Random.Range(0.66f, 1.33f);
+                return 0.75f * Random.Range(0.66f, 1.33f);
+            }
+
+            if (bot.BotOwner.WeaponManager?.Stationary?.Taken == true)
+            {
+                return 1.5f * Random.Range(0.66f, 1.33f);
             }
 
             float scaledBurstLength = 1f - (Mathf.Clamp(distance, 0f, 50f) / 50f);

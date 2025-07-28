@@ -125,7 +125,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             {
                 Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
                 PathToEnemy.ClearCorners();
-                NavMesh.CalculatePath(Bot.Position, enemyPosition, -1, PathToEnemy);
+                NavMesh.CalculatePath(Bot.NavMeshPosition, enemyPosition, NavMesh.AllAreas, PathToEnemy);
                 _newPath = true;
                 int max = AllPathNodes.Length;
                 PathLength = CalcPathLengthCreateVisionNodes(pathVisibilityConfig, AllPathNodes, PathCorners, out int nodeCount, max);

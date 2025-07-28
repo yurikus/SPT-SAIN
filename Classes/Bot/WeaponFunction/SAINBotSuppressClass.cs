@@ -251,7 +251,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 float timeAdd;
                 bool isMachineGun = Bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun;
-                timeAdd = isMachineGun ? 0.05f : 0.25f;
+                timeAdd = isMachineGun ? 0.1f : 0.25f;
                 _suppressTime = Time.time + timeAdd * UnityEngine.Random.Range(0.66f, 1.33f);
             }
             return true;
@@ -261,15 +261,15 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             //if (EnemyBeingSuppressed != null || SuppressingTarget)
             //{
-                if (EnemyBeingSuppressed != null)
-                {
-                    EnemyBeingSuppressed.Status.EnemyIsSuppressed = false;
-                    LastSuppressedEnemy = EnemyBeingSuppressed;
-                    EnemyBeingSuppressed = null;
-                }
-                SuppressingTarget = false;
-                Bot.ManualShoot.Reset();
-                _suppressTime = 0;
+            if (EnemyBeingSuppressed != null)
+            {
+                EnemyBeingSuppressed.Status.EnemyIsSuppressed = false;
+                LastSuppressedEnemy = EnemyBeingSuppressed;
+                EnemyBeingSuppressed = null;
+            }
+            SuppressingTarget = false;
+            Bot.ManualShoot.Reset();
+            _suppressTime = 0;
             //}
         }
 

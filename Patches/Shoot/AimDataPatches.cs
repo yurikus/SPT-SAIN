@@ -223,6 +223,7 @@ namespace SAIN.Patches.Shoot.Aim
 
             __instance.EndTargetPoint = result;
 
+#if DEBUG
             if (SAINPlugin.LoadedPreset.GlobalSettings.General.Debug.Gizmos.DebugDrawAimGizmos)
             {
                 Vector3 weaponRoot = __instance.botOwner_0.WeaponRoot.position;
@@ -230,6 +231,7 @@ namespace SAIN.Patches.Shoot.Aim
                 DebugGizmos.DrawSphere(result, 0.025f, Color.red, 10f);
                 DebugGizmos.DrawLine(result, realTargetPoint, Color.white, 0.02f, 0.25f, true);
             }
+#endif
             return false;
         }
     }
