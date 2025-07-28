@@ -198,25 +198,34 @@ namespace SAIN.Classes
             float result = 1f;
             if (botComponent?.Mover?.Running == true)
             {
-                return 0.01f;
+                return 0.001f;
             }
             bool sprinting = player.IsSprintEnabled;
             if (sprinting)
             {
+                return 0.001f;
+            }       
+            
+            bool moving = botComponent?.Mover?.Moving == true || botOwner.Mover?.IsMoving == true;
+            bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
+            bool aimingDownSights = player.HandsController is Player.FirearmController firearmController && firearmController.IsAiming;
+
+            if (aimingDownSights && aiming)
+            {
+                if (!moving) return 0.0001f;
                 return 0.01f;
             }
 
             MovementContext movementContext = player.MovementContext;
             bool armsDamaged = movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged) || movementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool noStamina = player.Physical.Stamina.NormalValue <= 0.1f;
-            bool moving = botComponent?.Mover?.Moving == true || botOwner.Mover?.IsMoving == true;
-            bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
 
-            if (aiming) result *= 0.25f;
-            if (moving) result *= 1.15f;
-            if (armsDamaged) result *= 1.33f;
-            if (noStamina) result *= 1.33f;
-            return Mathf.Clamp(result, 0.01f, 2.5f);
+            if (aimingDownSights) result *= 0.2f;
+            if (aiming) result *= 0.5f;
+            if (moving) result *= 1.25f;
+            if (armsDamaged) result *= 1.5f;
+            if (noStamina) result *= 1.5f;
+            return Mathf.Clamp(result, 0.001f, 2.5f);
         }
 
         private static Vector2 FindMoveDirection(Vector3 direction, Vector2 playerRotation)

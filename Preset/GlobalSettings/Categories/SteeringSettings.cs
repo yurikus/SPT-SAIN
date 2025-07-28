@@ -6,7 +6,6 @@ namespace SAIN.Preset.GlobalSettings
 {
     public class SteeringSettings : SAINSettingsBase<SteeringSettings>, ISAINSettings
     {
-
         [Name("Max Path Length")]
         [Description("How far along a path to an enemy a bot will check vision to, in meters.")]
         [Category("Enemy Path Visibility System")]
@@ -17,20 +16,20 @@ namespace SAIN.Preset.GlobalSettings
         [Hidden]
         public float characterHeight = 1.5f;
         [Hidden]
-        public float startHeight = 0.33f;
+        public float startHeight = 0.25f;
 
         [Name("Path Nodes Stack Height")]
         [Description("X number of points will be generated above each node in the path")]
         [Category("Enemy Path Visibility System")]
         [MinMax(2f, 6, 1)]
         [Advanced]
-        public float GeneratePointStackHeight = 3;
+        public float GeneratePointStackHeight = 4;
 
         [Name("Distance Between Nodes")]
         [Category("Enemy Path Visibility System")]
         [MinMax(0.1f, 2, 1000)]
         [Advanced]
-        public float DistanceBetweenPoints = 1f;
+        public float DistanceBetweenPoints = 0.66f;
 
         [Name("Random Bot Aim Sway")]
         [Category("Random Sway")]
@@ -66,10 +65,10 @@ namespace SAIN.Preset.GlobalSettings
         public Dictionary<EBotLookMode, TurnSettings> SMOOTHING_BY_STATE = new() {
             { EBotLookMode.RandomLook, new TurnSettings(0.040f, 120f ) },
             { EBotLookMode.Peace, new TurnSettings(0.050f, 240) },
-            { EBotLookMode.Combat, new TurnSettings(0.065f, 300f) },
-            { EBotLookMode.CombatSprint, new TurnSettings(0.065f, 300f) },
-            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.080f, 360f) },
-            { EBotLookMode.Aiming, new TurnSettings(0.080f, 360f ) },
+            { EBotLookMode.Combat, new TurnSettings(0.07f, 300f) },
+            { EBotLookMode.CombatSprint, new TurnSettings(0.075f, 300f) },
+            { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.090f, 360f) },
+            { EBotLookMode.Aiming, new TurnSettings(0.10f, 360f ) },
         };
 
         [MinMax(0f, 3f, 1000f)]
