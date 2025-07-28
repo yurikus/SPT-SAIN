@@ -38,6 +38,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             checkState();
             decaySuppression();
+
             if (SuppressingTarget)
             {
                 if (EnemyBeingSuppressed?.EnemyPlayer?.HealthController?.IsAlive != true)
@@ -51,6 +52,17 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 else if (_suppressTime < Time.time)
                 {
                     ResetSuppressing();
+                }
+                else
+                {
+                    if (EnemyBeingSuppressed != null && EnemyBeingSuppressed.GetVisibilePathPoint(out Vector3 point))
+                    {
+                        Bot.ManualShoot.ShootPosition = point;
+                    }
+                    else
+                    {
+                        ResetSuppressing();
+                    }
                 }
             }
             base.ManualUpdate();

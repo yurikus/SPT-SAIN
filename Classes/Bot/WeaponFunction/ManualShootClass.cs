@@ -120,7 +120,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         private float _timeStartManualShoot;
 
-        public Vector3 ShootPosition { get; private set; }
+        public Vector3 ShootPosition { get; set; }
 
         public EShootReason Reason { get; private set; }
     }
