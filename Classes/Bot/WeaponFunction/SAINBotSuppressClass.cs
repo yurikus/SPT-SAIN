@@ -38,7 +38,12 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             checkState();
             decaySuppression();
+            CheckEndSuppression();
+            base.ManualUpdate();
+        }
 
+        private void CheckEndSuppression()
+        {
             if (SuppressingTarget)
             {
                 if (EnemyBeingSuppressed?.EnemyPlayer?.HealthController?.IsAlive != true)
@@ -55,17 +60,26 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 }
                 else
                 {
-                    if (EnemyBeingSuppressed != null && EnemyBeingSuppressed.GetVisibilePathPoint(out Vector3 point))
-                    {
-                        Bot.ManualShoot.ShootPosition = point;
-                    }
-                    else
-                    {
-                        ResetSuppressing();
-                    }
+                    UpdateSuppressionVector();
                 }
             }
-            base.ManualUpdate();
+        }
+
+        private void UpdateSuppressionVector()
+        {
+            Enemy enemy = EnemyBeingSuppressed;
+            if (enemy == null)
+            {
+                ResetSuppressing();
+                return;
+            }
+            var suppressionTarget = enemy.SuppressionTarget;
+            if (suppressionTarget == null)
+            {
+                ResetSuppressing();
+                return;
+            }
+            Bot.ManualShoot.ShootPosition = suppressionTarget.Value;
         }
 
         public override void Dispose()
@@ -80,52 +94,106 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         {
             if (!GlobalSettingsClass.Instance.Mind.TARGET_SUPPRESS_TOGGLE)
             {
+                if (SuppressingTarget) ResetSuppressing();
                 return false;
             }
             if (!Bot.Info.PersonalitySettings.General.TARGET_SUPPRESS_TOGGLE)
             {
+                if (SuppressingTarget) ResetSuppressing();
                 return false;
             }
             if (Bot.Decision.CurrentSelfDecision == ESelfActionType.Reload)
             {
+                if (SuppressingTarget) ResetSuppressing();
                 return false;
             }
             if (Bot.Mover.Running &&
                 (Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running ||
                 Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning))
             {
+                if (SuppressingTarget) ResetSuppressing();
                 return false;
             }
+
+            float ratio = CalcAmmoRatio(BotOwner, out int currentAmmo);
+            bool ammoGoodForSupp = ratio >= minimumAmmoRatio && currentAmmo >= minimumBullets;
+            if (!ammoGoodForSupp)
+            {
+                ResetSuppressing();
+                return false;
+            }
+
+            if (SuppressingTarget)
+            {
+                CheckEndSuppression();
+            }
+
             if (SuppressingTarget && _suppressTime > Time.time)
             {
                 return true;
             }
 
-            BotReload reload = BotOwner.WeaponManager?.Reload;
-            int currentAmmo = 0;
-            float ratio = 0;
-            if (reload != null)
+            // Always check priority enemy first
+            if (TrySuppressEnemy(priorityEnemy, withBehaviorChecks))
             {
-                currentAmmo = reload.BulletCount;
-                ratio = (float)currentAmmo / reload.MaxBulletCount;
+                _nextChangeSuppTargetTime = Time.time + CHANGE_SUPP_TARGET_FREQ;
+                return true;
             }
-            if (ratio >= minimumAmmoRatio && currentAmmo >= minimumBullets)
+
+            // Try to keep suppressing the same target if possible
+            if (LastSuppressedEnemy != null)
             {
-                if (TrySuppressEnemy(priorityEnemy, withBehaviorChecks))
+                if (!LastSuppressedEnemy.EnemyKnown || !Enemy.IsEnemyValid(Bot.ProfileId, LastSuppressedEnemy.EnemyPlayerComponent))
                 {
+                    LastSuppressedEnemy = null;
+                }
+                else if (TrySuppressEnemy(LastSuppressedEnemy, withBehaviorChecks))
+                {
+                    _nextChangeSuppTargetTime = Time.time + CHANGE_SUPP_TARGET_FREQ;
                     return true;
                 }
-                knownEnemies.SortBy(EnemyList.EBotListSortType.VisiblePathPointDistanceToEnemy);
-                foreach (Enemy enemy in knownEnemies)
+            }
+
+            // Frequency limit to stop rapidly changing targets
+            if (_nextChangeSuppTargetTime > Time.time)
+            {
+                ResetSuppressing();
+                return false;
+            }
+
+            knownEnemies.SortBy(EnemyList.EBotListSortType.VisiblePathPointDistanceToEnemy);
+            foreach (Enemy enemy in knownEnemies)
+            {
+                if (TrySuppressEnemy(enemy, withBehaviorChecks))
                 {
-                    if (TrySuppressEnemy(enemy, withBehaviorChecks))
-                    {
-                        return true;
-                    }
+                    _nextChangeSuppTargetTime = Time.time + CHANGE_SUPP_TARGET_FREQ;
+                    return true;
                 }
             }
             ResetSuppressing();
             return false;
+        }
+
+        private const float CHANGE_SUPP_TARGET_FREQ = 0.5f;
+        private float _nextChangeSuppTargetTime;
+
+        public static float CalcAmmoRatio(BotOwner botowner, out int currentAmmoCount)
+        {
+            var weaponManager = botowner?.WeaponManager;
+            if (weaponManager == null || weaponManager.Reload == null)
+            {
+                currentAmmoCount = 0;
+                return 0f;
+            }
+            // eft code lacks a null ref check
+            var item = weaponManager.ShootController?.Item;
+            if (item == null)
+            {
+                currentAmmoCount = 0;
+                return 0f;
+            }
+            currentAmmoCount = weaponManager.Reload.BulletCount;
+            return (float)currentAmmoCount / weaponManager.Reload.MaxBulletCount;
         }
 
         public float TimeSinceSeenToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceSeenToSuppress;
@@ -196,6 +264,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 if (EnemyBeingSuppressed != null)
                 {
                     EnemyBeingSuppressed.Status.EnemyIsSuppressed = false;
+                    LastSuppressedEnemy = EnemyBeingSuppressed;
                     EnemyBeingSuppressed = null;
                 }
                 SuppressingTarget = false;
@@ -203,6 +272,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 _suppressTime = 0;
             }
         }
+
+        private Enemy LastSuppressedEnemy;
 
         public bool SuppressingTarget;
         private float _suppressTime;
