@@ -140,7 +140,7 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
         public bool ShallCheckPathVision(float currentTime, Vector3 botWeaponRoot)
         {
             if (!Enemy.WasValid || !Enemy.EnemyKnown) return false;
-            if (_newPath || _nextPathVisionCheck > currentTime) return false;
+            if (!_newPath && _nextPathVisionCheck > currentTime) return false;
             float interval;
             if (Enemy.IsAI)
             {

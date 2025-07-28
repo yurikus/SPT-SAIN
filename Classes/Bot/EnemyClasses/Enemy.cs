@@ -6,6 +6,7 @@ using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
+using SAIN.Types.PlayerSmoothing;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +15,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
 {
     public class Enemy : BotBase, ISPlayer
     {
+        public PredictivePositionSmoother PositionSmoother { get; } = new PredictivePositionSmoother();
+
         public bool ShallCheckLook(float currentTime, out float deltaTime)
         {
             if (_nextCheckLookTime < currentTime)

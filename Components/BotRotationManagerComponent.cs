@@ -1,10 +1,7 @@
-﻿using Comfort.Common;
-using EFT;
+﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Preset.GlobalSettings;
-using SAIN.Types.TurnSmoothing;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace SAIN.Components.RotationController
@@ -21,12 +18,16 @@ namespace SAIN.Components.RotationController
             HashSet<PlayerComponent> allPlayers = GameWorldComponent.Instance.PlayerTracker.AlivePlayerArray;
             float deltaTime = Time.fixedDeltaTime;
             bool randomSwayEnabled = GlobalSettingsClass.Instance.Steering.RANDOMSWAY_TOGGLE;
-            foreach (PlayerComponent player in allPlayers)
+
+            foreach (PlayerComponent playerComp in allPlayers)
             {
-                BotOwner botOwner = player.BotOwner;
-                if (botOwner!= null)
+                BotOwner botOwner = playerComp.BotOwner;
+                if (botOwner != null)
                 {
-                    player.CharacterController.TickBotSteering(deltaTime, botOwner, player.BotComponent, randomSwayEnabled);
+                    var controller = playerComp.CharacterController;
+                    controller.UpdateTurnSettings(deltaTime, botOwner, playerComp.BotComponent, randomSwayEnabled);
+                    controller.UpdateBotTurnData(deltaTime);
+                    controller.RotatePlayer(playerComp);
                 }
             }
         }

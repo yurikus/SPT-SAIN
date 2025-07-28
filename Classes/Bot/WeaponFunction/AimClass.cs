@@ -66,7 +66,22 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             Vector3 firePort = bot.Transform.WeaponData.FirePort;
             Vector3 ballisticOffset = PlayerMovementController.Util.CalculateBallisticOffset(firePort, shootPoint, enemy.EnemyPlayer.Velocity, bot.PlayerComponent.Equipment.CurrentWeaponInfo.BulletSpeed);
             Vector3 aimPoint = shootPoint + ballisticOffset;
-            currentAiming.SetTarget(aimPoint);
+
+            var smoother = enemy.PositionSmoother;
+
+            // If we weren't previously aiming, reset smoothing.
+            if (AimStatus == AimStatus.NoTarget || enemy != _lastAimEnemy)
+            {
+                smoother.Snap(aimPoint);
+                _lastAimEnemy = enemy;
+            }
+
+            // Feed desired aim point to the smoother to account for enemy movement.
+            smoother.Update(aimPoint, enemy.EnemyPlayer.Velocity, Time.fixedDeltaTime);
+
+            // Input the final aim point to EFT's bot aim system.
+            currentAiming.SetTarget(smoother.Position);
+
             if (!bot.FriendlyFire.UpdateFriendlyFireStatus(currentAiming.LastDist2Target, bot.Transform.WeaponData.FirePort, bot.Transform.WeaponData.PointDirection, bot))
             {
                 botOwner.ShootData.EndShoot();
@@ -79,6 +94,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             AimComplete = currentAiming.IsReady && (botOwner.ShootData.Shooting || Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.85f));
             return true;
         }
+
+        private Enemy _lastAimEnemy;
 
         private void checkCanAim()
         {

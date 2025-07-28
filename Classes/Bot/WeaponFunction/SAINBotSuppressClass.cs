@@ -259,8 +259,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
         public void ResetSuppressing()
         {
-            if (EnemyBeingSuppressed != null || SuppressingTarget)
-            {
+            //if (EnemyBeingSuppressed != null || SuppressingTarget)
+            //{
                 if (EnemyBeingSuppressed != null)
                 {
                     EnemyBeingSuppressed.Status.EnemyIsSuppressed = false;
@@ -270,7 +270,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 SuppressingTarget = false;
                 Bot.ManualShoot.Reset();
                 _suppressTime = 0;
-            }
+            //}
         }
 
         private Enemy LastSuppressedEnemy;

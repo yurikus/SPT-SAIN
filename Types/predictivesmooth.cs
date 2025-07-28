@@ -15,17 +15,15 @@ namespace SAIN.Types.TurnSmoothing
 
         public SmoothTurnConfig Config = new(
             0.06f,
-            SAINPlugin.LoadedPreset.GlobalSettings.Steering.PredictionStrength,
             300f,
             SAINPlugin.LoadedPreset.GlobalSettings.Steering.ConvergenceBoost,
             SAINPlugin.LoadedPreset.GlobalSettings.Steering.MIN_STEERING_PITCH
         );
     }
 
-    public struct SmoothTurnConfig(float smoothingFactor, float predictionStrength, float turnSpeedCap, float convergenceBoost, float minPitch)
+    public struct SmoothTurnConfig(float smoothingFactor, float turnSpeedCap, float convergenceBoost, float minPitch)
     {
         public float SmoothingFactor = smoothingFactor;
-        public float PredictionStrength = predictionStrength;
         public float MaxAngularVelocity = turnSpeedCap;
         public float ConvergenceBoost = convergenceBoost;
         public float MinPitch = minPitch;
@@ -69,6 +67,7 @@ namespace SAIN.Types.TurnSmoothing
             var velocitySmoothingFactor = Mathf.Clamp01(deltaTime * 10f);
             turnData.TargetVelocity = Vector3.Lerp(turnData.TargetVelocity, angularVelocityVector, velocitySmoothingFactor);
             turnData.TargetVelocityMagnitude = turnData.TargetVelocity.magnitude;
+
             // Clamp to maximum angular velocity
             if (turnData.TargetVelocityMagnitude > turnData.Config.MaxAngularVelocity)
             {
@@ -77,26 +76,6 @@ namespace SAIN.Types.TurnSmoothing
 
             turnData.LastTargetLookDirection = turnData.NewTargetLookDirection;
             return turnData;
-        }
-
-        private static Vector3 PredictTargetDirection(Vector3 targetDirection, Vector3 targetVelocity, float deltaTime, SmoothTurnConfig config)
-        {
-            float velocityMagnitude = targetVelocity.magnitude;
-            if (velocityMagnitude < 0.01f) return targetDirection;
-
-            // Estimate lag time based on smoothing factor
-            var estimatedLagTime = (1f - config.SmoothingFactor) / config.SmoothingFactor * deltaTime * config.PredictionStrength;
-
-            // Predict future position using angular velocity
-            var predictionAngle = velocityMagnitude * estimatedLagTime * Mathf.Deg2Rad;
-
-            if (predictionAngle < 0.001f) return targetDirection;
-
-            // Apply rotation using Rodriguez rotation formula
-            var rotationAxis = targetVelocity.normalized;
-            var predictionRotation = Quaternion.AngleAxis(velocityMagnitude * estimatedLagTime, rotationAxis);
-
-            return predictionRotation * targetDirection;
         }
 
         private static float CalculateAdaptiveSmoothingFactor(Vector3 currentDirection, Vector3 targetDirection, float deltaTime, SmoothTurnConfig config)

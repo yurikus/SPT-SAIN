@@ -5,9 +5,11 @@ using SAIN.Components.RotationController;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using SAIN.Types.PlayerSmoothing;
 using SAIN.Types.TurnSmoothing;
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SAIN.Classes
 {
@@ -17,18 +19,28 @@ namespace SAIN.Classes
 
         public BotTurnData TurnData { get; set; } = new(Vector3.forward);
 
-        public void TickBotSteering(float deltaTime, BotOwner botOwner, BotComponent botComponent, bool randomSwayEnabled)
+        public void UpdateTurnSettings(float deltaTime, BotOwner botOwner, BotComponent botComponent, bool randomSwayEnabled)
         {
             var settings = GetTurnSettings(botOwner, botComponent);
             BotTurnData turnData = TurnData;
             turnData.Config.SmoothingFactor = settings.SmoothingValue;
             turnData.Config.MaxAngularVelocity = settings.MaxTurnSpeed;
-            TurnData = PredictiveLookSmoothing.UpdateSmoothedDirection(TurnData, deltaTime);
+            TurnData = turnData;
             UpdateRandomSway(deltaTime, botOwner.GetPlayer, botOwner, botComponent, randomSwayEnabled);
+        }
 
+        public void UpdateBotTurnData(float deltaTime)
+        {
+            TurnData = PredictiveLookSmoothing.UpdateSmoothedDirection(TurnData, deltaTime);
+        }
+
+        public void RotatePlayer(PlayerComponent playerComp)
+        {
             Vector3 dir = TurnData.CurrentLookDirection + RandomSwayOffset;
-            SetXAngle(botOwner, dir);
-            SetYAngle(CalcYByDir(dir), botOwner.GetPlayer, botOwner);
+            if (playerComp.BotComponent != null) dir = playerComp.BotComponent.Info.WeaponInfo.Recoil.ApplyRecoil(dir);
+
+            SetXAngle(playerComp.BotOwner, dir);
+            SetYAngle(CalcYByDir(dir), playerComp.Player, playerComp.BotOwner);
         }
 
         private void UpdateRandomSway(float deltaTime, Player player, BotOwner botOwner, BotComponent botComponent, bool randomSwayEnabled)
@@ -128,8 +140,6 @@ namespace SAIN.Classes
 
         public void SetTargetLookDirection(Vector3 targetDirection, BotOwner botOwner, BotComponent bot)
         {
-            if (bot != null) targetDirection = bot.Info.WeaponInfo.Recoil.ApplyRecoil(targetDirection);
-
             BotTurnData turnData = TurnData;
             turnData.NewTargetLookDirection = targetDirection;
             TurnData = turnData;
@@ -234,14 +244,24 @@ namespace SAIN.Classes
             return new Vector2(vector.x, vector.y);
         }
 
+        private static TurnSettings AIM_COMPLETE_SETTINGS = new(1f, 360f);
+
         private static TurnSettings GetTurnSettings(BotOwner botOwner, BotComponent botComponent)
         {
             var settings = GlobalSettingsClass.Instance?.Steering;
             if (settings?.SMOOTHING_BY_STATE != null && botOwner != null)
             {
-                if (botOwner.AimingManager?.CurrentAiming?.IsReady == true || botOwner.AimingManager?.CurrentAiming is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
+                var currentAim = botOwner.AimingManager?.CurrentAiming;
+                if (currentAim != null)
                 {
-                    return settings.SMOOTHING_BY_STATE[EBotLookMode.Aiming];
+                    if (currentAim.IsReady)
+                    {
+                        return AIM_COMPLETE_SETTINGS;
+                    }
+                    if (currentAim is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
+                    {
+                        return settings.SMOOTHING_BY_STATE[EBotLookMode.Aiming];
+                    }
                 }
                 if (botComponent != null)
                 {

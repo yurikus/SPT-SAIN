@@ -71,10 +71,6 @@ namespace SAIN.Preset.GlobalSettings
             { EBotLookMode.Aiming, new TurnSettings(0.10f, 360f ) },
         };
 
-        [MinMax(0f, 3f, 1000f)]
-        [Advanced]
-        public float PredictionStrength = 0f; // How much to compensate for lag
-
         [MinMax(1f, 3f, 1000f)]
         [Advanced]
         public float ConvergenceBoost = 1.1f;   // Multiplier when far from target

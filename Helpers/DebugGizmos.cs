@@ -194,6 +194,7 @@ namespace SAIN.Helpers
 
             return box;
         }
+
         public static GameObject DrawBox(Vector3 position, Vector3 size, Color color, float expiretime = -1f)
         {
             if (!DrawGizmos)
@@ -249,7 +250,7 @@ namespace SAIN.Helpers
                     LineRenderer lineRenderer = gameObject.GetOrAddComponent<LineRenderer>();
                     if (lineRenderer != null)
                     {
-                            lineRenderer.positionCount = positions.Length;
+                        lineRenderer.positionCount = positions.Length;
                         for (int i = 0; i < count; i++)
                         {
                             lineRenderer.SetPosition(i, positions[i]);
@@ -312,7 +313,7 @@ namespace SAIN.Helpers
             DebugGizmo gizmo = new() { GameObject = obj };
             if (label != null)
             {
-                gizmo.Label =new() { WorldPos = obj.transform.position, Text = label };
+                gizmo.Label = new() { WorldPos = obj.transform.position, Text = label };
             }
             if (expireTime > 0) gizmo.ExpireTime = Time.time + expireTime;
             _gizmos.Add(gizmo);
@@ -325,7 +326,7 @@ namespace SAIN.Helpers
 
         private static void ClearGizmos()
         {
-            for (int i = _gizmos.Count; i > 0; i--)
+            for (int i = 0; i < _gizmos.Count; i++)
             {
                 if (_gizmos[i].GameObject != null)
                 {
