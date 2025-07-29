@@ -11,7 +11,7 @@ namespace SAIN.Preset.GlobalSettings
         public float VisibleDistCoef = 1f;
 
         [Name("Vision Speed Multiplier")]
-        [Description("Lower is more difficult.")]
+        [Description("Higher Is More Difficult. A value of 2 means bots will spot enemies twice as fast.")]
         [DifficultyModAttribute]
         public float GainSightCoef = 1f;
 

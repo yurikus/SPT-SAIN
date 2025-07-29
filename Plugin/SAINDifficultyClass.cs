@@ -111,7 +111,7 @@ namespace SAIN.Plugin
             global.Difficulty.HearingDistanceCoef = 0.4f;
             global.Aiming.FasterCQBReactionsGlobal = false;
             global.Difficulty.VisibleDistCoef = 0.5f;
-            global.Difficulty.GainSightCoef = 2.0f;
+            global.Difficulty.GainSightCoef = 0.33f;
 
             foreach (var bot in preset.BotSettings.SAINSettings)
             {
@@ -196,7 +196,7 @@ namespace SAIN.Plugin
             global.Difficulty.PRECISION_SPEED_COEF = 0.75f;
             global.Difficulty.ACCURACY_SPEED_COEF = 1.25f;
             global.Difficulty.VisibleDistCoef = 0.75f;
-            global.Difficulty.GainSightCoef = 1.25f;
+            global.Difficulty.GainSightCoef = 0.75f;
             global.Difficulty.HearingDistanceCoef = 0.66f;
             global.Aiming.FasterCQBReactionsGlobal = false;
 
@@ -418,7 +418,7 @@ namespace SAIN.Plugin
                         diff.Difficulty.ScatteringCoef = 0.66f;
                         diff.Difficulty.PRECISION_SPEED_COEF = 1.33f;
                         diff.Difficulty.ACCURACY_SPEED_COEF = 0.66f;
-                        diff.Difficulty.GainSightCoef = 0.75f;
+                        diff.Difficulty.GainSightCoef = 1.25f;
                         diff.Difficulty.VisibleDistCoef = 1.25f;
                         diff.Difficulty.AggressionCoef = 1.2f;
                     }
@@ -472,7 +472,7 @@ namespace SAIN.Plugin
             global.Difficulty.ScatteringCoef = 0.75f;
             global.Aiming.AimCenterMassGlobal = false;
             global.Difficulty.VisibleDistCoef = 1.25f;
-            global.Difficulty.GainSightCoef = 0.75f;
+            global.Difficulty.GainSightCoef = 1.25f;
             global.Difficulty.PRECISION_SPEED_COEF = 1.25f;
             global.Difficulty.ACCURACY_SPEED_COEF = 0.75f;
 
@@ -552,7 +552,7 @@ namespace SAIN.Plugin
 
             global.Difficulty.ScatteringCoef = 0.01f;
             global.Difficulty.VisibleDistCoef = 2f;
-            global.Difficulty.GainSightCoef = 0.5f;
+            global.Difficulty.GainSightCoef = 2f;
             global.Difficulty.PRECISION_SPEED_COEF = 3f;
             global.Difficulty.ACCURACY_SPEED_COEF = 0.1f;
 

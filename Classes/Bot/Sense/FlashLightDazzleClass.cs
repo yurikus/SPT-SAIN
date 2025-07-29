@@ -53,7 +53,7 @@ namespace SAIN.SAINComponent.Classes.Sense
                 Vector3 weaponRoot = enemy.EnemyPlayer.WeaponRoot.position;
                 if (!Physics.Raycast(weaponRoot, (botPos - weaponRoot).normalized, (botPos - weaponRoot).magnitude, LayerMaskClass.HighPolyWithTerrainMask))
                 {
-                    float gainSight = 0.66f;
+                    float gainSight = 1.33f;
                     float dazzlemodifier = dist < MaxDazzleRange ? GetDazzleModifier(enemy) : 1f;
 
                     ApplyDazzle(dazzlemodifier, gainSight);
@@ -75,7 +75,7 @@ namespace SAIN.SAINComponent.Classes.Sense
                 Vector3 weaponRoot = enemy.EnemyPlayer.WeaponRoot.position;
                 if (!Physics.Raycast(weaponRoot, (botPos - weaponRoot).normalized, (botPos - weaponRoot).magnitude, LayerMaskClass.HighPolyWithTerrainMask))
                 {
-                    float gainSight = 0.66f;
+                    float gainSight = 1.33f;
                     float dazzlemodifier = dist < MaxDazzleRange ? GetDazzleModifier(enemy) : 1f;
                     ApplyDazzle(dazzlemodifier, gainSight);
                 }
