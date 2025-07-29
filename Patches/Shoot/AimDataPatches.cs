@@ -14,7 +14,7 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using HitAffectClass = GClass583;
+using HitAffectClass = GClass601;
 
 namespace SAIN.Patches.Shoot.Aim
 {
@@ -67,7 +67,7 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotAimingClass __instance, Vector3 dir)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.botOwner_0)) return true;
+            if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0)) return true;
             //__instance.botOwner_0.Steering.LookToDirection(dir, float.MaxValue);
             return false;
         }
@@ -87,7 +87,7 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotAimingClass __instance)
         {
-            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
+            if (SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
             {
                 __instance.Status = AimStatus.NoTarget;
                 return false;
@@ -110,12 +110,12 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotAimingClass __instance, AimStatus value)
         {
-            if (__instance.aimStatus_0 == value) return false;
+            if (__instance.AimStatus_0 == value) return false;
 
-            BotOwner botOwner = __instance.botOwner_0;
+            BotOwner botOwner = __instance.BotOwner_0;
             if (botOwner == null || botOwner.BotState != EBotState.Active) return false;
             if (!SAINEnableClass.IsBotInCombat(botOwner)) return true;
-            __instance.aimStatus_0 = value;
+            __instance.AimStatus_0 = value;
             return false;
         }
     }
@@ -164,13 +164,13 @@ namespace SAIN.Patches.Shoot.Aim
         }
 
         [PatchPrefix]
-        public static bool Patch(BotOwner ___botOwner_0, ref Vector3 __result, Vector3 dir)
+        public static bool Patch(HitAffectClass __instance, ref Vector3 __result, Vector3 dir)
         {
             if (!GlobalSettingsClass.Instance.Aiming.HitEffects.HIT_REACTION_TOGGLE)
             {
                 return true;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out var bot))
+            if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out var bot))
             {
                 __result = bot.Medical.HitReaction.AimHitEffect.ApplyEffect(dir);
                 return false;
@@ -187,13 +187,13 @@ namespace SAIN.Patches.Shoot.Aim
         }
 
         [PatchPrefix]
-        public static bool Patch(BotOwner ___botOwner_0)
+        public static bool Patch(HitAffectClass __instance)
         {
             if (!GlobalSettingsClass.Instance.Aiming.HitEffects.HIT_REACTION_TOGGLE)
             {
                 return true;
             }
-            if (SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out var bot))
+            if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out _))
             {
                 return false;
             }
@@ -211,13 +211,13 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool PatchPrefix(BotAimingClass __instance)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.botOwner_0)) return true;
+            if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0)) return true;
 
             // Applies aiming offset, recoil offset, and scatter offsets
             // Default Setup :: Vector3 finalTarget = __instance.RealTargetPoint + badShootOffset + (AimUpgradeByTime * (AimOffset + ___botOwner_0.RecoilData.RecoilOffset));
 
-            float aimUpgradeByTime = __instance.float_13;
-            Vector3 aimOffset = __instance.vector3_4;
+            float aimUpgradeByTime = __instance.Float_13;
+            Vector3 aimOffset = __instance.Vector3_4;
             Vector3 realTargetPoint = __instance.RealTargetPoint;
             Vector3 result = realTargetPoint + (aimOffset * aimUpgradeByTime);
 
@@ -226,7 +226,7 @@ namespace SAIN.Patches.Shoot.Aim
 #if DEBUG
             if (SAINPlugin.LoadedPreset.GlobalSettings.General.Debug.Gizmos.DebugDrawAimGizmos)
             {
-                Vector3 weaponRoot = __instance.botOwner_0.WeaponRoot.position;
+                Vector3 weaponRoot = __instance.BotOwner_0.WeaponRoot.position;
                 DebugGizmos.DrawLine(weaponRoot, result, Color.red, 0.02f, 0.25f, true);
                 DebugGizmos.DrawSphere(result, 0.025f, Color.red, 10f);
                 DebugGizmos.DrawLine(result, realTargetPoint, Color.white, 0.02f, 0.25f, true);
@@ -246,12 +246,12 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool PatchPrefix(BotAimingClass __instance, float dist, float ang, ref float __result)
         {
-            if (!SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out var bot))
+            if (!SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out var bot))
             {
                 return true;
             }
 
-            __result = CalculateAim(bot, dist, ang, __instance.bool_1, __instance.bool_0, __instance.float_10);
+            __result = CalculateAim(bot, dist, ang, __instance.Bool_1, __instance.Bool_0, __instance.Float_10);
             bot.Aim.LastAimTime = __result;
 
             return false;
@@ -404,7 +404,7 @@ namespace SAIN.Patches.Shoot.Aim
         [PatchPrefix]
         public static bool Patch(BotSteering __instance)
         {
-            BotOwner botOwner = __instance.botOwner_0;
+            BotOwner botOwner = __instance.BotOwner_0;
             if (!GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent)) return true;
             if (playerComponent.BotComponent?.SAINLayersActive == true) return false;
             //return true;
@@ -437,15 +437,15 @@ namespace SAIN.Patches.Shoot.Aim
                         break;
 
                     case EBotSteering.ToCustomPoint:
-                        newTargetLookDirection = __instance._customPoint - botOwner.WeaponRoot.position;
+                        newTargetLookDirection = __instance.CustomPoint - botOwner.WeaponRoot.position;
                         break;
 
                     case EBotSteering.Direction:
-                        newTargetLookDirection = __instance._customDirection;
+                        newTargetLookDirection = __instance.CustomDirection;
                         break;
 
                     default:
-                        newTargetLookDirection = __instance._customDirection;
+                        newTargetLookDirection = __instance.CustomDirection;
                         break;
                 }
             }
@@ -454,7 +454,7 @@ namespace SAIN.Patches.Shoot.Aim
                 newTargetLookDirection.y = 0;
             }
             playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection, botOwner, playerComponent.BotComponent);
-            __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
+            __instance.LookDirection_1 = playerComponent.CharacterController.CurrentControlLookDirection;
             return false;
         }
 

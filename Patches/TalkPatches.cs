@@ -25,33 +25,6 @@ namespace SAIN.Patches.Talk
         }
     }
 
-    public class JumpPainPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player), nameof(Player.method_110));
-        }
-
-        [PatchPrefix]
-        public static void PatchPrefix(Player __instance, EPlayerState nextState)
-        {
-            // Solarint - This patch is unnecessary, previously there were odd checks to prevent ai from yelling out in pain
-            //if (nextState != EPlayerState.Jump || !__instance.IsAI)
-            //{
-            //    return;
-            //}
-            //
-            //if (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers))
-            //{
-            //    if (__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftLegDamaged) ||
-            //        __instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightLegDamaged))
-            //    {
-            //        __instance.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false);
-            //    }
-            //}
-        }
-    }
-
     public class PlayerTalkPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -98,13 +71,13 @@ namespace SAIN.Patches.Talk
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotOwner ___botOwner_0, EPhraseTrigger type, ETagStatus? additionalMask = null)
+        public static bool PatchPrefix(BotTalk __instance, EPhraseTrigger type)
         {
             if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching)
             {
                 return true;
             }
-            if (___botOwner_0?.HealthController?.IsAlive == false)
+            if (__instance.BotOwner_0?.HealthController?.IsAlive == false)
             {
                 return true;
             }
@@ -119,7 +92,7 @@ namespace SAIN.Patches.Talk
                 default:
                     break;
             }
-            if (!SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out BotComponent bot))
+            if (!SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot))
             {
                 return true;
             }
@@ -149,7 +122,7 @@ namespace SAIN.Patches.Talk
         {
             // If handling of bots talking is disabled, let the original method run
             return SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching ||
-                !SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out _);
+                !SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out _);
         }
     }
 }

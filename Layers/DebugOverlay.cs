@@ -102,9 +102,7 @@ namespace SAIN.Layers
                     if (bot.BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
                     {
                         stringBuilder.AppendLine($"AimData: Status [{bot.Aim.AimStatus}] " +
-                            $"Last Aim Time: [{bot.Aim.LastAimTime}] " +
-                            $"AimingTime [{aimClass.float_7}] " +
-                            $"TimeToFnsh: [{aimClass.float_5}]");
+                            $"Last Aim Time: [{bot.Aim.LastAimTime}]");
                         stringBuilder.AppendLine($"AimOffsetMagnitude [{((bot.BotOwner.AimingManager.CurrentAiming.RealTargetPoint - bot.BotOwner.AimingManager.CurrentAiming.EndTargetPoint).magnitude).Round100()}] " +
                             $"Friendly Fire Status [{bot.FriendlyFire.FriendlyFireStatus}] " +
                             $"No Bush ESP Status: [{bot.NoBushESP.NoBushESPActive}]");

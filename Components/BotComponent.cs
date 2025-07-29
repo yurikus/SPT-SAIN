@@ -379,7 +379,7 @@ namespace SAIN.Components
                 try
                 {
                     BotOwner.LookSensor.MaxShootDist = float.MaxValue;
-                    if (BotOwner.AIData is GClass567 aiData)
+                    if (BotOwner.AIData is PlayerAIDataClass aiData)
                     {
                         aiData.IsNoOffsetShooting = false;
                     }

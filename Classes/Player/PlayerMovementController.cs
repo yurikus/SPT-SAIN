@@ -217,7 +217,7 @@ namespace SAIN.Classes
             }       
             
             bool moving = botComponent?.Mover?.Moving == true || botOwner.Mover?.IsMoving == true;
-            bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.aimStatus_0 != AimStatus.NoTarget;
+            bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.AimStatus_0 != AimStatus.NoTarget;
             bool aimingDownSights = player.HandsController is Player.FirearmController firearmController && firearmController.IsAiming;
 
             if (aimingDownSights && aiming)
@@ -258,7 +258,7 @@ namespace SAIN.Classes
                     {
                         return AIM_COMPLETE_SETTINGS;
                     }
-                    if (currentAim is BotAimingClass aimclass && aimclass.aimStatus_0 != AimStatus.NoTarget)
+                    if (currentAim is BotAimingClass aimclass && aimclass.AimStatus_0 != AimStatus.NoTarget)
                     {
                         return settings.SMOOTHING_BY_STATE[EBotLookMode.Aiming];
                     }

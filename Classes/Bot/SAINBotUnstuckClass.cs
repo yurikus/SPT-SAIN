@@ -18,7 +18,7 @@ namespace SAIN.SAINComponent.Classes.Debug
 
         public override void Init()
         {
-            PathController = BotOwner.Mover._pathController;
+            PathController = BotOwner.Mover.ActualPathController;
             DontUnstuckMe = DontUnstuckTheseTypes.Contains(Bot.Info.Profile.WildSpawnType);
             base.Init();
         }
