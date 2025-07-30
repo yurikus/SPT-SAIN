@@ -63,7 +63,7 @@ namespace SAIN.SAINComponent.Classes
         {
             CheckGameEnding();
             CheckBotActive();
-            //CheckStandBy();
+            CheckStandBy();
 
             bool wasActive = SAINLayersActiveToggle.Value;
             SAINLayersActiveToggle.CheckToggle(ActiveLayer != ESAINLayer.None, Time.time);
@@ -78,41 +78,43 @@ namespace SAIN.SAINComponent.Classes
 
         private void CheckBotActive()
         {
-            if (GameEnding && BotActive)
-                SetActive(false);
-
-            if (!GameEnding &&
-                !BotActive &&
-                BotOwner != null && 
-                BotOwner.BotState == EBotState.Active && 
-                BotOwner.StandBy.StandByType == BotStandByType.active)
+            if (GameEnding)
             {
-#if DEBUG
-                Logger.LogWarning($"Bot not active but should be!");
-#endif
+                SetActive(false);
+                return;
+            }
+
+            if (!Bot.PlayerComponent.IsActive)
+            {
+                SetActive(false);
+                return;
+            }
+
+            if (BotOwner != null && BotOwner.BotState == EBotState.Active)
+            {
                 SetActive(true);
             }
         }
 
         private void CheckStandBy()
         {
-            bool standby = BotActive && BotOwner?.StandBy?.StandByType != BotStandByType.active;
+            bool standby = BotOwner?.StandBy?.StandByType != BotStandByType.active;
             if (standby)
             {
-                if (Bot.HasEnemy)
-                {
-                    //Logger.LogWarning($"Had to activate bot manually because they were in stand by.");
-                    BotOwner.StandBy.Activate();
-                    standby = false;
-                }
-                else if (CheckAllEnemies())
-                {
-#if DEBUG
-                    Logger.LogDebug($"[{BotOwner.name}] disabled standby due to enemies being near.");
-#endif
-                    BotOwner.StandBy.Activate();
-                    standby = false;
-                }
+                //if (Bot.HasEnemy)
+                //{
+                //    //Logger.LogWarning($"Had to activate bot manually because they were in stand by.");
+                //    BotOwner.StandBy.Activate();
+                //    standby = false;
+                //}
+                //else if (CheckAllEnemies())
+                //{
+#if DEBUG       //
+                //    Logger.LogDebug($"[{BotOwner.name}] disabled standby due to enemies being near.");
+#endif          //
+                //    BotOwner.StandBy.Activate();
+                //    standby = false;
+                //}
             }
 
             if (standby)

@@ -170,11 +170,9 @@ namespace SAIN.Components
                 Player player = botOwner.GetPlayer;
                 if (player != null)
                 {
-                    //DrawDebugGizmos();
-
                     TickClassGroup(AlwaysTickClasses, currentTime);
 
-                    bool active = botOwner.BotState == EBotState.Active && player.HealthController.IsAlive;
+                    bool active = BotActive;
                     if (active)
                     {
                         TickClassGroup(TickWhenActiveClasses, currentTime);
@@ -197,22 +195,11 @@ namespace SAIN.Components
             }
         }
 
-        private void DrawDebugGizmos()
-        {
-            DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + PlayerComponent.CharacterController.CurrentControlLookDirection, Color.yellow, 0.04f, 0.02f);
-            DebugGizmos.DrawLine(Transform.WeaponRoot, Transform.WeaponRoot + LookDirection * 0.66f, Color.green, 0.02f, 0.02f);
-        }
-
         private static void TickClassGroup(List<IBotClass> List, float CurrentTime)
         {
             for (int i = 0; i < List.Count; i++)
             {
-                IBotClass Class = List[i];
-                if (Class != null)
-                {
-                    //&& Class.ShallTick(CurrentTime)
-                    Class.ManualUpdate();
-                }
+                 List[i]?.ManualUpdate();
             }
         }
 
@@ -452,6 +439,11 @@ namespace SAIN.Components
         {
             BotActivation.SetActive(false);
             StopAllCoroutines();
+        }
+
+        private void OnEnable()
+        {
+
         }
 
         public void LateUpdate()

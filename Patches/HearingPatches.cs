@@ -1,9 +1,7 @@
-﻿using Comfort.Common;
-using CommonAssets.Scripts.Audio;
+﻿using CommonAssets.Scripts.Audio;
 using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
-using EFT.UI;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.Helpers;
@@ -155,7 +153,7 @@ namespace SAIN.Patches.Hearing
         }
     }
 
-    public class SprintSoundPatch : ModulePatch
+    public class FikaHeadlessTempFixPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -163,23 +161,13 @@ namespace SAIN.Patches.Hearing
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(Player ____player, Vector3 motion, MovementContext __instance, ref float ____nextStepNoise)
+        public static bool PatchPrefix(Player ____player, Vector3 motion, MovementContext __instance)
         {
-            //if (____nextStepNoise < Time.time && ____player.IsSprintEnabled) {
-            //    ____nextStepNoise = Time.time + 0.25f;
-            //
-            //    if (motion.y < 0.2f && motion.y > -0.2f) {
-            //        motion.y = 0f;
-            //    }
-            //    if (motion.sqrMagnitude < 1E-06f) {
-            //        return false;
-            //    }
-            //
-            //    //float volume = ____player.MovementContext.CovertMovementVolumeBySpeed * FootstepSoundPatch.CalcVolume(____player);
-            //    float volume = 1;
-            //    float baseRange = 60f;
-            //    SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Sprint, ____player.Position, baseRange, volume);
-            //}
+            // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
+            if (ModDetection.ProjectFikaLoaded)
+            {
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Generic, ____player.Position, __instance.IsSprintEnabled ? 60f : 40f, 1f);
+            }
             return false;
         }
     }
@@ -234,6 +222,12 @@ namespace SAIN.Patches.Hearing
         [PatchPrefix]
         public static bool Patch(StepAudioController __instance, IPlayer ___iplayer_0, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
         {
+            // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
+            if (ModDetection.ProjectFikaLoaded)
+            {
+                return true;
+            }
+            // COPIED FROM ORIGINAL FUNCTION
             if (movementState == EAudioMovementState.None)
             {
                 return false;
@@ -252,6 +246,7 @@ namespace SAIN.Patches.Hearing
                     Debug.LogError(string.Format("Can't find bank for movement state: {0}", movementState));
                 }
             }
+            // END OF COPIED FUNCTION
 
             SAINSoundType soundType = movementState switch {
                 EAudioMovementState.Run => SAINSoundType.FootStep,

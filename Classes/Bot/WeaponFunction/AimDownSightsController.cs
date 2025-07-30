@@ -55,6 +55,10 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         public bool ShallAimDownSights(Vector3? targetPosition = null, Enemy enemy = null)
         {
             bool result = false;
+            if (BotOwner.WeaponManager?.Reload.Reloading == true)
+            {
+                return false; // Don't aim down sights while reloading
+            }
             EAimDownSightsStatus status = EAimDownSightsStatus.None;
             if (targetPosition != null)
             {
