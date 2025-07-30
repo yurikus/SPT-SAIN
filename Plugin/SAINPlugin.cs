@@ -17,7 +17,7 @@ namespace SAIN
 {
     [BepInPlugin(SAINGUID, SAINName, SAINVersion)]
     [BepInDependency(BigBrainGUID, BigBrainVersion)]
-    [BepInDependency(SPTGUID, SPTVersion)]
+    //[BepInDependency(SPTGUID, SPTVersion)]
     [BepInProcess(EscapeFromTarkov)]
     [BepInIncompatibility("com.dvize.BushNoESP")]
     [BepInIncompatibility("com.dvize.NoGrenadeESP")]
@@ -112,8 +112,6 @@ namespace SAIN
             new Patches.Generic.Fixes.DisableGrenadesPatch(),
 
             new Patches.Movement.EncumberedPatch(),
-            new Patches.Movement.DoorOpenerPatch(),
-            new Patches.Movement.DoorDisabledPatch(),
             new Patches.Movement.CrawlPatch(),
             new Patches.Movement.StopShootCauseAnimatorPatch(),
             new Patches.Movement.PoseStaminaPatch(),
@@ -146,7 +144,6 @@ namespace SAIN
             new Patches.Hearing.FikaHeadlessTempFixPatch(),
             new Patches.Hearing.GenericMovementSoundPatch(),
             new Patches.Hearing.SpecificStepAudioControllerPatch(),
-            new Patches.Hearing.JumpSoundPatch(),
             new Patches.Hearing.DryShotPatch(),
             new Patches.Hearing.ProneSoundPatch(),
             new Patches.Hearing.SoundClipNameCheckerPatch(),
@@ -154,7 +151,6 @@ namespace SAIN
             new Patches.Hearing.AimSoundPatch(),
             new Patches.Hearing.LootingSoundPatch(),
 
-            new Patches.Talk.JumpPainPatch(),
             new Patches.Talk.PlayerHurtPatch(),
             new Patches.Talk.PlayerTalkPatch(),
             new Patches.Talk.BotTalkPatch(),
@@ -166,7 +162,7 @@ namespace SAIN
             new Patches.Vision.ToggleNightVisionPatch(),
             //new Patches.Vision.SetPartPriorityPatch(),
             new Patches.Vision.GlobalLookSettingsPatch(),
-            new Patches.Vision.WeatherTimeVisibleDistancePatch(),
+            //new Patches.Vision.WeatherTimeVisibleDistancePatch(),
             new Patches.Vision.NoAIESPPatch(),
             new Patches.Vision.BotLightTurnOnPatch(),
             new Patches.Vision.VisionSpeedPatch(),
@@ -182,10 +178,8 @@ namespace SAIN
             new Patches.Shoot.Aim.BotAimSteerPatch(),
             new Patches.Shoot.Aim.HardAimDisablePatch1(),
             new Patches.Shoot.Aim.HardAimDisablePatch2(),
-            //new Patches.Shoot.Aim.DisableMalfunctionPatch(),
 
             new Patches.Shoot.RateOfFire.BotShootPatch(),
-            new Patches.Shoot.RateOfFire.ShootDataManualUpdatePatch(),
             new Patches.Shoot.Aim.AimOffsetPatch(),
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),

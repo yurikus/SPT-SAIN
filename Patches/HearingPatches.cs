@@ -10,9 +10,9 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
-using StepAudioController = GClass1117;
+using StepAudioController = GClass1184;
 
-// this._specificStepAudioController = new GClass1117(surfaceSet, this, 0.1f, useOcclusion);
+// this._specificStepAudioController = new GClass1184(surfaceSet, this, 0.1f, useOcclusion);
 
 namespace SAIN.Patches.Hearing
 {
@@ -208,7 +208,7 @@ namespace SAIN.Patches.Hearing
             //SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, bank.Rolloff, volume);
         }
     }
-
+    
     public class SpecificStepAudioControllerPatch : ModulePatch
     {
         protected static readonly FieldInfo NestedStepSoundSourceField = AccessTools.Field(typeof(Player), "NestedStepSoundSource");
@@ -220,7 +220,7 @@ namespace SAIN.Patches.Hearing
         }
 
         [PatchPrefix]
-        public static bool Patch(StepAudioController __instance, IPlayer ___iplayer_0, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
+        public static bool Patch(StepAudioController __instance, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
         {
             // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
             if (ModDetection.ProjectFikaLoaded)
@@ -233,13 +233,13 @@ namespace SAIN.Patches.Hearing
                 return false;
             }
             float volume = baseStepVolume;
-            bool IsUnderRoof = __instance.bool_0;
+            bool IsUnderRoof = __instance.Bool_0;
             if (!IsUnderRoof && environment != EnvironmentType.Indoor && movementState != EAudioMovementState.None)
             {
-                if (__instance.method_3(movementState, out SoundBank soundBank))
+                if (__instance.method_4(movementState, out SoundBank soundBank))
                 {
                     volume = __instance.CalculateFinalVolume(baseStepVolume, soundBank);
-                    soundBank.Play(__instance.betterSource_0, EnvironmentType.Outdoor, distance, volume, blendParameter, stereo, true);
+                    soundBank.Play(__instance.BetterSource_0, EnvironmentType.Outdoor, distance, volume, blendParameter, stereo, true);
                 }
                 else
                 {
@@ -257,7 +257,7 @@ namespace SAIN.Patches.Hearing
                 _ => SAINSoundType.Generic,
             };
 
-            if (___iplayer_0 is Player player)
+            if (__instance.Iplayer_0 is Player player)
             {
                 if (NestedStepSoundSourceField != null)
                 {
@@ -266,7 +266,7 @@ namespace SAIN.Patches.Hearing
                     {
                         if (StepSourceObj is BetterSource NestedStepSoundSource)
                         {
-                            BotManagerComponent.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
+                            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.Iplayer_0.ProfileId, soundType, __instance.Iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
                             //if (player.IsYourPlayer)
                             //    Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                         }
@@ -312,17 +312,13 @@ namespace SAIN.Patches.Hearing
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotHearingSensor), nameof(BotHearingSensor.method_0));
+            return AccessTools.Method(typeof(BotHearingSensor), nameof(BotHearingSensor.Init));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotOwner ____botOwner)
+        public static bool PatchPrefix(BotHearingSensor __instance)
         {
-            if (____botOwner == null || ____botOwner.GetPlayer == null)
-            {
-                return false;
-            }
-            if (!SAINEnableClass.GetSAIN(____botOwner.ProfileId, out _))
+            if (SAINEnableClass.IsSAINDisabledForBot(__instance.BotOwner))
             {
                 return false;
             }
@@ -334,11 +330,11 @@ namespace SAIN.Patches.Hearing
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass567), nameof(GClass567.TryPlayShootSound));
+            return AccessTools.Method(typeof(PlayerAIDataClass), nameof(PlayerAIDataClass.TryPlayShootSound));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(GClass567 __instance)
+        public static bool PatchPrefix(PlayerAIDataClass __instance)
         {
             __instance.Boolean_0 = true;
             return false;
@@ -533,7 +529,7 @@ namespace SAIN.Patches.Hearing
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(Player), nameof(Player.method_58));
+            return AccessTools.Method(typeof(Player), nameof(Player.method_60));
         }
 
         [PatchPrefix]

@@ -21,7 +21,7 @@
         public const string SAINPresetVersion = "4.1.1";
 
         public const string SPTGUID = "com.SPT.core";
-        public const string SPTVersion = "3.11.0";
+        public const string SPTVersion = "4.0.0";
 
         public const string BigBrainGUID = "xyz.drakia.bigbrain";
         public const string BigBrainVersion = "1.0.0";

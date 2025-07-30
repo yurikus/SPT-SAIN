@@ -672,7 +672,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             {
 
                 //if (SAINEnableClass.IsBotExluded(__instance.botOwner_0)) return;
-                if (SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out BotComponent sain))
+                if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent sain))
                 {
                     if (sain.SAINLayersActive)
                     {
