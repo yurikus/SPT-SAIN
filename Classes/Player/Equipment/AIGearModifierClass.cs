@@ -7,12 +7,8 @@ using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
 {
-    public class AIGearModifierClass : AIDataBase
+    public class AIGearModifierClass(SAINAIData sAINAIData) : AIDataBase(sAINAIData)
     {
-        public AIGearModifierClass(SAINAIData sAINAIData) : base(sAINAIData)
-        {
-        }
-
         public float StealthModifier(float distance)
         {
             return getSightMod(distance);
@@ -239,9 +235,5 @@ namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment
         private const string boonie_JACK_PYKE = "618aef6d0a5a59657e5f55ee";
         private const string helmet_TAN_ULACH = "5b40e2bc5acfc40016388216";
         private const string helmet_UNTAR_BLUE = "5aa7d03ae5b5b00016327db5";
-
-        private Item _backpack => GearInfo.GetItem(EquipmentSlot.Backpack);
-        private Item _headwear => GearInfo.GetItem(EquipmentSlot.Headwear);
-        private Item _facecover => GearInfo.GetItem(EquipmentSlot.FaceCover);
     }
 }

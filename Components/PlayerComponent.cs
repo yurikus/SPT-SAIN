@@ -220,7 +220,7 @@ namespace SAIN.Components.PlayerComponentSpace
         public void ManualUpdate(float currentTime, float deltaTime)
         {
             ActivationClass.CheckActive(this);
-            if (Player != null && Player.HealthController?.IsAlive == true)
+            if (IsActive)
             {
                 bool isAI = BotOwner != null;
                 Transform.ManualUpdate(Player, isAI);
