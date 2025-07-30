@@ -673,8 +673,9 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             public static void PrepareBot(BotComponent bot, bool sprinting)
             {
+                if (bot == null || bot.BotOwner == null) return;
                 StopVanillaMover(bot.BotOwner.Mover);
-                bot.BotOwner.WeaponManager.Stationary.StartMove();
+                bot.BotOwner.WeaponManager?.Stationary?.StartMove();
                 if (sprinting)
                 {
                     bot.Aim.LoseAimTarget();

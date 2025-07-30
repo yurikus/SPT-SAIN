@@ -94,7 +94,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (pathData == _preparedPath1)
             {
                 //Logger.LogDebug($"[{Bot.name}] Path 1 Completed");
-                if (_preparedPath2.Status == EBotMoveStatus.ReadyToMove)
+                if (!_disposing && _preparedPath2.Status == EBotMoveStatus.ReadyToMove)
                 {
                     //Logger.LogDebug($"[{Bot.name}] Path 2 Started");
                     _activePath = _preparedPath2;
@@ -108,7 +108,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             else if (pathData == _preparedPath2)
             {
                 //Logger.LogDebug($"[{Bot.name}] Path 2 Completed");
-                if (_preparedPath1.Status == EBotMoveStatus.ReadyToMove)
+                if (!_disposing && _preparedPath1.Status == EBotMoveStatus.ReadyToMove)
                 {
                     //Logger.LogDebug($"[{Bot.name}] Path 1 Started");
                     _activePath = _preparedPath1;
@@ -282,10 +282,13 @@ namespace SAIN.SAINComponent.Classes.Mover
 
         public override void Dispose()
         {
+            _disposing = true;
             _preparedPath1?.Dispose();
             _preparedPath2?.Dispose();
             base.Dispose();
         }
+
+        private bool _disposing;
 
         public BlindFireController BlindFire { get; private set; }
         public LeanClass Lean { get; private set; }
