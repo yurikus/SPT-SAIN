@@ -11,7 +11,7 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [NameAndDescription(
             "Can Throw at Visible Enemies",
             "Toggles bots throwing grenades directly at enemies they can see.")]
-        public bool ThrowAtVisibleEnemies = false;
+        public bool CAN_THROW_STRAIGHT_CONTACT = false;
 
         [NameAndDescription(
             "Since Since Enemy Seen before Throw",
@@ -71,5 +71,17 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [Hidden]
         [JsonIgnore]
         public float DELTA_NEXT_ATTEMPT = 4f;
+
+        public override void Apply(BotSettingsComponents settings)
+        {
+            settings.Grenade.GrenadePrecision = GrenadePrecision;
+            settings.Grenade.CAN_THROW_STRAIGHT_CONTACT = CAN_THROW_STRAIGHT_CONTACT;
+            settings.Grenade.DELTA_NEXT_ATTEMPT = ThrowGrenadeFrequency;
+            settings.Grenade.CHANCE_TO_NOTIFY_ENEMY_GR_100 = 100f;
+            settings.Grenade.MIN_THROW_DIST_PERCENT_0_1 = MIN_THROW_DIST_PERCENT_0_1;
+            settings.Grenade.MIN_DIST_NOT_TO_THROW = MinEnemyDistance;
+            settings.Grenade.DELTA_GRENADE_START_TIME = DELTA_GRENADE_START_TIME;
+            settings.Grenade.BEWARE_TYPE = BEWARE_TYPE;
+        }
     }
 }

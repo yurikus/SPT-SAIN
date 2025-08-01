@@ -141,7 +141,7 @@ namespace SAIN.Preset.GlobalSettings
         [Category("Aim Target")]
         [Advanced]
         [MinMax(0f, 1f, 10000f)]
-        public float CenterMassVal = 0.275f;
+        public float CenterMassVal = 0.3f;
 
         [Category("Time To Aim")]
         [Name("Global Faster CQB Reactions")]

@@ -149,5 +149,22 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         //[Hidden]
         //[JsonIgnore]
         //public float RECALC_SQR_DIST = 2f * 2f;
+        public override void Apply(BotSettingsComponents settings)
+        {
+            settings.Aiming.MAX_AIMING_UPGRADE_BY_TIME = MAX_AIMING_UPGRADE_BY_TIME;
+            settings.Aiming.DIST_TO_SHOOT_NO_OFFSET = DIST_TO_SHOOT_NO_OFFSET;
+            settings.Aiming.COEF_IF_MOVE = COEF_IF_MOVE;
+            settings.Aiming.TIME_COEF_IF_MOVE = TIME_COEF_IF_MOVE;
+            settings.Aiming.MAX_AIM_TIME = MAX_AIM_TIME;
+            settings.Aiming.AIMING_TYPE = AIMING_TYPE;
+            settings.Aiming.DAMAGE_TO_DISCARD_AIM_0_100 = DAMAGE_TO_DISCARD_AIM_0_100;
+            settings.Aiming.BASE_HIT_AFFECTION_DELAY_SEC = BASE_HIT_AFFECTION_DELAY_SEC;
+            settings.Aiming.MIN_TIME_DISCARD_AIM_SEC = MIN_TIME_DISCARD_AIM_SEC;
+            settings.Aiming.MAX_TIME_DISCARD_AIM_SEC = MAX_TIME_DISCARD_AIM_SEC;
+            settings.Aiming.ANY_PART_SHOOT_TIME = ANY_PART_SHOOT_TIME;
+            settings.Aiming.FIRST_CONTACT_ADD_SEC = FIRST_CONTACT_ADD_SEC;
+            settings.Aiming.FIRST_CONTACT_ADD_CHANCE_100 = FIRST_CONTACT_ADD_CHANCE_100;
+            settings.Aiming.OFFSET_RECAL_ANYWAY_TIME = OFFSET_RECAL_ANYWAY_TIME;
+        }
     }
 }

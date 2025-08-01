@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SAIN.Attributes;
+﻿using SAIN.Attributes;
 using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.Preset.BotSettings.SAINSettings.Categories
@@ -67,56 +66,17 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [MinMax(0f, 100f)]
         public float MinExtractPercentage = 5f;
 
-        [Hidden]
-        [JsonIgnore]
-        public float UNDER_FIRE_PERIOD = 5f;
-
-        [Hidden]
-        [JsonIgnore]
-        public float CHANCE_FUCK_YOU_ON_CONTACT_100 = 0f;
-
-        [Hidden]
-        [JsonIgnore]
-        public float PART_PERCENT_TO_HEAL = 0.6f;
-
-        [Hidden]
-        [JsonIgnore]
-        public bool SURGE_KIT_ONLY_SAFE_CONTAINER = false;
-
-        [Hidden]
-        [JsonIgnore]
-        public float FOOD_DRINK_DELAY_SEC = 240f;
-
-        [Hidden]
-        [JsonIgnore]
-        public bool CAN_USE_MEDS = true;
-
-        [Hidden]
-        [JsonIgnore]
-        public bool CAN_USE_FOOD_DRINK = true;
-
-        [Hidden]
-        [JsonIgnore]
-        public float MAX_AGGRO_BOT_DIST_UPPER_LIMIT = 500;
-
-        [Hidden]
-        [JsonIgnore]
-        public float MAX_AGGRO_BOT_DIST = 500;
-
-        [Hidden]
-        [JsonIgnore]
-        public float MAX_DIST_TO_PERSUE_AXEMAN = 300f;
-
-        [Hidden]
-        [JsonIgnore]
-        public bool AMBUSH_WHEN_UNDER_FIRE = false;
-
-        [Hidden]
-        [JsonIgnore]
-        public float HIT_DELAY_WHEN_PEACE = 0.4f;
-
-        [Hidden]
-        [JsonIgnore]
-        public float HIT_DELAY_WHEN_HAVE_SMT = 0.2f;
+        public override void Apply(BotSettingsComponents settings)
+        {
+            settings.Mind.UNDER_FIRE_PERIOD = 5f;
+            settings.Mind.CHANCE_FUCK_YOU_ON_CONTACT_100 = 0f;
+            //settings.Mind.PART_PERCENT_TO_HEAL = 0.6f;
+            //settings.Mind.SURGE_KIT_ONLY_SAFE_CONTAINER = false;
+            settings.Mind.FOOD_DRINK_DELAY_SEC = 240f;
+            settings.Mind.CAN_USE_MEDS = true;
+            settings.Mind.CAN_USE_FOOD_DRINK = true;
+            settings.Mind.HIT_DELAY_WHEN_PEACE = 0.4f;
+            settings.Mind.HIT_DELAY_WHEN_HAVE_SMT = 0.1f;
+        }
     }
 }

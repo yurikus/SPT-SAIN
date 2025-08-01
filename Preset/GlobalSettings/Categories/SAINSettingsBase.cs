@@ -12,6 +12,10 @@ namespace SAIN.Preset.GlobalSettings
         {
         }
 
+        public virtual void Apply(BotSettingsComponents settings)
+        {
+        }
+
         public object GetDefaults()
         {
             return Defaults;

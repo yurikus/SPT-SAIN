@@ -20,7 +20,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
 
             var sainSettings = Bot.Info.FileSettings;
             _canThrowGrenades = sainSettings.Core.CanGrenade;
-            _canThrowAtVisEnemies = sainSettings.Grenade.ThrowAtVisibleEnemies;
+            _canThrowAtVisEnemies = sainSettings.Grenade.CAN_THROW_STRAIGHT_CONTACT;
             _canThrowWhileSprint = sainSettings.Grenade.CanThrowWhileSprinting;
             _minEnemyDistToThrow = sainSettings.Grenade.MinEnemyDistance;
             _minFriendlyDistToThrow = sainSettings.Grenade.MinFriendlyDistance;
