@@ -50,17 +50,5 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [Description("Can this bot Vault if they are stuck on map geometry?")]
         [Category("Movement Option Toggles")]
         public bool VAULT_UNSTUCK_TOGGLE = true;
-
-        [Hidden]
-        [JsonIgnore]
-        public float RUN_TO_COVER_MIN = 2f;
-
-        [Hidden]
-        [JsonIgnore]
-        public float BASESTART_SLOW_DIST = 0.65f;
-
-        [Hidden]
-        [JsonIgnore]
-        public float SLOW_COEF = 10;
     }
 }

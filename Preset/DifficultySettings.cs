@@ -40,11 +40,6 @@ namespace SAIN.Preset.GlobalSettings
         [DifficultyModAttribute]
         public float ACCURACY_SPEED_COEF = 1f;
 
-        //[Name("Recoil Multiplier")]
-        //[Description("Lower is more difficult.")]
-        //[DifficultyModAttribute]
-        //public float RecoilCoef = 1f;
-
         public override void Init(List<ISAINSettings> list)
         {
             list.Add(this);

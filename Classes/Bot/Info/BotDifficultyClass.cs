@@ -31,6 +31,7 @@ namespace SAIN.SAINComponent.Classes
 
         public void UpdateSettings(SAINPresetClass preset)
         {
+            
             dismiss();
             applyGlobal(preset);
             applyBot(preset);
@@ -79,17 +80,6 @@ namespace SAIN.SAINComponent.Classes
             //mods.PriorityScatteringCoef = globalSettings.PriorityScatteringCoef;
             mods.GainSightCoef = globalSettings.GainSightCoef;
             mods.HearingDistCoef = globalSettings.HearingDistanceCoef;
-        }
-
-        private void apply(DifficultySettings settings, TemporaryStatModifiers mods)
-        {
-            mods.Modifiers.AccuratySpeedCoef = settings.ACCURACY_SPEED_COEF;
-            mods.Modifiers.PrecicingSpeedCoef = settings.PRECISION_SPEED_COEF;
-            mods.Modifiers.VisibleDistCoef = settings.VisibleDistCoef;
-            mods.Modifiers.ScatteringCoef = settings.ScatteringCoef;
-            //mods.PriorityScatteringCoef = botSettings.PriorityScatteringCoef;
-            mods.Modifiers.GainSightCoef = settings.GainSightCoef;
-            mods.Modifiers.HearingDistCoef = settings.HearingDistanceCoef;
         }
 
         private void applyBot(SAINPresetClass preset)
@@ -154,11 +144,6 @@ namespace SAIN.SAINComponent.Classes
             current.Dismiss(BotDifficultyModifiers.Modifiers);
             current.Dismiss(PersonalityDifficultyModifiers.Modifiers);
             current.Dismiss(LocationDifficultyModifiers.Modifiers);
-        }
-
-        private void applyMods(TemporaryStatModifiers mods)
-        {
-            BotOwner.Settings.Current.Apply(mods.Modifiers);
         }
     }
 }

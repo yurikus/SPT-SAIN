@@ -3,7 +3,6 @@ using SAIN.Helpers;
 using SAIN.Preset;
 using System.Collections.Generic;
 using UnityEngine;
-using static HBAO_Core;
 
 namespace SAIN.Plugin
 {
@@ -78,7 +77,7 @@ namespace SAIN.Plugin
                     break;
 
                 case SAINDifficulty.hard:
-                    result = SAINDifficultyClass.CreateHardPreset();
+                    result = SAINDifficultyClass.CreateBasePreset(SAINDifficulty.hard);
                     break;
 
                 case SAINDifficulty.harderpmcs:
@@ -101,7 +100,7 @@ namespace SAIN.Plugin
 
         private static SAINPresetClass CreateEasyPreset()
         {
-            var preset = new SAINPresetClass(SAINDifficulty.easy);
+            var preset = CreateBasePreset(SAINDifficulty.easy);
 
             var global = preset.GlobalSettings;
             global.Shoot.BOT_RECOIL_COEF = 3f;
@@ -121,7 +120,6 @@ namespace SAIN.Plugin
                     setting.Value.Core.VisibleAngle = 120f;
                     setting.Value.Shoot.FireratMulti *= 0.4f;
                     setting.Value.Shoot.BurstMulti *= 0.5f;
-                    setting.Value.Look.MinimumVisionSpeed = 0.4f;
                     if (setting.Value.Aiming.MAX_AIM_TIME < 2f)
                     {
                         setting.Value.Aiming.MAX_AIM_TIME = 2f;
@@ -150,7 +148,7 @@ namespace SAIN.Plugin
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 0.65f;
                 }
-                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
                 {
                     var pmcSettings = botsetting.Value.Settings;
 
@@ -188,7 +186,7 @@ namespace SAIN.Plugin
 
         private static SAINPresetClass CreateNormalPreset()
         {
-            var preset = new SAINPresetClass(SAINDifficulty.lesshard);
+            var preset = CreateBasePreset(SAINDifficulty.lesshard);
 
             var global = preset.GlobalSettings;
             global.Shoot.BOT_RECOIL_COEF = 1.6f;
@@ -207,7 +205,6 @@ namespace SAIN.Plugin
                 {
                     setting.Value.Core.VisibleAngle = 150f;
                     setting.Value.Shoot.FireratMulti *= 0.8f;
-                    setting.Value.Look.MinimumVisionSpeed = 0.1f;
                 }
             }
 
@@ -234,7 +231,7 @@ namespace SAIN.Plugin
                     hard.Aiming.AimCenterMass = false;
                     impossible.Aiming.AimCenterMass = false;
                 }
-                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
                 {
                     var pmcSettings = botsetting.Value.Settings;
 
@@ -275,68 +272,322 @@ namespace SAIN.Plugin
             return preset;
         }
 
-        private static SAINPresetClass CreateHardPreset()
+        private static SAINPresetClass CreateBasePreset(SAINDifficulty difficulty)
         {
-            var preset = new SAINPresetClass(SAINDifficulty.hard);
+            var preset = new SAINPresetClass(difficulty);
             foreach (var botsetting in preset.BotSettings.SAINSettings)
             {
-                if (botsetting.Key.IsBossOrFollower())
+                var settings = botsetting.Value.Settings;
+                var easy = settings[BotDifficulty.easy];
+                var normal = settings[BotDifficulty.normal];
+                var hard = settings[BotDifficulty.hard];
+                var impossible = settings[BotDifficulty.impossible];
+
+                easy.Move.LEAN_TOGGLE = true;
+                normal.Move.LEAN_TOGGLE = true;
+                hard.Move.LEAN_TOGGLE = true;
+                impossible.Move.LEAN_TOGGLE = true;
+
+                easy.Move.STRAFE_SPEED = 0.55f;
+                normal.Move.STRAFE_SPEED = 0.75f;
+                hard.Move.STRAFE_SPEED = 0.8f;
+                impossible.Move.STRAFE_SPEED = 1f;
+
+                easy.Core.VisibleAngle = 120f;
+                normal.Core.VisibleAngle = 150f;
+                hard.Core.VisibleAngle = 170f;
+                impossible.Core.VisibleAngle = 180f;
+
+                easy.Core.VisibleDistance = 150f;
+                normal.Core.VisibleDistance = 225f;
+                hard.Core.VisibleDistance = 250f;
+                impossible.Core.VisibleDistance = 275f;
+
+                easy.Aiming.AimCenterMass = true;
+                normal.Aiming.AimCenterMass = true;
+                hard.Aiming.AimCenterMass = true;
+                impossible.Aiming.AimCenterMass = false;
+
+                easy.Aiming.FasterCQBReactions = false;
+                normal.Aiming.FasterCQBReactions = true;
+                hard.Aiming.FasterCQBReactions = true;
+                impossible.Aiming.FasterCQBReactions = true;
+
+                easy.Aiming.AimForHead = false;
+                normal.Aiming.AimForHead = false;
+                hard.Aiming.AimForHead = false;
+                impossible.Aiming.AimForHead = false;
+
+                easy.Aiming.AimForHeadChance = 1;
+                normal.Aiming.AimForHeadChance = 10f;
+                hard.Aiming.AimForHeadChance = 33f;
+                impossible.Aiming.AimForHeadChance = 50f;
+
+                switch (botsetting.Key)
                 {
-                    var settings = botsetting.Value.Settings;
+                    case WildSpawnType.gifter:
+                        easy.Move.STRAFE_SPEED = 1f;
+                        normal.Move.STRAFE_SPEED = 1f;
+                        hard.Move.STRAFE_SPEED = 1f;
+                        impossible.Move.STRAFE_SPEED = 1f;
+                        easy.Aiming.AimForHead = true;
+                        normal.Aiming.AimForHead = true;
+                        hard.Aiming.AimForHead = true;
+                        impossible.Aiming.AimForHead = true;
+                        break;
 
-                    var easy = settings[BotDifficulty.easy];
-                    easy.Move.STRAFE_SPEED = 0.6f;
+                    case WildSpawnType.pmcBEAR:
+                    case WildSpawnType.pmcUSEC:
 
-                    var normal = settings[BotDifficulty.normal];
-                    normal.Move.STRAFE_SPEED = 0.75f;
+                        easy.Move.LEAN_TOGGLE = true;
+                        normal.Move.LEAN_TOGGLE = true;
+                        hard.Move.LEAN_TOGGLE = true;
+                        impossible.Move.LEAN_TOGGLE = true;
 
-                    var hard = settings[BotDifficulty.hard];
-                    hard.Move.STRAFE_SPEED = 0.85f;
+                        easy.Move.STRAFE_SPEED = 0.55f;
+                        normal.Move.STRAFE_SPEED = 0.75f;
+                        hard.Move.STRAFE_SPEED = 0.8f;
+                        impossible.Move.STRAFE_SPEED = 1f;
 
-                    var impossible = settings[BotDifficulty.impossible];
-                    impossible.Move.STRAFE_SPEED = 1.0f;
+                        easy.Core.VisibleAngle = 150f;
+                        normal.Core.VisibleAngle = 160f;
+                        hard.Core.VisibleAngle = 170f;
+                        impossible.Core.VisibleAngle = 180f;
 
-                    easy.Aiming.AimCenterMass = false;
-                    normal.Aiming.AimCenterMass = false;
-                    hard.Aiming.AimCenterMass = false;
-                    impossible.Aiming.AimCenterMass = false;
-                }
-                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
-                {
-                    var pmcSettings = botsetting.Value.Settings;
+                        easy.Core.VisibleDistance = 200f;
+                        normal.Core.VisibleDistance = 225f;
+                        hard.Core.VisibleDistance = 250f;
+                        impossible.Core.VisibleDistance = 275f;
 
-                    var easy = pmcSettings[BotDifficulty.easy];
-                    easy.Move.STRAFE_SPEED = 0.5f;
+                        easy.Aiming.AimCenterMass = true;
+                        normal.Aiming.AimCenterMass = true;
+                        hard.Aiming.AimCenterMass = true;
+                        impossible.Aiming.AimCenterMass = false;
 
-                    var normal = pmcSettings[BotDifficulty.normal];
-                    normal.Move.STRAFE_SPEED = 0.65f;
+                        break;
 
-                    var hard = pmcSettings[BotDifficulty.hard];
-                    hard.Move.STRAFE_SPEED = 0.75f;
+                    case WildSpawnType.assault:
+                    case WildSpawnType.assaultGroup:
+                    case WildSpawnType.cursedAssault:
+                    case WildSpawnType.test:
+                    case WildSpawnType.crazyAssaultEvent:
 
-                    var impossible = pmcSettings[BotDifficulty.impossible];
-                    impossible.Move.STRAFE_SPEED = 0.9f;
-                }
-                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
-                {
-                    var settings = botsetting.Value.Settings;
+                        easy.Move.STRAFE_SPEED = 0.5f;
+                        normal.Move.STRAFE_SPEED = 0.55f;
+                        hard.Move.STRAFE_SPEED = 0.6f;
+                        impossible.Move.STRAFE_SPEED = 0.65f;
 
-                    var easy = settings[BotDifficulty.easy];
-                    easy.Move.STRAFE_SPEED = 0.5f;
+                        easy.Core.GainSightCoef = 1f;
+                        normal.Core.GainSightCoef = 1f;
+                        hard.Core.GainSightCoef = 1f;
+                        impossible.Core.GainSightCoef = 1f;
 
-                    var normal = settings[BotDifficulty.normal];
-                    normal.Move.STRAFE_SPEED = 0.55f;
+                        easy.Core.VisibleAngle = 120f;
+                        normal.Core.VisibleAngle = 135f;
+                        hard.Core.VisibleAngle = 140f;
+                        impossible.Core.VisibleAngle = 150f;
 
-                    var hard = settings[BotDifficulty.hard];
-                    hard.Move.STRAFE_SPEED = 0.6f;
+                        easy.Core.VisibleDistance = 100f;
+                        normal.Core.VisibleDistance = 125f;
+                        hard.Core.VisibleDistance = 150f;
+                        impossible.Core.VisibleDistance = 200f;
 
-                    var impossible = settings[BotDifficulty.impossible];
-                    impossible.Move.STRAFE_SPEED = 0.65f;
+                        easy.Difficulty.HearingDistanceCoef = 0.5f;
+                        normal.Difficulty.HearingDistanceCoef = 0.65f;
+                        hard.Difficulty.HearingDistanceCoef = 0.75f;
+                        impossible.Difficulty.HearingDistanceCoef = 1f;
 
-                    easy.Move.LEAN_TOGGLE = false;
-                    normal.Move.LEAN_TOGGLE = false;
-                    hard.Move.LEAN_TOGGLE = false;
-                    impossible.Move.LEAN_TOGGLE = false;
+                        easy.Aiming.FasterCQBReactions = false;
+                        normal.Aiming.FasterCQBReactions = false;
+                        hard.Aiming.FasterCQBReactions = false;
+                        impossible.Aiming.FasterCQBReactions = false;
+
+                        easy.Move.LEAN_TOGGLE = false;
+                        normal.Move.LEAN_TOGGLE = false;
+                        hard.Move.LEAN_TOGGLE = false;
+                        impossible.Move.LEAN_TOGGLE = false;
+
+                        easy.Aiming.AimCenterMass = true;
+                        normal.Aiming.AimCenterMass = true;
+                        hard.Aiming.AimCenterMass = true;
+                        impossible.Aiming.AimCenterMass = true;
+
+                        break;
+
+                    case WildSpawnType.arenaFighter:
+                    case WildSpawnType.arenaFighterEvent:
+                    case WildSpawnType.pmcBot:
+                    case WildSpawnType.exUsec:
+
+                        easy.Move.STRAFE_SPEED = 0.55f;
+                        normal.Move.STRAFE_SPEED = 0.75f;
+                        hard.Move.STRAFE_SPEED = 0.8f;
+                        impossible.Move.STRAFE_SPEED = 1f;
+
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+
+                        break;
+
+                    case WildSpawnType.bossTest:
+                    case WildSpawnType.bossBoar:
+                    case WildSpawnType.bossBoarSniper:
+                    case WildSpawnType.bossSanitar:
+                    case WildSpawnType.bossGluhar:
+                    case WildSpawnType.bossBully:
+
+                        easy.Move.STRAFE_SPEED = 0.55f;
+                        normal.Move.STRAFE_SPEED = 0.75f;
+                        hard.Move.STRAFE_SPEED = 0.8f;
+                        impossible.Move.STRAFE_SPEED = 1f;
+
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+
+                        break;
+
+                    case WildSpawnType.bossKilla:
+                    case WildSpawnType.bossTagilla:
+                    case WildSpawnType.bossKolontay:
+                        
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+
+                        easy.Shoot.FireratMulti = 2f;
+                        normal.Shoot.FireratMulti = 2f;
+                        hard.Shoot.FireratMulti = 2f;
+                        impossible.Shoot.FireratMulti = 2f;
+
+                        easy.Difficulty.ScatteringCoef = 0.5f;
+                        normal.Difficulty.ScatteringCoef = 0.5f;
+                        hard.Difficulty.ScatteringCoef = 0.5f;
+                        impossible.Difficulty.ScatteringCoef = 0.5f;
+
+                        break;
+
+                    case WildSpawnType.bossKojaniy:
+                    case WildSpawnType.bossPartisan:
+                        
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+                        easy.Difficulty.ScatteringCoef = 0.5f;
+                        normal.Difficulty.ScatteringCoef = 0.5f;
+                        hard.Difficulty.ScatteringCoef = 0.5f;
+                        impossible.Difficulty.ScatteringCoef = 0.5f;
+
+                        break;
+
+                    case WildSpawnType.followerTest:
+                    case WildSpawnType.followerBully:
+                    case WildSpawnType.followerGluharSnipe:
+                    case WildSpawnType.followerGluharScout:
+                    case WildSpawnType.followerGluharSecurity:
+                    case WildSpawnType.followerGluharAssault:
+                    case WildSpawnType.followerSanitar:
+                    case WildSpawnType.followerTagilla:
+                    case WildSpawnType.followerKojaniy:
+                    case WildSpawnType.followerBoar:
+                    case WildSpawnType.followerBoarClose1:
+                    case WildSpawnType.followerBoarClose2:
+                    case WildSpawnType.followerKolontayAssault:
+                    case WildSpawnType.followerKolontaySecurity:
+
+                        easy.Move.STRAFE_SPEED = 0.55f;
+                        normal.Move.STRAFE_SPEED = 0.75f;
+                        hard.Move.STRAFE_SPEED = 0.8f;
+                        impossible.Move.STRAFE_SPEED = 1f;
+
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+
+                        break;
+
+                    case WildSpawnType.sectantWarrior:
+                    case WildSpawnType.sectantPriest:
+                    case WildSpawnType.sectactPriestEvent:
+                        easy.Move.STRAFE_SPEED = 1f;
+                        normal.Move.STRAFE_SPEED = 1f;
+                        hard.Move.STRAFE_SPEED = 1f;
+                        impossible.Move.STRAFE_SPEED = 1f;
+
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+                        break;
+
+                    case WildSpawnType.bossKnight:
+                    case WildSpawnType.followerBigPipe:
+                    case WildSpawnType.followerBirdEye:
+
+                        easy.Move.STRAFE_SPEED = 1f;
+                        normal.Move.STRAFE_SPEED = 1f;
+                        hard.Move.STRAFE_SPEED = 1f;
+                        impossible.Move.STRAFE_SPEED = 1f;
+
+                        easy.Aiming.AimCenterMass = false;
+                        normal.Aiming.AimCenterMass = false;
+                        hard.Aiming.AimCenterMass = false;
+                        impossible.Aiming.AimCenterMass = false;
+
+                        easy.Aiming.AimForHead = true;
+                        normal.Aiming.AimForHead = true;
+                        hard.Aiming.AimForHead = true;
+                        impossible.Aiming.AimForHead = true;
+
+                        easy.Aiming.FasterCQBReactions = true;
+                        normal.Aiming.FasterCQBReactions = true;
+                        hard.Aiming.FasterCQBReactions = true;
+                        impossible.Aiming.FasterCQBReactions = true;
+
+                        easy.Difficulty.ScatteringCoef = 0.5f;
+                        normal.Difficulty.ScatteringCoef = 0.5f;
+                        hard.Difficulty.ScatteringCoef = 0.5f;
+                        impossible.Difficulty.ScatteringCoef = 0.5f;
+
+                        easy.Difficulty.AggressionCoef = 2f;
+                        normal.Difficulty.AggressionCoef = 2f;
+                        hard.Difficulty.AggressionCoef = 2f;
+                        impossible.Difficulty.AggressionCoef = 2f;
+
+                        easy.Aiming.AimForHeadChance = 15;
+                        normal.Aiming.AimForHeadChance = 25f;
+                        hard.Aiming.AimForHeadChance = 35f;
+                        impossible.Aiming.AimForHeadChance = 50f;
+                        break;
+
+                    case WildSpawnType.marksman:
+                    case WildSpawnType.bossZryachiy:
+                    case WildSpawnType.followerZryachiy:
+                    case WildSpawnType.peacefullZryachiyEvent:
+                    case WildSpawnType.ravangeZryachiyEvent:
+                    case WildSpawnType.shooterBTR:
+                    case WildSpawnType.spiritWinter:
+                    case WildSpawnType.spiritSpring:
+                    case WildSpawnType.peacemaker:
+                    case WildSpawnType.skier:
+                    case WildSpawnType.sectantPredvestnik:
+                    case WildSpawnType.sectantPrizrak:
+                    case WildSpawnType.sectantOni:
+                    case WildSpawnType.infectedAssault:
+                    case WildSpawnType.infectedPmc:
+                    case WildSpawnType.infectedCivil:
+                    case WildSpawnType.infectedLaborant:
+                    case WildSpawnType.infectedTagilla:
+                        break;
+
+                    default:
+                        break;
                 }
             }
             return preset;
@@ -344,58 +595,7 @@ namespace SAIN.Plugin
 
         private static SAINPresetClass CreateHarderPMCsPreset()
         {
-            var preset = new SAINPresetClass(SAINDifficulty.harderpmcs);
-            foreach (var botsetting in preset.BotSettings.SAINSettings)
-            {
-                if (botsetting.Key.IsBossOrFollower())
-                {
-                    var settings = botsetting.Value.Settings;
-
-                    var easy = settings[BotDifficulty.easy];
-                    easy.Move.STRAFE_SPEED = 0.5f;
-
-                    var normal = settings[BotDifficulty.normal];
-                    normal.Move.STRAFE_SPEED = 0.65f;
-
-                    var hard = settings[BotDifficulty.hard];
-                    hard.Move.STRAFE_SPEED = 0.8f;
-
-                    var impossible = settings[BotDifficulty.impossible];
-                    impossible.Move.STRAFE_SPEED = 1.0f;
-                }
-                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
-                {
-                    var pmcSettings = botsetting.Value.Settings;
-
-                    var easy = pmcSettings[BotDifficulty.easy];
-                    easy.Move.STRAFE_SPEED = 0.4f;
-
-                    var normal = pmcSettings[BotDifficulty.normal];
-                    normal.Move.STRAFE_SPEED = 0.6f;
-
-                    var hard = pmcSettings[BotDifficulty.hard];
-                    hard.Move.STRAFE_SPEED = 0.7f;
-
-                    var impossible = pmcSettings[BotDifficulty.impossible];
-                    impossible.Move.STRAFE_SPEED = 0.9f;
-                }
-                if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
-                {
-                    var settings = botsetting.Value.Settings;
-
-                    var easy = settings[BotDifficulty.easy];
-                    easy.Move.STRAFE_SPEED = 0.35f;
-
-                    var normal = settings[BotDifficulty.normal];
-                    normal.Move.STRAFE_SPEED = 0.45f;
-
-                    var hard = settings[BotDifficulty.hard];
-                    hard.Move.STRAFE_SPEED = 0.5f;
-
-                    var impossible = settings[BotDifficulty.impossible];
-                    impossible.Move.STRAFE_SPEED = 0.65f;
-                }
-            }
+            var preset = CreateBasePreset(SAINDifficulty.harderpmcs);
             ApplyHarderPMCs(preset);
             return preset;
         }
@@ -465,7 +665,7 @@ namespace SAIN.Plugin
 
         private static SAINPresetClass CreateVeryHardPreset()
         {
-            var preset = new SAINPresetClass(SAINDifficulty.veryhard);
+            var preset = CreateBasePreset(SAINDifficulty.veryhard);
 
             var global = preset.GlobalSettings;
             global.Shoot.BOT_RECOIL_COEF = 0.75f;
@@ -507,7 +707,7 @@ namespace SAIN.Plugin
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 1.0f;
                 }
-                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
                 {
                     var settings = botsetting.Value.Settings;
 
@@ -545,7 +745,7 @@ namespace SAIN.Plugin
 
         private static SAINPresetClass CreateImpossiblePreset()
         {
-            var preset = new SAINPresetClass(SAINDifficulty.deathwish);
+            var preset = CreateBasePreset(SAINDifficulty.deathwish);
 
             var global = preset.GlobalSettings;
             global.Shoot.BOT_RECOIL_COEF = 0.5f;
@@ -590,7 +790,7 @@ namespace SAIN.Plugin
                     var impossible = settings[BotDifficulty.impossible];
                     impossible.Move.STRAFE_SPEED = 1.0f;
                 }
-                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key ==  WildSpawnType.arenaFighter || botsetting.Key ==  WildSpawnType.arenaFighterEvent)
+                if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
                 {
                     var settings = botsetting.Value.Settings;
 

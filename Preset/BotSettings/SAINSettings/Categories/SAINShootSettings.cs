@@ -31,15 +31,6 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [MinMax(50f, 500f, 1f)]
         public float MaxPointFireDistance = 150f;
 
-        [Advanced]
-        [Hidden]
-        [JsonIgnore]
-        public bool CAN_STOP_SHOOT_CAUSE_ANIMATOR = false;
-
-        [Hidden]
-        [JsonIgnore]
-        public float CHANCE_TO_CHANGE_TO_AUTOMATIC_FIRE_100 = 0f;
-
         [Category("Firerate")]
         [Name("Full Auto Scatter Multiplier")]
         [MinMax(1f, 5f, 100f)]
@@ -47,13 +38,12 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [CopyValue]
         public float AUTOMATIC_FIRE_SCATTERING_COEF = 1.4f;
 
-        [Category("Firerate")]
-        [MinMax(0.1f, 2f, 10f)]
-        [Advanced]
-        [CopyValue]
-        public float BASE_AUTOMATIC_TIME = 0.5f;
-
-        [Hidden]
-        public float RECOIL_DELTA_PRESS = 0.0f;
+        public override void Apply(BotSettingsComponents settings)
+        {
+            settings.Shoot.CHANCE_TO_CHANGE_TO_AUTOMATIC_FIRE_100 = 0f;
+            settings.Shoot.BASE_AUTOMATIC_TIME = 0.5f;
+            settings.Shoot.CAN_STOP_SHOOT_CAUSE_ANIMATOR = false;
+            settings.Shoot.RECOIL_DELTA_PRESS = float.MaxValue;
+        }
     }
 }

@@ -6,11 +6,6 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
 {
     public class SAINLookSettings : SAINSettingsBase<SAINLookSettings>, ISAINSettings
     {
-        [Name("Minimum Vision Speed")]
-        [Description("Add a minimum vision speed, in seconds, for all vision checks. 0 means this is disabled.")]
-        [MinMax(0f, 1f, 100f)]
-        public float MinimumVisionSpeed = 0f;
-
         [Name("Can Use Flashlights")]
         public bool CAN_USE_LIGHT = true;
 
@@ -112,5 +107,20 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [Hidden]
         [JsonIgnore]
         public float COEF_REPEATED_SEEN = 1f;
+
+        public override void Apply(BotSettingsComponents settings)
+        {
+            settings.Look.CAN_USE_LIGHT = CAN_USE_LIGHT;
+            settings.Look.FULL_SECTOR_VIEW = FULL_SECTOR_VIEW;
+            settings.Look.MAX_DIST_CLAMP_TO_SEEN_SPEED = MAX_DIST_CLAMP_TO_SEEN_SPEED;
+            settings.Look.VISIBLE_ANG_NIGHTVISION = VISIBLE_ANG_NIGHTVISION;
+            settings.Look.VISIBLE_ANG_LIGHT = VISIBLE_ANG_LIGHT;
+            settings.Look.VISIBLE_DISNACE_WITH_LIGHT = VISIBLE_DISNACE_WITH_LIGHT;
+            settings.Look.GOAL_TO_FULL_DISSAPEAR = GOAL_TO_FULL_DISSAPEAR;
+            settings.Look.GOAL_TO_FULL_DISSAPEAR_GREEN = GOAL_TO_FULL_DISSAPEAR_GREEN;
+            settings.Look.GOAL_TO_FULL_DISSAPEAR_SHOOT = GOAL_TO_FULL_DISSAPEAR_SHOOT;
+            settings.Look.SHOOT_FROM_EYES = SHOOT_FROM_EYES;
+            settings.Look.COEF_REPEATED_SEEN = COEF_REPEATED_SEEN;
+        }
     }
 }

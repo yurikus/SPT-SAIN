@@ -9,5 +9,7 @@ namespace SAIN.Preset.GlobalSettings
         void CreateDefault();
         void UpdateDefaults(object values);
         void Init(List<ISAINSettings> list);
+
+        void Apply(BotSettingsComponents settings);
     }
 }

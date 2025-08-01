@@ -152,7 +152,6 @@ namespace SAIN.Components.BotController
         
         public HashSet<BotComponent> BotGroup1 { get; } = [];
         public HashSet<BotComponent> BotGroup2 { get; } = [];
-        private bool _useGroup1 = false;
 
         public HashSet<BotOwner> VanillaBots { get; } = [];
         public HashSet<BotComponent> SAINBots { get; } = [];

@@ -184,64 +184,20 @@ namespace SAIN.SAINComponent.Classes.Info
         private void SetConfigValues(SAINSettingsClass sainFileSettings)
         {
             var eftFileSettings = BotOwner.Settings.FileSettings;
-
-            eftFileSettings.Shoot.NOT_TO_SEE_ENEMY_TO_WANT_RELOAD_SEC = float.MaxValue;
-
-            if (EFTSettingsCategories == null)
-            {
-                var flags = BindingFlags.Instance | BindingFlags.Public;
-
-                EFTSettingsCategories = eftFileSettings.GetType().GetFields(flags);
-                foreach (FieldInfo field in EFTSettingsCategories)
-                {
-                    EFTSettingsFields.Add(field, field.FieldType.GetFields(flags));
-                }
-
-                SAINSettingsCategories = sainFileSettings.GetType().GetFields(flags);
-                foreach (FieldInfo field in SAINSettingsCategories)
-                {
-                    SAINSettingsFields.Add(field, field.FieldType.GetFields(flags));
-                }
-            }
-
-            foreach (FieldInfo sainCategoryField in SAINSettingsCategories)
-            {
-                FieldInfo eftCategoryField = Reflection.FindFieldByName(sainCategoryField.Name, EFTSettingsCategories);
-                if (eftCategoryField != null)
-                {
-                    object sainCategory = sainCategoryField.GetValue(sainFileSettings);
-                    object eftCategory = eftCategoryField.GetValue(eftFileSettings);
-
-                    FieldInfo[] sainFields = SAINSettingsFields[sainCategoryField];
-                    FieldInfo[] eftFields = EFTSettingsFields[eftCategoryField];
-
-                    foreach (FieldInfo sainVarField in sainFields)
-                    {
-                        FieldInfo eftVarField = Reflection.FindFieldByName(sainVarField.Name, eftFields);
-                        if (eftVarField != null)
-                        {
-                            object sainValue = sainVarField.GetValue(sainCategory);
-#if DEBUG
-                            if (SAINPlugin.DebugMode)
-                            {
-                                //string message = $"[{eftVarField.Name}] : Default Value = [{eftVarField.GetValue(eftCategory)}] New Value = [{sainValue}]";
-                                //Logger.LogInfo(message);
-                                //Logger.NotifyInfo(message);
-                            }
-#endif
-                            eftVarField.SetValue(eftCategory, sainValue);
-                        }
-                    }
-                }
-            }
+            sainFileSettings.Aiming.Apply(eftFileSettings);
+            sainFileSettings.Boss.Apply(eftFileSettings);
+            sainFileSettings.Change.Apply(eftFileSettings);
+            sainFileSettings.Grenade.Apply(eftFileSettings);
+            sainFileSettings.Hearing.Apply(eftFileSettings);
+            sainFileSettings.Lay.Apply(eftFileSettings);
+            sainFileSettings.Look.Apply(eftFileSettings);
+            sainFileSettings.Mind.Apply(eftFileSettings);
+            sainFileSettings.Move.Apply(eftFileSettings);
+            sainFileSettings.Patrol.Apply(eftFileSettings);
+            sainFileSettings.Scattering.Apply(eftFileSettings);
+            sainFileSettings.Shoot.Apply(eftFileSettings);
         }
 
         private SAINSettingsClass _fileSettings;
-
-        private static FieldInfo[] EFTSettingsCategories;
-        private static FieldInfo[] SAINSettingsCategories;
-
-        private static readonly Dictionary<FieldInfo, FieldInfo[]> EFTSettingsFields = new();
-        private static readonly Dictionary<FieldInfo, FieldInfo[]> SAINSettingsFields = new();
     }
 }

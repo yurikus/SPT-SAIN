@@ -25,5 +25,13 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories
         [JsonIgnore]
         [Hidden]
         public float FromShot = 0.002f;
+
+        public override void Apply(BotSettingsComponents settings)
+        {
+            settings.Scattering.HandDamageScatteringMinMax = HandDamageScatteringMinMax;
+            settings.Scattering.HandDamageAccuracySpeed = HandDamageAccuracySpeed;
+            settings.Scattering.DIST_NOT_TO_SHOOT = DIST_NOT_TO_SHOOT;
+            settings.Scattering.FromShot = FromShot;
+        }
     }
 }
