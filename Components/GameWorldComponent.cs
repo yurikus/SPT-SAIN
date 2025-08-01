@@ -180,7 +180,8 @@ namespace SAIN.Components
                 if (players != null && players.Count > 0)
                 {
                     foreach (PlayerComponent Player in players)
-                        Player?.ManualUpdate(CurrentTime, DeltaTime);
+                        if (Player != null)
+                            Player.ManualUpdate(CurrentTime, DeltaTime);
                     TickSoundCaches(players, CurrentTime);
                 }
             }
