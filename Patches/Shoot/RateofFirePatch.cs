@@ -9,6 +9,51 @@ using static SAIN.Helpers.Shoot;
 
 namespace SAIN.Patches.Shoot.RateOfFire
 {
+    public class BotReloadBlockPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(ShootData), nameof(ShootData.ManualUpdate));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(ShootData __instance)
+        {
+            BotOwner botOwner = __instance._owner;
+            if (!SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent bot) || !bot.SAINLayersActive)
+            {
+                return true;
+            }
+            if (__instance.Shooting && __instance.nextFingerUpTime < Time.time)
+            {
+                __instance.EndShoot();
+            }
+            return false;
+        }
+    }
+    public class ShootDataManualUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(ShootData), nameof(ShootData.ManualUpdate));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(ShootData __instance)
+        {
+            BotOwner botOwner = __instance._owner;
+            if (!SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent bot) || !bot.SAINLayersActive)
+            {
+                return true;
+            }
+            if (__instance.Shooting && __instance.nextFingerUpTime < Time.time)
+            {
+                __instance.EndShoot();
+            }
+            return false;
+        }
+    }
+
     public class BotShootPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -19,7 +64,7 @@ namespace SAIN.Patches.Shoot.RateOfFire
         [PatchPrefix]
         public static bool PatchPrefix(ShootData __instance, ref bool __result)
         {
-            BotOwner botOwner = __instance.Owner;
+            BotOwner botOwner = __instance._owner;
             if (!SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent bot))
             {
                 return true;
@@ -41,19 +86,19 @@ namespace SAIN.Patches.Shoot.RateOfFire
                 {
                     return false;
                 }
-                __instance.NextFingerDownCan = Time.time - 0.1f;
+                __instance.nextFingerDownCan = Time.time - 0.1f;
             }
-            if (!__instance.Shooting && __instance.NextFingerDownCan < Time.time)
+            if (!__instance.Shooting && __instance.nextFingerDownCan < Time.time)
             {
                 bool fullAuto = bot.Info.WeaponInfo.SelectedFireMode == Weapon.EFireMode.fullauto;
-                if (fullAuto) __instance.NextFingerUpTime = Time.time + FullAutoBurstLength(bot, bot.DistanceToAimTarget);
-                __instance.NextFingerDownCan = Time.time + bot.Info.WeaponInfo.Firerate.CalcFirerateInterval();
+                if (fullAuto) __instance.nextFingerUpTime = Time.time + FullAutoBurstLength(bot, bot.DistanceToAimTarget);
+                __instance.nextFingerDownCan = Time.time + bot.Info.WeaponInfo.Firerate.CalcFirerateInterval();
                 __instance.Shooting = true;
-                __instance.TimeFingerDown = Time.time;
+                __instance.timeFingerDown = Time.time;
                 __instance.LastTriggerPressd = Time.time;
                 __instance.ShootController.IsInLauncherMode();
                 __instance.ShootController.SetTriggerPressed(true);
-                botOwner.AimingManager.CurrentAiming.TriggerPressedDone();
+                __instance._owner.AimingManager.CurrentAiming.TriggerPressedDone();
                 __result = true;
                 return false;
             }

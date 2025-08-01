@@ -229,7 +229,7 @@ namespace SAIN.SAINComponent.Classes.Mover
         {
             PlayerComponent.CharacterController.SetTargetLookDirection(_targetLookDirection, BotOwner, Bot);
             BotOwner.Steering.LookToDirection(_targetLookDirection);
-            BotOwner.Steering.LookDirection_1 = _targetLookDirection;
+            BotOwner.Steering._lookDirection = _targetLookDirection;
         }
 
         private Vector3 _targetLookDirection = Vector3.forward;

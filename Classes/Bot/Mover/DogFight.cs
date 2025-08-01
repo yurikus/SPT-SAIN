@@ -139,7 +139,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             if (Enemy != null && (
                 Enemy.Bot.BotOwner.WeaponManager.Reload.Reloading ||
                 !Enemy.Bot.BotOwner.WeaponManager.HaveBullets ||
-                Enemy.Bot.BotOwner.Medecine?.Using == true ||
+                !Enemy.Bot.BotOwner.Medecine?.Using == true ||
                 (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold) ||
                 (!Enemy.Seen && Enemy.LastKnownPosition != null && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold)
                 ))

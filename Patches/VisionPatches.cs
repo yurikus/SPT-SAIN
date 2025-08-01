@@ -22,20 +22,24 @@ namespace SAIN.Patches.Vision
 
         [PatchPrefix]
         public static bool PatchPrefix(
+            BotOwner ___botOwner_0,
             float curLightDist,
             ref float __result,
+            bool ____haveLight,
+            ref float ____curLightDist,
+            ref bool ____canUseNow,
             BotLight __instance)
         {
             __result = curLightDist;
-            if (__instance.BotOwner_0.FlashGrenade.IsFlashed)
+            if (___botOwner_0.FlashGrenade.IsFlashed)
             {
                 return false;
             }
-            if (!__instance.HaveLight)
+            if (!____haveLight)
             {
                 return false;
             }
-            __instance.CurLightDist = curLightDist;
+            ____curLightDist = curLightDist;
 
             float timeModifier = BotManagerComponent.Instance.TimeVision.TimeVisionDistanceModifier;
             var lookSettings = GlobalSettingsClass.Instance.Look.Light;
@@ -43,9 +47,9 @@ namespace SAIN.Patches.Vision
             float turnOffRatio = lookSettings.LightOffRatio;
 
             bool isOn = __instance.IsEnable;
-            bool wantOn = !isOn && timeModifier <= turnOnRatio && __instance.BotOwner_0.Memory.IsPeace;
+            bool wantOn = !isOn && timeModifier <= turnOnRatio && ___botOwner_0.Memory.IsPeace;
             bool wantOff = isOn && timeModifier >= turnOffRatio;
-            __instance.CanUseNow = timeModifier < turnOffRatio;
+            ____canUseNow = timeModifier < turnOffRatio;
 
             if (wantOn)
             {
@@ -86,7 +90,7 @@ namespace SAIN.Patches.Vision
 #endif
                         return false;
                     }
-                    PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(__instance.BotOwner_0.ProfileId);
+                    PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(___botOwner_0.ProfileId);
                     if (playerComponent == null)
                     {
 #if DEBUG
@@ -95,9 +99,9 @@ namespace SAIN.Patches.Vision
                         return false;
                     }
                     if (playerComponent.Flashlight.WhiteLight ||
-                        (__instance.BotOwner_0.NightVision.UsingNow && playerComponent.Flashlight.IRLight))
+                        (___botOwner_0.NightVision.UsingNow && playerComponent.Flashlight.IRLight))
                     {
-                        float min = __instance.BotOwner_0.Settings.FileSettings.Look.VISIBLE_DISNACE_WITH_LIGHT;
+                        float min = ___botOwner_0.Settings.FileSettings.Look.VISIBLE_DISNACE_WITH_LIGHT;
                         __result = Mathf.Clamp(curLightDist, min, float.MaxValue);
                     }
                 }
@@ -139,9 +143,9 @@ namespace SAIN.Patches.Vision
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotNightVisionData __instance)
+        public static bool PatchPrefix(BotOwner ___botOwner_0, bool ____nightVisionAtPocket, BotNightVisionData __instance)
         {
-            if (__instance.BotOwner_0.FlashGrenade.IsFlashed)
+            if (___botOwner_0.FlashGrenade.IsFlashed)
             {
                 return false;
             }
@@ -151,7 +155,7 @@ namespace SAIN.Patches.Vision
             float turnOnRatio = lookSettings.NightVisionOnRatio;
             float turnOffRatio = lookSettings.NightVisionOffRatio;
 
-            if (__instance.NightVisionAtPocket)
+            if (____nightVisionAtPocket)
             {
                 if (timeModifier < turnOnRatio)
                 {
@@ -236,7 +240,7 @@ namespace SAIN.Patches.Vision
         [PatchPrefix]
         public static bool Patch(LookSensor __instance)
         {
-            if (SAINEnableClass.IsBotExcluded(__instance.BotOwner)) return true;
+            if (SAINEnableClass.IsBotExcluded(__instance._botOwner)) return true;
             __instance.method_2();
             return false;
         }
@@ -255,6 +259,29 @@ namespace SAIN.Patches.Vision
             __instance.CHECK_HEAD_ANY_DIST = true;
             __instance.MIDDLE_DIST_CAN_SHOOT_HEAD = true;
             __instance.SHOOT_FROM_EYES = false;
+        }
+    }
+
+    public class WeatherTimeVisibleDistancePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(LookSensor), nameof(LookSensor.method_2));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(BotOwner ____botOwner, ref float ____nextUpdateVisibleDist)
+        {
+            if (____nextUpdateVisibleDist < Time.time)
+            {
+                if (SAINEnableClass.IsBotExcluded(____botOwner))
+                {
+                    return true;
+                }
+                ____nextUpdateVisibleDist = float.MaxValue;
+                return false;
+            }
+            return false;
         }
     }
 
@@ -281,21 +308,22 @@ namespace SAIN.Patches.Vision
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotLight __instance)
+        public static bool PatchPrefix(BotOwner ___botOwner_0, ref bool ____isInDarkPlace)
         {
-            if (__instance.IsInDarkPlace_1 && !SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.AllowLightOnForDarkBuildings)
+            if (____isInDarkPlace
+                && !SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.AllowLightOnForDarkBuildings)
             {
-                __instance.IsInDarkPlace_1 = false;
+                ____isInDarkPlace = false;
             }
-            if (__instance.IsInDarkPlace_1 || __instance.BotOwner_0.Memory.GoalEnemy != null)
-            {
-                return true;
-            }
-            if (!ShallTurnLightOff(__instance.BotOwner_0.Profile.Info.Settings.Role))
+            if (____isInDarkPlace || ___botOwner_0.Memory.GoalEnemy != null)
             {
                 return true;
             }
-            __instance.BotOwner_0.BotLight.TurnOff(false, true);
+            if (!ShallTurnLightOff(___botOwner_0.Profile.Info.Settings.Role))
+            {
+                return true;
+            }
+            ___botOwner_0.BotLight.TurnOff(false, true);
             return false;
         }
 
@@ -457,7 +485,7 @@ namespace SAIN.Patches.Vision
 
                 if (!flashLight.WhiteLight && !flashLight.Laser)
                 {
-                    (____player.AIData as PlayerAIDataClass).UsingLight = false;
+                    (____player.AIData as GClass567).UsingLight = false;
                 }
             }
         }

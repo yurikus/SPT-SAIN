@@ -13,9 +13,9 @@ using SPT.Reflection.Patching;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using FoodAndMedsEquipCallbackType = GInterface185;
-using QuickGrenadeUseCallbackType = GInterface188;
-using SetInHandsMedsStruct = GStruct375<EBodyPart>;
+using FoodAndMedsEquipCallbackType = GInterface176;
+using QuickGrenadeUseCallbackType = GInterface179;
+using SetInHandsMedsStruct = GStruct353<EBodyPart>;
 
 namespace SAIN.Patches.Generic
 {
@@ -263,11 +263,11 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass589), nameof(GClass589.SetEnvironment));
+            return AccessTools.Method(typeof(GClass567), nameof(GClass567.SetEnvironment));
         }
 
         [PatchPostfix]
-        public static void Patch(GClass589 __instance, IndoorTrigger trigger)
+        public static void Patch(GClass567 __instance, IndoorTrigger trigger)
         {
             BotManagerComponent.Instance?.PlayerEnviromentChanged(__instance?.Player?.ProfileId, trigger);
         }
@@ -295,9 +295,9 @@ namespace SAIN.Patches.Generic
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotMemoryClass __instance)
+        public static bool PatchPrefix(BotOwner ___botOwner_0)
         {
-            return !SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out _);
+            return !SAINEnableClass.GetSAIN(___botOwner_0.ProfileId, out _);
         }
     }
 
@@ -332,10 +332,10 @@ namespace SAIN.Patches.Generic
         }
 
         [PatchPrefix]
-        public static void PatchPrefix(BotWeaponSelector __instance)
+        public static void PatchPrefix(ref BotOwner ___botOwner_0)
         {
             // Try to turn a gun's light off before swapping weapon.
-            __instance.BotOwner_0?.BotLight?.TurnOff(false, true);
+            ___botOwner_0?.BotLight?.TurnOff(false, true);
         }
     }
 
@@ -427,7 +427,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool Patch(BotReceiver __instance, IPlayer player)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0)) return true;
+            if (!SAINEnableClass.IsBotInCombat(__instance.botOwner_0)) return true;
             if (player?.IsAI == true) return false;
             return true;
         }
@@ -443,7 +443,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.Owner)) return true;
+            if (!SAINEnableClass.IsBotInCombat(__instance._owner)) return true;
             __result = false;
             return false;
         }
@@ -459,7 +459,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.Owner)) return true;
+            if (!SAINEnableClass.IsBotInCombat(__instance._owner)) return true;
             __result = false;
             return false;
         }
@@ -475,7 +475,7 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool Patch(BotRequest request, AIDataRequestController __instance, ref bool __result)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.AiData?.Player_0)) return true;
+            if (!SAINEnableClass.IsBotInCombat(__instance._aiData?.player_0)) return true;
             if (request.Requester?.IsAI == true)
             {
                 __result = false;

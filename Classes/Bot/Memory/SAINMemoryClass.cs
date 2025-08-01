@@ -81,7 +81,7 @@ namespace SAIN.SAINComponent.Classes.Memory
                 (LastUnderFireSource == null || LastUnderFireSource.HealthController.IsAlive == false))
             {
                 //Reset the UnderFireTime
-                BotOwner.Memory.Float_4 = Time.time;
+                BotOwner.Memory.float_4 = Time.time;
             }
         }
 

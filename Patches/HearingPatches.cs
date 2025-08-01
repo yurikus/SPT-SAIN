@@ -10,9 +10,9 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
-using StepAudioController = GClass1184;
+using StepAudioController = GClass1117;
 
-// this._specificStepAudioController = new GClass1184(surfaceSet, this, 0.1f, useOcclusion);
+// this._specificStepAudioController = new GClass1117(surfaceSet, this, 0.1f, useOcclusion);
 
 namespace SAIN.Patches.Hearing
 {
@@ -134,6 +134,38 @@ namespace SAIN.Patches.Hearing
             return AccessTools.Method(typeof(Player), nameof(Player.PlayStepSound));
         }
 
+    public class JumpSoundPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_2));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(Player ____player, ref float ____nextJumpNoise)
+        {
+            //if (____player.AIData == null) {
+            //    return false;
+            //}
+            //if (____player.AIData.IsAI && ____player.AIData.BotOwner.BotState != EBotState.Active) {
+            //    return false;
+            //}
+            //if (Time.time > ____nextJumpNoise) {
+            //    ____nextJumpNoise = Time.time + SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_INTERVAL;
+            //    float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_RANGE;
+            //    SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Jump, ____player.Position, baseRange, 1f);
+            //}
+            return false;
+        }
+    }
+
+    public class FootstepSoundPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(Player), nameof(Player.PlayStepSound));
+        }
+
         [PatchPostfix]
         public static void Patch(Player __instance, BetterSource ___NestedStepSoundSource, SurfaceSet ____currentSet)
         {
@@ -220,7 +252,7 @@ namespace SAIN.Patches.Hearing
         }
 
         [PatchPrefix]
-        public static bool Patch(StepAudioController __instance, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
+        public static bool Patch(StepAudioController __instance, IPlayer ___iplayer_0, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
         {
             // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
             if (ModDetection.ProjectFikaLoaded)
@@ -233,13 +265,13 @@ namespace SAIN.Patches.Hearing
                 return false;
             }
             float volume = baseStepVolume;
-            bool IsUnderRoof = __instance.Bool_0;
+            bool IsUnderRoof = __instance.bool_0;
             if (!IsUnderRoof && environment != EnvironmentType.Indoor && movementState != EAudioMovementState.None)
             {
-                if (__instance.method_4(movementState, out SoundBank soundBank))
+                if (__instance.method_3(movementState, out SoundBank soundBank))
                 {
                     volume = __instance.CalculateFinalVolume(baseStepVolume, soundBank);
-                    soundBank.Play(__instance.BetterSource_0, EnvironmentType.Outdoor, distance, volume, blendParameter, stereo, true);
+                    soundBank.Play(__instance.betterSource_0, EnvironmentType.Outdoor, distance, volume, blendParameter, stereo, true);
                 }
                 else
                 {
@@ -257,7 +289,7 @@ namespace SAIN.Patches.Hearing
                 _ => SAINSoundType.Generic,
             };
 
-            if (__instance.Iplayer_0 is Player player)
+            if (___iplayer_0 is Player player)
             {
                 if (NestedStepSoundSourceField != null)
                 {
@@ -266,7 +298,7 @@ namespace SAIN.Patches.Hearing
                     {
                         if (StepSourceObj is BetterSource NestedStepSoundSource)
                         {
-                            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.Iplayer_0.ProfileId, soundType, __instance.Iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
+                            BotManagerComponent.Instance?.BotHearing.PlayAISound(___iplayer_0.ProfileId, soundType, ___iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
                             //if (player.IsYourPlayer)
                             //    Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                         }
@@ -312,13 +344,17 @@ namespace SAIN.Patches.Hearing
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotHearingSensor), nameof(BotHearingSensor.Init));
+            return AccessTools.Method(typeof(BotHearingSensor), nameof(BotHearingSensor.method_0));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotHearingSensor __instance)
+        public static bool PatchPrefix(BotOwner ____botOwner)
         {
-            if (SAINEnableClass.IsSAINDisabledForBot(__instance.BotOwner))
+            if (____botOwner == null || ____botOwner.GetPlayer == null)
+            {
+                return false;
+            }
+            if (!SAINEnableClass.GetSAIN(____botOwner.ProfileId, out _))
             {
                 return false;
             }
@@ -330,11 +366,11 @@ namespace SAIN.Patches.Hearing
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(PlayerAIDataClass), nameof(PlayerAIDataClass.TryPlayShootSound));
+            return AccessTools.Method(typeof(GClass567), nameof(GClass567.TryPlayShootSound));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(PlayerAIDataClass __instance)
+        public static bool PatchPrefix(GClass567 __instance)
         {
             __instance.Boolean_0 = true;
             return false;
@@ -529,7 +565,7 @@ namespace SAIN.Patches.Hearing
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(Player), nameof(Player.method_60));
+            return AccessTools.Method(typeof(Player), nameof(Player.method_58));
         }
 
         [PatchPrefix]

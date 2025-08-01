@@ -29,11 +29,11 @@ namespace SAIN.Patches.Movement
             {
                 return false;
             }
-            BotOwner botOwner = __instance.BotOwner_0;
+            BotOwner botOwner = __instance.botOwner_0;
             if (SAINEnableClass.IsBotInCombat(botOwner)) return false;
             if (__instance.NoSprint)
             {
-                __instance.Player.EnableSprint(false);
+                __instance._player.EnableSprint(false);
                 return false;
             }
             if (val && botOwner.Mover.HasPathAndNoComplete)
@@ -54,7 +54,7 @@ namespace SAIN.Patches.Movement
             {
                 botOwner.SetTargetMoveSpeed(1f);
             }
-            __instance.Player.EnableSprint(val);
+            __instance._player.EnableSprint(val);
             return false;
         }
     }
@@ -167,9 +167,9 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(PlayerPhysicalClass __instance)
+        public static bool PatchPrefix(Player ___player_0)
         {
-            if (__instance.Player_0.IsAI)
+            if (___player_0.IsAI)
             {
                 return false;
             }
@@ -188,18 +188,18 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotMover __instance)
+        public static bool PatchPrefix(BotMover __instance, BotOwner ___botOwner_0)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            if (!SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 return true;
             }
             __instance.LocalAvoidance.DropOffset();
-            __instance.PositionOnWayInner = __instance.BotOwner_0.Position;
+            __instance.PositionOnWayInner = ___botOwner_0.Position;
 
             //__instance.method_16();
             //__instance.method_15();
-            __instance.method_14();
+            __instance.method_11();
             //__instance.LocalAvoidance.ManualUpdate();
             return false;
         }
@@ -216,9 +216,9 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotMover __instance)
+        public static bool PatchPrefix(BotMover __instance, BotOwner ___botOwner_0)
         {
-            if (SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            if (SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 return false;
             }
@@ -234,9 +234,9 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(PlayerPhysicalClass __instance)
+        public static bool PatchPrefix(Player ___player_0)
         {
-            if (__instance.Player_0.IsAI)
+            if (___player_0.IsAI)
             {
                 return false;
             }
@@ -248,13 +248,13 @@ namespace SAIN.Patches.Movement
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass501), nameof(GClass501.method_0));
+            return AccessTools.Method(typeof(GClass485), nameof(GClass485.method_0));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(GClass501 __instance, ref bool __result)
+        public static bool PatchPrefix(GClass485 __instance, BotOwner ___botOwner_0, Vector3 pos, bool slowAtTheEnd, bool getUpWithCheck, ref bool __result)
         {
-            if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            if (!SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 return true;
             }
@@ -271,13 +271,13 @@ namespace SAIN.Patches.Movement
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BasePhysicalClass __instance)
+        public static bool PatchPrefix(bool ___bool_7, BasePhysicalClass.IObserverToPlayerBridge ___iobserverToPlayerBridge_0, BasePhysicalClass __instance)
         {
             //if (___bool_7)
             //{
             //    return true;
             //}
-            IPlayer player = __instance.IobserverToPlayerBridge_0.iPlayer;
+            IPlayer player = ___iobserverToPlayerBridge_0.iPlayer;
             if (player == null)
             {
 #if DEBUG
@@ -296,7 +296,7 @@ namespace SAIN.Patches.Movement
 
             // Copy Pasted from original EFT code, there is a check to not enable weight limits for AI
             BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>.Instance.Inertia;
-            Vector3 b2 = new(inertia.InertiaLimitsStep * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, inertia.InertiaLimitsStep * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, 0f);
+            Vector3 b2 = new(inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, inertia.InertiaLimitsStep * (float)___iobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, 0f);
             __instance.BaseInertiaLimits = inertia.InertiaLimits + b2;
             //__instance.WalkOverweightLimits = stamina.WalkOverweightLimits * d + b;
             //__instance.BaseOverweightLimits = stamina.BaseOverweightLimits * d + b;
@@ -312,21 +312,47 @@ namespace SAIN.Patches.Movement
         }
     }
 
-    //public class DoorDisabledPatch : ModulePatch
-    //{
-    //    protected override MethodBase GetTargetMethod()
-    //    {
-    //        return AccessTools.Method(typeof(WorldInteractiveObject), nameof(WorldInteractiveObject.method_4));
-    //    }
-    //
-    //    [PatchPrefix]
-    //    public static bool PatchPrefix(WorldInteractiveObject __instance)
-    //    {
-    //        if (!__instance.enabled || !__instance.gameObject.activeInHierarchy)
-    //        {
-    //            return false;
-    //        }
-    //        return true;
-    //    }
-    //}
+    public class DoorOpenerPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotDoorOpener), nameof(BotDoorOpener.Update));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(BotOwner ____owner, ref bool __result)
+        {
+            var settings = GlobalSettingsClass.Instance.General.Doors;
+            if (settings.DisableAllDoors && !ModDetection.ProjectFikaLoaded)
+            {
+                __result = false;
+                return false;
+            }
+            if (SAINEnableClass.GetSAIN(____owner.ProfileId, out var botComponent) &&
+                (botComponent.SAINLayersActive || botComponent.HasEnemy))
+            {
+                __result = false;
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public class DoorDisabledPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(WorldInteractiveObject), nameof(WorldInteractiveObject.method_4));
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(WorldInteractiveObject __instance)
+        {
+            if (!__instance.enabled || !__instance.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+            return true;
+        }
+    }
 }

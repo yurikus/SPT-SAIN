@@ -23,56 +23,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="bsg.console.core">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\bsg.console.core.dll</HintPath>
-    </Reference>
-    <Reference Include="Comfort">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\Comfort.dll</HintPath>
-    </Reference>
-    <Reference Include="Comfort.Unity">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\Comfort.Unity.dll</HintPath>
-    </Reference>
+    <Reference Include="AnimationSystem.Types" HintPath="References\AnimationSystem.Types.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="References\hollowed.dll" Private="false" />
+    <Reference Include="bsg.console.core" HintPath="References\bsg.console.core.dll" Private="false" />
+    <Reference Include="Comfort" HintPath="References\Comfort.dll" Private="false" />
+    <Reference Include="Comfort.Unity" HintPath="References\Comfort.Unity.dll" Private="false" />
     <Reference Include="CommonExtensions" HintPath="References\CommonExtensions.dll" Private="false" />
     <Reference Include="DissonanceVoip" HintPath="References\DissonanceVoip.dll" Private="false" />
-    <Reference Include="DrakiaXYZ-BigBrain">
-      <HintPath>..\..\BepInEx\plugins\DrakiaXYZ-BigBrain.dll</HintPath>
-    </Reference>
+    <Reference Include="DrakiaXYZ-BigBrain" HintPath="References\DrakiaXYZ-BigBrain.dll" Private="false" />
     <Reference Include="ItemComponent.Types" HintPath="References\ItemComponent.Types.dll" Private="false" />
     <Reference Include="Newtonsoft.Json" HintPath="References\Newtonsoft.Json.dll" Private="false" />
-    <Reference Include="Sirenix.Serialization">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\Sirenix.Serialization.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-common">
-      <HintPath>..\..\BepInEx\plugins\spt\spt-common.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-core">
-      <HintPath>..\..\BepInEx\plugins\spt\spt-core.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-custom">
-      <HintPath>..\..\BepInEx\plugins\spt\spt-custom.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-debugging">
-      <HintPath>..\..\BepInEx\plugins\spt\spt-debugging.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-reflection">
-      <HintPath>..\..\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
-    </Reference>
-    <Reference Include="spt-singleplayer">
-      <HintPath>..\..\BepInEx\plugins\spt\spt-singleplayer.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Postprocessing.Runtime">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\Unity.Postprocessing.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\EscapeFromTarkov_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
+    <Reference Include="Sirenix.Serialization" HintPath="References\Sirenix.Serialization.dll" Private="false" />
+    <Reference Include="spt-common" HintPath="References\spt-common.dll" Private="false" />
+    <Reference Include="spt-core" HintPath="References\spt-core.dll" Private="false" />
+    <Reference Include="spt-custom" HintPath="References\spt-custom.dll" Private="false" />
+    <Reference Include="spt-debugging" HintPath="References\spt-debugging.dll" Private="false" />
+    <Reference Include="spt-reflection" HintPath="References\spt-reflection.dll" Private="false" />
+    <Reference Include="spt-singleplayer" HintPath="References\spt-singleplayer.dll" Private="false" />
+    <Reference Include="Unity.Postprocessing.Runtime" HintPath="References\Unity.Postprocessing.Runtime.dll" Private="false" />
+    <Reference Include="Unity.TextMeshPro" HintPath="References\Unity.TextMeshPro.dll" Private="false" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)\..\..\BepInEx\plugins\SAIN\$(TargetFileName)&quot;" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)\..\..\BepInEx\plugins\SAIN\$(TargetFileName)&quot;&#xD;&#xA;copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)\..\SPT 3.11 DEBUG\BepInEx\plugins\SAIN\$(TargetFileName)&quot;" />
   </Target>
 
 </Project>

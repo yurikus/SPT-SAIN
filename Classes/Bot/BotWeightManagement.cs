@@ -3,7 +3,7 @@ using HarmonyLib;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
 using System.Collections.Generic;
-using FloatFunc = GClass847<float>;
+using FloatFunc = GClass828<float>;
 
 namespace SAIN.SAINComponent.Classes
 {
@@ -18,14 +18,14 @@ namespace SAIN.SAINComponent.Classes
         {
             if (GlobalSettingsClass.Instance.General.BOT_INTERTIA_TOGGLE)
             {
-                GetSlots();
-                Traverse.Create(Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(GetBotTotalWeight);
+                getSlots();
+                Traverse.Create(Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(getBotTotalWeight);
                 Player.Physical.EncumberDisabled = false;
             }
             base.Init();
         }
 
-        private void GetSlots()
+        private void getSlots()
         {
             _slots.Clear();
             foreach (var slot in _botEquipmentSlots)
@@ -34,7 +34,7 @@ namespace SAIN.SAINComponent.Classes
             }
         }
 
-        private float GetBotTotalWeight()
+        private float getBotTotalWeight()
         {
             float result = InventoryEquipment.smethod_1(_slots);
             _slots.Clear();

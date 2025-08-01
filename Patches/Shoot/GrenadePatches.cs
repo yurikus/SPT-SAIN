@@ -15,13 +15,13 @@ namespace SAIN.Patches.Shoot.Grenades
         }
 
         [PatchPostfix]
-        public static void Patch(ThrowWeapItemClass potentialGrenade, BotGrenadeController __instance)
+        public static void Patch(BotOwner ___botOwner_0, ThrowWeapItemClass potentialGrenade, BotGrenadeController __instance)
         {
             if (potentialGrenade == null)
             {
                 return;
             }
-            if (!BotManagerComponent.Instance.GetSAIN(__instance.BotOwner_0, out var botComponent))
+            if (!BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var botComponent))
             {
                 return;
             }
@@ -38,13 +38,13 @@ namespace SAIN.Patches.Shoot.Grenades
         }
 
         [PatchPostfix]
-        public static void Patch(BotGrenadeController __instance)
+        public static void Patch(BotOwner ___botOwner_0, ThrowWeapItemClass ___grenade)
         {
-            if (!BotManagerComponent.Instance.GetSAIN(__instance.BotOwner_0, out var botComponent))
+            if (!BotManagerComponent.Instance.GetSAIN(___botOwner_0, out var botComponent))
             {
                 return;
             }
-            botComponent.Grenade.MyGrenade = __instance.Grenade;
+            botComponent.Grenade.MyGrenade = ___grenade;
         }
     }
 }

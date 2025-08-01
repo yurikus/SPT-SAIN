@@ -27,7 +27,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
                 IBotAiming aim = BotOwner.AimingManager.CurrentAiming;
                 if (aim is BotAimingClass aimClass)
                 {
-                    return aimClass.AimStatus_0;
+                    return aimClass.aimStatus_0;
                 }
                 if (aim != null && aim.IsReady)
                 {
@@ -39,7 +39,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             {
                 if (BotOwner?.AimingManager?.CurrentAiming is BotAimingClass aimClass)
                 {
-                    aimClass.AimStatus_0 = value;
+                    aimClass.aimStatus_0 = value;
                 }
             }
         }
@@ -127,9 +127,9 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         public void LoseAimTarget()
         {
             if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass &&
-                aimClass.AimStatus_0 != AimStatus.NoTarget)
+                aimClass.aimStatus_0 != AimStatus.NoTarget)
             {
-                aimClass.AimStatus_0 = AimStatus.NoTarget;
+                aimClass.aimStatus_0 = AimStatus.NoTarget;
             }
         }
 

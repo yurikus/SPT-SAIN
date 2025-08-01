@@ -2,8 +2,8 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using EFTCore = LocalBotSettingsProviderClass;
-using EFTStatModifiersClass = BotLastBlindEffectModifierClass;
+using EFTCore = GClass598;
+using EFTStatModifiersClass = GClass595;
 
 namespace SAIN.Helpers
 {
@@ -121,7 +121,7 @@ namespace SAIN.Helpers
             WildSpawnType = type;
             foreach (BotDifficulty diff in difficulties)
             {
-                Settings.Add(diff, EFTCore.GetSettings(diff, type, true));
+                Settings.Add(diff, EFTCore.GetSettings(diff, type));
             }
         }
 

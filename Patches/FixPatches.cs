@@ -20,7 +20,7 @@ namespace SAIN.Patches.Generic.Fixes
         [PatchPrefix]
         public static bool Patch(BotMeleeWeaponData __instance)
         {
-            if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot) && bot.SAINLayersActive)
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out BotComponent bot) && bot.SAINLayersActive)
             {
                 Enemy enemy = bot.GoalEnemy;
                 if (enemy == null)
@@ -28,18 +28,18 @@ namespace SAIN.Patches.Generic.Fixes
                     return false;
                 }
                 __instance.ShallEndRun = false;
-                if (!__instance.BotOwner_0.WeaponManager.IsMelee)
+                if (!__instance.botOwner_0.WeaponManager.IsMelee)
                 {
-                    if (!__instance.BotOwner_0.WeaponManager.Selector.CanChangeToMeleeWeapons)
+                    if (!__instance.botOwner_0.WeaponManager.Selector.CanChangeToMeleeWeapons)
                     {
                         __instance.ShallEndRun = true;
                         return false;
                     }
-                    __instance.BotOwner_0.WeaponManager.Selector.ChangeToMelee();
+                    __instance.botOwner_0.WeaponManager.Selector.ChangeToMelee();
                 }
-                if (__instance.BotOwner_0.BotLay.IsLay)
+                if (__instance.botOwner_0.BotLay.IsLay)
                 {
-                    __instance.BotOwner_0.BotLay.GetUp(false);
+                    __instance.botOwner_0.BotLay.GetUp(false);
                 }
                 bot.Mover.SetTargetPose(1f);
                 EnemyInfo goalEnemy = enemy.EnemyInfo;
@@ -61,30 +61,30 @@ namespace SAIN.Patches.Generic.Fixes
                 {
                     bot.Mover.ActivePath?.RequestStartSprint(ESprintUrgency.High, "melee");
                 }
-                if (__instance.NextTryHitTime < Time.time)
+                if (__instance._nextTryHitTime < Time.time)
                 {
                     __instance.method_0((flag && __instance.method_2(goalEnemy)) ? 10f : __instance.TRY_HIT_PERIOD_FALSE);
                 }
                 if (bot.Mover.Running)
                 {
-                    if (__instance.RunPathCheck < Time.time)
+                    if (__instance._runPathCheck < Time.time)
                     {
                         float num;
-                        if (__instance.UseZigZag)
+                        if (__instance._useZigZag)
                         {
-                            num = ((goalEnemy.Distance > __instance.FAR_DIST) ? __instance.FarRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.MidRecalcZZ : __instance.CloseRecalcZZ));
+                            num = ((goalEnemy.Distance > __instance.FAR_DIST) ? __instance.farRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.midRecalcZZ : __instance.closeRecalcZZ));
                         }
                         else
                         {
-                            num = (goalEnemy.Distance > __instance.FAR_DIST) ? __instance.FarRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.MidRecalc : __instance.CloseRecalc);
+                            num = (goalEnemy.Distance > __instance.FAR_DIST) ? __instance.farRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.midRecalc : __instance.closeRecalc);
                         }
-                        __instance.RunPathCheck = Time.time + num;
+                        __instance._runPathCheck = Time.time + num;
                         if (!__instance.CanRunToEnemyToHit(goalEnemy, out Vector3[] way))
                         {
                             __instance.ShallEndRun = true;
                             return false;
                         }
-                        if (goalEnemy.Distance < __instance.BotOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
+                        if (goalEnemy.Distance < __instance.botOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
                         {
                             bot.Mover.ActivePath.Cancel(0.1f);
                         }
@@ -101,7 +101,7 @@ namespace SAIN.Patches.Generic.Fixes
                         __instance.ShallEndRun = true;
                         return false;
                     }
-                    if (goalEnemy.Distance < __instance.BotOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
+                    if (goalEnemy.Distance < __instance.botOwner_0.Settings.FileSettings.Shoot.MELEE_STOP_MOVE_DISTANCE)
                     {
                         bot.Mover.ActivePath?.Cancel(0.1f);
                     }
@@ -145,7 +145,7 @@ namespace SAIN.Patches.Generic.Fixes
         {
             var settings = GlobalSettingsClass.Instance.General;
             if (!settings.BotsUseGrenades) return false;
-            if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot))
+            if (SAINEnableClass.GetSAIN(__instance.botOwner_0.ProfileId, out BotComponent bot))
             {
                 var goalEnemy = bot.EnemyController.GoalEnemy;
                 if (goalEnemy == null) return false;
@@ -163,9 +163,9 @@ namespace SAIN.Patches.Generic.Fixes
         }
 
         [PatchPrefix]
-        public static bool Patch(BotReload __instance, ref bool __result)
+        public static bool Patch(BotOwner ___botOwner_0, ref bool __result)
         {
-            if (SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            if (SAINEnableClass.IsBotInCombat(___botOwner_0))
             {
                 __result = true;
                 return false;
@@ -182,9 +182,9 @@ namespace SAIN.Patches.Generic.Fixes
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotItemTaker __instance)
+        public static bool PatchPrefix(BotOwner ___botOwner_0)
         {
-            return GenericHelpers.CheckNotNull(__instance.BotOwner_0);
+            return GenericHelpers.CheckNotNull(___botOwner_0);
         }
     }
 
@@ -196,9 +196,9 @@ namespace SAIN.Patches.Generic.Fixes
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotItemTaker __instance)
+        public static bool PatchPrefix(BotOwner ___botOwner_0)
         {
-            return GenericHelpers.CheckNotNull(__instance.BotOwner_0);
+            return GenericHelpers.CheckNotNull(___botOwner_0);
         }
     }
 
@@ -265,12 +265,12 @@ namespace SAIN.Patches.Generic.Fixes
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotMover __instance)
+        public static bool PatchPrefix(BotMover __instance, ref BotOwner ___botOwner_0)
         {
-            if (SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
             {
-                __instance.PositionOnWayInner = __instance.BotOwner_0.Position;
-                __instance.BotOwner_0.Mover.LocalAvoidance.DropOffset();
+                __instance.PositionOnWayInner = ___botOwner_0.Position;
+                ___botOwner_0.Mover.LocalAvoidance.DropOffset();
                 return false;
             }
             return true;
@@ -281,13 +281,13 @@ namespace SAIN.Patches.Generic.Fixes
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass494), nameof(GClass494.method_21));
+            return AccessTools.Method(typeof(GClass478), nameof(GClass478.method_18));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(GClass494 __instance)
+        public static bool PatchPrefix(GClass478 __instance)
         {
-            if (SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            if (SAINEnableClass.IsBotInCombat(__instance.botOwner_0))
             {
                 return false;
             }
