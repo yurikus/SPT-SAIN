@@ -93,7 +93,8 @@ namespace SAIN.Components
 
             HashSet<BotComponent> BotsArray = BotSpawnController.SAINBots;
                 foreach (BotComponent BotComponent in BotsArray)
-                    BotComponent?.ManualUpdate(currentTime, deltaTime);
+                    if (BotComponent != null)
+                        BotComponent.ManualUpdate(currentTime, deltaTime);
         }
 
         private void drawCover()

@@ -4,30 +4,20 @@ using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace.PersonClasses
 {
-    public class PersonActiveClass
+    public class PersonActiveClass(PlayerComponent playerComponent)
     {
-        public event Action<bool> OnGameObjectActiveChanged;
-
         public event Action<bool> OnPlayerActiveChanged;
 
         public bool PlayerActive { get; private set; }
-        public bool GameObjectActive { get; private set; }
-        public bool IsAlive { get; private set; }
+        public bool IsAlive { get; private set; } = true;
 
         public void CheckActive(PlayerComponent playerComponent)
         {
-            if (IsAlive) IsAlive = CheckAlive(playerComponent);
-
-            bool wasGameObjectActive = GameObjectActive;
-            GameObjectActive = IsAlive && CheckGameObjectActive(playerComponent);
-            if (wasGameObjectActive != GameObjectActive)
-            {
-                OnGameObjectActiveChanged?.Invoke(GameObjectActive);
-                //Logger.LogDebug($"GameObject {_person.Nickname} Active [{GameObjectActive}]");
-            }
+            if (IsAlive) 
+                IsAlive = CheckAlive(playerComponent);
 
             bool wasActive = PlayerActive;
-            PlayerActive = IsAlive && GameObjectActive && CheckPlayerExists(playerComponent?.Player);
+            PlayerActive = IsAlive && playerComponent.gameObject.activeInHierarchy;
             if (wasActive != PlayerActive)
             {
                 OnPlayerActiveChanged?.Invoke(PlayerActive);
@@ -37,13 +27,6 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
 
         public void Disable()
         {
-            bool wasGameObjectActive = GameObjectActive;
-            GameObjectActive = false;
-            if (wasGameObjectActive != GameObjectActive)
-            {
-                OnGameObjectActiveChanged?.Invoke(GameObjectActive);
-            }
-
             bool wasActive = PlayerActive;
             PlayerActive = false;
             if (wasActive != PlayerActive)
@@ -52,49 +35,30 @@ namespace SAIN.Components.PlayerComponentSpace.PersonClasses
             }
         }
 
-        public PersonActiveClass(PlayerComponent playerComponent)
-        {
-            IsAlive = true;
-        }
-
         private static bool CheckAlive(PlayerComponent playerComponent)
         {
-            IPlayer iPlayer = playerComponent.Player;
-            if (iPlayer == null)
+            if (playerComponent == null)
             {
                 return false;
             }
-            if (iPlayer.HealthController?.IsAlive == false)
+            Player player = playerComponent.Player;
+            if (player == null || player.gameObject == null || player.Transform?.Original == null)
             {
                 return false;
             }
-
-            if (iPlayer.IsAI)
+            if (player.HealthController?.IsAlive != true)
             {
-                BotOwner botOwner = iPlayer.AIData?.BotOwner;
-                if (botOwner == null ||
-                    botOwner.gameObject == null ||
-                    botOwner.Transform?.Original == null)
+                return false;
+            }
+            if (player.IsAI)
+            {
+                BotOwner botOwner = player.AIData?.BotOwner;
+                if (botOwner == null || botOwner.Transform?.Original == null)
                 {
                     return false;
                 }
             }
             return true;
-        }
-
-        private static bool CheckGameObjectActive(PlayerComponent playerComponent)
-        {
-            GameObject gameObject = playerComponent?.gameObject;
-            if (gameObject == null || !gameObject.activeSelf || !gameObject.activeInHierarchy)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        private static bool CheckPlayerExists(Player player)
-        {
-            return player != null && player.gameObject != null && player.Transform?.Original != null;
         }
     }
 }

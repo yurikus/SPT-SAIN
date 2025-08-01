@@ -43,7 +43,7 @@ namespace SAIN.SAINComponent.Classes.Decision
             }
             if (CheckDoReload(enemy, Bot))
             {
-                botOwner.ShootData.BlockFor(1.0f);
+                //botOwner.ShootData.BlockFor(1.0f);
                 Decision = ESelfActionType.Reload;
                 return true;
             }
@@ -235,7 +235,7 @@ namespace SAIN.SAINComponent.Classes.Decision
                     if (checkContinueReload(_timeSinceChangeDecision, enemy))
                     {
                         Decision = ESelfActionType.Reload;
-                        BotOwner.ShootData.BlockFor(0.05f);
+                        //BotOwner.ShootData.BlockFor(0.05f);
                         return true;
                     }
                     return false;

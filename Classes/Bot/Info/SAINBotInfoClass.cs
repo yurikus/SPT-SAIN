@@ -42,6 +42,7 @@ namespace SAIN.SAINComponent.Classes.Info
         {
             WeaponInfo.Dispose();
             Difficulty.Dispose();
+            base.Dispose();
         }
 
         public SAINSettingsClass FileSettings

@@ -95,7 +95,7 @@ namespace SAIN.SAINComponent.Classes.Mover
             else
             {
                 Bot.BotOwner.ShootData.EndShoot();
-                Bot.BotOwner.ShootData.BlockFor(0.05f);
+                //Bot.BotOwner.ShootData.BlockFor(0.05f);
                 Bot.Aim.LoseAimTarget();
                 Bot.ManualShoot.Reset();
                 Bot.Suppression.ResetSuppressing();
