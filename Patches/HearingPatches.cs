@@ -134,38 +134,6 @@ namespace SAIN.Patches.Hearing
             return AccessTools.Method(typeof(Player), nameof(Player.PlayStepSound));
         }
 
-    public class JumpSoundPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.method_2));
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(Player ____player, ref float ____nextJumpNoise)
-        {
-            //if (____player.AIData == null) {
-            //    return false;
-            //}
-            //if (____player.AIData.IsAI && ____player.AIData.BotOwner.BotState != EBotState.Active) {
-            //    return false;
-            //}
-            //if (Time.time > ____nextJumpNoise) {
-            //    ____nextJumpNoise = Time.time + SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_INTERVAL;
-            //    float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.JUMP_SOUND_RANGE;
-            //    SAINBotController.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Jump, ____player.Position, baseRange, 1f);
-            //}
-            return false;
-        }
-    }
-
-    public class FootstepSoundPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(Player), nameof(Player.PlayStepSound));
-        }
-
         [PatchPostfix]
         public static void Patch(Player __instance, BetterSource ___NestedStepSoundSource, SurfaceSet ____currentSet)
         {
