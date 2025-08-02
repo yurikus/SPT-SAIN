@@ -288,13 +288,10 @@ namespace SAIN.Components
             return spawnPointPositions;
         }
 
-        protected BotRotationManagerComponent BotRotationManager { get; set; }
-
         public void Activate(BotsController botsController)
         {
             SAINBotController.DefaultController = botsController;
             SAINBotController.BotSpawner = botsController.BotSpawner;
-            BotRotationManager = BotRotationManagerComponent.Create(gameObject, botsController.BotSpawner, PlayerTracker);
             _activated = true;
             JobManager.Start();
            // StartCoroutine(CalcPathsJobs());

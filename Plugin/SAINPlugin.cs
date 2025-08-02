@@ -72,6 +72,7 @@ namespace SAIN
             new Patches.Components.GetBotController(),
 
             new Patches.Generic.BotOwnerActivatePatch(),
+            new Patches.Generic.StopRequestExecutePatch(),
             new Patches.Generic.SetEnvironmentPatch(),
             new Patches.Generic.SetPanicPointPatch(),
             new Patches.Generic.AddPointToSearchPatch(),
@@ -190,6 +191,7 @@ namespace SAIN
             new Patches.Shoot.Aim.AimTimePatch(),
             new Patches.Shoot.Aim.ForceNoHeadAimPatch(),
             new Patches.Shoot.Aim.SmoothTurnPatch(),
+            new Patches.Shoot.Aim.BotSteeringPitchLimitPatch(),
 
             new Patches.Shoot.Grenades.ResetGrenadePatch(),
             new Patches.Shoot.Grenades.SetGrenadePatch(),

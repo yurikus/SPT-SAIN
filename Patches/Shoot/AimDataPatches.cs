@@ -405,66 +405,39 @@ namespace SAIN.Patches.Shoot.Aim
         public static bool Patch(BotSteering __instance)
         {
             BotOwner botOwner = __instance.botOwner_0;
-            if (!GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent)) return true;
-            if (playerComponent.BotComponent?.SAINLayersActive == true) return false;
-            //return true;
-
-            Vector3 newTargetLookDirection;
-            if (botOwner.Mover.Sprinting && botOwner.Mover.HasPathAndNoComplete)
+            if (GameWorldComponent.TryGetPlayerComponent(botOwner, out PlayerComponent playerComponent) && playerComponent.BotComponent != null)
             {
-                newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Mover.RealDestPoint);
-            }
-            else
-            {
-                switch (__instance.SteeringMode)
+                if (playerComponent.BotComponent.SAINLayersActive)
                 {
-                    case EBotSteering.ToDestPoint:
-                        if (botOwner.Destination != null)
-                        {
-                            newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Destination.Value);
-                            break;
-                        }
-                        newTargetLookDirection = __instance.LookDirection;
-                        break;
-
-                    case EBotSteering.ToMovingDirection:
-                        //if (!__instance.CanSteerToMovingDirection())
-                        //{
-                        //    newTargetLookDirection = __instance._customDirection;
-                        //    break;
-                        //}
-                        newTargetLookDirection = CalcLookPoint(botOwner, botOwner.Mover.RealDestPoint);
-                        break;
-
-                    case EBotSteering.ToCustomPoint:
-                        newTargetLookDirection = __instance._customPoint - botOwner.WeaponRoot.position;
-                        break;
-
-                    case EBotSteering.Direction:
-                        newTargetLookDirection = __instance._customDirection;
-                        break;
-
-                    default:
-                        newTargetLookDirection = __instance._customDirection;
-                        break;
+                    var controller = playerComponent.CharacterController;
+                    controller.UpdateTurnSettings(Time.deltaTime, botOwner, playerComponent.BotComponent, GlobalSettingsClass.Instance.Steering.RANDOMSWAY_TOGGLE);
+                    controller.UpdateBotTurnData(Time.deltaTime);
+                    controller.RotatePlayer(playerComponent);
+                    __instance._lookDirection = playerComponent.CharacterController.TurnData.CurrentLookDirection;
+                    return false;
                 }
+                var turnData = playerComponent.CharacterController.TurnData;
+                var steeringDir = __instance._lookDirection;
+                turnData.CurrentLookDirection = steeringDir;
+                turnData.NewTargetLookDirection = steeringDir;
+                turnData.LastTargetLookDirection = steeringDir;
+                playerComponent.CharacterController.TurnData = turnData;
             }
-            if (Mathf.Abs(newTargetLookDirection.y) < 0.001f)
-            {
-                newTargetLookDirection.y = 0;
-            }
-            playerComponent.CharacterController.SetTargetLookDirection(newTargetLookDirection, botOwner, playerComponent.BotComponent);
-            __instance._lookDirection = playerComponent.CharacterController.CurrentControlLookDirection;
-            return false;
+            return true;
+        }
+    }
+
+    public class BotSteeringPitchLimitPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(BotSteering), nameof(BotSteering.SetYAngle));
         }
 
-        private static Vector3 CalcLookPoint(BotOwner botOwner, Vector3 point)
+        [PatchPrefix]
+        public static void Patch(ref float angle)
         {
-            Vector3 botPosition = botOwner.Position;
-            Vector3 weaponRoot = botOwner.WeaponRoot.position;
-            float rootOffset = weaponRoot.y - botPosition.y;
-            point.y += rootOffset;
-            return point - weaponRoot;
+            angle = Mathf.Max(angle, -65f); // Prevents bots from looking too far down
         }
     }
 

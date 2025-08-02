@@ -219,10 +219,7 @@ namespace SAIN
         public static bool IsBotInCombat(IPlayer player)
         {
             GetSAIN(player.ProfileId, out var bot);
-            if (bot == null) return false;
-            if (bot.SAINLayersActive) return true;
-            if (bot.HasEnemy) return true;
-            return false;
+            return bot != null && bot.SAINLayersActive;
         }
 
         public static bool GetSAIN(string profileId, out BotComponent sain)

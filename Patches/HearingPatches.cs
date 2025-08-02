@@ -166,7 +166,36 @@ namespace SAIN.Patches.Hearing
             // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
             if (ModDetection.ProjectFikaLoaded)
             {
-                BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Generic, ____player.Position, __instance.IsSprintEnabled ? 60f : 40f, 1f);
+                if (____player.AIData == null)
+                {
+                    return false;
+                }
+                if (____player.AIData.IsAI && ____player.AIData.BotOwner.BotState != EBotState.Active)
+                {
+                    return false;
+                }
+                if (Time.time > __instance._nextStepNoise)
+                {
+                    if (motion.y < 0.2f && motion.y > -0.2f)
+                    {
+                        motion.y = 0f;
+                    }
+                    __instance._nextStepNoise = Time.time + GClass598.Core.STEP_NOISE_DELTA;
+                    float num = ____player.Speed;
+                    if (____player.IsSprintEnabled)
+                    {
+                        num = 2f;
+                    }
+                    float num2 = Mathf.Clamp(0.5f * ____player.PoseLevel + 0.5f, 0f, 1f);
+                    num *= num2;
+                    if (motion.sqrMagnitude < 1E-06f)
+                    {
+                        return false;
+                    }
+                    float num3 = ____player.IsSprintEnabled ? 1f : __instance.CovertMovementVolumeBySpeed;
+                    float power = GClass598.Core.BASE_WALK_SPEREAD2 * (num3 + num) / 2f;
+                    BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.FootStep, ____player.Position, power, 1f);
+                }
             }
             return false;
         }
@@ -208,7 +237,7 @@ namespace SAIN.Patches.Hearing
             //SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, bank.Rolloff, volume);
         }
     }
-    
+
     public class SpecificStepAudioControllerPatch : ModulePatch
     {
         protected static readonly FieldInfo NestedStepSoundSourceField = AccessTools.Field(typeof(Player), "NestedStepSoundSource");
