@@ -2,17 +2,14 @@
 using EFT;
 using EFT.EnvironmentEffect;
 using EFT.InventoryLogic;
-using EFT.UI.Ragfair;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
-using SAIN.Models.Structs;
-using SAIN.Preset.GlobalSettings;
 using SPT.Reflection.Patching;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using ExecuteRequestAction = GClass81;
 using FoodAndMedsEquipCallbackType = GInterface185;
 using QuickGrenadeUseCallbackType = GInterface188;
 using SetInHandsMedsStruct = GStruct375<EBodyPart>;
@@ -240,22 +237,50 @@ namespace SAIN.Patches.Generic
             {
                 return true;
             }
-			// ORIGINAL METHOD:
-			//if (__instance.Settings.FileSettings.Boss.EFFECT_PAINKILLER)
-			//{
-			//	__instance.GetPlayer.ActiveHealthController.DoPainKiller();
-			//}
-			//if (__instance.Settings.FileSettings.Boss.DISABLE_METABOLISM)
-			//{
-			//	__instance.GetPlayer.HealthController.DisableMetabolism();
-			//}
-			//if (__instance.Settings.FileSettings.Boss.EFFECT_REGENERATION_PER_MIN > 0f)
-			//{
-			//	__instance.GetPlayer.ActiveHealthController.DoScavRegeneration(__instance.Settings.FileSettings.Boss.EFFECT_REGENERATION_PER_MIN);
-			//}
+            // ORIGINAL METHOD:
+            //if (__instance.Settings.FileSettings.Boss.EFFECT_PAINKILLER)
+            //{
+            //	__instance.GetPlayer.ActiveHealthController.DoPainKiller();
+            //}
+            //if (__instance.Settings.FileSettings.Boss.DISABLE_METABOLISM)
+            //{
+            //	__instance.GetPlayer.HealthController.DisableMetabolism();
+            //}
+            //if (__instance.Settings.FileSettings.Boss.EFFECT_REGENERATION_PER_MIN > 0f)
+            //{
+            //	__instance.GetPlayer.ActiveHealthController.DoScavRegeneration(__instance.Settings.FileSettings.Boss.EFFECT_REGENERATION_PER_MIN);
+            //}
             // END ORIGINAL METHOD
             __instance.GetPlayer.HealthController.DisableMetabolism();
             return false;
+        }
+    }
+
+    public class StopRequestExecutePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(GClass84), nameof(GClass84.method_13));
+        }
+
+        [PatchPrefix]
+        public static bool Patch(GClass84 __instance, ref bool __result)
+        {
+            var request = __instance.BotOwner_0.BotRequestController.CurRequest;
+            if (request == null)
+            {
+                __result = false;
+                return false;
+            }
+            if (request.Requester != null && 
+                request.Requester.IsAI && 
+                SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out var sain) && 
+                sain.SAINLayersActive)
+            {
+                __result = false;
+                return false;
+            }
+            return true;
         }
     }
 
@@ -283,7 +308,8 @@ namespace SAIN.Patches.Generic
         [PatchPrefix]
         public static bool PatchPrefix(BotsGroup __instance, BotOwner owner)
         {
-            return !SAINEnableClass.GetSAIN(owner.ProfileId, out _);
+            if (SAINEnableClass.IsBotInCombat(owner)) return false;
+            return true;
         }
     }
 

@@ -44,6 +44,10 @@ namespace SAIN.Preset.GlobalSettings.Categories
         Assault,
         PmcBear,
         PmcUsec,
+        FlBoarCl,
+        FlBoarSt,
+        FlKlnAslt,
+        KolonSec,
     }
 
     public static class AIBrains
@@ -132,6 +136,8 @@ namespace SAIN.Preset.GlobalSettings.Categories
             Brain.BossBoarSniper,
             Brain.FollowerKolontayAssault,
             Brain.FollowerKolontaySecurity,
+            Brain.FlBoarCl,
+            Brain.FlBoarSt,
         };
     }
 }

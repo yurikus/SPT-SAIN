@@ -5,11 +5,9 @@ using SAIN.Components.RotationController;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.Types.PlayerSmoothing;
 using SAIN.Types.TurnSmoothing;
 using System;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.Classes
 {
@@ -168,7 +166,8 @@ namespace SAIN.Classes
 
         public void SetYAngle(float angle, Player player, BotOwner botOwner)
         {
-            float num = Mathf.DeltaAngle(player.Rotation.y, angle);
+            float clampedAngle = Mathf.Max(angle, -65f);
+            float num = Mathf.DeltaAngle(player.Rotation.y, clampedAngle);
             botOwner.AimingManager.CurrentAiming.RotateY(num);
             player.Rotate(new Vector2(0f, num), true);
         }
@@ -214,8 +213,8 @@ namespace SAIN.Classes
             if (sprinting)
             {
                 return 0.001f;
-            }       
-            
+            }
+
             bool moving = botComponent?.Mover?.Moving == true || botOwner.Mover?.IsMoving == true;
             bool aiming = botOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.AimStatus_0 != AimStatus.NoTarget;
             bool aimingDownSights = player.HandsController is Player.FirearmController firearmController && firearmController.IsAiming;

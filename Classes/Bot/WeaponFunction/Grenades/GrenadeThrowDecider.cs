@@ -29,7 +29,7 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
             _throwGrenadeFreqMax = sainSettings.Grenade.ThrowGrenadeFrequency_MAX;
             _minThrowDistPercent = 0.66f;
 
-            _blindCornerDistToThrow = 10f;
+            _blindCornerDistToThrow = 5f;
             _blindCornerDistToLastKnown_Max_SQR = _blindCornerDistToThrow * _blindCornerDistToThrow;
             _checkThrowPos_HeightOffset = 0.25f;
         }
@@ -52,7 +52,6 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction
         private float _friendlyCloseRecheckTime = 3f;
         private float _sayNeedGrenadeFreq = 10f;
         private float _sayNeedGrenadeChance = 5f;
-        private const float THROW_FREQUENCY_RANDOMIZATION_FACTOR = 2f;
 
         public bool GetDecision(Enemy enemy, out string reason)
         {

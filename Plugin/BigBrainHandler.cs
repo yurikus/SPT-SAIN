@@ -27,7 +27,8 @@ namespace SAIN
             "AssaultHaveEnemy",
             "Assault Building",
             "Enemy Building",
-            "PushAndSup"
+            "PushAndSup",
+            "Pursuit",
         };
 
         private static List<Type> _SAINLayers = new List<Type>();
@@ -181,10 +182,7 @@ namespace SAIN
                 List<string> LayersToToggle = new List<string>
                 {
                     "Request",
-                    //"FightReqNull",
-                    //"PeacecReqNull",
                     "KnightFight",
-                    //"PtrlBirdEye",
 					"PmcBear",
                     "PmcUsec",
                 };
@@ -239,11 +237,17 @@ namespace SAIN
                 {
                     "KnightFight",
                     "BirdEyeFight",
-                    "BossBoarFight"
+                    "BossBoarFight",
+                    "KojaniyB_Enemy",
+                    "Bully Layer",
+                    "KlnSolo",
+                    "KolontayFight",
+                    "KlnTrg",
+                    "BossSanitarFight",
                 };
                 LayersToToggle.AddRange(commonVanillaLayersToRemove);
-
                 toggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
+
             }
 
             public static void ToggleVanillaLayersForFollowers(bool useVanillaLayers)
@@ -253,7 +257,15 @@ namespace SAIN
                 List<string> LayersToToggle = new List<string>
                 {
                     "KnightFight",
-                    "BoarGrenadeDanger"
+                    "BoarGrenadeDanger",
+                    "FBoarFght",
+                    "SecurityKln",
+                    "Kln_NIMH",
+                    "FolKojEnemy",
+                    "KlnForceAtk",
+                    "KolontayAP",
+                    "KlnTrg",
+                    "FlSanFight",
                 };
                 LayersToToggle.AddRange(commonVanillaLayersToRemove);
 
