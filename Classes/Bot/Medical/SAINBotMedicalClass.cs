@@ -3,10 +3,10 @@ using EFT.InventoryLogic;
 using SAIN.Components;
 using System.Collections.Generic;
 using UnityEngine;
-using FractureEffect = GInterface325;
-using HeavyBleedEffect = GInterface323;
-using LightBleedEffect = GInterface322;
-using PainEffect = GInterface340;
+using FractureEffect = GInterface342;
+using HeavyBleedEffect = GInterface340;
+using LightBleedEffect = GInterface339;
+using PainEffect = GInterface357;
 
 namespace SAIN.SAINComponent.Classes
 {

@@ -166,7 +166,7 @@ namespace SAIN.SAINComponent.Classes.Talk
             return false;
         }
 
-        private void tryFakeDeathGrenade(Vector3 grenadeExplosionPosition, string playerProfileID, bool isSmoke, float smokeRadius, float smokeLifeTime)
+        private void tryFakeDeathGrenade(Vector3 grenadeExplosionPosition, string playerProfileID, bool isSmoke, float smokeRadius, float smokeLifeTime, int throwableId)
         {
             if (CanFakeDeath
                 && EFTMath.RandomBool(FakeDeathChance)

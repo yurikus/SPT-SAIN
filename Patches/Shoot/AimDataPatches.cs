@@ -14,7 +14,7 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using HitAffectClass = GClass601;
+using HitAffectClass = BotHitAffectClass;
 
 namespace SAIN.Patches.Shoot.Aim
 {
@@ -445,27 +445,27 @@ namespace SAIN.Patches.Shoot.Aim
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_13));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_16));
         }
 
         [PatchPrefix]
-        public static void PatchPrefix(ref bool withLegs, ref bool canBehead, EnemyInfo __instance)
+        public static void PatchPrefix(ref bool withLegs, ref bool canBeHead, EnemyInfo __instance)
         {
             if (!__instance.Person.IsAI)
             {
                 if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent bot))
                 {
                     var aim = bot.Info.FileSettings.Aiming;
-                    canBehead = EFTMath.RandomBool(aim.AimForHeadChance) && aim.AimForHead;
+                    canBeHead = EFTMath.RandomBool(aim.AimForHeadChance) && aim.AimForHead;
                     withLegs = true;
                     return;
                 }
-                canBehead = false;
+                canBeHead = false;
                 withLegs = true;
             }
             else
             {
-                canBehead = true;
+                canBeHead = true;
                 withLegs = true;
             }
         }

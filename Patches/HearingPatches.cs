@@ -10,7 +10,7 @@ using SPT.Reflection.Patching;
 using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
-using StepAudioController = GClass1184;
+using StepAudioController = LocalPlayerStepAudioControllerClass;
 
 // this._specificStepAudioController = new GClass1184(surfaceSet, this, 0.1f, useOcclusion);
 

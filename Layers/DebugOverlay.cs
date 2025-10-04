@@ -247,9 +247,11 @@ namespace SAIN.Layers
 
             stringBuilder.AppendLine($"Aim/Scatter Multi [{enemy.Aim.AimAndScatterMultiplier}]");
             stringBuilder.AppendLabeledValue("LastGainSightResult", $"{(enemy.Vision.LastGainSightResult).Round100()}", Color.white, Color.yellow, true);
+            /*
             float highestPercent = getPercentSpotted(enemy, out var partType);
             if (highestPercent > 0)
                 stringBuilder.AppendLabeledValue("Percent Spotted", $"{partType} : {highestPercent}", Color.white, Color.yellow, true);
+            */
 
             addPlaceInfo(stringBuilder, enemy.KnownPlaces.LastKnownPlace, "Last Known Position");
             if (enemy.Seen && _expandedEnemyInfo)
@@ -292,8 +294,10 @@ namespace SAIN.Layers
             }
         }
 
+        /*
         private static float getPercentSpotted(Enemy enemy, out BodyPartType partType)
         {
+
             float highestPercent = enemy.EnemyInfo.BodyData().Value?.GetVisibilityLevel() ?? 0f;
             partType = BodyPartType.body;
             foreach (var part in enemy.EnemyInfo.AllActiveParts)
@@ -309,6 +313,7 @@ namespace SAIN.Layers
             highestPercent = Mathf.Clamp(highestPercent.Round100(), 0f, 100f);
             return highestPercent;
         }
+        */
 
         private static void addPlaceInfo(StringBuilder stringBuilder, EnemyPlace place, string name)
         {

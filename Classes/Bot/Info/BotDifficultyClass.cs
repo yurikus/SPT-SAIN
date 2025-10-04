@@ -78,7 +78,7 @@ namespace SAIN.SAINComponent.Classes
             mods.VisibleDistCoef = globalSettings.VisibleDistCoef;
             mods.ScatteringCoef = globalSettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = globalSettings.PriorityScatteringCoef;
-            mods.GainSightCoef = globalSettings.GainSightCoef;
+            mods.RuntimeVisionEffectK = globalSettings.GainSightCoef;
             mods.HearingDistCoef = globalSettings.HearingDistanceCoef;
         }
 
@@ -92,7 +92,7 @@ namespace SAIN.SAINComponent.Classes
             mods.VisibleDistCoef = botSettings.VisibleDistCoef;
             mods.ScatteringCoef = botSettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = botSettings.PriorityScatteringCoef;
-            mods.GainSightCoef = botSettings.GainSightCoef;
+            mods.RuntimeVisionEffectK = botSettings.GainSightCoef;
             mods.HearingDistCoef = botSettings.HearingDistanceCoef;
         }
 
@@ -110,7 +110,7 @@ namespace SAIN.SAINComponent.Classes
             mods.VisibleDistCoef = locationSettings.VisibleDistCoef;
             mods.ScatteringCoef = locationSettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = locationSettings.PriorityScatteringCoef;
-            mods.GainSightCoef = locationSettings.GainSightCoef;
+            mods.RuntimeVisionEffectK = locationSettings.GainSightCoef;
             mods.HearingDistCoef = locationSettings.HearingDistanceCoef;
         }
 
@@ -124,7 +124,7 @@ namespace SAIN.SAINComponent.Classes
             mods.VisibleDistCoef = personalitySettings.VisibleDistCoef;
             mods.ScatteringCoef = personalitySettings.ScatteringCoef;
             //mods.PriorityScatteringCoef = personalitySettings.PriorityScatteringCoef;
-            mods.GainSightCoef = personalitySettings.GainSightCoef;
+            mods.RuntimeVisionEffectK = personalitySettings.GainSightCoef;
             mods.HearingDistCoef = personalitySettings.HearingDistanceCoef;
         }
 

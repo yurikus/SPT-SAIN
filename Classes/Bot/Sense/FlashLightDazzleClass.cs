@@ -91,7 +91,7 @@ namespace SAIN.SAINComponent.Classes.Sense
         {
             Modifiers.Modifiers.PrecicingSpeedCoef = Mathf.Clamp(dazzleModif, 1f, 5f) * Effectiveness;
             Modifiers.Modifiers.AccuratySpeedCoef = Mathf.Clamp(dazzleModif, 1f, 5f) * Effectiveness;
-            Modifiers.Modifiers.GainSightCoef = gainSightModif;
+            Modifiers.Modifiers.RuntimeVisionEffectK = gainSightModif;
             Modifiers.Modifiers.ScatteringCoef = Mathf.Clamp(dazzleModif, 1f, 5f) * Effectiveness * 3;
             Modifiers.Modifiers.PriorityScatteringCoef = Mathf.Clamp(dazzleModif, 1f, 2.5f) * Effectiveness;
 

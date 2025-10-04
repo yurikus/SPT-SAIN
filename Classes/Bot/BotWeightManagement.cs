@@ -3,7 +3,7 @@ using HarmonyLib;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
 using System.Collections.Generic;
-using FloatFunc = GClass847<float>;
+using FloatFunc = GClass849<float>;
 
 namespace SAIN.SAINComponent.Classes
 {

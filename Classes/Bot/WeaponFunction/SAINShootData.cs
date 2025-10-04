@@ -329,7 +329,7 @@ namespace SAIN.SAINComponent.Classes
                 Vector3 value;
                 if (enemy.Distance < 6f)
                 {
-                    value = enemy.GetCenterPart();
+                    value = enemy.GetBodyPartPosition();
                 }
                 else
                 {

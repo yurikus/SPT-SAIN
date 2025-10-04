@@ -22,7 +22,7 @@ namespace SAIN.Helpers
             {
                 PrecicingSpeedCoef = precision,
                 AccuratySpeedCoef = accuracySpeed,
-                GainSightCoef = gainSight,
+                RuntimeVisionEffectK = gainSight,
                 ScatteringCoef = scatter,
                 PriorityScatteringCoef = priorityScatter,
                 VisibleDistCoef = visibleDistance,

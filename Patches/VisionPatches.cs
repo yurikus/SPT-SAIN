@@ -178,7 +178,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_1));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_5));
         }
 
         [PatchPrefix]
@@ -190,11 +190,11 @@ namespace SAIN.Patches.Vision
             {
                 if (!__instance.HaveSeenPersonal || Time.time - __instance.TimeLastSeenReal > 5f)
                 {
-                    __instance.SetFarParts();
+                    __instance.ActiveParts = __instance.Maxparts;
                 }
                 else
                 {
-                    __instance.SetMiddleParts();
+                    __instance.ActiveParts = __instance.MiddleParts;
                 }
                 return false;
             }
@@ -207,13 +207,13 @@ namespace SAIN.Patches.Vision
                 {
                     if (enemy.IsCurrentEnemy)
                     {
-                        __instance.SetCloseParts();
+                        __instance.ActiveParts = __instance.Maxparts;
                         return false;
                     }
                     if (enemy.Status.ShotAtMeRecently ||
                         enemy.Status.PositionalFlareEnabled)
                     {
-                        __instance.SetCloseParts();
+                        __instance.ActiveParts = __instance.Maxparts;
                         return false;
                     }
                 }
@@ -330,7 +330,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_7));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_9));
         }
 
         [PatchPostfix]
@@ -354,7 +354,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_8));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_11));
         }
 
         [PatchPrefix]
@@ -398,15 +398,15 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.IsPointInVisibleSector));
+            return AccessTools.Method(typeof(LookSensor), nameof(LookSensor.IsPointInVisibleSector));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(EnemyInfo __instance, ref bool __result)
+        public static bool PatchPrefix(LookSensor __instance, ref bool __result)
         {
-            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out var sain))
+            if (SAINEnableClass.GetSAIN(__instance.BotOwner.ProfileId, out var sain))
             {
-                Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, false);
+                Enemy enemy = sain.EnemyController.GetEnemy(__instance.BotOwner.ProfileId, false);
                 if (enemy != null)
                 {
                     __result = enemy.Vision.Angles.CanBeSeen && enemy.Vision.EnemyParts.CanBeSeen;
@@ -421,7 +421,7 @@ namespace SAIN.Patches.Vision
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_0));
+            return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_4));
         }
 
         [PatchPostfix]

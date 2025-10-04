@@ -248,11 +248,11 @@ namespace SAIN.Patches.Movement
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(GClass501), nameof(GClass501.method_0));
+            return AccessTools.Method(typeof(BotPathFinderClass), nameof(BotPathFinderClass.method_0));
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(GClass501 __instance, ref bool __result)
+        public static bool PatchPrefix(BotPathFinderClass __instance, ref bool __result)
         {
             if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
             {

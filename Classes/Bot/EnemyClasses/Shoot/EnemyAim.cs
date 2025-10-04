@@ -153,18 +153,24 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses
             foreach (var part in enemyParts)
             {
                 totalCount++;
+
+                /*
                 if (part.Value.IsVisible)
                 {
                     visCount++;
                 }
+                */
             }
 
             totalCount++;
+
+            /*
             var bodyPart = Enemy.EnemyInfo.BodyData().Value;
             if (bodyPart.IsVisible)
             {
                 visCount++;
             }
+            */
 
             float ratio = (float)visCount / (float)totalCount;
 

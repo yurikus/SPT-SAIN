@@ -84,7 +84,7 @@ namespace SAIN.Components
         public bool NoBushESPActive { get; private set; } = false;
 
         private float NoBushTimer = 0f;
-        private Vector3 HeadPosition => BotOwner.LookSensor._headPoint;
+        private Vector3 HeadPosition => BotOwner.LookSensor.HeadPoint;
 
         public bool NoBushESPCheck()
         {

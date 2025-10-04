@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Found in Botowner.Looksensor
-using EnemyVisionCheck = GClass582;
-using LookAllData = GClass607;
+using EnemyVisionCheck = BotReportsDataClass;
+using LookAllData = LookAllDataClass;
 
 namespace SAIN.SAINComponent.Classes
 {
@@ -68,7 +68,7 @@ namespace SAIN.SAINComponent.Classes
             // We should check for changes between tarkov updates.
 			lookSensor.WeaponRootPoint = weaponRoot;
 			lookSensor.LookSensorShootPosition.UpdateShootPosition(weaponRoot);
-			lookSensor._headPoint = viewPosition;
+			lookSensor.HeadPoint = viewPosition;
 
             lookAll.Reset();
             var enemies = bot.EnemyController.EnemiesArray;
@@ -79,19 +79,6 @@ namespace SAIN.SAINComponent.Classes
                     updated++;
                 }
             return updated;
-        }
-
-        private void SetNotVis(Enemy enemy)
-        {
-            foreach (var part in enemy.EnemyInfo.AllActiveParts.Values)
-            {
-                part.UpdateVisibility(BotOwner, false, false, false, Time.fixedDeltaTime);
-            }
-
-            if (enemy.EnemyInfo.IsVisible)
-            {
-                enemy.EnemyInfo.SetVisible(false);
-            }
         }
     }
 }

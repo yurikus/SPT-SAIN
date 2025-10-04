@@ -46,7 +46,7 @@ namespace SAIN.Patches.Generic.Fixes
                 bool flag;
                 if (flag = (goalEnemy.Distance < __instance.Single_0))
                 {
-                    bot.Steering.LookToPoint(goalEnemy.BodyData().Key.Position);
+                    bot.Steering.LookToPoint(goalEnemy.GetBodyPartPosition());
                     if (goalEnemy.Person.AIData.Player.MovementContext.IsInPronePose)
                     {
                         bot.Mover.SetTargetPose(0f);

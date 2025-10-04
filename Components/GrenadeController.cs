@@ -50,7 +50,7 @@ namespace SAIN.Components
             OnGrenadeCollision?.Invoke(grenade, maxRange);
         }
 
-        private void GrenadeExplosion(Vector3 explosionPosition, string playerProfileID, bool isSmoke, float smokeRadius, float smokeLifeTime)
+        private void GrenadeExplosion(Vector3 explosionPosition, string playerProfileID, bool isSmoke, float smokeRadius, float smokeLifeTime, int throwableId)
         {
             if (!Singleton<BotEventHandler>.Instantiated || playerProfileID == null)
             {
