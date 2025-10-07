@@ -1,3 +1,5 @@
+global using EFTMath = GClass856;
+
 using BepInEx;
 using BepInEx.Configuration;
 using EFT;

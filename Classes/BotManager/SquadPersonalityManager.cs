@@ -73,7 +73,7 @@ namespace SAIN.BotController.Classes
                 case EPersonality.GigaChad:
                 case EPersonality.Chad:
                 case EPersonality.Wreckless:
-                    result = Helpers.EFTMath.RandomBool(66) ? ESquadPersonality.GigaChads : ESquadPersonality.Elite;
+                    result = EFTMath.RandomBool(66) ? ESquadPersonality.GigaChads : ESquadPersonality.Elite;
                     break;
 
                 case EPersonality.Timmy:
