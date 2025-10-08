@@ -300,7 +300,7 @@ namespace SAIN.Attributes
                 return value;
             }
 
-            if (value is List<Brain> brainList)
+            if (value is List<EBrain> brainList)
             {
                 ModifyLists.AddOrRemove(brainList, out wasEdited);
                 return value;

@@ -402,21 +402,29 @@ namespace SAIN.Components
         {
             string assignedBrainName = playerComp.BotOwner?.Brain?.BaseBrain?.ShortName();
 
+            if (Info.Profile.IsBoss)
+            {
+                return true;
+            }
+
             if (Info.Profile.IsPMC)
             {
-                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedPMCBrains().Select(brain => brain.ToString());
+                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedPMCBrains()
+                    .Select(brain => brain.ToString());
                 return IsAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "PMC");
             }
 
             if (Info.Profile.IsPlayerScav)
             {
-                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains().Select(brain => brain.ToString());
+                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains()
+                    .Select(brain => brain.ToString());
                 return IsAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "PlayerScav");
             }
 
             if (Info.Profile.IsScav)
             {
-                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains().Select(brain => brain.ToString());
+                IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains()
+                    .Select(brain => brain.ToString());
                 return IsAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "Scav");
             }
 
@@ -430,7 +438,7 @@ namespace SAIN.Components
                 return true;
             }
 
-            Logger.LogAndNotifyError($"{BotOwner.name} is a {botCategory} but does not have any of these BaseBrains: ${string.Join(", ", allowedBrainNames)}! Current Brain Assignment: [{assignedBrainName}] : SAIN Server mod is either missing or another mod is overwriting it. Destroying SAIN for this bot...");
+            Logger.LogAndNotifyError($"{BotOwner.name} is a {botCategory} but does not have any of these BaseBrains: ${string.Join(", ", allowedBrainNames)}! Current Brain Assignment: [{assignedBrainName}] : Destroying SAIN for this bot...");
 
             return false;
         }

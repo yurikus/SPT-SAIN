@@ -131,14 +131,14 @@ namespace SAIN.Editor.Util
             EndListEdit();
         }
 
-        public static void AddOrRemove(List<Brain> list, out bool wasEdited, int optionsPerLine = 5)
+        public static void AddOrRemove(List<EBrain> list, out bool wasEdited, int optionsPerLine = 5)
         {
             wasEdited = false;
             int i = StartListEdit(optionsPerLine, out var options);
-            List<Brain> botList = BotBrains.AllBrainsList;
+            List<EBrain> botList = BotBrains.AllBrainsList;
             for (int b = 0; b < botList.Count; b++)
             {
-                Brain brain = botList[b];
+                EBrain brain = botList[b];
                 AddOrRemove(brain, list, out bool newEdit, null, null, options);
                 if (newEdit)
                     wasEdited = true;

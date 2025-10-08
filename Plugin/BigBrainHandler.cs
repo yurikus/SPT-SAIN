@@ -158,7 +158,7 @@ namespace SAIN
 
             public static void ToggleVanillaLayersForRaiders(List<WildSpawnType> roles, bool useVanillaLayers)
             {
-                List<string> brainList = new List<string>() { Brain.PMC.ToString() };
+                List<string> brainList = new List<string>() { EBrain.PMC.ToString() };
 
                 List<string> LayersToToggle = new List<string>
                 {
@@ -193,7 +193,7 @@ namespace SAIN
 
             public static void ToggleVanillaLayersForRogues(bool useVanillaLayers)
             {
-                List<string> brainList = new List<string>() { Brain.ExUsec.ToString() };
+                List<string> brainList = new List<string>() { EBrain.ExUsec.ToString() };
 
                 List<string> LayersToToggle = new List<string>
                 {
@@ -212,7 +212,7 @@ namespace SAIN
 
             public static void ToggleVanillaLayersForBloodHounds(bool useVanillaLayers)
             {
-                List<string> brainList = new List<string>() { Brain.ArenaFighter.ToString() };
+                List<string> brainList = new List<string>() { EBrain.ArenaFighter.ToString() };
 
                 List<string> LayersToToggle = new List<string>
                 {
@@ -356,7 +356,7 @@ namespace SAIN
             private static void addCustomLayersToRaiders(List<WildSpawnType> roles)
             {
                 var settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Layers;
-                List<string> raiderBrain = new List<string>() { Brain.PMC.ToString() };
+                List<string> raiderBrain = new List<string>() { EBrain.PMC.ToString() };
 
                 BrainManager.AddCustomLayer(typeof(DebugLayer), raiderBrain, 99, roles);
                 BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), raiderBrain, 80, roles);
@@ -381,7 +381,7 @@ namespace SAIN
             private static void addCustomLayersToRogues()
             {
                 List<string> brainList = new List<string>();
-                brainList.Add(Brain.ExUsec.ToString());
+                brainList.Add(EBrain.ExUsec.ToString());
 
                 var settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Layers;
                 //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
@@ -395,7 +395,7 @@ namespace SAIN
             private static void addCustomLayersToBloodHounds()
             {
                 List<string> brainList = new List<string>();
-                brainList.Add(Brain.ArenaFighter.ToString());
+                brainList.Add(EBrain.ArenaFighter.ToString());
 
                 var settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Layers;
                 //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
@@ -448,7 +448,7 @@ namespace SAIN
                 }
             }
 
-            private static List<string> getBrainList(List<Brain> brains)
+            private static List<string> getBrainList(List<EBrain> brains)
             {
                 List<string> brainList = new List<string>();
                 for (int i = 0; i < brains.Count; i++)

@@ -6,74 +6,74 @@ namespace SAIN.Preset.GlobalSettings.Categories
 {
     public class BotBrains
     {
-        public static string Parse(Brain brain)
+        public static string Parse(EBrain brain)
         {
             return brain.ToString();
         }
 
-        public static Brain Parse(string brain)
+        public static EBrain Parse(string brain)
         {
-            if (Enum.TryParse(brain, out Brain result))
+            if (Enum.TryParse(brain, out EBrain result))
             {
                 return result;
             }
-            return Brain.Assault;
+            return EBrain.Assault;
         }
 
-        public static readonly Brain[] AllBrains = Enum.GetValues(typeof(Brain)).Cast<Brain>().ToArray();
+        public static readonly EBrain[] AllBrains = Enum.GetValues(typeof(EBrain)).Cast<EBrain>().ToArray();
 
-        public static readonly List<Brain> AllBrainsList = AllBrains.ToList();
+        public static readonly List<EBrain> AllBrainsList = AllBrains.ToList();
 
-        public static readonly Brain[] Bosses =
+        public static readonly EBrain[] Bosses =
         [
-            Brain.BossBully,
-            Brain.BossGluhar,
-            Brain.Knight,
-            Brain.BossKojaniy,
-            Brain.BossSanitar,
-            Brain.Tagilla,
+            EBrain.BossBully,
+            EBrain.BossGluhar,
+            EBrain.Knight,
+            EBrain.BossKojaniy,
+            EBrain.BossSanitar,
+            EBrain.Tagilla,
             //Brain.BossZryachiy,
-            Brain.Killa,
-            Brain.SectantPriest,
-            Brain.BossBoar,
-            Brain.BossKolontay,
-            Brain.BossPartisan,
+            EBrain.Killa,
+            EBrain.SectantPriest,
+            EBrain.BossBoar,
+            EBrain.BossKolontay,
+            EBrain.BossPartisan,
         ];
 
-        public static readonly Brain[] Followers =
+        public static readonly EBrain[] Followers =
         [
-            Brain.FollowerBully,
-            Brain.FollowerGluharAssault,
-            Brain.FollowerGluharProtect,
-            Brain.FollowerGluharScout,
-            Brain.FollowerKojaniy,
-            Brain.FollowerSanitar,
-            Brain.TagillaFollower,
+            EBrain.FollowerBully,
+            EBrain.FollowerGluharAssault,
+            EBrain.FollowerGluharProtect,
+            EBrain.FollowerGluharScout,
+            EBrain.FollowerKojaniy,
+            EBrain.FollowerSanitar,
+            EBrain.TagillaFollower,
             //Brain.Fl_Zraychiy,
-            Brain.SectantWarrior,
-            Brain.BigPipe,
-            Brain.BirdEye,
-            Brain.FollowerBoar,
-            Brain.FollowerBoarClose1,
-            Brain.FollowerBoarClose2,
-            Brain.BossBoarSniper,
-            Brain.FollowerKolontayAssault,
-            Brain.FollowerKolontaySecurity,
+            EBrain.SectantWarrior,
+            EBrain.BigPipe,
+            EBrain.BirdEye,
+            EBrain.FollowerBoar,
+            EBrain.FollowerBoarClose1,
+            EBrain.FollowerBoarClose2,
+            EBrain.BossBoarSniper,
+            EBrain.FollowerKolontayAssault,
+            EBrain.FollowerKolontaySecurity,
         ];
 
-        public static readonly Brain[] Goons =
+        public static readonly EBrain[] Goons =
         [
-            Brain.Knight,
-            Brain.BigPipe,
-            Brain.BirdEye,
+            EBrain.Knight,
+            EBrain.BigPipe,
+            EBrain.BirdEye,
         ];
 
-        public static readonly Brain[] Special =
+        public static readonly EBrain[] Special =
         [
-            Brain.BossTest,
-            Brain.Obdolbs,
-            Brain.Gifter,
-            Brain.CursAssault,
+            EBrain.BossTest,
+            EBrain.Obdolbs,
+            EBrain.Gifter,
+            EBrain.CursAssault,
         ];
     }
 }
