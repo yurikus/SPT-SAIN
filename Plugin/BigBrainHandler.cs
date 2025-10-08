@@ -159,7 +159,7 @@ public static class BigBrainHandler
 
         public static void ToggleVanillaLayersForRaiders(List<WildSpawnType> roles, bool useVanillaLayers)
         {
-            List<string> brainList = [EBrain.PMC.ToString()];
+            List<string> brainList = [nameof(EBrain.PMC)];
 
             List<string> LayersToToggle =
             [
@@ -194,7 +194,7 @@ public static class BigBrainHandler
 
         public static void ToggleVanillaLayersForRogues(bool useVanillaLayers)
         {
-            List<string> brainList = [EBrain.ExUsec.ToString()];
+            List<string> brainList = [nameof(EBrain.ExUsec)];
 
             List<string> LayersToToggle =
             [
@@ -213,7 +213,7 @@ public static class BigBrainHandler
 
         public static void ToggleVanillaLayersForBloodHounds(bool useVanillaLayers)
         {
-            List<string> brainList = [EBrain.ArenaFighter.ToString()];
+            List<string> brainList = [nameof(EBrain.ArenaFighter)];
 
             List<string> LayersToToggle =
             [
@@ -409,7 +409,7 @@ public static class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Bosses);
 
-            var settings = SAINPlugin.LoadedPreset.GlobalSettings.General;
+            //var settings = SAINPlugin.LoadedPreset.GlobalSettings.General;
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
             BrainManager.AddCustomLayer(typeof(DebugLayer), brainList, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), brainList, 80);
@@ -421,7 +421,7 @@ public static class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Followers);
 
-            var settings = SAINPlugin.LoadedPreset.GlobalSettings.General;
+            //var settings = SAINPlugin.LoadedPreset.GlobalSettings.General;
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
             BrainManager.AddCustomLayer(typeof(DebugLayer), brainList, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), brainList, 80);

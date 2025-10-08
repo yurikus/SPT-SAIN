@@ -54,7 +54,7 @@ public class BotComponent : BotComponentBase, ISPlayer
 
     public void Activate(BotOwner botOwner)
     {
-        if (_Activated)
+        if (_activated)
         {
             return;
         }
@@ -70,7 +70,7 @@ public class BotComponent : BotComponentBase, ISPlayer
         {
             if (InitializeBot(playerComponent, botOwner))
             {
-                _Activated = true;
+                _activated = true;
                 OnBotActivated?.Invoke(this);
                 return;
             }
@@ -82,7 +82,7 @@ public class BotComponent : BotComponentBase, ISPlayer
 
     public bool IsInCombat => BotActivation.BotInCombat;
 
-    private bool _Activated = false;
+    private bool _activated;
 
     public event Action<BotComponent> OnBotActivated;
 
@@ -182,7 +182,7 @@ public class BotComponent : BotComponentBase, ISPlayer
                 if (!inStandBy)
                 {
                     TickClassGroup(_tickWhenNoSleepClasses, currentTime);
-                    handleDumbShit();
+                    HandleDumbShit();
                 }
 
                 bool inCombat = active && !inStandBy && SAINLayersActive && GoalEnemy != null;
@@ -454,7 +454,7 @@ public class BotComponent : BotComponentBase, ISPlayer
         //EnemyController?.LateUpdate();
     }
 
-    private void handleDumbShit()
+    private void HandleDumbShit()
     {
         if (IsCheater)
         {
