@@ -25,14 +25,23 @@ public static class ModDetection
     public static bool RealismLoaded { get; private set; }
     public static bool QuestingBotsLoaded { get; private set; }
     public static bool ProjectFikaLoaded { get; private set; }
+    public static bool ProjectFikaHeadlessLoaded { get; private set;  }
 
     public static void CheckPlugins()
     {
-        if (Chainloader.PluginInfos.ContainsKey(FikaGUID) || Chainloader.PluginInfos.ContainsKey("com.mpt.core"))
+        if (Chainloader.PluginInfos.ContainsKey(FikaGUID))
         {
             ProjectFikaLoaded = true;
             Logger.LogInfo($"SAIN: Project Fika Detected.");
         }
+
+        if (Chainloader.PluginInfos.ContainsKey(FikaHeadlessGUID))
+        {
+            ProjectFikaHeadlessLoaded = true;
+            Logger.LogInfo($"SAIN: Project Fika Headless Detected.");
+            new Patches.Hearing.FikaHeadlessTempFixPatch().Enable();
+        }
+
         if (Chainloader.PluginInfos.ContainsKey(QuestingBotsGUID))
         {
             QuestingBotsLoaded = true;

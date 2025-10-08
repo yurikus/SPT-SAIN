@@ -164,7 +164,7 @@ public class FikaHeadlessTempFixPatch : ModulePatch
     public static bool PatchPrefix(Player ____player, Vector3 motion, MovementContext __instance)
     {
         // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
-        if (ModDetection.ProjectFikaLoaded)
+        if (ModDetection.ProjectFikaHeadlessLoaded)
         {
             if (____player.AIData == null)
             {
@@ -252,7 +252,7 @@ public class SpecificStepAudioControllerPatch : ModulePatch
     public static bool Patch(StepAudioController __instance, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
     {
         // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
-        if (ModDetection.ProjectFikaLoaded)
+        if (ModDetection.ProjectFikaHeadlessLoaded)
         {
             return true;
         }
