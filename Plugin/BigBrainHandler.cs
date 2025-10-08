@@ -31,8 +31,8 @@ public class BigBrainHandler
         "Pursuit",
     };
 
-    private static List<Type> _SAINLayers = new List<Type>();
-    private static List<string> _SAINLayerNames = new List<string>();
+    private static List<Type> _SAINLayers = [];
+    private static List<string> _SAINLayerNames = [];
 
     public static List<string> SAINLayerNames => findAllSAINLayers();
     public static List<Type> SAINLayers
@@ -84,13 +84,13 @@ public class BigBrainHandler
 
     public static bool BigBrainInitialized;
 
-    public class BrainAssignment
+    public static class BrainAssignment
     {
         public static void Init()
         {
             addCustomLayersToPMCs();
             addCustomLayersToScavs();
-            addCustomLayersToRaiders(new List<WildSpawnType>() { WildSpawnType.pmcBot });
+            addCustomLayersToRaiders([WildSpawnType.pmcBot]);
             addCustomLayersToRogues();
             addCustomLayersToBloodHounds();
             addCustomLayersToBosses();
@@ -107,7 +107,7 @@ public class BigBrainHandler
         {
             ToggleVanillaLayersForScavs(_vanillaBotSettings.VanillaScavs);
             ToggleVanillaLayersForRogues(_vanillaBotSettings.VanillaRogues);
-            ToggleVanillaLayersForRaiders(new List<WildSpawnType>() { WildSpawnType.pmcBot }, false); // _vanillaBotSettings.VanillaRaiders);
+            ToggleVanillaLayersForRaiders([WildSpawnType.pmcBot], false); // _vanillaBotSettings.VanillaRaiders);
             ToggleVanillaLayersForBloodHounds(_vanillaBotSettings.VanillaBloodHounds);
             ToggleVanillaLayersForBosses(_vanillaBotSettings.VanillaBosses);
             ToggleVanillaLayersForFollowers(_vanillaBotSettings.VanillaFollowers);
@@ -118,23 +118,23 @@ public class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.PMCs);
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "Request",
                 //"FightReqNull",
                 //"PeacecReqNull",
                 "KnightFight",
                 //"PtrlBirdEye",
-					"PmcBear",
+				"PmcBear",
                 "PmcUsec",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
 
             if (INCLUDE_RAIDER_BRAIN_FOR_PMCS)
             {
-                ToggleVanillaLayersForRaiders(new List<WildSpawnType>() { WildSpawnType.pmcBEAR, WildSpawnType.pmcUSEC }, useVanillaLayers);
+                ToggleVanillaLayersForRaiders([WildSpawnType.pmcBEAR, WildSpawnType.pmcUSEC], useVanillaLayers);
             }
         }
 
@@ -142,26 +142,26 @@ public class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Scavs);
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 //"FightReqNull",
                 //"PeacecReqNull",
                 "PmcBear",
                 "PmcUsec",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
 
-            ToggleVanillaLayersForRaiders(new List<WildSpawnType>() { WildSpawnType.assaultGroup }, useVanillaLayers);
+            ToggleVanillaLayersForRaiders([WildSpawnType.assaultGroup], useVanillaLayers);
         }
 
         public static void ToggleVanillaLayersForRaiders(List<WildSpawnType> roles, bool useVanillaLayers)
         {
-            List<string> brainList = new List<string>() { EBrain.PMC.ToString() };
+            List<string> brainList = [EBrain.PMC.ToString()];
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "Request",
                 //"FightReqNull",
                 //"PeacecReqNull",
@@ -169,8 +169,8 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 					"PmcBear",
                 "PmcUsec",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             toggleVanillaLayers(brainList, LayersToToggle, roles, useVanillaLayers);
         }
@@ -179,24 +179,24 @@ public class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Others);
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "Request",
                 "KnightFight",
 					"PmcBear",
                 "PmcUsec",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
 
         public static void ToggleVanillaLayersForRogues(bool useVanillaLayers)
         {
-            List<string> brainList = new List<string>() { EBrain.ExUsec.ToString() };
+            List<string> brainList = [EBrain.ExUsec.ToString()];
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "Request",
                 //"FightReqNull",
                 //"PeacecReqNull",
@@ -204,18 +204,18 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 					"PmcBear",
                 "PmcUsec",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
 
         public static void ToggleVanillaLayersForBloodHounds(bool useVanillaLayers)
         {
-            List<string> brainList = new List<string>() { EBrain.ArenaFighter.ToString() };
+            List<string> brainList = [EBrain.ArenaFighter.ToString()];
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "Request",
                 //"FightReqNull",
                 //"PeacecReqNull",
@@ -223,8 +223,8 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 					"PmcBear",
                 "PmcUsec",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
@@ -233,8 +233,8 @@ public class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Bosses);
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "KnightFight",
                 "BirdEyeFight",
                 "BossBoarFight",
@@ -244,8 +244,8 @@ public class BigBrainHandler
                 "KolontayFight",
                 "KlnTrg",
                 "BossSanitarFight",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
 
         }
@@ -254,8 +254,8 @@ public class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Followers);
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 "KnightFight",
                 "BoarGrenadeDanger",
                 "FBoarFght",
@@ -266,8 +266,8 @@ public class BigBrainHandler
                 "KolontayAP",
                 "KlnTrg",
                 "FlSanFight",
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
@@ -276,15 +276,15 @@ public class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Goons);
 
-            List<string> LayersToToggle = new List<string>
-            {
+            List<string> LayersToToggle =
+            [
                 //"FightReqNull",
                 //"PeacecReqNull",
                 "KnightFight",
                 "BirdEyeFight",
-                "Kill logic"
-            };
-            LayersToToggle.AddRange(commonVanillaLayersToRemove);
+                "Kill logic",
+                .. commonVanillaLayersToRemove,
+            ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
@@ -334,7 +334,7 @@ public class BigBrainHandler
 
             if (INCLUDE_RAIDER_BRAIN_FOR_PMCS)
             {
-                addCustomLayersToRaiders(new List<WildSpawnType>() { WildSpawnType.pmcBEAR, WildSpawnType.pmcUSEC });
+                addCustomLayersToRaiders([WildSpawnType.pmcBEAR, WildSpawnType.pmcUSEC]);
             }
         }
 
@@ -350,13 +350,13 @@ public class BigBrainHandler
             BrainManager.AddCustomLayer(typeof(CombatSquadLayer), brainList, settings.SAINCombatSquadLayerPriority);
             BrainManager.AddCustomLayer(typeof(CombatSoloLayer), brainList, settings.SAINCombatSoloLayerPriority);
 
-            addCustomLayersToRaiders(new List<WildSpawnType>() { WildSpawnType.assaultGroup });
+            addCustomLayersToRaiders([WildSpawnType.assaultGroup]);
         }
 
         private static void addCustomLayersToRaiders(List<WildSpawnType> roles)
         {
             var settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Layers;
-            List<string> raiderBrain = new List<string>() { EBrain.PMC.ToString() };
+            List<string> raiderBrain = [EBrain.PMC.ToString()];
 
             BrainManager.AddCustomLayer(typeof(DebugLayer), raiderBrain, 99, roles);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), raiderBrain, 80, roles);
@@ -380,8 +380,7 @@ public class BigBrainHandler
 
         private static void addCustomLayersToRogues()
         {
-            List<string> brainList = new List<string>();
-            brainList.Add(EBrain.ExUsec.ToString());
+            List<string> brainList = [EBrain.ExUsec.ToString()];
 
             var settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Layers;
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
@@ -394,8 +393,7 @@ public class BigBrainHandler
 
         private static void addCustomLayersToBloodHounds()
         {
-            List<string> brainList = new List<string>();
-            brainList.Add(EBrain.ArenaFighter.ToString());
+            List<string> brainList = [EBrain.ArenaFighter.ToString()];
 
             var settings = SAINPlugin.LoadedPreset.GlobalSettings.General.Layers;
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
@@ -450,7 +448,7 @@ public class BigBrainHandler
 
         private static List<string> GetBrainList(List<EBrain> brains)
         {
-            List<string> brainList = new List<string>();
+            List<string> brainList = [];
             for (int i = 0; i < brains.Count; i++)
             {
                 brainList.Add(brains[i].ToString());
