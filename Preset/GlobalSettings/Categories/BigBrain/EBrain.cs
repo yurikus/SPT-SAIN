@@ -67,7 +67,7 @@ public static class AIBrains
         {
             if (_allowedPMCBrains == null)
             {
-                List<EBrain> brains = [.. Scavs];
+                List<EBrain> brains = [.. PMCs];
                 if (BigBrainHandler.INCLUDE_RAIDER_BRAIN_FOR_PMCS)
                 {
                     brains.Add(EBrain.PMC);
