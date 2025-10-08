@@ -17,8 +17,9 @@ namespace SAIN.SAINComponent.Classes.Info
             BotDifficulty = profile.Info.Settings.BotDifficulty;
             PlayerLevel = profile.Info.Level;
 
-            IsBoss = EnumValues.WildSpawn.IsBoss(WildSpawnType);
-            IsFollower = EnumValues.WildSpawn.IsFollower(WildSpawnType);
+            IsBoss = WildSpawnType.IsBoss();
+            IsFollower = WildSpawnType.IsFollower();
+            WildSpawnType.IsSectant();
             IsScav = EnumValues.WildSpawn.IsScav(WildSpawnType);
             IsPMC = EnumValues.WildSpawn.IsPMC(WildSpawnType);
             IsPlayerScav = IsScav && SAINEnableClass.IsPlayerScav(profile);

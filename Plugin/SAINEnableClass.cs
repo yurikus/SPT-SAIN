@@ -154,7 +154,7 @@ namespace SAIN
         {
             return SAINEnabled.VanillaBosses
             && !WildSpawn.IsGoons(wildSpawnType)
-            && WildSpawn.IsBoss(wildSpawnType);
+            && wildSpawnType.IsBoss();
         }
 
         private static bool ExcludeGoons(WildSpawnType wildSpawnType)
@@ -167,7 +167,7 @@ namespace SAIN
         {
             return SAINEnabled.VanillaFollowers
             && !WildSpawn.IsGoons(wildSpawnType)
-            && WildSpawn.IsFollower(wildSpawnType);
+            && wildSpawnType.IsFollower();
         }
 
         private static bool ExcludeScav(WildSpawnType wildSpawnType, BotOwner botOwner)
@@ -178,7 +178,7 @@ namespace SAIN
         private static bool ExcludeOthers(WildSpawnType wildSpawnType)
         {
             if (SAINEnabled.VanillaCultists &&
-                WildSpawn.IsCultist(wildSpawnType)) {
+                wildSpawnType.IsSectant()) {
                 return true;
             }
             if (SAINEnabled.VanillaRogues &&

@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace SAIN.Helpers
 {
-    internal class EnumValues
+    internal static class EnumValues
     {
-        internal class WildSpawn
+        internal static class WildSpawn
         {
             static WildSpawn()
             {
@@ -28,10 +28,6 @@ namespace SAIN.Helpers
                 return list;
             }
 
-            public static bool IsFollower(WildSpawnType type) => Followers.Contains(type);
-
-            public static bool IsBoss(WildSpawnType type) => Bosses.Contains(type);
-
             public static bool IsScav(WildSpawnType type) => Scavs.Contains(type);
 
             public static bool IsPMC(WildSpawnType type)
@@ -42,11 +38,6 @@ namespace SAIN.Helpers
             public static bool IsGoons(WildSpawnType type)
             {
                 return Goons.Contains(type);
-            }
-
-            public static bool IsCultist(WildSpawnType type)
-            {
-                return Cultists.Contains(type);
             }
 
             public static WildSpawnType[] Scavs =
@@ -63,13 +54,6 @@ namespace SAIN.Helpers
                 WildSpawnType.bossKnight,
                 WildSpawnType.followerBigPipe,
                 WildSpawnType.followerBirdEye,
-            ];
-
-            public static WildSpawnType[] Cultists =
-            [
-                WildSpawnType.sectactPriestEvent,
-                WildSpawnType.sectantPriest,
-                WildSpawnType.sectantWarrior,
             ];
 
             public static List<WildSpawnType> Bosses;

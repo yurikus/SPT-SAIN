@@ -314,11 +314,11 @@ namespace SAIN.Patches.Vision
             {
                 return settings.TurnLightOffNoEnemyGOONS;
             }
-            if (EnumValues.WildSpawn.IsBoss(wildSpawnType))
+            if (wildSpawnType.IsBoss())
             {
                 return settings.TurnLightOffNoEnemyBOSS;
             }
-            if (EnumValues.WildSpawn.IsFollower(wildSpawnType))
+            if (wildSpawnType.IsFollower())
             {
                 return settings.TurnLightOffNoEnemyFOLLOWER;
             }
