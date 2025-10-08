@@ -13,12 +13,12 @@ using System.Reflection;
 
 namespace SAIN;
 
-public class BigBrainHandler
+public static class BigBrainHandler
 {
     public const bool INCLUDE_RAIDER_BRAIN_FOR_PMCS = true;
 
-    private static readonly string[] commonVanillaLayersToRemove = new string[]
-    {
+    private static readonly string[] _commonVanillaLayersToRemove =
+    [
         "Help",
         "AdvAssaultTarget",
         "Hit",
@@ -29,12 +29,12 @@ public class BigBrainHandler
         "Enemy Building",
         "PushAndSup",
         "Pursuit",
-    };
+    ];
 
-    private static List<Type> _SAINLayers = [];
-    private static List<string> _SAINLayerNames = [];
+    private static readonly List<Type> _SAINLayers = [];
+    private static readonly List<string> _SAINLayerNames = [];
 
-    public static List<string> SAINLayerNames => findAllSAINLayers();
+    public static List<string> SAINLayerNames => FindAllSAINLayers();
     public static List<Type> SAINLayers
     {
         get
@@ -60,7 +60,8 @@ public class BigBrainHandler
     {
         BrainAssignment.Init();
     }
-    private static List<string> findAllSAINLayers()
+
+    private static List<string> FindAllSAINLayers()
     {
         if (_SAINLayerNames.Count != 0)
         {
@@ -105,13 +106,13 @@ public class BigBrainHandler
 
         public static void ToggleVanillaLayersForAllBots()
         {
-            ToggleVanillaLayersForScavs(_vanillaBotSettings.VanillaScavs);
-            ToggleVanillaLayersForRogues(_vanillaBotSettings.VanillaRogues);
+            ToggleVanillaLayersForScavs(VanillaBotSettings.VanillaScavs);
+            ToggleVanillaLayersForRogues(VanillaBotSettings.VanillaRogues);
             ToggleVanillaLayersForRaiders([WildSpawnType.pmcBot], false); // _vanillaBotSettings.VanillaRaiders);
-            ToggleVanillaLayersForBloodHounds(_vanillaBotSettings.VanillaBloodHounds);
-            ToggleVanillaLayersForBosses(_vanillaBotSettings.VanillaBosses);
-            ToggleVanillaLayersForFollowers(_vanillaBotSettings.VanillaFollowers);
-            ToggleVanillaLayersForGoons(_vanillaBotSettings.VanillaGoons);
+            ToggleVanillaLayersForBloodHounds(VanillaBotSettings.VanillaBloodHounds);
+            ToggleVanillaLayersForBosses(VanillaBotSettings.VanillaBosses);
+            ToggleVanillaLayersForFollowers(VanillaBotSettings.VanillaFollowers);
+            ToggleVanillaLayersForGoons(VanillaBotSettings.VanillaGoons);
         }
 
         public static void ToggleVanillaLayersForPMCs(bool useVanillaLayers)
@@ -127,7 +128,7 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 				"PmcBear",
                 "PmcUsec",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -148,7 +149,7 @@ public class BigBrainHandler
                 //"PeacecReqNull",
                 "PmcBear",
                 "PmcUsec",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -169,7 +170,7 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 					"PmcBear",
                 "PmcUsec",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             toggleVanillaLayers(brainList, LayersToToggle, roles, useVanillaLayers);
@@ -185,7 +186,7 @@ public class BigBrainHandler
                 "KnightFight",
 					"PmcBear",
                 "PmcUsec",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -204,7 +205,7 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 					"PmcBear",
                 "PmcUsec",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -223,7 +224,7 @@ public class BigBrainHandler
                 //"PtrlBirdEye",
 					"PmcBear",
                 "PmcUsec",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -244,7 +245,7 @@ public class BigBrainHandler
                 "KolontayFight",
                 "KlnTrg",
                 "BossSanitarFight",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
 
@@ -266,7 +267,7 @@ public class BigBrainHandler
                 "KolontayAP",
                 "KlnTrg",
                 "FlSanFight",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -283,7 +284,7 @@ public class BigBrainHandler
                 "KnightFight",
                 "BirdEyeFight",
                 "Kill logic",
-                .. commonVanillaLayersToRemove,
+                .. _commonVanillaLayersToRemove,
             ];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
@@ -456,6 +457,6 @@ public class BigBrainHandler
             return brainList;
         }
 
-        private static VanillaBotSettings _vanillaBotSettings => SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots;
+        private static VanillaBotSettings VanillaBotSettings => SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots;
     }
 }
