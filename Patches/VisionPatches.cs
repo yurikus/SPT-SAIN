@@ -306,7 +306,7 @@ namespace SAIN.Patches.Vision
             {
                 return settings.TurnLightOffNoEnemySCAV;
             }
-            if (EnumValues.WildSpawn.IsPMC(wildSpawnType))
+            if (wildSpawnType.IsPmcBot())
             {
                 return settings.TurnLightOffNoEnemyPMC;
             }

@@ -30,11 +30,6 @@ namespace SAIN.Helpers
 
             public static bool IsScav(WildSpawnType type) => Scavs.Contains(type);
 
-            public static bool IsPMC(WildSpawnType type)
-            {
-                return type == WildSpawnType.pmcUSEC || type == WildSpawnType.pmcBEAR;
-            }
-
             public static bool IsGoons(WildSpawnType type)
             {
                 return Goons.Contains(type);

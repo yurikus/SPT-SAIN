@@ -380,7 +380,7 @@ namespace SAIN.Components
                 {
                     var settings = GlobalSettingsClass.Instance.General.Jokes;
                     if (settings.RandomCheaters &&
-                        (EFTMath.RandomBool(settings.RandomCheaterChance) || Player.Profile.Nickname.ToLower().Contains("solarint")))
+                        (EFTMath.RandomBool(settings.RandomCheaterChance) || Player.Profile.Nickname.Contains("solarint", StringComparison.OrdinalIgnoreCase)))
                     {
                         IsCheater = true;
                     }

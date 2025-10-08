@@ -9,7 +9,7 @@ using static SAIN.Helpers.EnumValues;
 
 namespace SAIN
 {
-    public class SAINEnableClass
+    public static class SAINEnableClass
     {
         static SAINEnableClass()
         {
@@ -146,7 +146,7 @@ namespace SAIN
         private static bool IsAlwaysEnabled(WildSpawnType wildSpawnType, BotOwner botOwner)
         {
             return
-                WildSpawn.IsPMC(wildSpawnType) ||
+                wildSpawnType.IsPmcBot() ||
                 BotManagerComponent.Instance?.Bots?.ContainsKey(botOwner.ProfileId) == true;
         }
 
