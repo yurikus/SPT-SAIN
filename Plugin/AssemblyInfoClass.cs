@@ -20,14 +20,14 @@ public static class AssemblyInfoClass
     public const string SAINVersion = "4.1.2";
     public const string SAINPresetVersion = "4.1.1";
 
-    public const string SPTGUID = "com.SPT.core";
     public const string SPTVersion = "4.0.0";
+
+    public const string RealismModKey = "RealismMod";
+
+    public const string SPTGUID = "com.SPT.core";
+    public const string QuestingBotsGUID = "com.DanW.QuestingBots";
+    public const string FikaGUID = "com.fika.core";
 
     public const string BigBrainGUID = "xyz.drakia.bigbrain";
     public const string BigBrainVersion = "1.0.0";
-
-    public const string LootingBotsKey = "me.skwizzy.lootingbots";
-    public const string RealismModKey = "RealismMod";
-    public const string QuestingBotsKey = "com.DanW.QuestingBots";
-    public const string FikaKey = "com.fika.core";
 }

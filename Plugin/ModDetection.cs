@@ -29,12 +29,12 @@ public static class ModDetection
 
     public static void CheckPlugins()
     {
-        if (Chainloader.PluginInfos.ContainsKey(FikaKey) || Chainloader.PluginInfos.ContainsKey("com.mpt.core"))
+        if (Chainloader.PluginInfos.ContainsKey(FikaGUID) || Chainloader.PluginInfos.ContainsKey("com.mpt.core"))
         {
             ProjectFikaLoaded = true;
             Logger.LogInfo($"SAIN: Project Fika Detected.");
         }
-        if (Chainloader.PluginInfos.ContainsKey(QuestingBotsKey))
+        if (Chainloader.PluginInfos.ContainsKey(QuestingBotsGUID))
         {
             QuestingBotsLoaded = true;
             Logger.LogInfo($"SAIN: Questing Bots Detected.");
