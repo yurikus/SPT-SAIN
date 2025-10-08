@@ -400,12 +400,12 @@ public class BotComponent : BotComponentBase, ISPlayer
 
     private bool VerifyBrain(PlayerComponent playerComp)
     {
-        string assignedBrainName = playerComp.BotOwner?.Brain?.BaseBrain?.ShortName();
-
         if (Info.Profile.IsBoss)
         {
             return true;
         }
+
+        string assignedBrainName = playerComp.BotOwner?.Brain?.BaseBrain?.ShortName();
 
         if (Info.Profile.IsPMC)
         {
