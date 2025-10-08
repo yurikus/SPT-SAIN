@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SAIN.Preset.GlobalSettings.Categories;
 
@@ -52,32 +53,50 @@ public enum EBrain
 
 public static class AIBrains
 {
-    public static List<EBrain> GetAllowedScavBrains()
+    public static IReadOnlyCollection<string> AllowedPlayerScavBrains
     {
-        List<EBrain> ScavBrains = Scavs;
-
-        // Needed for assaultGroup Scavs
-        ScavBrains.Add(EBrain.PMC);
-
-        return ScavBrains;
-    }
-
-    public static List<EBrain> GetAllowedPlayerScavBrains()
-    {
-        return GetAllowedPMCBrains();
-    }
-
-    public static List<EBrain> GetAllowedPMCBrains()
-    {
-        List<EBrain> PMCBrains = PMCs;
-
-        if (BigBrainHandler.INCLUDE_RAIDER_BRAIN_FOR_PMCS)
+        get
         {
-            PMCBrains.Add(EBrain.PMC);
+            return AllowedPMCBrains;
         }
-
-        return PMCBrains;
     }
+
+    public static IReadOnlyCollection<string> AllowedPMCBrains
+    {
+        get
+        {
+            if (_allowedPMCBrains == null)
+            {
+                List<EBrain> brains = [.. Scavs];
+                if (BigBrainHandler.INCLUDE_RAIDER_BRAIN_FOR_PMCS)
+                {
+                    brains.Add(EBrain.PMC);
+                }
+                _allowedPMCBrains = brains.ConvertAll(brain => brain.ToString())
+                    .AsReadOnly();
+            }
+            return _allowedPMCBrains;
+        }
+    }
+
+    private static IReadOnlyCollection<string> _allowedPMCBrains;
+
+    public static IReadOnlyCollection<string> AllowedScavBrains
+    {
+        get
+        {
+            if (_allowedScavBrains == null)
+            {
+                // PMC brain is needed for assaultGroup scavs
+                List<EBrain> brains = [EBrain.PMC, .. Scavs];
+                _allowedScavBrains = brains.ConvertAll(brain => brain.ToString())
+                    .AsReadOnly();
+            }
+            return _allowedScavBrains;
+        }
+    }
+
+    private static IReadOnlyCollection<string> _allowedScavBrains;
 
     public static readonly List<EBrain> PMCs =
     [

@@ -170,18 +170,18 @@ public class BotComponent : BotComponentBase, ISPlayer
             Player player = botOwner.GetPlayer;
             if (player != null)
             {
-                TickClassGroup(AlwaysTickClasses, currentTime);
+                TickClassGroup(_alwaysTickClasses, currentTime);
 
                 bool active = BotActive;
                 if (active)
                 {
-                    TickClassGroup(TickWhenActiveClasses, currentTime);
+                    TickClassGroup(_tickWhenActiveClasses, currentTime);
                 }
 
                 bool inStandBy = !active || BotInStandBy;
                 if (!inStandBy)
                 {
-                    TickClassGroup(TickWhenNoSleepClasses, currentTime);
+                    TickClassGroup(_tickWhenNoSleepClasses, currentTime);
                     handleDumbShit();
                 }
 
@@ -189,7 +189,7 @@ public class BotComponent : BotComponentBase, ISPlayer
                 BotActivation.SetInCombat(inCombat);
                 if (inCombat)
                 {
-                    TickClassGroup(TickWhenCombatClasses, currentTime);
+                    TickClassGroup(_tickWhenCombatClasses, currentTime);
                 }
             }
         }
@@ -282,7 +282,7 @@ public class BotComponent : BotComponentBase, ISPlayer
             Logger.LogError($"Bot Class of is null, cannot add it to list!");
             return;
         }
-        BotClasses.Add(Class);
+        _botClasses.Add(Class);
     }
 
     public void AddBotTickClass(IBotClass Class)
@@ -292,19 +292,19 @@ public class BotComponent : BotComponentBase, ISPlayer
             switch (Class.TickRequirement)
             {
                 case ESAINTickState.AlwaysUpdate:
-                    AlwaysTickClasses.Add(Class);
+                    _alwaysTickClasses.Add(Class);
                     break;
 
                 case ESAINTickState.OnlyBotActive:
-                    TickWhenActiveClasses.Add(Class);
+                    _tickWhenActiveClasses.Add(Class);
                     break;
 
                 case ESAINTickState.OnlyNoSleep:
-                    TickWhenNoSleepClasses.Add(Class);
+                    _tickWhenNoSleepClasses.Add(Class);
                     break;
 
                 case ESAINTickState.OnlyBotInCombat:
-                    TickWhenCombatClasses.Add(Class);
+                    _tickWhenCombatClasses.Add(Class);
                     break;
 
                 default:
@@ -338,7 +338,7 @@ public class BotComponent : BotComponentBase, ISPlayer
             Logger.LogError($"Error When Initializing Components, Disposing... : {ex}");
             return false;
         }
-        foreach (var botClass in BotClasses)
+        foreach (var botClass in _botClasses)
         {
             try
             {
@@ -409,29 +409,23 @@ public class BotComponent : BotComponentBase, ISPlayer
 
         if (Info.Profile.IsPMC)
         {
-            IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedPMCBrains()
-                .Select(brain => brain.ToString());
-            return IsAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "PMC");
+            return IsAssignedBrainAllowed(assignedBrainName, AIBrains.AllowedPMCBrains, "PMC");
         }
 
         if (Info.Profile.IsPlayerScav)
         {
-            IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains()
-                .Select(brain => brain.ToString());
-            return IsAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "PlayerScav");
+            return IsAssignedBrainAllowed(assignedBrainName, AIBrains.AllowedPlayerScavBrains, "PlayerScav");
         }
 
         if (Info.Profile.IsScav)
         {
-            IEnumerable<string> allowedBrainNames = AIBrains.GetAllowedScavBrains()
-                .Select(brain => brain.ToString());
-            return IsAssignedBrainAllowed(assignedBrainName, allowedBrainNames, "Scav");
+            return IsAssignedBrainAllowed(assignedBrainName, AIBrains.AllowedScavBrains, "Scav");
         }
 
         return true;
     }
 
-    private bool IsAssignedBrainAllowed(string assignedBrainName, IEnumerable<string> allowedBrainNames, string botCategory)
+    private bool IsAssignedBrainAllowed(string assignedBrainName, IReadOnlyCollection<string> allowedBrainNames, string botCategory)
     {
         if (allowedBrainNames.Contains(assignedBrainName))
         {
@@ -464,10 +458,10 @@ public class BotComponent : BotComponentBase, ISPlayer
     {
         if (IsCheater)
         {
-            if (defaultMoveSpeed == 0)
+            if (_defaultMoveSpeed == 0)
             {
-                defaultMoveSpeed = Player.MovementContext.MaxSpeed;
-                defaultSprintSpeed = Player.MovementContext.SprintSpeed;
+                _defaultMoveSpeed = Player.MovementContext.MaxSpeed;
+                _defaultSprintSpeed = Player.MovementContext.SprintSpeed;
             }
             Player.Grounder.enabled = GoalEnemy == null;
             if (GoalEnemy != null)
@@ -481,8 +475,8 @@ public class BotComponent : BotComponentBase, ISPlayer
             }
             else
             {
-                Player.MovementContext.SetCharacterMovementSpeed(defaultMoveSpeed, false);
-                Player.MovementContext.SprintSpeed = defaultSprintSpeed;
+                Player.MovementContext.SetCharacterMovementSpeed(_defaultMoveSpeed, false);
+                Player.MovementContext.SprintSpeed = _defaultSprintSpeed;
             }
         }
     }
@@ -493,7 +487,7 @@ public class BotComponent : BotComponentBase, ISPlayer
         BotActivation?.SetActive(false);
         StopAllCoroutines();
 
-        foreach (var botClass in BotClasses)
+        foreach (var botClass in _botClasses)
         {
             try
             {
@@ -508,12 +502,12 @@ public class BotComponent : BotComponentBase, ISPlayer
         if (NoBushESP != null)
             Destroy(NoBushESP);
         if (BotOwner != null)
-            BotOwner.OnBotStateChange -= resetBot;
+            BotOwner.OnBotStateChange -= ResetBot;
 
         Destroy(this);
     }
 
-    private void resetBot(EBotState state)
+    private void ResetBot(EBotState state)
     {
         Decision.ResetDecisions(false);
     }
@@ -521,28 +515,28 @@ public class BotComponent : BotComponentBase, ISPlayer
     /// <summary>
     /// All Bot Component classes.
     /// </summary>
-    private readonly List<IBotClass> BotClasses = [];
+    private readonly List<IBotClass> _botClasses = [];
 
     /// <summary>
     /// Bot classes that should tick no matter what.
     /// </summary>
-    private readonly List<IBotClass> AlwaysTickClasses = [];
+    private readonly List<IBotClass> _alwaysTickClasses = [];
 
     /// <summary>
     /// Bot classes that should tick when a bot is active.
     /// </summary>
-    private readonly List<IBotClass> TickWhenActiveClasses = [];
+    private readonly List<IBotClass> _tickWhenActiveClasses = [];
 
     /// <summary>
     /// Bot classes that should tick when a bot not sleeping.
     /// </summary>
-    private readonly List<IBotClass> TickWhenNoSleepClasses = [];
+    private readonly List<IBotClass> _tickWhenNoSleepClasses = [];
 
     /// <summary>
     /// Bot classes that should tick when a bot is in combat.
     /// </summary>
-    private readonly List<IBotClass> TickWhenCombatClasses = [];
+    private readonly List<IBotClass> _tickWhenCombatClasses = [];
 
-    private float defaultMoveSpeed;
-    private float defaultSprintSpeed;
+    private float _defaultMoveSpeed;
+    private float _defaultSprintSpeed;
 }
