@@ -40,7 +40,7 @@ public class SAINCoverClass : BotComponentClassBase
     public bool HasCover => CoverInUse != null;
     public CoverFinderState CurrentCoverFinderState { get; private set; }
     public List<CoverPoint> CoverPoints => CoverFinder.CoverPoints;
-    public CoverFinderComponent CoverFinder { get; private set; }
+    public CoverFinderComponent CoverFinder { get; }
     public float LastHitInCoverTime { get; private set; }
     public float TimeSinceLastHitInCover => Time.time - LastHitInCoverTime;
 
@@ -133,7 +133,7 @@ public class SAINCoverClass : BotComponentClassBase
             reason = "EnemySniperRun";
             return true;
         }
-        if (StartRunCoverTimer < Time.time)
+        if (_startRunCoverTimer < Time.time)
         {
             reason = "timeToRun";
             return true;
@@ -260,13 +260,13 @@ public class SAINCoverClass : BotComponentClassBase
 
     private void OnStartMoveToCover()
     {
-        StartRunCoverTimer = Time.time + RunToCoverTime * UnityEngine.Random.Range(RunToCoverTimeRandomMin, RunToCoverTimeRandomMax);
+        _startRunCoverTimer = Time.time + (_runToCoverTime * UnityEngine.Random.Range(_runToCoverTimeRandomMin, _runToCoverTimeRandomMax));
     }
 
-    private const float RunToCoverTime = 1.5f;
-    private const float RunToCoverTimeRandomMin = 0.66f;
-    private const float RunToCoverTimeRandomMax = 1.33f;
-    private float StartRunCoverTimer;
+    private const float _runToCoverTime = 1.5f;
+    private const float _runToCoverTimeRandomMin = 0.66f;
+    private const float _runToCoverTimeRandomMax = 1.33f;
+    private float _startRunCoverTimer;
 
     public CoverPoint CoverPoint_MovingTo { get; private set; }
 
@@ -288,10 +288,10 @@ public class SAINCoverClass : BotComponentClassBase
             CoverFinder?.Dispose();
         }
         catch { }
-        if (debugCoverObject != null)
+        if (_debugCoverObject != null)
         {
-            DebugGizmos.DestroyLabel(debugCoverObject);
-            debugCoverObject = null;
+            DebugGizmos.DestroyLabel(_debugCoverObject);
+            _debugCoverObject = null;
         }
         base.Dispose();
     }
@@ -401,7 +401,7 @@ public class SAINCoverClass : BotComponentClassBase
         //    Bot.Mover.Prone.SetProne(true);
         //    return true;
         //}
-            Bot.Mover.Prone.SetProne(false);
+        Bot.Mover.Prone.SetProne(false);
         return false;
     }
 
@@ -427,5 +427,5 @@ public class SAINCoverClass : BotComponentClassBase
         return Physics.Raycast(position, direction, dist, LayerMaskClass.HighPolyWithTerrainMask);
     }
 
-    private DebugLabel debugCoverObject;
+    private DebugLabel _debugCoverObject;
 }

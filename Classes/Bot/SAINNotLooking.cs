@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
 
-public class SAINNotLooking
+public static class SAINNotLooking
 {
     private static LookSettings Settings => SAINPlugin.LoadedPreset.GlobalSettings.Look;
 
