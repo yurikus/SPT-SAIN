@@ -28,11 +28,11 @@ public class BotBusyHandsDetector : BotComponentClassBase
 
     public override void ManualUpdate()
     {
-        checkShallFix();
+        CheckShallFix();
         base.ManualUpdate();
     }
 
-    private void checkShallFix()
+    private void CheckShallFix()
     {
         if (_nextCheckTime < Time.time)
         {
@@ -42,7 +42,7 @@ public class BotBusyHandsDetector : BotComponentClassBase
         }
     }
 
-    private void checkBusyHands()
+    private void CheckBusyHands()
     {
         if (Player.HandsController is ItemHandsController itemHandsController)
         {
@@ -64,20 +64,20 @@ public class BotBusyHandsDetector : BotComponentClassBase
         }
     }
 
-    private void checkBusyTooLong()
+    private void CheckBusyTooLong()
     {
         float startTime = _timeStartInteraction;
         if (startTime <= 0f)
         {
             return;
         }
-        if (botHasBusyHands(startTime, out string reason))
+        if (BotHasBusyHands(startTime, out string reason))
         {
-            resetHands(reason);
+            ResetHands(reason);
         }
     }
 
-    private bool botHasBusyHands(float startTime, out string reason)
+    private bool BotHasBusyHands(float startTime, out string reason)
     {
         float timeSinceStart = Time.time - startTime;
         if (Player.HandsController is ItemHandsController itemController)
@@ -103,20 +103,20 @@ public class BotBusyHandsDetector : BotComponentClassBase
         return timeSinceStart > 20;
     }
 
-    private void resetHands(string reason)
+    private void ResetHands(string reason)
     {
 #if DEBUG
         Logger.LogWarning($"[{BotOwner.name}] is resetting hands because [{reason}] too long!");
 #endif
-        resetHandsController(Player);
+        ResetHandsController(Player);
     }
 
-    private Dictionary<GEventArgs1, float> _OngoingEvents = new();
-    private List<HandEvent> _eventsToRemove = new();
-    private List<HandEvent> _events = new();
+    private readonly Dictionary<GEventArgs1, float> _ongoingEvents = [];
+    private readonly List<HandEvent> _eventsToRemove = [];
+    private readonly List<HandEvent> _events = [];
 
     // Credit to Lacyway's "Hands are Not Busy" mod https://github.com/Lacyway/HandsAreNotBusy/blob/main/HANB_Component.cs
-    private static void resetHandsController(Player player)
+    private static void ResetHandsController(Player player)
     {
         var hands = player.HandsController as Player.ItemHandsController;
 #if DEBUG

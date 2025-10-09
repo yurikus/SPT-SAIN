@@ -10,9 +10,9 @@ namespace SAIN.SAINComponent.Classes;
 
 public class SAINActivationClass(BotComponent botComponent) : BotComponentClassBase(botComponent)
 {
-    private const float ACTIVATE_STANDBY_HUMAN = 150;
-    private const float ACTIVATE_STANDBY_AI = 50;
-    private const float ACTIVATE_STANDBY_CHECK_FREQ = 3f;
+    private const float _activate_standby_human = 150;
+    private const float _activate_standby_ai = 50;
+    private const float _activate_standby_check_freq = 3f;
 
     public ESAINLayer ActiveLayer { get; private set; }
     public IBotAction CurrentAction { get; private set; }
@@ -132,14 +132,14 @@ public class SAINActivationClass(BotComponent botComponent) : BotComponentClassB
         {
             return false;
         }
-        _nextCheckEnemiesTime = Time.time + ACTIVATE_STANDBY_CHECK_FREQ;
+        _nextCheckEnemiesTime = Time.time + _activate_standby_check_freq;
 
         var enemies = Bot.EnemyController.Enemies.Values;
         foreach (var enemy in enemies)
             if (enemy != null &&
                 (enemy.InLineOfSight ||
-                (enemy.IsAI && enemy.RealDistance < ACTIVATE_STANDBY_AI) ||
-                (!enemy.IsAI && enemy.RealDistance < ACTIVATE_STANDBY_HUMAN)))
+                (enemy.IsAI && enemy.RealDistance < _activate_standby_ai) ||
+                (!enemy.IsAI && enemy.RealDistance < _activate_standby_human)))
                 return true;
 
         return false;

@@ -55,20 +55,20 @@ public class BotBackpackDropClass : BotComponentClassBase
 
     //private bool _wantToDrop;
 
-    private void executeDrop()
+    private void ExecuteDrop()
     {
         if (_dropCoroutine != null)
         {
             return;
         }
-        _dropCoroutine = Bot.StartCoroutine(executeBackpackDrop());
+        _dropCoroutine = Bot.StartCoroutine(ExecuteBackpackDrop());
     }
 
     private Coroutine _dropCoroutine;
 
-    private IEnumerator executeBackpackDrop()
+    private IEnumerator ExecuteBackpackDrop()
     {
-        Item backpack = _currentBackpack;
+        Item backpack = CurrentBackpack;
         if (backpack != null)
         {
             if (DroppedBackpack == null)
@@ -80,7 +80,7 @@ public class BotBackpackDropClass : BotComponentClassBase
 
         yield return new WaitForSeconds(0.5f);
 
-        if (_currentBackpack == null)
+        if (CurrentBackpack == null)
         {
             //_wantToDrop = false;
             BackpackDropPosition = new Vector3?(Bot.Position);
@@ -91,7 +91,7 @@ public class BotBackpackDropClass : BotComponentClassBase
 
     public EBackpackStatus BackpackStatus { get; private set; }
 
-    private Item _currentBackpack => Bot.PlayerComponent.Equipment.GearInfo.GetItem(EquipmentSlot.Backpack);
+    private Item CurrentBackpack => Bot.PlayerComponent.Equipment.GearInfo.GetItem(EquipmentSlot.Backpack);
 
     public bool RetreiveBackpack()
     {

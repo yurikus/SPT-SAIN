@@ -1,10 +1,7 @@
 ﻿using SAIN.Components;
-using SAIN.Helpers;
-using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using System;
 using UnityEngine;
-using static HBAO_Core;
 
 namespace SAIN.SAINComponent.Classes;
 
@@ -21,11 +18,11 @@ public class SAINAILimit : BotComponentClassBase
 
     public override void ManualUpdate()
     {
-        checkAILimit();
+        CheckAILimit();
         base.ManualUpdate();
     }
 
-    private void checkAILimit()
+    private void CheckAILimit()
     {
         AILimitSetting lastLimit = CurrentAILimit;
         if (Bot.EnemyController.ActiveHumanEnemy)
@@ -40,7 +37,7 @@ public class SAINAILimit : BotComponentClassBase
             if (gameWorld != null &&
                  GameWorldComponent.Instance.PlayerTracker.FindClosestHumanPlayer(out float closestPlayerDistance, PlayerComponent, out _) != null)
             {
-                CurrentAILimit = checkDistances(closestPlayerDistance);
+                CurrentAILimit = CheckDistances(closestPlayerDistance);
                 ClosestPlayerDistanceSqr = closestPlayerDistance;
             }
         }
@@ -50,7 +47,7 @@ public class SAINAILimit : BotComponentClassBase
         }
     }
 
-    private AILimitSetting checkDistances(float closestPlayerDist)
+    private AILimitSetting CheckDistances(float closestPlayerDist)
     {
         var aiLimit = GlobalSettingsClass.Instance.General.AILimit;
         if (closestPlayerDist < aiLimit.AILimitRanges[AILimitSetting.Far])

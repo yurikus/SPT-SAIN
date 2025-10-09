@@ -19,7 +19,8 @@ public class BotWeightManagement : BotComponentClassBase
         if (GlobalSettingsClass.Instance.General.BOT_INTERTIA_TOGGLE)
         {
             GetSlots();
-            Traverse.Create(Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(GetBotTotalWeight);
+            Traverse.Create(Player.InventoryController.Inventory)
+                .Field<FloatFunc>("TotalWeight").Value = new FloatFunc(GetBotTotalWeight);
             Player.Physical.EncumberDisabled = false;
         }
         base.Init();
@@ -42,7 +43,7 @@ public class BotWeightManagement : BotComponentClassBase
         return result;
     }
 
-    private readonly List<Slot> _slots = new();
+    private readonly List<Slot> _slots = [];
 
     public static readonly EquipmentSlot[] _botEquipmentSlots =
     [

@@ -1,7 +1,4 @@
 ﻿using SAIN.Components;
-using SAIN.Helpers;
-using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
@@ -15,10 +12,10 @@ public class CurrentTargetClass : BotComponentClassBase
 
     public override void ManualUpdate()
     {
-        updateGoalTarget();
+        UpdateGoalTarget();
     }
 
-    private void updateGoalTarget()
+    private void UpdateGoalTarget()
     {
         if (_updateGoalTargetTime < Time.time)
         {

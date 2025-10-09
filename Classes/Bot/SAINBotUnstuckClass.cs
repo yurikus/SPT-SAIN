@@ -25,14 +25,14 @@ public class SAINBotUnstuckClass : BotComponentClassBase
 
     private void CheckIfPositionChanged()
     {
-        if (CheckPositionTimer < Time.time)
+        if (_checkPositionTimer < Time.time)
         {
-            CheckPositionTimer = Time.time + 0.5f;
+            _checkPositionTimer = Time.time + 0.5f;
 
             bool botChangedPositionLast = BotHasChangedPosition;
 
             const float DistThreshold = 0.1f;
-            BotHasChangedPosition = (LastPos - Bot.Position).sqrMagnitude > DistThreshold * DistThreshold;
+            BotHasChangedPosition = (_lastPos - Bot.Position).sqrMagnitude > DistThreshold * DistThreshold;
 
             if (botChangedPositionLast && !BotHasChangedPosition)
             {
@@ -43,10 +43,11 @@ public class SAINBotUnstuckClass : BotComponentClassBase
                 TimeStartedChangingPosition = 0f;
             }
 
-            LastPos = Bot.Position;
+            _lastPos = Bot.Position;
         }
     }
-    private void teleport(Vector3 position)
+
+    private void Teleport(Vector3 position)
     {
         Player.Teleport(position + Vector3.up * 0.25f);
 #if DEBUG
@@ -57,13 +58,12 @@ public class SAINBotUnstuckClass : BotComponentClassBase
         BotOwner.Mover?.RecalcWay();
     }
 
-    private bool isHumanVisible() => Bot.EnemyController.HumanEnemyInLineofSight;
+    private bool IsHumanVisible() => Bot.EnemyController.HumanEnemyInLineofSight;
 
-    private bool isHumanClose()
+    private bool IsHumanClose()
     {
         bool closeHuman = false;
-        var allPlayers = Singleton<GameWorld>.Instance.AllAlivePlayersList;
-        foreach (var player in allPlayers)
+        foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
         {
             if (player != null
                 && !player.IsAI
@@ -80,7 +80,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
     private bool _botStuckAfterVault;
 
 
-    private bool tryVault()
+    private bool TryVault()
     {
         if (!Bot.Info.FileSettings.Move.VAULT_UNSTUCK_TOGGLE || !GlobalSettingsClass.Instance.Move.VAULT_UNSTUCK_TOGGLE)
         {
@@ -117,7 +117,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
     private bool _botVaulted;
     private float _botVaultedTime;
 
-    private void tryAutoVault()
+    private void TryAutoVault()
     {
         if (!Bot.Info.FileSettings.Move.VAULT_TOGGLE || !GlobalSettingsClass.Instance.Move.VAULT_TOGGLE)
         {
@@ -129,7 +129,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
             float timeAdd;
             Vector3 lookDir = Player.LookDirection.normalized;
             Vector3 targetDir = BotOwner.Mover.NormDirCurPoint;
-            if (Vector3.Dot(lookDir, targetDir) > 0.85f && tryVault())
+            if (Vector3.Dot(lookDir, targetDir) > 0.85f && TryVault())
             {
                 _botVaulted = true;
                 timeAdd = 2f;
@@ -146,26 +146,26 @@ public class SAINBotUnstuckClass : BotComponentClassBase
     {
         if (!DontUnstuckMe && !Bot.BotActivation.BotInStandBy)
         {
-            startCoroutine();
+            StartCoroutine();
         }
-        else if (botUnstuckCoroutine != null)
+        else if (_botUnstuckCoroutine != null)
         {
-            Bot.StopCoroutine(botUnstuckCoroutine);
+            Bot.StopCoroutine(_botUnstuckCoroutine);
         }
         base.ManualUpdate();
     }
 
-    private void startCoroutine()
+    private void StartCoroutine()
     {
-        if (botUnstuckCoroutine == null)
+        if (_botUnstuckCoroutine == null)
         {
-            botUnstuckCoroutine = Bot.StartCoroutine(botUnstuck());
+            _botUnstuckCoroutine = Bot.StartCoroutine(BotUnstuck());
         }
     }
 
-    private Coroutine botUnstuckCoroutine;
+    private Coroutine _botUnstuckCoroutine;
 
-    private IEnumerator botUnstuck()
+    private IEnumerator BotUnstuck()
     {
         while (true)
         {
@@ -179,10 +179,10 @@ public class SAINBotUnstuckClass : BotComponentClassBase
         }
     }
 
-    private const float MinDistance = 100f;
-    private const float MaxDistance = 300f;
-    private const float PathLengthCoef = 1.25f;
-    private const float MinDistancePathLength = MinDistance * PathLengthCoef;
+    private const float _minDistance = 100f;
+    private const float _maxDistance = 300f;
+    private const float _pathLengthCoef = 1.25f;
+    private const float _minDistancePathLength = _minDistance * _pathLengthCoef;
 
     //private Coroutine TeleportCoroutine;
 
@@ -231,14 +231,14 @@ public class SAINBotUnstuckClass : BotComponentClassBase
 
                         // Makes sure the bot isn't too close to a human for them to hear
                         float sqrMag = (playerPosition - botPosition).sqrMagnitude;
-                        if (sqrMag < MinDistance * MinDistance)
+                        if (sqrMag < _minDistance * _minDistance)
                         {
                             shallTeleport = false;
                             break;
                         }
 
                         // Checks the max distance to do a path calculation
-                        if (sqrMag < MaxDistance * MaxDistance)
+                        if (sqrMag < _maxDistance * _maxDistance)
                         {
                             NavMeshPath path = CalcPath(botPosition, playerPosition, out float pathLength);
                             if (CheckPathLength(playerPosition, path, pathLength) == false)
@@ -259,7 +259,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
 
         if (IsTeleporting)
         {
-            Teleport(teleportDestination.Value + Vector3.up * 0.25f);
+            TeleportWithLimit(teleportDestination.Value + Vector3.up * 0.25f);
             float distance = (teleportDestination.Value - botPosition).magnitude;
             Logger.LogDebug($"Teleporting stuck bot: [{Player.name}] [{distance}] meters to the next corner they are trying to go to");
             _botStuckAfterVault = false;
@@ -280,7 +280,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
         return Player.HealthController.IsAlive == true && Player.AIData.IsAI == false;
     }
 
-    private void Teleport(Vector3 position)
+    private void TeleportWithLimit(Vector3 position)
     {
         if (teleportTimer < Time.time)
         {
@@ -295,17 +295,17 @@ public class SAINBotUnstuckClass : BotComponentClassBase
 
     private static NavMeshPath CalcPath(Vector3 start, Vector3 end, out float pathLength)
     {
-        if (PathToPlayer == null)
+        if (_pathToPlayer == null)
         {
-            PathToPlayer = new NavMeshPath();
+            _pathToPlayer = new NavMeshPath();
         }
         if (NavMesh.SamplePosition(end, out NavMeshHit hit, 1f, -1))
         {
-            PathToPlayer.ClearCorners();
-            if (NavMesh.CalculatePath(start, hit.position, -1, PathToPlayer))
+            _pathToPlayer.ClearCorners();
+            if (NavMesh.CalculatePath(start, hit.position, -1, _pathToPlayer))
             {
-                pathLength = PathToPlayer.CalculatePathLength();
-                return PathToPlayer;
+                pathLength = _pathToPlayer.CalculatePathLength();
+                return _pathToPlayer;
             }
         }
         pathLength = 0f;
@@ -323,12 +323,12 @@ public class SAINBotUnstuckClass : BotComponentClassBase
             Vector3 lastCorner = path.corners[path.corners.Length - 1];
             float sqrMag = (lastCorner - end).magnitude;
             float combinedLength = sqrMag + pathLength;
-            if (combinedLength < MinDistancePathLength)
+            if (combinedLength < _minDistancePathLength)
             {
                 return false;
             }
         }
-        if (path.status == NavMeshPathStatus.PathComplete && pathLength < MinDistancePathLength)
+        if (path.status == NavMeshPathStatus.PathComplete && pathLength < _minDistancePathLength)
         {
             return false;
         }
@@ -337,7 +337,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
 
     private List<Player> GetHumanPlayers()
     {
-        HumanPlayers.Clear();
+        _humanPlayers.Clear();
         var allPlayers = Singleton<GameWorld>.Instance?.AllAlivePlayersList;
         if (allPlayers != null)
         {
@@ -345,21 +345,21 @@ public class SAINBotUnstuckClass : BotComponentClassBase
             {
                 if (player != null && player.AIData.IsAI == false && player.HealthController.IsAlive)
                 {
-                    HumanPlayers.Add(player);
+                    _humanPlayers.Add(player);
                 }
             }
         }
-        return HumanPlayers;
+        return _humanPlayers;
     }
 
-    private static NavMeshPath PathToPlayer;
-    private List<Player> HumanPlayers = new();
+    private static NavMeshPath _pathToPlayer;
+    private readonly List<Player> _humanPlayers = [];
     public float TimeSinceStuck => Time.time - TimeStuck;
-    public float TimeStuck { get; private set; }
+    public float TimeStuck { get; }
 
-    private float CheckPositionTimer = 0f;
+    private float _checkPositionTimer = 0f;
 
-    private Vector3 LastPos = Vector3.zero;
+    private Vector3 _lastPos = Vector3.zero;
 
     public float TimeSpentNotMoving => Time.time - TimeStartedChangingPosition;
 

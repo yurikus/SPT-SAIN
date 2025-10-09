@@ -1,7 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
@@ -26,7 +25,7 @@ public abstract class BotBase(BotComponent bot) : IBotClass
     {
         PresetHandler.OnPresetUpdated += UpdatePresetSettings;
     }
-    
+
     /// <summary>
     /// Check if we should tick this frame, Set Last Tick Time if return true
     /// </summary>
@@ -76,7 +75,10 @@ public abstract class BotComponentClassBase : BotBase
     {
         Bot.AddBotTickClass(this);
         foreach (IBotClass Class in SubClasses)
+        {
             Class.Init();
+        }
+
         base.Init();
     }
 
@@ -84,14 +86,20 @@ public abstract class BotComponentClassBase : BotBase
     {
         float time = Time.time;
         foreach (IBotClass Class in SubClasses)
+        {
             Class.ManualUpdate();
+        }
+
         base.ManualUpdate();
     }
 
     public override void Dispose()
     {
         foreach (IBotClass Class in SubClasses)
+        {
             Class?.Dispose();
+        }
+
         base.Dispose();
     }
 
