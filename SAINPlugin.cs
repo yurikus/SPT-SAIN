@@ -144,7 +144,6 @@ public class SAINPlugin : BaseUnityPlugin
         new Patches.Hearing.DoorBreachSoundPatch(),
         new Patches.Hearing.DoorOpenSoundPatch(),
         new Patches.Hearing.FootstepSoundPatch(),
-        new Patches.Hearing.FikaHeadlessTempFixPatch(),
         new Patches.Hearing.GenericMovementSoundPatch(),
         new Patches.Hearing.SpecificStepAudioControllerPatch(),
         new Patches.Hearing.DryShotPatch(),

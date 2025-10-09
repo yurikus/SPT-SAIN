@@ -125,38 +125,9 @@ internal class PeacefulLayer : SAINLayer
     // Looting Bots Integration
     private bool ExtractFromLoot()
     {
-        // If extract from loot is disabled, or no Looting Bots interop, not active
-        if (SAINPlugin.LoadedPreset.GlobalSettings.General.LootingBots.ExtractFromLoot == false || !LootingBots.LootingBotsInterop.Init())
-        {
-            return false;
-        }
-
-        // No integration setup yet, set it up
-        if (SAINLootingBotsIntegration == null)
-        {
-            SAINLootingBotsIntegration = new SAINLootingBotsIntegration(BotOwner, Bot);
-        }
-
-        SAINLootingBotsIntegration?.Update();
-
-        if (FullOnLoot && HasActiveThreat() == false)
-        {
-            if (!_loggedExtractLoot)
-            {
-                _loggedExtractLoot = true;
-                Logger.LogInfo($"[{BotOwner.name}] Is Moving to Extract because of Loot found in raid. Net Loot Value: [{SAINLootingBotsIntegration?.NetLootValue}]");
-            }
-            Bot.Memory.Extract.ExtractReason = EExtractReason.Loot;
-            return true;
-        }
+        //Todo: Reimplement BSG looting system here
         return false;
     }
-
-    private bool _loggedExtractLoot;
-
-    private bool FullOnLoot => SAINLootingBotsIntegration?.FullOnLoot == true;
-
-    private SAINLootingBotsIntegration SAINLootingBotsIntegration;
 
     private bool HasActiveThreat()
     {

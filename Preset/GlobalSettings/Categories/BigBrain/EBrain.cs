@@ -53,11 +53,36 @@ public enum EBrain
 
 public static class AIBrains
 {
+    private static IReadOnlyCollection<string> _allowedPlayerScavBrains;
+
     public static IReadOnlyCollection<string> AllowedPlayerScavBrains
     {
         get
         {
-            return AllowedPMCBrains;
+            if (_allowedPlayerScavBrains == null)
+            {
+                List<string> combinedBrains = [];
+
+                foreach (var brain in AllowedPMCBrains)
+                {
+                    if (!combinedBrains.Contains(brain))
+                    {
+                        combinedBrains.Add(brain);
+                    }
+                }
+
+                foreach (var brain in AllowedScavBrains)
+                {
+                    if (!combinedBrains.Contains(brain))
+                    {
+                        combinedBrains.Add(brain);
+                    }
+                }
+
+                _allowedPlayerScavBrains = combinedBrains.AsReadOnly();
+            }
+
+            return _allowedPlayerScavBrains;
         }
     }
 
