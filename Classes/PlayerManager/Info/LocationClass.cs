@@ -125,6 +125,10 @@ public class LocationClass : GameWorldBase, IGameWorldClass
                 Location = ELocation.Town;
                 break;
 
+            case "labyrinth":
+                Location = ELocation.Labyrinth;
+                break;
+
             default:
                 Logger.LogError($"{locationString}");
                 Location = ELocation.None;

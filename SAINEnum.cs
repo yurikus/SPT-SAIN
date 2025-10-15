@@ -215,6 +215,7 @@ public enum ELocation
     Interchange = 11,
     Terminal = 12,
     Town = 13,
+    Labyrinth = 14,
 }
 
 public enum EPathDistance
