@@ -307,15 +307,11 @@ public class SAINShootData : BotComponentClassBase
         {
             return null;
         }
-        if (!SAINPlugin.LoadedPreset.GlobalSettings.Aiming.AimCenterMassGlobal)
+        if (SAINPlugin.LoadedPreset.GlobalSettings.Aiming.AimCenterMassGlobal)
         {
-            return null;
+            return enemy.CenterMass;
         }
-        if (!bot.Info.FileSettings.Aiming.AimCenterMass)
-        {
-            return null;
-        }
-        if (bot.Info.FileSettings.Aiming.AimForHead)
+        if (bot.Info.FileSettings.Aiming.AimForHead || !bot.Info.FileSettings.Aiming.AimCenterMass)
         {
             return null;
         }
