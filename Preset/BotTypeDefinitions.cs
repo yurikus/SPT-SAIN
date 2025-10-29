@@ -135,7 +135,7 @@ public class BotTypeDefinitions
             new BotType{ WildSpawnType = WildSpawnType.sectantWarrior,          Name = "Cultist",                  Section = "Other" ,       Description = "Found on Customs, Woods, Factory, Shoreline at night" },
             new BotType{ WildSpawnType = WildSpawnType.bossKilla,               Name = "Killa",                    Section = "Bosses" ,      Description = "He shoot. Found on Interchange and Streets" },
 
-				new BotType{ WildSpawnType = WildSpawnType.bossBully,               Name = "Rashala",                  Section = "Bosses" ,      Description = "Customs Boss" },
+            new BotType{ WildSpawnType = WildSpawnType.bossBully,               Name = "Rashala",                  Section = "Bosses" ,      Description = "Customs Boss" },
             new BotType{ WildSpawnType = WildSpawnType.followerBully,           Name = "Rashala Guard",            Section = "Followers" ,   Description = "Customs Boss Follower" },
 
             new BotType{ WildSpawnType = WildSpawnType.bossKojaniy,             Name = "Shturman",                 Section = "Bosses" ,      Description = "Woods Boss" },
@@ -143,6 +143,10 @@ public class BotTypeDefinitions
 
             new BotType{ WildSpawnType = WildSpawnType.bossTagilla,             Name = "Tagilla",                  Section = "Bosses" ,      Description = "He Smash" },
             new BotType{ WildSpawnType = WildSpawnType.followerTagilla,         Name = "Tagilla Guard",            Section = "Followers" ,   Description = "They Smash Too?" },
+            
+            new BotType{ WildSpawnType = WildSpawnType.bossTagillaAgro,         Name = "Shadow of Tagilla",        Section = "Bosses" ,      Description = "He Smash" },
+            new BotType{ WildSpawnType = WildSpawnType.bossKillaAgro,           Name = "Vengeful Killa",           Section = "Bosses" ,      Description = "He no Smash" },
+            new BotType{ WildSpawnType = WildSpawnType.tagillaHelperAgro,       Name = "Shadow of Tagilla Guard",  Section = "Followers" ,   Description = "Labyrinth Boss Follower" },
 
             new BotType{ WildSpawnType = WildSpawnType.bossSanitar,             Name = "Sanitar",                  Section = "Bosses" ,      Description = "Shoreline Boss" },
             new BotType{ WildSpawnType = WildSpawnType.followerSanitar,         Name = "Sanitar Guard",            Section = "Followers" ,   Description = "Shoreline Boss Follower" },

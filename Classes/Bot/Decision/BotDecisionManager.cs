@@ -5,6 +5,7 @@ using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using System;
+using EFT.UI;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision;
@@ -63,12 +64,23 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
         if (!alreadyAttacking)
         {
             if (CurrentSelfDecision != ESelfActionType.None)
+            {
                 return false;
+            }
             if (status != ETagStatus.Healthy && status != ETagStatus.Injured)
+            {
                 return false;
+            }
             if (enemy.Path.PathToEnemyStatus != UnityEngine.AI.NavMeshPathStatus.PathComplete)
+            {
                 return false;
-            if (enemy.RealDistance < 30 && enemy.Path.PathLength < 20 && enemy.Status.VulnerableAction != EEnemyAction.None)
+            }
+            if (enemy.RealDistance < 35 && enemy.Path.PathLength < 30 && enemy.Status.VulnerableAction != EEnemyAction.None)
+            {
+                enemy.BotOwner.WeaponManager.Melee.ShallEndRun = false;
+                return true;
+            }
+            if (enemy.RealDistance < 20 && enemy.Path.PathLength < 15)
             {
                 enemy.BotOwner.WeaponManager.Melee.ShallEndRun = false;
                 return true;
@@ -102,15 +114,15 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
         }
 
         // TODO: rework melee decisions
-        //if (Bot.Info.Profile.WildSpawnType == WildSpawnType.bossTagilla)
-        //{
-        //    if (shallTagillaHammerAttack(enemy))
-        //    {
-        //        SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
-        //        return;
-        //    }
-        //    if (BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMain();
-        //}
+        if (Bot.Info.Profile.WildSpawnType is WildSpawnType.bossTagilla or WildSpawnType.bossTagillaAgro)
+        {
+            if (shallTagillaHammerAttack(enemy))
+            {
+                SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
+                return;
+            }
+            if (BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMain();
+        }
 
         if (enemy != null && enemy.IsZombie)
         {

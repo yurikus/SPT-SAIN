@@ -76,7 +76,9 @@ public static class Extensions
         {
             case WildSpawnType.bossBoar:
             case WildSpawnType.bossTagilla:
+            case WildSpawnType.bossTagillaAgro:
             case WildSpawnType.bossKilla:
+            case WildSpawnType.bossKillaAgro:
             case WildSpawnType.bossBully:
             case WildSpawnType.bossGluhar:
             case WildSpawnType.bossKnight:
@@ -112,6 +114,7 @@ public static class Extensions
         {
             case WildSpawnType.followerBigPipe:
             case WildSpawnType.followerTagilla:
+            case WildSpawnType.tagillaHelperAgro:
             case WildSpawnType.followerBirdEye:
             case WildSpawnType.followerBoar:
             case WildSpawnType.followerBoarClose1:
