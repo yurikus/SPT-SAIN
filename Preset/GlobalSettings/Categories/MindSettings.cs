@@ -38,7 +38,9 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
     [Hidden]
     public Dictionary<WildSpawnType, EPersonality> PERS_BOSSES = new() {
         { WildSpawnType.bossKilla, EPersonality.Wreckless},
+        { WildSpawnType.bossKillaAgro, EPersonality.Wreckless},
         { WildSpawnType.bossTagilla, EPersonality.Wreckless},
+        { WildSpawnType.bossTagillaAgro, EPersonality.Wreckless},
         { WildSpawnType.bossKolontay, EPersonality.Wreckless},
 
         { WildSpawnType.bossKnight, EPersonality.GigaChad},

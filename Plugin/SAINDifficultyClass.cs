@@ -451,7 +451,9 @@ internal static class SAINDifficultyClass
                     break;
 
                 case WildSpawnType.bossKilla:
+                case WildSpawnType.bossKillaAgro:
                 case WildSpawnType.bossTagilla:
+                case WildSpawnType.bossTagillaAgro:
                 case WildSpawnType.bossKolontay:
                     
                     easy.Aiming.AimCenterMass = false;
@@ -493,6 +495,7 @@ internal static class SAINDifficultyClass
                 case WildSpawnType.followerGluharAssault:
                 case WildSpawnType.followerSanitar:
                 case WildSpawnType.followerTagilla:
+                case WildSpawnType.tagillaHelperAgro:
                 case WildSpawnType.followerKojaniy:
                 case WildSpawnType.followerBoar:
                 case WildSpawnType.followerBoarClose1:

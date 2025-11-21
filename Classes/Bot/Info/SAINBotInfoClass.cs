@@ -110,7 +110,7 @@ public class SAINBotInfoClass : BotComponentClassBase
     public void CalcTimeBeforeSearch()
     {
         float searchTime;
-        if (Profile.WildSpawnType == WildSpawnType.bossKilla || Profile.WildSpawnType == WildSpawnType.bossTagilla)
+        if (Profile.WildSpawnType is WildSpawnType.bossKilla or WildSpawnType.bossKillaAgro or WildSpawnType.bossTagilla or WildSpawnType.bossTagillaAgro)
         {
             searchTime = 0.1f;
         }
