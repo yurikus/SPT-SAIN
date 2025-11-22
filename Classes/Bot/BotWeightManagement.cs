@@ -16,7 +16,7 @@ public class BotWeightManagement : BotComponentClassBase
 
     public override void Init()
     {
-        if (GlobalSettingsClass.Instance.General.BOT_INTERTIA_TOGGLE)
+        if (GlobalSettingsClass.Instance.General.BOT_INERTIA_TOGGLE)
         {
             GetSlots();
             Traverse.Create(Player.InventoryController.Inventory)

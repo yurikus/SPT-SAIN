@@ -13,9 +13,9 @@ public class GeneralSettings : SAINSettingsBase<GeneralSettings>, ISAINSettings
     [Description("Bots are not as careful with grenades as players, this will prevent accidental deaths fighting other bots.")]
     public bool BotVsBotGrenade = true;
 
-    [Name("Bot Intertia")]
-    [Description("Bots are properly affected by the weight of their equipment and loot for intertia. Requires raid restart for existing bots, as it applies on bot creation.")]
-    public bool BOT_INTERTIA_TOGGLE = true;
+    [Name("Bot Inertia")]
+    [Description("Bots are properly affected by the weight of their equipment and loot for inertia. Requires raid restart for existing bots, as it applies on bot creation.")]
+    public bool BOT_INERTIA_TOGGLE = true;
 
     [Name("Vanilla Bot Behavior Settings")]
     [Description("If a option here is set to ON, they will use vanilla logic, ALL Features will be disabled for these types, including personality, recoil, difficulty, and behavior.")]
