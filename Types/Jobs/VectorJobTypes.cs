@@ -31,28 +31,6 @@ public readonly struct RandomDir
     public readonly float Magnitude;
 }
 
-public struct CalcDistanceAndNormalJob : IDisposableJobFor
-{
-    [ReadOnly] public NativeArray<Vector3> Directions;
-
-    [WriteOnly] public NativeArray<float> Distances;
-    [WriteOnly] public NativeArray<Vector3> Normals;
-
-    public void Execute(int index)
-    {
-        Vector3 direction = Directions[index];
-        Distances[index] = direction.magnitude;
-        Normals[index] = direction.normalized;
-    }
-
-    public void Dispose()
-    {
-        if (Directions.IsCreated) Directions.Dispose();
-        if (Distances.IsCreated) Distances.Dispose();
-        if (Normals.IsCreated) Normals.Dispose();
-    }
-}
-
 public struct CalcDistanceJob : IDisposableJobFor
 {
     public static CalcDistanceJob Create(Vector3 Origin, Vector3[] Points)
@@ -106,30 +84,5 @@ public struct CalcDistanceJob : IDisposableJobFor
     {
         if (Directions.IsCreated) Directions.Dispose();
         if (Distances.IsCreated) Distances.Dispose();
-    }
-}
-
-public struct CalcEnemyPlaceJob : IDisposableJobFor
-{
-    [ReadOnly] public NativeArray<Vector3> PlacePositions;
-    [ReadOnly] public NativeArray<Vector3> BotPositions;
-    [ReadOnly] public NativeArray<Vector3> EnemyPositions;
-    [WriteOnly] public NativeArray<float> PlaceDistancesToBot;
-    [WriteOnly] public NativeArray<float> PlaceDistancesToEnemy;
-
-    public void Execute(int index)
-    {
-        Vector3 EnemyPlace = PlacePositions[index];
-        PlaceDistancesToBot[index] = (BotPositions[index] - EnemyPlace).magnitude;
-        PlaceDistancesToEnemy[index] = (EnemyPositions[index] - EnemyPlace).magnitude;
-    }
-
-    public void Dispose()
-    {
-        if (PlacePositions.IsCreated) PlacePositions.Dispose();
-        if (BotPositions.IsCreated) BotPositions.Dispose();
-        if (EnemyPositions.IsCreated) EnemyPositions.Dispose();
-        if (PlaceDistancesToBot.IsCreated) PlaceDistancesToBot.Dispose();
-        if (PlaceDistancesToEnemy.IsCreated) PlaceDistancesToEnemy.Dispose();
     }
 }

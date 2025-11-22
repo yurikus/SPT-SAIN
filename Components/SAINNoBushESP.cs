@@ -21,30 +21,6 @@ public class PropertyNames
 
 public class SAINNoBushESP : MonoBehaviour
 {
-    static SAINNoBushESP()
-    {
-        Type botType = typeof(BotOwner);
-
-        Type memoryType = AccessTools.Field(
-            botType, PropertyNames.Memory).FieldType;
-
-        GoalEnemyProp = AccessTools.Property(
-            memoryType, PropertyNames.GoalEnemy);
-
-        IsVisibleProp = AccessTools.Property(
-            GoalEnemyProp.PropertyType, PropertyNames.IsVisible);
-
-        Type shootDataType = AccessTools.Property(
-            botType, PropertyNames.ShootData).PropertyType;
-
-        CanShootByState = AccessTools.PropertySetter(
-            shootDataType, PropertyNames.CanShootByState);
-    }
-
-    private static readonly PropertyInfo GoalEnemyProp;
-    private static readonly PropertyInfo IsVisibleProp;
-    private static readonly MethodInfo CanShootByState;
-
     private BotOwner BotOwner;
     private BotComponent SAIN;
 
@@ -192,5 +168,5 @@ public class SAINNoBushESP : MonoBehaviour
     }
 
     private static LayerMask NoBushMask = 0;
-    private static readonly List<string> ExclusionList = new() { "filbert", "fibert", "tree", "pine", "plant", "birch", "collider", "timber", "spruce", "bush", "metal", "wood", "grass" };
+    private static readonly List<string> ExclusionList = ["filbert", "fibert", "tree", "pine", "plant", "birch", "collider", "timber", "spruce", "bush", "metal", "wood", "grass"];
 }

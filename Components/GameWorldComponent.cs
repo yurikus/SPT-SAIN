@@ -21,13 +21,6 @@ namespace SAIN.Components;
 
 public class GameWorldComponent : MonoBehaviour
 {
-    protected readonly struct BulletData(EftBulletClass inBullet, PlayerComponent InOwner, List<OtherPlayerData> InRelevantPlayers)
-    {
-        public readonly EftBulletClass Bullet = inBullet;
-        public readonly PlayerComponent Owner = InOwner;
-        public readonly List<OtherPlayerData> RelevantPlayers = InRelevantPlayers;
-    }
-
     public static bool TryGetPlayerComponent(IPlayer Player, out PlayerComponent PlayerComponent)
     {
         if (Player == null)
@@ -69,24 +62,6 @@ public class GameWorldComponent : MonoBehaviour
             //    _tempOtherPlayerCache.Clear();
             //    ActiveBullets.Add(new(Bullet, PlayerComponent, RelevantPlayers));
             //}
-        }
-    }
-
-    private readonly List<OtherPlayerData> _tempOtherPlayerCache = [];
-
-    private void UpdateActiveBullets(List<EftBulletClass> bullets)
-    {
-        int bulletCount = bullets.Count;
-        if (bulletCount == 0)
-            return;
-        for (int i = 0; i < bulletCount; i++)
-        {
-            EftBulletClass bullet = bullets[i];
-            if (bullet == null || bullet.BulletState != EftBulletClass.EBulletState.Flying)
-            {
-                bullets.RemoveAt(i);
-                continue;
-            }
         }
     }
 
@@ -136,8 +111,6 @@ public class GameWorldComponent : MonoBehaviour
         }
     }
 
-    private List<BulletData> ActiveBullets { get; } = [];
-     
     public ColliderCoverManager CoverManager { get; private set; }
     public static GameWorldComponent Instance { get; private set; }
     public GameWorld GameWorld { get; private set; }

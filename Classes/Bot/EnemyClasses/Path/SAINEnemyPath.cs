@@ -5,15 +5,6 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
 
-public enum VisiblePathNodeState
-{
-    NotSet,
-    NotChecked,
-    NotVisible,
-    Visible,
-    VisibleAndCanShoot,
-}
-
 public readonly struct PathVisibilityConfig
 {
     public PathVisibilityConfig(SteeringSettings settings)

@@ -10,18 +10,6 @@ using PainEffect = GInterface357;
 
 namespace SAIN.SAINComponent.Classes;
 
-public interface IBotMedicalItem
-{
-    public bool HasItem { get; }
-    public bool IsUsing { get; }
-
-    public void Refresh();
-
-    public bool CanUseItem();
-
-    public void UseItem();
-}
-
 public class SAINBotMedicalClass : BotComponentClassBase
 {
     public SAINBotMedicalClass(BotComponent sain) : base(sain)

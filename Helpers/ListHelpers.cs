@@ -18,16 +18,6 @@ internal static class ListHelpers
         }
     }
 
-    public static bool ClearCache<T>(List<T> list)
-    {
-        if (list != null && list.Count > 0)
-        {
-            list.Clear();
-            return true;
-        }
-        return false;
-    }
-
     public static bool ClearCache<T, V>(Dictionary<T, V> list)
     {
         if (list != null && list.Count > 0)

@@ -92,123 +92,14 @@ public class BotManagerComponent : MonoBehaviour
         BotSquads.Update(currentTime, deltaTime);
 
         HashSet<BotComponent> BotsArray = BotSpawnController.SAINBots;
-            foreach (BotComponent BotComponent in BotsArray)
-                if (BotComponent != null)
-                    BotComponent.ManualUpdate(currentTime, deltaTime);
-    }
-
-    private void drawCover()
-    {
-        if (_coverDrawn)
+        foreach (BotComponent BotComponent in BotsArray)
         {
-            return;
-        }
-        var coverData = DefaultController?.CoversData;
-        if (coverData == null)
-        {
-            return;
-        }
-        foreach (var point in coverData.Points)
-        {
-            DebugGizmos.DrawSphere(point.Position, 0.1f, Color.white);
-            if (point.AltPosition != null)
-                DebugGizmos.DrawSphere(point.AltPosition.Value, 0.1f, Color.yellow);
-            DebugGizmos.DrawSphere(point.FirePosition, 0.1f, Color.red);
-            if (point.CorePointInGame != null)
-                DebugGizmos.DrawSphere(point.CorePointInGame.Position, 0.1f, Color.blue);
-        }
-        _coverDrawn = coverData.Points.Count > 0;
-    }
-
-    private bool _coverDrawn;
-
-    public void BotDeath(BotOwner bot)
-    {
-        if (bot?.GetPlayer != null && bot.IsDead)
-        {
-            DeadBots.Add(bot.GetPlayer);
-        }
-    }
-
-    public List<Player> DeadBots { get; private set; } = new List<Player>();
-
-    public List<BotDeathObject> DeathObstacles { get; private set; } = new List<BotDeathObject>();
-
-    private readonly List<int> IndexToRemove = new();
-
-    public void AddNavObstacles()
-    {
-        if (DeadBots.Count > 0)
-        {
-            const float ObstacleRadius = 1.5f;
-
-            for (int i = 0; i < DeadBots.Count; i++)
+            if (BotComponent != null)
             {
-                var bot = DeadBots[i];
-                if (bot == null || bot.GetPlayer == null)
-                {
-                    IndexToRemove.Add(i);
-                    continue;
-                }
-                bool enableObstacle = true;
-                Collider[] players = Physics.OverlapSphere(bot.Position, ObstacleRadius, LayerMaskClass.PlayerMask);
-                foreach (var p in players)
-                {
-                    if (p == null) continue;
-                    if (p.TryGetComponent<Player>(out var player))
-                    {
-                        if (player.IsAI && player.HealthController.IsAlive)
-                        {
-                            enableObstacle = false;
-                            break;
-                        }
-                    }
-                }
-                if (enableObstacle)
-                {
-                    if (bot != null && bot.GetPlayer != null)
-                    {
-                        var obstacle = new BotDeathObject(bot);
-                        obstacle.Activate(ObstacleRadius);
-                        DeathObstacles.Add(obstacle);
-                    }
-                    IndexToRemove.Add(i);
-                }
+                BotComponent.ManualUpdate(currentTime, deltaTime);
             }
-
-            foreach (var index in IndexToRemove)
-            {
-                DeadBots.RemoveAt(index);
-            }
-
-            IndexToRemove.Clear();
         }
     }
-
-    private void UpdateObstacles()
-    {
-        if (DeathObstacles.Count > 0)
-        {
-            for (int i = 0; i < DeathObstacles.Count; i++)
-            {
-                var obstacle = DeathObstacles[i];
-                if (obstacle?.TimeSinceCreated > 30f)
-                {
-                    obstacle?.Dispose();
-                    IndexToRemove.Add(i);
-                }
-            }
-
-            foreach (var index in IndexToRemove)
-            {
-                DeathObstacles.RemoveAt(index);
-            }
-
-            IndexToRemove.Clear();
-        }
-    }
-
-    public List<string> Groups = new();
 
     public void OnDestroy()
     {
@@ -251,44 +142,4 @@ public class BotManagerComponent : MonoBehaviour
         bot = BotSpawnController.GetSAIN(botOwner);
         return bot != null;
     }
-}
-
-public class BotDeathObject
-{
-    public BotDeathObject(Player player)
-    {
-        Player = player;
-        NavMeshObstacle = player.gameObject.AddComponent<NavMeshObstacle>();
-        NavMeshObstacle.carving = false;
-        NavMeshObstacle.enabled = false;
-        Position = player.Position;
-        TimeCreated = Time.time;
-    }
-
-    public void Activate(float radius = 2f)
-    {
-        if (NavMeshObstacle != null)
-        {
-            NavMeshObstacle.enabled = true;
-            NavMeshObstacle.carving = true;
-            NavMeshObstacle.radius = radius;
-        }
-    }
-
-    public void Dispose()
-    {
-        if (NavMeshObstacle != null)
-        {
-            NavMeshObstacle.carving = false;
-            NavMeshObstacle.enabled = false;
-            GameObject.Destroy(NavMeshObstacle);
-        }
-    }
-
-    public NavMeshObstacle NavMeshObstacle { get; private set; }
-    public Player Player { get; private set; }
-    public Vector3 Position { get; private set; }
-    public float TimeCreated { get; private set; }
-    public float TimeSinceCreated => Time.time - TimeCreated;
-    public bool ObstacleActive => NavMeshObstacle.carving;
 }

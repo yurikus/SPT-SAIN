@@ -5,7 +5,6 @@ namespace SAIN.Components;
 
 public class LocationClass : GameWorldBase, IGameWorldClass
 {
-    private const string WEATHER_INTERFACE = "ginterface29_0";
     public bool WinterActive => Season == ESeason.Winter;
     public ESeason Season { get; private set; }
     public ELocation Location { get; private set; }
