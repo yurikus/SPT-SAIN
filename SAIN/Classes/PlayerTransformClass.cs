@@ -1,9 +1,11 @@
 ﻿using EFT;
+using SAIN.Extensions;
+using SAIN.Models.PlayerData;
 using UnityEngine;
 
-namespace SAIN.Classes.Transform;
+namespace SAIN.Classes;
 
-public class PlayerTransformClass
+public sealed class PlayerTransformClass
 {
     public Vector3 Position { get; private set; }
     public Vector3 EyePosition { get; private set; }
@@ -53,9 +55,9 @@ public class PlayerTransformClass
         EyePosition = eyeCollider.Center;
         BodyPosition = bodyTransform.position;
 
-        WeaponData = PlayerWeaponData.Update(WeaponData, playerPosition, player);
-        NavData = PlayerNavData.Update(NavData, playerPosition, isAI);
-        VelocityData = PlayerVelocityData.Update(VelocityData, player.MovementContext.Velocity);
-        HeadData = PlayerHeadData.Update(HeadData, headTransform.position, headTransform.rotation, headTransform.up);
+        WeaponData = WeaponData.Update(playerPosition, player);
+        NavData = NavData.Update(playerPosition, isAI);
+        VelocityData = VelocityData.Update(player.MovementContext.Velocity);
+        HeadData = HeadData.Update(headTransform.position, headTransform.rotation, headTransform.up);
     }
 }

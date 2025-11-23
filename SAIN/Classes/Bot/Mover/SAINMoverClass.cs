@@ -1,7 +1,7 @@
 ﻿using System;
 using EFT;
-using SAIN.Classes.Transform;
 using SAIN.Components;
+using SAIN.Models.PlayerData;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using UnityEngine;
 using UnityEngine.AI;

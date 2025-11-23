@@ -1,4 +1,4 @@
-﻿namespace SAIN.Classes.Transform;
+﻿namespace SAIN.Models.PlayerData;
 
 public enum EPlayerNavMeshDistance
 {

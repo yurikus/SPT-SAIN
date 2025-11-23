@@ -1,6 +1,6 @@
 ﻿using System;
 using EFT;
-using SAIN.Classes.Transform;
+using SAIN.Classes;
 using SAIN.Components.PlayerComponentSpace;
 using UnityEngine;
 

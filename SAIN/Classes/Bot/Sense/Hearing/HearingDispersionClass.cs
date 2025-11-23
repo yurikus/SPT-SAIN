@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using SAIN.Classes.Transform;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
+using SAIN.Models.PlayerData;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;

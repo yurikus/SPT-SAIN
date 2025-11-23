@@ -1,5 +1,5 @@
 ﻿using EFT;
-using SAIN.Classes.Transform;
+using SAIN.Classes;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Plugin;

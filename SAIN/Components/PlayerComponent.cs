@@ -6,7 +6,6 @@ using EFT.Ballistics;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using SAIN.Classes;
-using SAIN.Classes.Transform;
 using SAIN.Components.BotController;
 using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Components.PlayerComponentSpace.Classes;
