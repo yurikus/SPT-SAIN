@@ -13,59 +13,24 @@ namespace SAIN.Components;
 
 public class VisionRaycastJob : BotManagerBase
 {
+    private static readonly QueryParameters _losParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
+    private static readonly QueryParameters _visParams = new(LayerMaskClass.AI);
+    private static readonly QueryParameters _shootParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
+
     private const float VISION_UPDATE_INTERVAL = 1f / 30f;
     private const float VISION_JOB_INTERVAL = 1f / 30f;
+    private const int RAYCAST_CHECKS = 3;
+
+    private bool _disposed = false;
+    private readonly List<Enemy> _enemies = [];
+    private readonly List<EBodyPartColliderType> _colliderTypes = [];
+    private readonly List<Vector3> _castPoints = [];
 
     public VisionRaycastJob(BotManagerComponent botcontroller)
         : base(botcontroller)
     {
         botcontroller.StartCoroutine(EnemyVisionJob());
         botcontroller.StartCoroutine(UpdateEFTVision());
-        //botcontroller.StartCoroutine(EnemyLoSChecker());
-    }
-
-    private readonly List<JobHandle> _handles = [];
-
-    /// <summary>
-    /// Test
-    /// </summary>
-    private IEnumerator EnemyLoSChecker()
-    {
-        WaitForSeconds waitDelay = new(1f / 20f);
-        while (BotController != null)
-        {
-            yield return waitDelay;
-            HashSet<BotComponent> bots = BotController?.BotSpawnController?.SAINBots;
-            if (bots != null && bots.Count > 0)
-            {
-                foreach (BotComponent bot in bots)
-                {
-                    Vector3 eyePosition = bot.Transform.EyePosition;
-                    var otherPlayers = bot.PlayerComponent.OtherPlayersData.DataList;
-                    foreach (var otherPlayer in otherPlayers)
-                    {
-                        _handles.Add(otherPlayer.LoSData.ScheduleRaycasts(eyePosition, _losParams));
-                    }
-                }
-                if (_handles.Count > 0)
-                {
-                    yield return null;
-                    for (int i = 0; i < _handles.Count; i++)
-                    {
-                        _handles[i].Complete();
-                    }
-                    _handles.Clear();
-                    foreach (BotComponent bot in bots)
-                    {
-                        var otherPlayers = bot.PlayerComponent.OtherPlayersData.DataList;
-                        foreach (var otherPlayer in otherPlayers)
-                        {
-                            otherPlayer.LoSData.ReadLoSRaycastResults();
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private IEnumerator EnemyVisionJob()
@@ -73,7 +38,7 @@ public class VisionRaycastJob : BotManagerBase
         //WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
         WaitForSeconds wait = new(VISION_JOB_INTERVAL);
         yield return wait;
-        while (BotController != null)
+        while (BotController != null && !_disposed)
         {
             HashSet<BotComponent> bots = BotController.BotSpawnController?.SAINBots;
             if (bots != null && bots.Count > 0)
@@ -85,8 +50,8 @@ public class VisionRaycastJob : BotManagerBase
                     int partCount = _enemies[0].Vision.EnemyParts.PartsArray.Length;
                     int totalRaycasts = enemyCount * partCount * RAYCAST_CHECKS;
 
-                    _hits = new NativeArray<RaycastHit>(totalRaycasts, Allocator.TempJob);
-                    _commands = new NativeArray<RaycastCommand>(totalRaycasts, Allocator.TempJob);
+                    NativeArray<RaycastHit> _hits = new(totalRaycasts, Allocator.Temp);
+                    NativeArray<RaycastCommand> _commands = new(totalRaycasts, Allocator.Temp);
 
                     CreateCommands(_commands, enemyCount, partCount);
                     _handle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
@@ -97,9 +62,7 @@ public class VisionRaycastJob : BotManagerBase
                     handle.Complete();
                     _handle = handle;
 
-                    AnalyzeHits(_hits, enemyCount, partCount);
-                    _commands.Dispose();
-                    _hits.Dispose();
+                    AnalyzeHits(_hits, _commands, enemyCount, partCount);
                 }
             }
 
@@ -142,24 +105,23 @@ public class VisionRaycastJob : BotManagerBase
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
         if (!_handle.IsCompleted)
         {
             _handle.Complete();
         }
 
-        if (_commands.IsCreated)
-        {
-            _commands.Dispose();
-        }
-
-        if (_hits.IsCreated)
-        {
-            _hits.Dispose();
-        }
+        _enemies.Clear();
+        _colliderTypes.Clear();
+        _castPoints.Clear();
     }
 
-    private NativeArray<RaycastHit> _hits;
-    private NativeArray<RaycastCommand> _commands;
     private JobHandle _handle;
 
     private void CreateCommands(NativeArray<RaycastCommand> raycastCommands, int enemyCount, int partCount)
@@ -201,13 +163,7 @@ public class VisionRaycastJob : BotManagerBase
         }
     }
 
-    private static readonly QueryParameters _losParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
-
-    private static readonly QueryParameters _visParams = new(LayerMaskClass.AI);
-
-    private static readonly QueryParameters _shootParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
-
-    private void AnalyzeHits(NativeArray<RaycastHit> raycastHits, int enemyCount, int partCount)
+    private void AnalyzeHits(NativeArray<RaycastHit> raycastHits, NativeArray<RaycastCommand> commands, int enemyCount, int partCount)
     {
         float time = Time.time;
         int hits = 0;
@@ -251,13 +207,7 @@ public class VisionRaycastJob : BotManagerBase
 
                     if (raycastHits[hits].collider == null)
                     {
-                        DebugGizmos.DrawLine(
-                            _commands[hits].from,
-                            _commands[hits].from + _commands[hits].direction,
-                            Color.red,
-                            0.025f,
-                            0.02f
-                        );
+                        DebugGizmos.DrawLine(commands[hits].from, commands[hits].from + commands[hits].direction, Color.red, 0.025f, 0.02f);
                     }
                     hits++;
                     //if (raycastHits[hits].collider == null)
@@ -273,11 +223,6 @@ public class VisionRaycastJob : BotManagerBase
         }
 #endif
     }
-
-    private const int RAYCAST_CHECKS = 3;
-
-    private readonly List<EBodyPartColliderType> _colliderTypes = [];
-    private readonly List<Vector3> _castPoints = [];
 
     private static void FindEnemies(HashSet<BotComponent> bots, List<Enemy> enemies)
     {
@@ -297,6 +242,4 @@ public class VisionRaycastJob : BotManagerBase
             }
         }
     }
-
-    private readonly List<Enemy> _enemies = [];
 }
