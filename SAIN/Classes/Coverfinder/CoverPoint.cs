@@ -1,8 +1,9 @@
 ﻿using System;
 using EFT;
 using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
+using SAIN.Models.Direction;
+using SAIN.Models.PlayerData;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
@@ -362,11 +363,6 @@ public class CoverPoint
             updateDirAndPos(value);
             OnPositionUpdated?.Invoke(value);
         }
-    }
-
-    public DirectionData DirectionData
-    {
-        get { return CoverData.DirectionData; }
     }
 
     public float DistanceToBot { get; set; }

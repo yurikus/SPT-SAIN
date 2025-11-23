@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.PlayerData;
 using UnityEngine;
@@ -79,6 +80,20 @@ public static class PlayerDataExtensions
             playerVelocityData.VelocityMagnitudeNormal = num2 / num;
         }
         return playerVelocityData;
+    }
+
+    public static PlayerDirectionData GetUpdatedDirectionData(
+        this PlayerDirectionData data,
+        PlayerComponent Owner,
+        PlayerComponent OtherPlayer
+    )
+    {
+        var Transform = Owner.Transform;
+        data.OwnerPosition = Transform.Position;
+        data.OwnerLookDirection = Transform.LookDirection;
+        data.OwnerViewPosition = Transform.EyePosition;
+        data.MainDirectionData.Position = OtherPlayer.Position;
+        return data;
     }
 
     public static PlayerNavData Update(this PlayerNavData playerNavData, Vector3 playerPosition, bool isAI)

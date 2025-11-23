@@ -1,28 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using SAIN.Components.PlayerComponentSpace;
+using SAIN.Extensions;
+using SAIN.Models.PlayerData;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
 namespace SAIN.Components.BotControllerSpace.Classes.Raycasts;
 
-public struct PlayerTickData
+public struct PlayerTickData(PlayerComponent inOwner)
 {
-    public PlayerTickData(PlayerComponent inOwner)
-    {
-        Owner = inOwner;
-        OwnerProfileId = inOwner.ProfileId;
-        OwnerViewPosition = inOwner.Transform.EyePosition;
-        OwnerPosition = inOwner.Position;
-        OwnerLookDirection = inOwner.LookDirection;
-    }
+    public readonly PlayerComponent currentOwner = inOwner;
+    public readonly string OwnerProfileId = inOwner.ProfileId;
+    public Vector3 OwnerViewPosition = inOwner.Transform.EyePosition;
+    public Vector3 OwnerPosition = inOwner.Position;
+    public Vector3 OwnerLookDirection = inOwner.LookDirection;
 
-    public readonly PlayerComponent Owner;
-    public readonly string OwnerProfileId;
-    public Vector3 OwnerViewPosition;
-    public Vector3 OwnerPosition;
-    public Vector3 OwnerLookDirection;
+    public List<OtherPlayerData> OtherPlayerData = [];
+    public NativeArray<PlayerDirectionData> OtherPlayerDirectionData = [];
 
     public void Prepare(PlayerComponent Owner)
     {
@@ -36,11 +32,7 @@ public struct PlayerTickData
         for (int j = 0; j < OtherPlayers.Count; j++)
         {
             OtherPlayerData otherPlayer = OtherPlayers[j];
-            OtherPlayerDirectionData[j] = PlayerDirectionData.GetUpdatedDirectionData(
-                otherPlayer.DistanceData.Data,
-                Owner,
-                otherPlayer.OtherPlayerComponent
-            );
+            OtherPlayerDirectionData[j] = otherPlayer.DistanceData.Data.GetUpdatedDirectionData(Owner, otherPlayer.OtherPlayerComponent);
             OtherPlayerData.Add(otherPlayer);
         }
     }
@@ -50,8 +42,8 @@ public struct PlayerTickData
         for (int i = 0; i < OtherPlayerDirectionData.Length; i++)
         {
             var data = OtherPlayerDirectionData[i];
-            data.MainData.Update(OwnerPosition);
-            data.MainData.UpdateDotProductAndCalcNormal(OwnerViewPosition, OwnerLookDirection);
+            data.MainDirectionData.Update(OwnerPosition);
+            data.MainDirectionData.UpdateDotProductAndCalcNormal(OwnerViewPosition, OwnerLookDirection);
             OtherPlayerDirectionData[i] = data;
         }
     }
@@ -65,9 +57,6 @@ public struct PlayerTickData
         OtherPlayerData.Clear();
         OtherPlayerDirectionData.Dispose();
     }
-
-    public List<OtherPlayerData> OtherPlayerData = [];
-    public NativeArray<PlayerDirectionData> OtherPlayerDirectionData = [];
 }
 
 public struct PlayerTickJob : IJobFor
@@ -161,7 +150,7 @@ public class DirectionDataJob : BotManagerBase
                 {
                     PlayerTickData data = _PlayerTickJob.Output[i];
                     data.ReadData();
-                    data.Owner.SetTickData(data);
+                    data.currentOwner.SetTickData(data);
                 }
                 _PlayerTickJob.Dispose();
                 _playerTickData.Clear();

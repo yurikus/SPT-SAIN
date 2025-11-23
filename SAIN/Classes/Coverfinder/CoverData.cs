@@ -1,4 +1,5 @@
-﻿using SAIN.Components.PlayerComponentSpace;
+﻿using SAIN.Models.Direction;
+using SAIN.Models.PlayerData;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder;
