@@ -111,12 +111,17 @@ public static class EnemyGainSightClass
         float gearMod = enemy.EnemyPlayerComponent.AIData.AIGearModifier.StealthModifier(enemy.RealDistance);
 
         bool flareEnabled =
-            enemy.EnemyPlayer.AIData != null
+            enemy.EnemyPlayer != null
+            && enemy.EnemyPlayer.AIData != null
             && enemy.EnemyPlayer.AIData.GetFlare == true
+            && enemy.EnemyPlayerComponent != null
+            && enemy.EnemyPlayerComponent.Equipment != null
+            && enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo != null
             && enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo.HasSuppressor == false;
 
         bool underFire =
-            enemy.BotOwner.Memory.IsUnderFire
+            enemy.BotOwner.Memory != null
+            && enemy.BotOwner.Memory.IsUnderFire
             && enemy.Bot.Memory.LastUnderFireEnemy != null
             && enemy.Bot.Memory.LastUnderFireEnemy == enemy;
 
