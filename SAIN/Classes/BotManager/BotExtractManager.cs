@@ -5,7 +5,7 @@ using System.Text;
 using Comfort.Common;
 using EFT;
 using EFT.Interactive;
-using SAIN.Plugin;
+using SAIN.Interop;
 using UnityEngine;
 using UnityEngine.AI;
 

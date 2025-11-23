@@ -1,15 +1,18 @@
-﻿using BepInEx.Bootstrap;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using BepInEx.Bootstrap;
 using EFT;
 using EFT.Interactive;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace SAIN.Plugin;
+namespace SAIN.Interop;
 
+/// <summary>
+/// This class can be copied to other mods that want to interop with SAIN
+/// </summary>
 internal static class SAINInterop
 {
     private static bool _SAINLoadedChecked = false;
@@ -48,7 +51,8 @@ internal static class SAINInterop
      */
     public static bool Init()
     {
-        if (!IsSAINLoaded()) return false;
+        if (!IsSAINLoaded())
+            return false;
 
         // Only check for the External class once
         if (!_SAINInteropInited)
@@ -62,11 +66,20 @@ internal static class SAINInterop
             {
                 _ExtractBotMethod = AccessTools.Method(_SAINExternalType, "ExtractBot");
                 _SetExfilForBotMethod = AccessTools.Method(_SAINExternalType, "TrySetExfilForBot");
-                _IsPathTowardEnemyMethod = AccessTools.Method(_SAINExternalType, "IsPathTowardEnemy");
-                _TimeSinceSenseEnemyMethod = AccessTools.Method(_SAINExternalType, "TimeSinceSenseEnemy");
+                _IsPathTowardEnemyMethod = AccessTools.Method(
+                    _SAINExternalType,
+                    "IsPathTowardEnemy"
+                );
+                _TimeSinceSenseEnemyMethod = AccessTools.Method(
+                    _SAINExternalType,
+                    "TimeSinceSenseEnemy"
+                );
                 _CanBotQuestMethod = AccessTools.Method(_SAINExternalType, "CanBotQuest");
                 _GetExtractedBotsMethod = AccessTools.Method(_SAINExternalType, "GetExtractedBots");
-                _GetExtractionInfosMethod = AccessTools.Method(_SAINExternalType, "GetExtractionInfos");
+                _GetExtractionInfosMethod = AccessTools.Method(
+                    _SAINExternalType,
+                    "GetExtractionInfos"
+                );
 
                 _IgnoreHearingMethod = AccessTools.Method(_SAINExternalType, "IgnoreHearing");
                 _GetPersonalityMethod = AccessTools.Method(_SAINExternalType, "GetPersonality");
@@ -84,13 +97,22 @@ internal static class SAINInterop
     /// <param name="ignoreUnderFire">Set bot to ignore being under fire (shots being ~2m or closer to them by default)</param>
     /// <param name="duration">if greater than 0, stop ignoring hearing after that time has passed. 0 means they will ignore hearing forever until they see an enemy.</param>
     /// <returns>True if the bot was successfully set to ignore hearing</returns>
-    public static bool IgnoreHearing(BotOwner botOwner, bool value, bool ignoreUnderFire, float duration = 0)
+    public static bool IgnoreHearing(
+        BotOwner botOwner,
+        bool value,
+        bool ignoreUnderFire,
+        float duration = 0
+    )
     {
-        if (botOwner == null) return false;
-        if (!Init()) return false;
-        if (_IgnoreHearingMethod == null) return false;
+        if (botOwner == null)
+            return false;
+        if (!Init())
+            return false;
+        if (_IgnoreHearingMethod == null)
+            return false;
 
-        return (bool)_IgnoreHearingMethod.Invoke(null, [botOwner, value, ignoreUnderFire, duration]);
+        return (bool)
+            _IgnoreHearingMethod.Invoke(null, [botOwner, value, ignoreUnderFire, duration]);
     }
 
     /// <summary>
@@ -101,9 +123,12 @@ internal static class SAINInterop
     public static string GetPersonality(BotOwner botOwner)
     {
         string result = string.Empty;
-        if (botOwner == null) return result;
-        if (!Init()) return result;
-        if (_GetPersonalityMethod == null) return result;
+        if (botOwner == null)
+            return result;
+        if (!Init())
+            return result;
+        if (_GetPersonalityMethod == null)
+            return result;
 
         result = (string)_GetPersonalityMethod.Invoke(null, [botOwner]);
         return result;
@@ -116,9 +141,12 @@ internal static class SAINInterop
     /// <returns>True if the list was successfully updated</returns>
     public static bool GetExtractedBots(List<string> list)
     {
-        if (list == null) return false;
-        if (!Init()) return false;
-        if (_GetExtractedBotsMethod == null) return false;
+        if (list == null)
+            return false;
+        if (!Init())
+            return false;
+        if (_GetExtractedBotsMethod == null)
+            return false;
 
         _GetExtractedBotsMethod.Invoke(null, [list]);
         return true;
@@ -131,9 +159,12 @@ internal static class SAINInterop
     /// <returns>True if the list was successfully updated</returns>
     public static bool GetExtractedBots(List<ExtractionInfo> list)
     {
-        if (list == null) return false;
-        if (!Init()) return false;
-        if (_GetExtractionInfosMethod == null) return false;
+        if (list == null)
+            return false;
+        if (!Init())
+            return false;
+        if (_GetExtractionInfosMethod == null)
+            return false;
 
         _GetExtractionInfosMethod.Invoke(null, [list]);
         return true;
@@ -144,8 +175,10 @@ internal static class SAINInterop
      */
     public static bool TryExtractBot(BotOwner botOwner)
     {
-        if (!Init()) return false;
-        if (_ExtractBotMethod == null) return false;
+        if (!Init())
+            return false;
+        if (_ExtractBotMethod == null)
+            return false;
 
         return (bool)_ExtractBotMethod.Invoke(null, [botOwner]);
     }
@@ -155,8 +188,10 @@ internal static class SAINInterop
      */
     public static bool TrySetExfilForBot(BotOwner botOwner)
     {
-        if (!Init()) return false;
-        if (_SetExfilForBotMethod == null) return false;
+        if (!Init())
+            return false;
+        if (_SetExfilForBotMethod == null)
+            return false;
 
         return (bool)_SetExfilForBotMethod.Invoke(null, [botOwner]);
     }
@@ -169,14 +204,21 @@ internal static class SAINInterop
     /// <param name="ratioSameOverAll">How many nodes along a path are allowed to be the same divided by the total nodes in the Path To Test. Example: 3 nodes are the same, with 10 total nodes = 0.3 ratio, so if the input value is 0.25, this will return false.</param>
     /// <param name="sqrDistCheck">How Close a node can be to be considered the same.</param>
     /// <returns>True if the path leads in the same direction as their active enemy.</returns>
-    public static bool IsPathTowardEnemy(NavMeshPath path, BotOwner botOwner, float ratioSameOverAll = 0.25f, float sqrDistCheck = 0.05f)
+    public static bool IsPathTowardEnemy(
+        NavMeshPath path,
+        BotOwner botOwner,
+        float ratioSameOverAll = 0.25f,
+        float sqrDistCheck = 0.05f
+    )
     {
-        if (!Init()) return false;
-        if (_IsPathTowardEnemyMethod == null) return false;
+        if (!Init())
+            return false;
+        if (_IsPathTowardEnemyMethod == null)
+            return false;
 
-        return (bool)_IsPathTowardEnemyMethod.Invoke(null, [path, botOwner, ratioSameOverAll, sqrDistCheck]);
+        return (bool)
+            _IsPathTowardEnemyMethod.Invoke(null, [path, botOwner, ratioSameOverAll, sqrDistCheck]);
     }
-
 
     /// <summary>
     /// Compare a NavMeshPath to the pre-calculated NavMeshPath that leads directly to a bot's Active Enemy.
@@ -186,22 +228,29 @@ internal static class SAINInterop
     /// <param name="ratioSameOverAll">How many nodes along a path are allowed to be the same divided by the total nodes in the Path To Test. Example: 3 nodes are the same, with 10 total nodes = 0.3 ratio, so if the input value is 0.25, this will return false.</param>
     /// <param name="sqrDistCheck">How Close a node can be to be considered the same.</param>
     /// <returns>True if the path leads in the same direction as their active enemy.</returns>
-    public static bool CanBotQuest(BotOwner botOwner, Vector3 questPosition, float dotThreshold = 0.33f)
+    public static bool CanBotQuest(
+        BotOwner botOwner,
+        Vector3 questPosition,
+        float dotThreshold = 0.33f
+    )
     {
-        if (!Init()) return false;
-        if (_CanBotQuestMethod == null) return false;
+        if (!Init())
+            return false;
+        if (_CanBotQuestMethod == null)
+            return false;
 
         return (bool)_CanBotQuestMethod.Invoke(null, [botOwner, questPosition, dotThreshold]);
     }
 
     public static float TimeSinceSenseEnemy(BotOwner botOwner)
     {
-        if (!Init()) return float.MaxValue;
-        if (_TimeSinceSenseEnemyMethod == null) return float.MaxValue;
+        if (!Init())
+            return float.MaxValue;
+        if (_TimeSinceSenseEnemyMethod == null)
+            return float.MaxValue;
 
         return (float)_TimeSinceSenseEnemyMethod.Invoke(null, [botOwner]);
     }
-
 }
 
 public class ExtractionInfo

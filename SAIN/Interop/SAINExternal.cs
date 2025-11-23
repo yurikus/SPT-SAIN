@@ -6,9 +6,12 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace SAIN.Plugin;
+namespace SAIN.Interop;
 
-public static class External
+/// <summary>
+/// A class containing various static methods that can be called with reflection
+/// </summary>
+public static class SAINExternal
 {
     public static bool IgnoreHearing(BotOwner bot, bool value, bool ignoreUnderFire, float duration)
     {
