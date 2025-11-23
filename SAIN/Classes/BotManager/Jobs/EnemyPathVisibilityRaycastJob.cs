@@ -60,9 +60,6 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
         }
     }
 
-    private WaitForFixedUpdate waitForFixedUpdate = new();
-    private WaitForEndOfFrame waitForEndOfFrame = new();
-
     private static void ScheduleJobs(List<PathVisionJob> jobs, int minCommandsPerJob = 256)
     {
         for (int i = 0; i < jobs.Count; i++)

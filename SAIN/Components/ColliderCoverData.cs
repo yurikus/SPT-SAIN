@@ -21,7 +21,7 @@ public class ColliderCoverManager : MonoBehaviour
         return component;
     }
 
-    private void Update()
+    public void Update()
     {
         GenerateCover();
     }
@@ -164,31 +164,4 @@ public class ColliderCoverComponent : MonoBehaviour
 
         return extent;
     }
-}
-
-public class ColliderCoverDataClass(Collider collider)
-{
-    public bool IsValid = false;
-    public Collider Collider = collider;
-    public Vector3 ColliderPosition = collider.transform.position;
-    public HashSet<CoverPointClass> CoverPoints { get; } = [];
-}
-
-public struct ColliderCoverData(int index, Collider collider, Vector3 targetPos, Vector3 botPos, DirCalcData botToTargetData)
-{
-    public bool Analyzed = false;
-    public bool IsValid = true;
-
-    public int Index = index;
-    public Collider Collider = collider;
-    public Vector3 ColliderPosition = collider.transform.position;
-    public Vector3 TargetPosition = targetPos;
-    public Vector3 BotPosition = botPos;
-
-    public DirCalcData BotToCoverDirectionData = new();
-    public DirCalcData TargetToCoverDirectionData = new();
-    public DirCalcData BotToTargetDirectionData = botToTargetData;
-
-    public float DotFromBotToTargetToCollider;
-    public float DotFromTargetToBotToCollider;
 }

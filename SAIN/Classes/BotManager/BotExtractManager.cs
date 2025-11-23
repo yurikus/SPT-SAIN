@@ -11,11 +11,8 @@ using UnityEngine.AI;
 
 namespace SAIN.Components.BotController;
 
-public class BotExtractManager : BotManagerBase
+public class BotExtractManager(BotManagerComponent botController) : BotManagerBase(botController)
 {
-    public BotExtractManager(BotManagerComponent botController)
-        : base(botController) { }
-
     public float TotalRaidTime { get; private set; }
 
     public void Update(float currentTime, float deltaTime)
@@ -41,10 +38,10 @@ public class BotExtractManager : BotManagerBase
         ExtractedBots.Add(bot.GetPlayer.ProfileId);
     }
 
-    public readonly List<string> ExtractedBots = new();
-    public readonly List<ExtractionInfo> BotExtractionInfos = new();
+    public readonly List<string> ExtractedBots = [];
+    public readonly List<ExtractionInfo> BotExtractionInfos = [];
 
-    private Dictionary<ExfiltrationPoint, float> exfilActivationTimes = new();
+    private Dictionary<ExfiltrationPoint, float> exfilActivationTimes = [];
 
     public bool HasExfilBeenActivated(ExfiltrationPoint exfil)
     {

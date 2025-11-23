@@ -7,19 +7,6 @@ using UnityEngine;
 
 namespace SAIN.Components.BotControllerSpace.Classes.Raycasts;
 
-public struct DirCalcData
-{
-    public DirCalcData(Vector3 inPoint)
-    {
-        Point = inPoint;
-    }
-
-    public Vector3 Point;
-    public Vector3 Dir;
-    public Vector3 DirNormal;
-    public float Magnitude;
-}
-
 public struct PlayerTickData
 {
     public PlayerTickData(PlayerComponent inOwner)
