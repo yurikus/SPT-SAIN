@@ -1,12 +1,11 @@
-﻿using EFT;
+﻿using System.Text;
+using EFT;
 using SAIN.Components;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
-using System.Text;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.Decision;
 
@@ -26,7 +25,8 @@ public class EnemyDecisionClass : BotBase
     public bool ShiftCoverComplete { get; set; }
     public bool? DebugShallSearch { get; set; }
 
-    public EnemyDecisionClass(BotComponent sain) : base(sain)
+    public EnemyDecisionClass(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
     }
@@ -39,7 +39,8 @@ public class EnemyDecisionClass : BotBase
             return false;
         }
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.Clear();
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.Clear();
 #endif
 
         BotWeaponManager weaponManager = BotOwner.WeaponManager;
@@ -51,17 +52,22 @@ public class EnemyDecisionClass : BotBase
 
         string reason = string.Empty;
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"1. I've Got Bullets.");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine($"1. I've Got Bullets.");
 #endif
 
         bool canTakeAggressiveAction = CanBeAggressive(ref reason);
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine(
+                $"2. CanTakeAggroActions?: [{canTakeAggressiveAction}, {reason}]"
+            );
 #endif
 
         bool shallShoot = shallStandAndShoot(enemy, out reason, knownEnemies);
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine($"2. Shall Shoot: [{shallShoot}, {reason}]");
 #endif
         if (shallShoot)
         {
@@ -74,7 +80,8 @@ public class EnemyDecisionClass : BotBase
         }
         bool shallShootDistant = shallShootDistantEnemy(enemy, out reason);
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine($"3. Shall Shoot Distant: [{shallShootDistant}, {reason}]");
 #endif
         if (shallShootDistant)
         {
@@ -86,7 +93,8 @@ public class EnemyDecisionClass : BotBase
         {
             bool shallRush = shallRushEnemy(enemy, out reason);
 #if DEBUG
-            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
+            if (SAINPlugin.DebugMode)
+                DecisionReasons.AppendLine($"4. Shall Rush: [{shallRush}, {reason}]");
 #endif
             if (shallRush)
             {
@@ -96,7 +104,8 @@ public class EnemyDecisionClass : BotBase
 
             bool shallThrowNade = shallThrowGrenade(enemy, out reason);
 #if DEBUG
-            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
+            if (SAINPlugin.DebugMode)
+                DecisionReasons.AppendLine($"5. Shall Throw Nade: [{shallThrowNade}, {reason}]");
 #endif
             if (shallThrowNade)
             {
@@ -106,7 +115,8 @@ public class EnemyDecisionClass : BotBase
 
             bool search = shallSearch(enemy, out reason);
 #if DEBUG
-            if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
+            if (SAINPlugin.DebugMode)
+                DecisionReasons.AppendLine($"6. Shall Search: [{search}, {reason}]");
 #endif
             if (search)
             {
@@ -121,7 +131,8 @@ public class EnemyDecisionClass : BotBase
 
         bool freeze = shallFreezeAndWait(enemy, out reason);
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"7. Shall Freeze: [{freeze}, {reason}]");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine($"7. Shall Freeze: [{freeze}, {reason}]");
 #endif
         if (freeze)
         {
@@ -131,16 +142,18 @@ public class EnemyDecisionClass : BotBase
 
         bool shift = shallShiftCover(enemy, out reason);
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"8. Shall Shift Cover: [{shift}, {reason}]");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine($"8. Shall Shift Cover: [{shift}, {reason}]");
 #endif
         if (shift)
         {
             result = ECombatDecision.ShiftCover;
             return true;
         }
-        
+
 #if DEBUG
-        if (SAINPlugin.DebugMode) DecisionReasons.AppendLine($"8. Seek Cover: [{true}, {Bot.Cover.CoverSeekingState}]");
+        if (SAINPlugin.DebugMode)
+            DecisionReasons.AppendLine($"8. Seek Cover: [{true}, {Bot.Cover.CoverSeekingState}]");
 #endif
         result = ECombatDecision.SeekCover;
         return true;
@@ -169,7 +182,10 @@ public class EnemyDecisionClass : BotBase
 
     private bool shallFreezeAndWait(Enemy enemy, out string reason)
     {
-        if (Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior != EHeardFromPeaceBehavior.Freeze)
+        if (
+            Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior
+            != EHeardFromPeaceBehavior.Freeze
+        )
         {
             reason = "wontFreeze";
             return false;
@@ -202,7 +218,8 @@ public class EnemyDecisionClass : BotBase
 
         if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Freeze)
         {
-            float timeToFreeze = UnityEngine.Random.Range(10f, 120f) / Bot.Info.AggressionMultiplier;
+            float timeToFreeze =
+                UnityEngine.Random.Range(10f, 120f) / Bot.Info.AggressionMultiplier;
             FrozenDuration = timeToFreeze;
             TimeToUnfreeze = Time.time + timeToFreeze;
         }
@@ -244,8 +261,11 @@ public class EnemyDecisionClass : BotBase
             reason = "outOfRange";
             return false;
         }
-        if (enemy.Hearing.EnemyHeardFromPeace &&
-            Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior == EHeardFromPeaceBehavior.Charge)
+        if (
+            enemy.Hearing.EnemyHeardFromPeace
+            && Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior
+                == EHeardFromPeaceBehavior.Charge
+        )
         {
             reason = "heardFromPeaceCharge";
             return true;
@@ -267,8 +287,7 @@ public class EnemyDecisionClass : BotBase
             reason = "enemyHurtBad";
             return true;
         }
-        if (enemyHealth == ETagStatus.BadlyInjured &&
-            enemy.EnemyPlayer.IsInPronePose)
+        if (enemyHealth == ETagStatus.BadlyInjured && enemy.EnemyPlayer.IsInPronePose)
         {
             reason = "enemyHurtAndProne";
             return true;
@@ -285,8 +304,10 @@ public class EnemyDecisionClass : BotBase
         {
             return true;
         }
-        if (enemy.Path.PathLength < RushEnemyMaxPathDistanceSprint * modifier &&
-            BotOwner.CanSprintPlayer)
+        if (
+            enemy.Path.PathLength < RushEnemyMaxPathDistanceSprint * modifier
+            && BotOwner.CanSprintPlayer
+        )
         {
             return true;
         }
@@ -312,10 +333,12 @@ public class EnemyDecisionClass : BotBase
             return true;
         }
 
-        if (Bot.Cover.CoverInUse != null &&
-            Bot.Info.PersonalitySettings.Cover.CanShiftCoverPosition &&
-            Bot.Decision.TimeSinceChangeDecision > ShiftCoverChangeDecisionTime &&
-            TimeForNewShift < Time.time)
+        if (
+            Bot.Cover.CoverInUse != null
+            && Bot.Info.PersonalitySettings.Cover.CanShiftCoverPosition
+            && Bot.Decision.TimeSinceChangeDecision > ShiftCoverChangeDecisionTime
+            && TimeForNewShift < Time.time
+        )
         {
             if (enemy != null)
             {
@@ -326,7 +349,10 @@ public class EnemyDecisionClass : BotBase
                     reason = "enemyNotSeen";
                     return true;
                 }
-                if (!enemy.Seen && enemy.KnownPlaces.TimeSinceLastKnownUpdated > ShiftCoverTimeSinceEnemyCreated)
+                if (
+                    !enemy.Seen
+                    && enemy.KnownPlaces.TimeSinceLastKnownUpdated > ShiftCoverTimeSinceEnemyCreated
+                )
                 {
                     TimeForNewShift = Time.time + ShiftCoverNewCoverTime;
                     ShiftResetTimer = Time.time + ShiftCoverResetTime;
@@ -389,17 +415,24 @@ public class EnemyDecisionClass : BotBase
         {
             return false;
         }
-        if (decision == ECombatDecision.Retreat || (decision == ECombatDecision.SeekCover && Bot.Cover.CoverInUse == null))
+        if (
+            decision == ECombatDecision.Retreat
+            || (decision == ECombatDecision.SeekCover && Bot.Cover.CoverInUse == null)
+        )
         {
             return false;
         }
-        if (enemy.RealDistance > Bot.Info.WeaponInfo.EffectiveWeaponDistance
-            && decision != ECombatDecision.MoveToEngage)
+        if (
+            enemy.RealDistance > Bot.Info.WeaponInfo.EffectiveWeaponDistance
+            && decision != ECombatDecision.MoveToEngage
+        )
         {
             return true;
         }
-        if (enemy.RealDistance > Bot.Info.WeaponInfo.EffectiveWeaponDistance * 0.66f
-            && decision == ECombatDecision.MoveToEngage)
+        if (
+            enemy.RealDistance > Bot.Info.WeaponInfo.EffectiveWeaponDistance * 0.66f
+            && decision == ECombatDecision.MoveToEngage
+        )
         {
             return true;
         }
@@ -408,18 +441,25 @@ public class EnemyDecisionClass : BotBase
 
     private bool shallShootDistantEnemy(Enemy enemy, out string reason)
     {
-        if (_endShootDistTargetTime > Time.time
+        if (
+            _endShootDistTargetTime > Time.time
             && Bot.Decision.CurrentCombatDecision == ECombatDecision.ShootDistantEnemy
-            && Bot.Memory.Health.HealthStatus != ETagStatus.Dying)
+            && Bot.Memory.Health.HealthStatus != ETagStatus.Dying
+        )
         {
             reason = "shootingDistantEnemy";
             return true;
         }
-        if (_nextShootDistTargetTime < Time.time
+        if (
+            _nextShootDistTargetTime < Time.time
             && enemy.RealDistance > Bot.Info.FileSettings.Shoot.MaxPointFireDistance
             && enemy.IsVisible
             && enemy.CanShoot
-            && (Bot.Memory.Health.HealthStatus == ETagStatus.Healthy || Bot.Memory.Health.HealthStatus == ETagStatus.Injured))
+            && (
+                Bot.Memory.Health.HealthStatus == ETagStatus.Healthy
+                || Bot.Memory.Health.HealthStatus == ETagStatus.Injured
+            )
+        )
         {
             float timeAdd = 6f * UnityEngine.Random.Range(0.75f, 1.25f);
             _nextShootDistTargetTime = Time.time + timeAdd;
@@ -433,7 +473,10 @@ public class EnemyDecisionClass : BotBase
 
     private bool shallSearch(Enemy enemy, out string reason)
     {
-        bool shallSearch = Bot.Search.SearchDecider.ShallStartSearch(enemy, out SearchReasonsStruct reasons);
+        bool shallSearch = Bot.Search.SearchDecider.ShallStartSearch(
+            enemy,
+            out SearchReasonsStruct reasons
+        );
         DebugSearchReasons = reasons;
         DebugShallSearch = shallSearch;
         if (shallSearch)
@@ -489,7 +532,8 @@ public class EnemyDecisionClass : BotBase
         float holdGroundInterval = Bot.Info.HoldGroundDelay;
         if (searchingForEnemy)
         {
-            holdGroundInterval = Mathf.Max(holdGroundInterval, 0.5f) * UnityEngine.Random.Range(0.66f, 1.33f);
+            holdGroundInterval =
+                Mathf.Max(holdGroundInterval, 0.5f) * UnityEngine.Random.Range(0.66f, 1.33f);
         }
         if (holdGroundInterval <= 0.0f)
         {

@@ -1,78 +1,114 @@
-﻿using BepInEx.Logging;
-using EFT.Communications;
-using EFT.UI;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Reflection;
+using BepInEx.Logging;
+using EFT.Communications;
+using EFT.UI;
 using UnityEngine;
 
 namespace SAIN;
 
 internal static class Logger
 {
-    public static void LogInfo(object data) 
-    { 
+    public static void LogInfo(object data)
+    {
 #if DEBUG
         Log(LogLevel.Info, data);
 #endif
     }
+
     public static void LogDebug(object data)
     {
-        
 #if DEBUG
         Log(LogLevel.Debug, data);
 #endif
     }
-    public static void LogWarning(object data)
-        => Log(LogLevel.Warning, data);
-    public static void LogError(object data)
-        => Log(LogLevel.Error, data);
 
-    public static void NotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
-        => NotifyMessage(data, duration, ENotificationIconType.Note);
-    public static void NotifyDebug(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
-        => NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
-    public static void NotifyWarning(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
-        => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
-    public static void NotifyError(object data, ENotificationDurationType duration = ENotificationDurationType.Long)
-        => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.red, true);
+    public static void LogWarning(object data) => Log(LogLevel.Warning, data);
 
-    public static void LogAndNotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
+    public static void LogError(object data) => Log(LogLevel.Error, data);
+
+    public static void NotifyInfo(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Default
+    ) => NotifyMessage(data, duration, ENotificationIconType.Note);
+
+    public static void NotifyDebug(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Default
+    ) => NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
+
+    public static void NotifyWarning(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Default
+    ) => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
+
+    public static void NotifyError(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Long
+    ) => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.red, true);
+
+    public static void LogAndNotifyInfo(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Default
+    )
     {
         Log(LogLevel.Info, data);
         NotifyMessage(data, duration, ENotificationIconType.Note);
     }
 
-    public static void LogAndNotifyDebug(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
+    public static void LogAndNotifyDebug(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Default
+    )
     {
         Log(LogLevel.Debug, data);
         NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
     }
 
-    public static void LogAndNotifyWarning(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
+    public static void LogAndNotifyWarning(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Default
+    )
     {
         Log(LogLevel.Warning, data);
         NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
     }
 
-    public static void LogAndNotifyError(object data, ENotificationDurationType duration = ENotificationDurationType.Long)
+    public static void LogAndNotifyError(
+        object data,
+        ENotificationDurationType duration = ENotificationDurationType.Long
+    )
     {
         Log(LogLevel.Error, data);
         string message = CreateErrorMessage(data);
-        NotificationManagerClass.DisplayMessageNotification(message, duration, ENotificationIconType.Alert, Color.red);
+        NotificationManagerClass.DisplayMessageNotification(
+            message,
+            duration,
+            ENotificationIconType.Alert,
+            Color.red
+        );
     }
 
-    public static void NotifyMessage(object data,
+    public static void NotifyMessage(
+        object data,
         ENotificationDurationType durationType = ENotificationDurationType.Default,
         ENotificationIconType iconType = ENotificationIconType.Default,
-        UnityEngine.Color? textColor = null, bool Error = false)
+        UnityEngine.Color? textColor = null,
+        bool Error = false
+    )
     {
 #if DEBUG
         if (_nextNotification < Time.time && SAINPlugin.DebugMode)
         {
             _nextNotification = Time.time + 0.1f;
             string message = Error ? CreateErrorMessage(data) : data.ToString();
-            NotificationManagerClass.DisplayMessageNotification(message, durationType, iconType, textColor);
+            NotificationManagerClass.DisplayMessageNotification(
+                message,
+                durationType,
+                iconType,
+                textColor
+            );
         }
 #endif
     }
@@ -108,7 +144,8 @@ internal static class Logger
             {
                 var method = stackTrace.GetFrame(i).GetMethod();
 
-                if (method.DeclaringType == typeof(Logger)) continue;
+                if (method.DeclaringType == typeof(Logger))
+                    continue;
 
                 if (declaringType == null)
                 {
@@ -141,7 +178,7 @@ internal static class Logger
         }
         SAINLogger.Log(level, result);
     }
-    
+
 #if DEBUG
     private static float _nextNotification;
 #endif

@@ -1,11 +1,11 @@
-﻿using Comfort.Common;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Comfort.Common;
 using EFT;
 using EFT.Interactive;
 using HarmonyLib;
 using SAIN.Helpers;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace SAIN.Components.Extract;
@@ -64,10 +64,11 @@ public class ExtractFinderComponent : MonoBehaviour
             return;
         }
 
-        GUIStyle guiStyle = new(GUI.skin.label) {
+        GUIStyle guiStyle = new(GUI.skin.label)
+        {
             alignment = TextAnchor.MiddleLeft,
             fontSize = 14,
-            margin = new RectOffset(3, 3, 3, 3)
+            margin = new RectOffset(3, 3, 3, 3),
         };
 
         foreach (ExfiltrationPoint ex in extractPositionFinders.Keys)
@@ -76,13 +77,22 @@ public class ExtractFinderComponent : MonoBehaviour
             for (int i = 0; i < pathEndpoints.Length; i++)
             {
                 Vector3 worldPos = pathEndpoints[i] + new Vector3(0, 1, 0);
-                DebugGizmos.OnGUIDrawLabel(worldPos, "Path Endpoint " + (i + 1) + ": " + ex.Settings.Name, guiStyle);
+                DebugGizmos.OnGUIDrawLabel(
+                    worldPos,
+                    "Path Endpoint " + (i + 1) + ": " + ex.Settings.Name,
+                    guiStyle
+                );
             }
 
             if (extractPositionFinders[ex].ExtractPosition.HasValue)
             {
-                Vector3 worldPos = extractPositionFinders[ex].ExtractPosition.Value + new Vector3(0, 1, 0);
-                DebugGizmos.OnGUIDrawLabel(worldPos, "Extract point: " + ex.Settings.Name, guiStyle);
+                Vector3 worldPos =
+                    extractPositionFinders[ex].ExtractPosition.Value + new Vector3(0, 1, 0);
+                DebugGizmos.OnGUIDrawLabel(
+                    worldPos,
+                    "Extract point: " + ex.Settings.Name,
+                    guiStyle
+                );
             }
         }
 #endif
@@ -126,7 +136,9 @@ public class ExtractFinderComponent : MonoBehaviour
             return false;
         }
 
-        ExfiltrationControllerClass ExfilController = Singleton<GameWorld>.Instance.ExfiltrationController;
+        ExfiltrationControllerClass ExfilController = Singleton<GameWorld>
+            .Instance
+            .ExfiltrationController;
         if (ExfilController == null)
         {
             return false;
@@ -138,7 +150,9 @@ public class ExtractFinderComponent : MonoBehaviour
             return false;
         }
 
-        AllExfils = ExfilController.ExfiltrationPoints.AddRangeToArray(ExfilController.SecretExfiltrationPoints);
+        AllExfils = ExfilController.ExfiltrationPoints.AddRangeToArray(
+            ExfilController.SecretExfiltrationPoints
+        );
 #if DEBUG
         if (DebugMode)
         {
@@ -151,7 +165,9 @@ public class ExtractFinderComponent : MonoBehaviour
 #if DEBUG
         if (DebugMode)
         {
-            Logger.LogInfo($"Found {AllScavExfils?.Length} possible Scav Exfil Points in this map.");
+            Logger.LogInfo(
+                $"Found {AllScavExfils?.Length} possible Scav Exfil Points in this map."
+            );
         }
 #endif
 
@@ -183,7 +199,10 @@ public class ExtractFinderComponent : MonoBehaviour
         }
     }
 
-    private IEnumerator UpdateValidExfils(IDictionary<ExfiltrationPoint, Vector3> validExfils, ExfiltrationPoint[] allExfils)
+    private IEnumerator UpdateValidExfils(
+        IDictionary<ExfiltrationPoint, Vector3> validExfils,
+        ExfiltrationPoint[] allExfils
+    )
     {
         if (allExfils == null)
         {

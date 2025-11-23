@@ -1,6 +1,5 @@
 ﻿using SAIN.Components.PlayerComponentSpace;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.SubComponents.CoverFinder;
 

@@ -1,9 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using EFT.InventoryLogic;
-using HarmonyLib;
 using SAIN.Components;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using static EFT.Player;
 using HandEvent = GEventArgs1;
@@ -21,7 +19,8 @@ public class BotBusyHandsDetector : BotComponentClassBase
     private const float TIME_TO_RESET_WEAPONS_SWAP = 3f;
     private const float TIME_TO_RESET_WEAPONS_GRENADE = 3f;
 
-    public BotBusyHandsDetector(BotComponent sain) : base(sain)
+    public BotBusyHandsDetector(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -46,7 +45,8 @@ public class BotBusyHandsDetector : BotComponentClassBase
     {
         if (Player.HandsController is ItemHandsController itemHandsController)
         {
-            _isInInteraction = itemHandsController.CurrentHandsOperation.State == EOperationState.Executing;
+            _isInInteraction =
+                itemHandsController.CurrentHandsOperation.State == EOperationState.Executing;
             _isInInteractionStrictCheck = itemHandsController.IsInInteractionStrictCheck();
             bool inInteraction = _isInInteraction || _isInInteractionStrictCheck;
             if (inInteraction)
@@ -93,7 +93,10 @@ public class BotBusyHandsDetector : BotComponentClassBase
                 reason = "firstAid";
                 return timeSinceStart > TIME_TO_RESET_HEAL_FIRSTAID;
             }
-            if (item is MedicalItemClass medsItemClass && medsItemClass.HealthEffectsComponent.AffectsAny(EDamageEffectType.DestroyedPart))
+            if (
+                item is MedicalItemClass medsItemClass
+                && medsItemClass.HealthEffectsComponent.AffectsAny(EDamageEffectType.DestroyedPart)
+            )
             {
                 reason = "surgery";
                 return timeSinceStart > TIME_TO_RESET_HEAL_SURGERY;

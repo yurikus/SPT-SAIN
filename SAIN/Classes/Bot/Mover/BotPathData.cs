@@ -1,9 +1,9 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -74,7 +74,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
 
         Util.StopVanillaMover(Bot.BotOwner.Mover);
         Bot.Mover.Prone.SetProne(Crawling);
-        
+
 #if DEBUG
         Util.DrawMoverDebug(botPosition, currentCorner.Position);
 #endif
@@ -82,11 +82,20 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         CurrentSprintStatus = GetSprintStatus(botPosition);
         SetSprint(CurrentSprintStatus == EBotSprintStatus.Running, $"{CurrentSprintStatus}");
 
-        bool slowAtCorners = Bot.GoalEnemy != null && Bot.GoalEnemy.Events.OnSearch.Value && Bot.Info.PersonalitySettings.Search.SlowAtCorners;
+        bool slowAtCorners =
+            Bot.GoalEnemy != null
+            && Bot.GoalEnemy.Events.OnSearch.Value
+            && Bot.Info.PersonalitySettings.Search.SlowAtCorners;
         Vector3 startSlowDestination = slowAtCorners ? currentCorner.Position : Destination;
         float startSlowDist = slowAtCorners ? 2f : 0.85f;
         float stopSprintDist = slowAtCorners ? 2f : 1.1f;
-        Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(currentCorner.Position - Bot.Position, startSlowDestination, Bot.PlayerComponent, startSlowDist, stopSprintDist);
+        Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(
+            currentCorner.Position - Bot.Position,
+            startSlowDestination,
+            Bot.PlayerComponent,
+            startSlowDist,
+            stopSprintDist
+        );
 
         if (!CheckSprintSteering(currentCorner))
         {
@@ -143,7 +152,10 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             Stop(false, "canceled");
             return false;
         }
-        if ((Destination - botPosition).sqrMagnitude < DestinationReachDistance * DestinationReachDistance)
+        if (
+            (Destination - botPosition).sqrMagnitude
+            < DestinationReachDistance * DestinationReachDistance
+        )
         {
             Stop(true, "arrived");
             return false;
@@ -183,11 +195,14 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         throw new NotImplementedException();
     }
 
-    public bool Moving {
+    public bool Moving
+    {
         get
         {
-            return Status switch {
-                EBotMoveStatus.Moving or EBotMoveStatus.DoorInteraction or EBotMoveStatus.Paused => true,
+            return Status switch
+            {
+                EBotMoveStatus.Moving or EBotMoveStatus.DoorInteraction or EBotMoveStatus.Paused =>
+                    true,
                 _ => false,
             };
         }
@@ -231,17 +246,21 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
     /// <summary>
     /// Prepare a path, but dont start it yet. Must call Start() to start the path.
     /// </summary>
-    public void Initialize(Vector3 botNavPosition, Vector3 destination, bool shallSprint, ESprintUrgency urgency, Vector3[] corners, NavMeshPath path)
+    public void Initialize(
+        Vector3 botNavPosition,
+        Vector3 destination,
+        bool shallSprint,
+        ESprintUrgency urgency,
+        Vector3[] corners,
+        NavMeshPath path
+    )
     {
         ClearCachedData();
         NavMeshPath = path;
         StartPosition = botNavPosition;
         WantToSprint = shallSprint;
         SprintUrgency = urgency;
-        CurrentCornerMoveData = new() {
-            Dot = 1,
-            SqrMagnitude = float.MaxValue,
-        };
+        CurrentCornerMoveData = new() { Dot = 1, SqrMagnitude = float.MaxValue };
         CreatePath(corners);
         Destination = destination;
         PathLength = PathCorners.CalcPathLength();
@@ -307,7 +326,8 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
 
     public void Pause(float duration)
     {
-        if (CancelRequested) return;
+        if (CancelRequested)
+            return;
         if (duration > 0f)
         {
             duration = Mathf.Max(duration, 0.25f);
@@ -399,13 +419,23 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.AimDownSightsController.SetADS(false);
-            if (Bot.DoorOpener.Interacting || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data))
+            if (
+                Bot.DoorOpener.Interacting
+                || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data)
+            )
             {
                 //DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();
                 //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
-                Vector3 position = CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
+                Vector3 position =
+                    CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
                 Vector3 dirNormal = (position - Bot.Position).normalized;
-                Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(position, position, Bot.PlayerComponent, 0.33f, 1.33f);
+                Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(
+                    position,
+                    position,
+                    Bot.PlayerComponent,
+                    0.33f,
+                    1.33f
+                );
                 return true;
             }
         }
@@ -478,7 +508,15 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             _lastCheckedMoveData = currentMoveData;
             if (_timeNotMoving > 0f)
             {
-                if (CheckObjectInWay(BotPosition(), CurrentCornerMoveData.CornerDirectionFromBot, 1f, 0.2f, 1f))
+                if (
+                    CheckObjectInWay(
+                        BotPosition(),
+                        CurrentCornerMoveData.CornerDirectionFromBot,
+                        1f,
+                        0.2f,
+                        1f
+                    )
+                )
                 {
                     //Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from object in way: " +
                     //    $"{currentMoveData.CornerDirectionFromBot}:" +
@@ -500,11 +538,16 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
                     PathRecalcRequested = true;
                     return true;
                 }
-                else if (timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYJUMP_TIME)
+                else if (
+                    timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYJUMP_TIME
+                )
                 {
                     Bot.Mover.TryJump();
                 }
-                else if (canTryVault && timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYVAULT_TIME)
+                else if (
+                    canTryVault
+                    && timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYVAULT_TIME
+                )
                 {
                     Bot.Mover.TryVault();
                 }
@@ -513,12 +556,33 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         return false;
     }
 
-    private static bool CheckObjectInWay(Vector3 botPosition, Vector3 direction, float height = 1f, float sphereCastRadius = 0.2f, float maxDist = 1f)
+    private static bool CheckObjectInWay(
+        Vector3 botPosition,
+        Vector3 direction,
+        float height = 1f,
+        float sphereCastRadius = 0.2f,
+        float maxDist = 1f
+    )
     {
-        if (Physics.SphereCast(botPosition + (Vector3.up * height), sphereCastRadius, direction, out RaycastHit hit, maxDist, LayerMaskClass.PlayerStaticCollisionsMask))
+        if (
+            Physics.SphereCast(
+                botPosition + (Vector3.up * height),
+                sphereCastRadius,
+                direction,
+                out RaycastHit hit,
+                maxDist,
+                LayerMaskClass.PlayerStaticCollisionsMask
+            )
+        )
         {
 #if DEBUG
-            DebugGizmos.DrawLine(botPosition + (Vector3.up * height), hit.point, Color.green, 0.1f, 3);
+            DebugGizmos.DrawLine(
+                botPosition + (Vector3.up * height),
+                hit.point,
+                Color.green,
+                0.1f,
+                3
+            );
 #endif
             return true;
         }
@@ -534,7 +598,9 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
 
     private float CornerReachDist()
     {
-        return WantToSprint ? SAINPlugin.LoadedPreset.GlobalSettings.Move.BotSprintCornerReachDist : SAINPlugin.LoadedPreset.GlobalSettings.Move.BotWalkCornerReachDist;
+        return WantToSprint
+            ? SAINPlugin.LoadedPreset.GlobalSettings.Move.BotSprintCornerReachDist
+            : SAINPlugin.LoadedPreset.GlobalSettings.Move.BotWalkCornerReachDist;
     }
 
     private void StartCorner(int i)
@@ -567,7 +633,8 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         Vector3 normal = dir.normalized;
         float sqrMag = dir.sqrMagnitude;
         float dot = Vector3.Dot(normal, activeCorner.DirectionFromPrevious.DirectionNormalized);
-        return new() {
+        return new()
+        {
             CornerDirectionFromBot = dir,
             CornerDirectionFromBotNormal = normal,
             Dot = dot,
@@ -618,7 +685,10 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             Vector3 cornerDir = CurrentCornerMoveData.CornerDirectionFromBotNormal;
             cornerDir.y = 0;
 
-            if (Vector3.Angle(lookDir.normalized, cornerDir.normalized) > SPRINT_CORNER_DIR_ANGLE_MAX)
+            if (
+                Vector3.Angle(lookDir.normalized, cornerDir.normalized)
+                > SPRINT_CORNER_DIR_ANGLE_MAX
+            )
             {
                 return EBotSprintStatus.Turning;
             }
@@ -673,7 +743,8 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
     {
         public static void PrepareBot(BotComponent bot, bool sprinting)
         {
-            if (bot == null || bot.BotOwner == null) return;
+            if (bot == null || bot.BotOwner == null)
+                return;
             StopVanillaMover(bot.BotOwner.Mover);
             bot.BotOwner.WeaponManager?.Stationary?.StartMove();
             if (sprinting)
@@ -720,13 +791,26 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         {
             Vector3 debugOffset = Vector3.up * 0.25f;
             DebugGizmos.DrawSphere(destination, 0.2f, Color.white, 0.02f);
-            DebugGizmos.DrawLine(destination, destination + debugOffset, Color.white, 0.075f, 0.02f);
-            DebugGizmos.DrawLine(destination + debugOffset, BotPos + debugOffset, Color.white, 0.075f, 0.02f);
+            DebugGizmos.DrawLine(
+                destination,
+                destination + debugOffset,
+                Color.white,
+                0.075f,
+                0.02f
+            );
+            DebugGizmos.DrawLine(
+                destination + debugOffset,
+                BotPos + debugOffset,
+                Color.white,
+                0.075f,
+                0.02f
+            );
         }
 
         private static float FindStartSprintStamina(ESprintUrgency urgency)
         {
-            return urgency switch {
+            return urgency switch
+            {
                 ESprintUrgency.None or ESprintUrgency.Low => 0.9f,
                 ESprintUrgency.Middle => 0.6f,
                 ESprintUrgency.High => 0.4f,
@@ -736,7 +820,8 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
 
         private static float FindEndSprintStamina(ESprintUrgency urgency)
         {
-            return urgency switch {
+            return urgency switch
+            {
                 ESprintUrgency.None or ESprintUrgency.Low => 0.25f,
                 ESprintUrgency.Middle => 0.15f,
                 ESprintUrgency.High => 0.01f,
@@ -744,8 +829,10 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             };
         }
 
-        public static bool ShallPauseSprintStamina(float stamina, ESprintUrgency urgency) => stamina <= FindEndSprintStamina(urgency);
+        public static bool ShallPauseSprintStamina(float stamina, ESprintUrgency urgency) =>
+            stamina <= FindEndSprintStamina(urgency);
 
-        public static bool ShallStartSprintStamina(float stamina, ESprintUrgency urgency) => stamina >= FindStartSprintStamina(urgency);
+        public static bool ShallStartSprintStamina(float stamina, ESprintUrgency urgency) =>
+            stamina >= FindStartSprintStamina(urgency);
     }
 }

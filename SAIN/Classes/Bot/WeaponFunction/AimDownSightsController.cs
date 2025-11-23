@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.Components;
-using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
@@ -11,7 +10,8 @@ public class AimDownSightsController : BotComponentClassBase
 {
     private const float ADS_UPDATE_COOLDOWN = 0.2f;
 
-    public AimDownSightsController(BotComponent sain) : base(sain)
+    public AimDownSightsController(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyBotInCombat;
     }
@@ -32,10 +32,12 @@ public class AimDownSightsController : BotComponentClassBase
             return;
 
         // If a bot is sneaky, don't change ADS if their enemy is close to avoid alerting them.
-        if (Bot?.Info?.PersonalitySettings?.Search?.Sneaky == true &&
-            Enemy != null &&
-            !Enemy.IsVisible &&
-            Enemy.KnownPlaces.EnemyDistanceFromLastKnown < 40f)
+        if (
+            Bot?.Info?.PersonalitySettings?.Search?.Sneaky == true
+            && Enemy != null
+            && !Enemy.IsVisible
+            && Enemy.KnownPlaces.EnemyDistanceFromLastKnown < 40f
+        )
         {
             return;
         }
@@ -72,9 +74,11 @@ public class AimDownSightsController : BotComponentClassBase
             case EAimDownSightsStatus.EnemyVisible:
             case EAimDownSightsStatus.DogFight:
             case EAimDownSightsStatus.MovingToCover:
-                result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
+                result =
+                    enemy != null
+                    && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
                 break;
-                
+
             //case EAimDownSightsStatus.DogFight:
             //    result = Bot.Mover.DogFight.Status == Mover.EDogFightStatus.Shooting;
             //    break;
@@ -85,8 +89,14 @@ public class AimDownSightsController : BotComponentClassBase
                 break;
 
             case EAimDownSightsStatus.HoldInCover:
-                result = timeSinceChangeDecision > 3f &&
-                    (EFTMath.RandomBool(60) || enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f));
+                result =
+                    timeSinceChangeDecision > 3f
+                    && (
+                        EFTMath.RandomBool(60)
+                        || enemy != null
+                            && enemy.KnownPlaces.BotDistanceFromLastKnown
+                                > (AimingDownSights ? 5f : 10f)
+                    );
                 break;
 
             case EAimDownSightsStatus.StandAndShoot:
@@ -100,7 +110,9 @@ public class AimDownSightsController : BotComponentClassBase
             //    break;
 
             default:
-                result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
+                result =
+                    enemy != null
+                    && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
                 break;
         }
 
@@ -152,8 +164,7 @@ public class AimDownSightsController : BotComponentClassBase
 
         if (enemy != null)
         {
-            if (enemy.CanShoot &&
-                enemy.IsVisible)
+            if (enemy.CanShoot && enemy.IsVisible)
             {
                 return EAimDownSightsStatus.EnemyVisible;
             }
@@ -167,17 +178,24 @@ public class AimDownSightsController : BotComponentClassBase
             }
         }
 
-        if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Suppress &&
-            Bot.ManualShoot.Reason == EShootReason.SquadSuppressing)
+        if (
+            Bot.Decision.CurrentSquadDecision == ESquadDecision.Suppress
+            && Bot.ManualShoot.Reason == EShootReason.SquadSuppressing
+        )
         {
             return EAimDownSightsStatus.Suppressing;
         }
 
-        return currentDecision switch {
-            ECombatDecision.SeekCover => Bot.Cover.CoverInUse == null ? EAimDownSightsStatus.MovingToCover : EAimDownSightsStatus.HoldInCover,
+        return currentDecision switch
+        {
+            ECombatDecision.SeekCover => Bot.Cover.CoverInUse == null
+                ? EAimDownSightsStatus.MovingToCover
+                : EAimDownSightsStatus.HoldInCover,
             ECombatDecision.StandAndShoot => EAimDownSightsStatus.StandAndShoot,
             ECombatDecision.DogFight => EAimDownSightsStatus.DogFight,
-            ECombatDecision.Search => Bot.Search.CurrentState != ESearchMove.DirectMove ? EAimDownSightsStatus.SearchPeekWait : EAimDownSightsStatus.None,
+            ECombatDecision.Search => Bot.Search.CurrentState != ESearchMove.DirectMove
+                ? EAimDownSightsStatus.SearchPeekWait
+                : EAimDownSightsStatus.None,
             _ => EAimDownSightsStatus.None,
         };
     }

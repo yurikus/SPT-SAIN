@@ -1,8 +1,7 @@
-﻿using EFT.InventoryLogic;
+﻿using System.Collections.Generic;
+using EFT.InventoryLogic;
 using SAIN.Preset.GearStealthValues;
 using SAIN.SAINComponent.Classes.Info;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment;
@@ -30,8 +29,7 @@ public class AIGearModifierClass(SAINAIData sAINAIData) : AIDataBase(sAINAIData)
                     success = true;
                 }
                 catch //(Exception e)
-                {
-                }
+                { }
 
                 if (success)
                 {

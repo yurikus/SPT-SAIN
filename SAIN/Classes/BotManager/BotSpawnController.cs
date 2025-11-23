@@ -1,11 +1,8 @@
-﻿using EFT;
-using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using EFT;
+using SAIN.Components.PlayerComponentSpace;
 using UnityEngine;
-using UnityEngine.LowLevel;
 
 namespace SAIN.Components.BotController;
 
@@ -15,7 +12,8 @@ public class BotSpawnController : BotManagerBase
 
     public event Action<BotComponent> OnBotRemoved;
 
-    public BotSpawnController(BotManagerComponent botController) : base(botController)
+    public BotSpawnController(BotManagerComponent botController)
+        : base(botController)
     {
         Instance = this;
         GameWorldComponent.Instance.PlayerTracker.OnPlayerRemoved += PlayerRemoved;
@@ -33,39 +31,43 @@ public class BotSpawnController : BotManagerBase
 
     public Dictionary<string, BotComponent> BotDictionary { get; } = [];
 
-    public static List<WildSpawnType> StrictExclusionList { get; } = new()
-    {
-        WildSpawnType.bossZryachiy,
-        WildSpawnType.followerZryachiy,
-        WildSpawnType.peacefullZryachiyEvent,
-        WildSpawnType.ravangeZryachiyEvent,
-        WildSpawnType.shooterBTR,
-        WildSpawnType.marksman,
-        WildSpawnType.infectedAssault,
-        WildSpawnType.infectedCivil,
-        WildSpawnType.infectedLaborant,
-        WildSpawnType.infectedPmc,
-        WildSpawnType.infectedTagilla
-    };
+    public static List<WildSpawnType> StrictExclusionList { get; } =
+        new()
+        {
+            WildSpawnType.bossZryachiy,
+            WildSpawnType.followerZryachiy,
+            WildSpawnType.peacefullZryachiyEvent,
+            WildSpawnType.ravangeZryachiyEvent,
+            WildSpawnType.shooterBTR,
+            WildSpawnType.marksman,
+            WildSpawnType.infectedAssault,
+            WildSpawnType.infectedCivil,
+            WildSpawnType.infectedLaborant,
+            WildSpawnType.infectedPmc,
+            WildSpawnType.infectedTagilla,
+        };
 
     public void ManualUpdate(float currentTime, float deltaTime)
     {
-        if (Subscribed &&
-            GameEnding)
+        if (Subscribed && GameEnding)
         {
             UnSubscribe();
         }
     }
 
-    public bool GameEnding {
+    public bool GameEnding
+    {
         get
         {
             var status = GameStatus;
-            return status == GameStatus.Stopping || status == GameStatus.Stopped || status == GameStatus.SoftStopping;
+            return status == GameStatus.Stopping
+                || status == GameStatus.Stopped
+                || status == GameStatus.SoftStopping;
         }
     }
 
-    private GameStatus GameStatus {
+    private GameStatus GameStatus
+    {
         get
         {
             var botGame = BotController?.BotGame;
@@ -149,7 +151,7 @@ public class BotSpawnController : BotManagerBase
         bot.BotOwner.LeaveData.OnLeave += RemoveBot;
         OnBotAdded?.Invoke(bot);
     }
-    
+
     public HashSet<BotComponent> BotGroup1 { get; } = [];
     public HashSet<BotComponent> BotGroup2 { get; } = [];
 
@@ -167,8 +169,7 @@ public class BotSpawnController : BotManagerBase
 
     public void UnSubscribe()
     {
-        if (Subscribed &&
-            BotController?.BotSpawner != null)
+        if (Subscribed && BotController?.BotSpawner != null)
         {
             BotController.BotSpawner.OnBotRemoved -= RemoveBot;
             Subscribed = false;
@@ -184,8 +185,10 @@ public class BotSpawnController : BotManagerBase
 
     public BotComponent GetSAIN(string profileId)
     {
-        if (!profileId.IsNullOrEmpty() &&
-            BotDictionary.TryGetValue(profileId, out BotComponent component))
+        if (
+            !profileId.IsNullOrEmpty()
+            && BotDictionary.TryGetValue(profileId, out BotComponent component)
+        )
         {
             return component;
         }

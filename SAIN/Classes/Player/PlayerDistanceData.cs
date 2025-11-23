@@ -1,8 +1,5 @@
-﻿using EFT;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
-using SAIN.Models.Structs;
+﻿using System.Collections.Generic;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace;
@@ -15,7 +12,11 @@ public struct PlayerDirectionData
 
     public DirectionData MainData;
 
-    public static PlayerDirectionData GetUpdatedDirectionData(PlayerDirectionData data, PlayerComponent Owner, PlayerComponent OtherPlayer)
+    public static PlayerDirectionData GetUpdatedDirectionData(
+        PlayerDirectionData data,
+        PlayerComponent Owner,
+        PlayerComponent OtherPlayer
+    )
     {
         var Transform = Owner.Transform;
         data.OwnerPosition = Transform.Position;
@@ -79,7 +80,11 @@ public struct DirectionData
     public void UpdateDotProduct(Vector3 DirectionNormal, Vector3 LookDirection)
     {
         HorizontalAngle = EnemyAnglesClass.CalcHorizontalAngle(DirectionNormal, LookDirection);
-        VerticalAngle = EnemyAnglesClass.CalcVerticalAngle(DirectionNormal, LookDirection, out float yDiff);
+        VerticalAngle = EnemyAnglesClass.CalcVerticalAngle(
+            DirectionNormal,
+            LookDirection,
+            out float yDiff
+        );
         YDifference = yDiff;
         Dot = Vector3.Dot(LookDirection, DirectionNormal);
     }
@@ -100,9 +105,7 @@ public class PlayerDistanceData
 {
     public PlayerDistanceData(PlayerComponent OtherPlayer)
     {
-        Data = new() {
-            MainData = new(),
-        };
+        Data = new() { MainData = new() };
     }
 
     public void SetPlayerDirectionData(PlayerDirectionData data)
@@ -143,16 +146,17 @@ public class PlayerDistanceData
     /// <summary>
     /// Position, Direction, Dot, ect of each body part of the other player
     /// </summary>
-    public Dictionary<EBodyPart, BodyPartDirectionData> BodyPartDirectionData { get; } = new()
-    {
-        { EBodyPart.Head, new() },
-        { EBodyPart.Chest, new() },
-        { EBodyPart.Stomach, new() },
-        { EBodyPart.LeftArm, new() },
-        { EBodyPart.RightArm, new() },
-        { EBodyPart.LeftLeg, new() },
-        { EBodyPart.RightLeg, new() },
-    };
+    public Dictionary<EBodyPart, BodyPartDirectionData> BodyPartDirectionData { get; } =
+        new()
+        {
+            { EBodyPart.Head, new() },
+            { EBodyPart.Chest, new() },
+            { EBodyPart.Stomach, new() },
+            { EBodyPart.LeftArm, new() },
+            { EBodyPart.RightArm, new() },
+            { EBodyPart.LeftLeg, new() },
+            { EBodyPart.RightLeg, new() },
+        };
 
     public BodyPartDirectionData GetBodyPartData(EBodyPart part)
     {

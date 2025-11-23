@@ -4,19 +4,26 @@ using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.Info;
-using System.Text;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction;
 
 public class Recoil(BotComponent sain) : BotBase(sain)
 {
-    public float ArmInjuryModifier => calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury) * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
+    public float ArmInjuryModifier =>
+        calcModFromInjury(Bot.Medical.HitReaction.LeftArmInjury)
+        * calcModFromInjury(Bot.Medical.HitReaction.RightArmInjury);
     private static bool _debugRecoilLogs => SAINPlugin.DebugSettings.Logs.DebugRecoilCalculations;
-    private static float _recoilDecayCoef => SAINPlugin.LoadedPreset.GlobalSettings.Shoot.BOT_RECOIL_DECAY_COEF;
+    private static float _recoilDecayCoef =>
+        SAINPlugin.LoadedPreset.GlobalSettings.Shoot.BOT_RECOIL_DECAY_COEF;
     private bool _recoilFinished;
     private bool _armsInjured => Bot.Medical.HitReaction.ArmsInjured;
-    private float RecoilMultiplier => Mathf.Round(Bot.Info.FileSettings.Shoot.RecoilMultiplier * GlobalSettings.Shoot.BOT_RECOIL_COEF * 100f) / 100f;
+    private float RecoilMultiplier =>
+        Mathf.Round(
+            Bot.Info.FileSettings.Shoot.RecoilMultiplier
+                * GlobalSettings.Shoot.BOT_RECOIL_COEF
+                * 100f
+        ) / 100f;
 
     public override void Init()
     {
@@ -73,7 +80,7 @@ public class Recoil(BotComponent sain) : BotBase(sain)
 #endif
             return;
         }
-        
+
         _recoilFinished = false;
         float addRecoil = SAINPlugin.LoadedPreset.GlobalSettings.Shoot.BOT_RECOIL_ADD;
         float recoilMod = calcRecoilMod();
@@ -83,15 +90,17 @@ public class Recoil(BotComponent sain) : BotBase(sain)
 
         _currentRecoilVertAngle = Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
         _currentRecoilHorizAngle = Random.Range(calcdRecoil / 3f, calcdRecoil) * randomSign();
-        
+
 #if DEBUG
         if (_debugRecoilLogs)
-            Logger.LogDebug($"Recoil! New Recoil: [{_currentRecoilVertAngle}:{_currentRecoilHorizAngle}] " +
-            $"recoilNum: [{recoilNum}] calcdRecoil: [{calcdRecoil}] : " +
-            $"Modifiers [ Add: [{addRecoil}] Multi: [{recoilMod}] Weapon RecoilTotal [{recoilTotal}]] Shoot Modifier: [{Bot.Info.WeaponInfo.FinalModifier}]");
+            Logger.LogDebug(
+                $"Recoil! New Recoil: [{_currentRecoilVertAngle}:{_currentRecoilHorizAngle}] "
+                    + $"recoilNum: [{recoilNum}] calcdRecoil: [{calcdRecoil}] : "
+                    + $"Modifiers [ Add: [{addRecoil}] Multi: [{recoilMod}] Weapon RecoilTotal [{recoilTotal}]] Shoot Modifier: [{Bot.Info.WeaponInfo.FinalModifier}]"
+            );
 #endif
     }
-     
+
     private float randomSign()
     {
         return EFTMath.RandomBool() ? -1 : 1;

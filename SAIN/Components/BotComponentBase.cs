@@ -1,8 +1,7 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Classes.Transform;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
-using System;
 using UnityEngine;
 
 namespace SAIN.Components;

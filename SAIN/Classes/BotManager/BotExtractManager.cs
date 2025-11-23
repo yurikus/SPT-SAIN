@@ -1,11 +1,11 @@
-﻿using Comfort.Common;
-using EFT;
-using EFT.Interactive;
-using SAIN.Plugin;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Comfort.Common;
+using EFT;
+using EFT.Interactive;
+using SAIN.Plugin;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,7 +13,8 @@ namespace SAIN.Components.BotController;
 
 public class BotExtractManager : BotManagerBase
 {
-    public BotExtractManager(BotManagerComponent botController) : base(botController) { }
+    public BotExtractManager(BotManagerComponent botController)
+        : base(botController) { }
 
     public float TotalRaidTime { get; private set; }
 
@@ -33,9 +34,16 @@ public class BotExtractManager : BotManagerBase
         CheckRaidProgressTimer = currentTime + 5f;
     }
 
-    public void LogExtractionOfBot(BotOwner bot, Vector3 point, string reason, ExfiltrationPoint exfil)
+    public void LogExtractionOfBot(
+        BotOwner bot,
+        Vector3 point,
+        string reason,
+        ExfiltrationPoint exfil
+    )
     {
-        Logger.LogInfo($"{bot.name} Extracted because {reason} at {point} for extract {exfil.Settings.Name} at {System.DateTime.UtcNow}");
+        Logger.LogInfo(
+            $"{bot.name} Extracted because {reason} at {point} for extract {exfil.Settings.Name} at {System.DateTime.UtcNow}"
+        );
         BotExtractionInfos.Add(new ExtractionInfo(bot, reason, exfil));
         ExtractedBots.Add(bot.GetPlayer.ProfileId);
     }
@@ -49,8 +57,10 @@ public class BotExtractManager : BotManagerBase
     {
         // If all bots who paid for the car extract die, it will no longer leave. Therefore, the common extract time needs to be discarded. When this happens,
         // the exfil Status changes from EExfiltrationStatus.Countdown to EExfiltrationStatus.UncompleteRequirements.
-        if ((exfil.Settings.ExfiltrationType == EExfiltrationType.SharedTimer)
-            && (exfil.Status == EExfiltrationStatus.UncompleteRequirements))
+        if (
+            (exfil.Settings.ExfiltrationType == EExfiltrationType.SharedTimer)
+            && (exfil.Status == EExfiltrationStatus.UncompleteRequirements)
+        )
         {
             if (exfilActivationTimes.ContainsKey(exfil))
             {
@@ -82,7 +92,7 @@ public class BotExtractManager : BotManagerBase
         float exfilTime = Time.time + exfil.Settings.ExfiltrationTime;
 
         // Trains are blacklisted right now, so this is just to protect for future changes. Ideally this needs to return the time when the train leaves,
-        // but I'm not sure how to get that value. 
+        // but I'm not sure how to get that value.
         if (exfil.Requirements.Any(x => x.Requirement == ERequirementState.Train))
         {
             return exfilTime;
@@ -92,7 +102,7 @@ public class BotExtractManager : BotManagerBase
         if (exfil.Settings.ExfiltrationType == EExfiltrationType.SharedTimer)
         {
             // This is important! If the bot "extracts", it will be reported as dead in EFT. If it "dies" before the car departs, EFT will see
-            // that no players are queued to use it. As a result, the extract timer will stop and the car will never leave. 
+            // that no players are queued to use it. As a result, the extract timer will stop and the car will never leave.
             exfilTime += 0.2f;
 
             exfilActivationTimes.Add(exfil, exfilTime);
@@ -149,7 +159,7 @@ public class BotExtractManager : BotManagerBase
         {
             return true;
         }
-        
+
 #if DEBUG
         if (SAINPlugin.DebugMode)
         {
@@ -171,13 +181,17 @@ public class BotExtractManager : BotManagerBase
             return false;
         }
 
-        bool exfilAssigned = bot.Squad.BotInGroup ? TryAssignSquadExfil(bot) : TryAssignExfilForBot(bot);
+        bool exfilAssigned = bot.Squad.BotInGroup
+            ? TryAssignSquadExfil(bot)
+            : TryAssignExfilForBot(bot);
         if (!exfilAssigned)
         {
 #if DEBUG
             if (SAINPlugin.DebugMode)
             {
-                Logger.LogInfo($"{bot.name} could not find exfil. Bot spawn type: {bot.Info.Profile.WildSpawnType}");
+                Logger.LogInfo(
+                    $"{bot.name} could not find exfil. Bot spawn type: {bot.Info.Profile.WildSpawnType}"
+                );
             }
 #endif
 
@@ -185,7 +199,9 @@ public class BotExtractManager : BotManagerBase
             return false;
         }
 
-        Logger.LogInfo($"{bot.name} has selected {bot.Memory.Extract.ExfilPoint.Settings.Name} for extraction");
+        Logger.LogInfo(
+            $"{bot.name} has selected {bot.Memory.Extract.ExfilPoint.Settings.Name} for extraction"
+        );
 
         return true;
     }
@@ -202,7 +218,8 @@ public class BotExtractManager : BotManagerBase
 
     private bool TryAssignExfilForBot(BotComponent bot)
     {
-        IDictionary<ExfiltrationPoint, Vector3> validExfils = GameWorldComponent.Instance.ExtractFinder.GetValidExfilsForBot(bot);
+        IDictionary<ExfiltrationPoint, Vector3> validExfils =
+            GameWorldComponent.Instance.ExtractFinder.GetValidExfilsForBot(bot);
         bot.Memory.Extract.ExfilPoint = SelectExfilForBot(bot, validExfils);
 
         return bot.Memory.Extract.ExfilPoint != null;
@@ -210,10 +227,13 @@ public class BotExtractManager : BotManagerBase
 
     public static float MinDistanceToExtract { get; private set; } = 10f;
 
-    private ExfiltrationPoint SelectExfilForBot(BotComponent bot, IDictionary<ExfiltrationPoint, Vector3> validExfils)
+    private ExfiltrationPoint SelectExfilForBot(
+        BotComponent bot,
+        IDictionary<ExfiltrationPoint, Vector3> validExfils
+    )
     {
         // Check each valid extract to ensure the bot can use it and that it isn't too close. If this method is called when a bot is near an extract, it might be because
-        // it got stuck. 
+        // it got stuck.
         NavMeshPath path = new();
         Dictionary<ExfiltrationPoint, Vector3> possibleExfils = new();
 
@@ -235,7 +255,10 @@ public class BotExtractManager : BotManagerBase
             }
 
             // Check if the navmesh path to the exfil is complete
-            if (!NavMesh.CalculatePath(bot.Position, position, -1, path) || path.status != NavMeshPathStatus.PathComplete)
+            if (
+                !NavMesh.CalculatePath(bot.Position, position, -1, path)
+                || path.status != NavMeshPathStatus.PathComplete
+            )
             {
                 continue;
             }
@@ -250,11 +273,14 @@ public class BotExtractManager : BotManagerBase
             if (SAINPlugin.DebugMode)
             {
                 StringBuilder sb = new();
-                sb.Append($"Could not assign bot {bot.name} to any of {validExfils.Count} valid exfils: ");
+                sb.Append(
+                    $"Could not assign bot {bot.name} to any of {validExfils.Count} valid exfils: "
+                );
                 bool first = true;
                 foreach (var kvp in validExfils)
                 {
-                    if (!first) sb.Append(", ");
+                    if (!first)
+                        sb.Append(", ");
                     sb.Append(kvp.Key.Settings.Name);
                     first = false;
                 }
@@ -269,7 +295,7 @@ public class BotExtractManager : BotManagerBase
         KeyValuePair<ExfiltrationPoint, Vector3> selectedExfil = possibleExfils.Random(); // Assumes Random() is an extension method that works with Dictionary
 
         bot.Memory.Extract.ExfilPosition = selectedExfil.Value;
-        
+
 #if DEBUG
         if (SAINPlugin.DebugMode)
         {
@@ -308,7 +334,10 @@ public class BotExtractManager : BotManagerBase
         // These extracts typically require a switch to be activated, which can get complicated. An example is the Medical Elevator extract on Labs. You first need
         // to turn on the power, then call the elevator, then press the elevator button. However, the ExfiltrationPoint only monitors the final button press inside
         // the elevator, so there isn't an easy way to check the status of the other switches (without hard-coding the sequence). Therefore, let's just disable these.
-        if ((exfil.Status == EExfiltrationStatus.UncompleteRequirements) && (exfil.Requirements.Any(x => x.Requirement == ERequirementState.WorldEvent)))
+        if (
+            (exfil.Status == EExfiltrationStatus.UncompleteRequirements)
+            && (exfil.Requirements.Any(x => x.Requirement == ERequirementState.WorldEvent))
+        )
         {
             return false;
         }
@@ -345,7 +374,10 @@ public class BotExtractManager : BotManagerBase
                 {
                     foreach (var member in squad.Members)
                     {
-                        if (member.Value.Memory.Extract.ExfilPosition == null && member.Value.ProfileId != bot.ProfileId)
+                        if (
+                            member.Value.Memory.Extract.ExfilPosition == null
+                            && member.Value.ProfileId != bot.ProfileId
+                        )
                         {
                             Vector3 random = UnityEngine.Random.onUnitSphere * 2f;
                             random.y = 0f;
@@ -356,7 +388,9 @@ public class BotExtractManager : BotManagerBase
                             }
                             else
                             {
-                                member.Value.Memory.Extract.ExfilPosition = bot.Memory.Extract.ExfilPosition;
+                                member.Value.Memory.Extract.ExfilPosition = bot.Memory
+                                    .Extract
+                                    .ExfilPosition;
                             }
 
                             member.Value.Memory.Extract.ExfilPoint = bot.Memory.Extract.ExfilPoint;
@@ -371,7 +405,8 @@ public class BotExtractManager : BotManagerBase
             bot.Memory.Extract.ExfilPosition = squad.LeaderComponent?.Memory.Extract.ExfilPosition;
         }
 
-        return (bot.Memory.Extract.ExfilPosition != null) && (bot.Memory.Extract.ExfilPoint != null);
+        return (bot.Memory.Extract.ExfilPosition != null)
+            && (bot.Memory.Extract.ExfilPoint != null);
     }
 
     private float CheckRaidProgressTimer = 0f;
@@ -386,7 +421,8 @@ public class BotExtractManager : BotManagerBase
         if (Singleton<AbstractGame>.Instance.GameTimer.Started())
         {
             TimeRemaining = SPT.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
-            PercentageRemaining = SPT.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRaidTimeRemainingFraction() * 100;
+            PercentageRemaining =
+                SPT.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRaidTimeRemainingFraction() * 100;
         }
         else
         {

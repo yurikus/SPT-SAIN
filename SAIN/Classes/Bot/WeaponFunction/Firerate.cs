@@ -1,10 +1,7 @@
-﻿using EFT;
-using SAIN.Components;
+﻿using System.Collections.Generic;
 using SAIN.Plugin;
 using SAIN.Preset;
-using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.Info;
-using System.Collections.Generic;
 using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
 using Random = UnityEngine.Random;
@@ -47,16 +44,24 @@ public class Firerate(BotWeaponInfoClass weaponInfoClass)
     private static float FIRERATE_RANDOMIZATION_COEF = 0.25f;
     private static Dictionary<EWeaponClass, float> PERMETER_SETTINGS;
 
-
-    public static float SemiAutoROF(float targetDistance, EFireMode firemode, float perMeterWait, float shootModifier, float modifier = 1f)
+    public static float SemiAutoROF(
+        float targetDistance,
+        EFireMode firemode,
+        float perMeterWait,
+        float shootModifier,
+        float modifier = 1f
+    )
     {
         float rate = targetDistance / (perMeterWait / shootModifier);
         float final = Mathf.Clamp(rate, MIN_FIRE_RATE_INTERVAL, MAX_FIRE_RATE_INTERVAL);
         // Sets a different time between shots if a weapon is full auto or burst and the enemy isn't close
-        if (firemode == EFireMode.fullauto) final *= MAX_FIRE_RATE_COEF_FULLAUTO;
+        if (firemode == EFireMode.fullauto)
+            final *= MAX_FIRE_RATE_COEF_FULLAUTO;
         final /= modifier;
         // Final Result which is randomized +- 15%
-        float finalTime = final * Random.Range(1f - FIRERATE_RANDOMIZATION_COEF, 1f + FIRERATE_RANDOMIZATION_COEF);
+        float finalTime =
+            final
+            * Random.Range(1f - FIRERATE_RANDOMIZATION_COEF, 1f + FIRERATE_RANDOMIZATION_COEF);
         return finalTime;
     }
 

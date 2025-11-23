@@ -1,21 +1,14 @@
-﻿using EFT;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using EFT;
 using EFT.Game.Spawning;
 using EFT.InventoryLogic;
 using SAIN.Components.CoverFinder;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.RotationController;
 using SAIN.Helpers;
-using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.Types.Jobs;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Unity.Collections;
-using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.Experimental.AI;
 
 namespace SAIN.Components;
 
@@ -72,11 +65,16 @@ public class GameWorldComponent : MonoBehaviour
         Vector3 PlayerLookDir = Player.LookDirection;
 
         List<OtherPlayerData> PlayersToCheck = [];
-        PlayersToCheck.AddRange(from Data in OtherPlayerData
-                                let OtherPlayerDirNormal = Data.Value.DistanceData.DirectionNormal
-                                let PlayerComponent = Data.Value.OtherPlayerComponent
-                                where PlayerComponent?.IsAI == true && PlayerComponent.IsActive && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
-                                select Data.Value);
+        PlayersToCheck.AddRange(
+            from Data in OtherPlayerData
+            let OtherPlayerDirNormal = Data.Value.DistanceData.DirectionNormal
+            let PlayerComponent = Data.Value.OtherPlayerComponent
+            where
+                PlayerComponent?.IsAI == true
+                && PlayerComponent.IsActive
+                && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
+            select Data.Value
+        );
 
         const float MaxFlyByDistSqr = 10 * 10;
 
@@ -216,7 +214,10 @@ public class GameWorldComponent : MonoBehaviour
                                 continue;
                             if (!isGunshot && !InFootstepRadius)
                                 continue;
-                            OtherPlayer.BotComponent?.Hearing.SoundInput.CheckAddSoundToCache(soundEvent, Distance);
+                            OtherPlayer.BotComponent?.Hearing.SoundInput.CheckAddSoundToCache(
+                                soundEvent,
+                                Distance
+                            );
                         }
                     }
                 }
@@ -233,7 +234,7 @@ public class GameWorldComponent : MonoBehaviour
         }
 
         SpawnPointMarkers = UnityEngine.Object.FindObjectsOfType<SpawnPointMarker>();
-        
+
 #if DEBUG
         if (SAINPlugin.DebugMode)
             Logger.LogInfo($"Found {SpawnPointMarkers.Length} spawn point markers");
@@ -251,8 +252,14 @@ public class GameWorldComponent : MonoBehaviour
         foreach (SpawnPointMarker spawnPointMarker in SpawnPointMarkers)
         {
             // Try to find a point on the NavMesh nearby the spawn point
-            Vector3? spawnPointPosition = NavMeshHelpers.GetNearbyNavMeshPoint(spawnPointMarker.Position, 2);
-            if (spawnPointPosition.HasValue && !spawnPointPositions.Contains(spawnPointPosition.Value))
+            Vector3? spawnPointPosition = NavMeshHelpers.GetNearbyNavMeshPoint(
+                spawnPointMarker.Position,
+                2
+            );
+            if (
+                spawnPointPosition.HasValue
+                && !spawnPointPositions.Contains(spawnPointPosition.Value)
+            )
             {
                 spawnPointPositions.Add(spawnPointPosition.Value);
             }
@@ -267,7 +274,7 @@ public class GameWorldComponent : MonoBehaviour
         SAINBotController.BotSpawner = botsController.BotSpawner;
         _activated = true;
         JobManager.Start();
-       // StartCoroutine(CalcPathsJobs());
+        // StartCoroutine(CalcPathsJobs());
     }
 
     private bool _activated = false;
@@ -279,7 +286,9 @@ public class GameWorldComponent : MonoBehaviour
         if (GameWorld == null)
         {
 #if DEBUG
-            Logger.LogWarning("GameWorld Null, cannot Init SAIN Gameworld! Check 2. Disposing Component...");
+            Logger.LogWarning(
+                "GameWorld Null, cannot Init SAIN Gameworld! Check 2. Disposing Component..."
+            );
 #endif
             DestroyComponent();
             return;

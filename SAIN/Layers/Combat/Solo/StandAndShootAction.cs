@@ -1,8 +1,6 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Classes.Transform;
-using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace.PersonClasses;
 using SAIN.Helpers;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
@@ -10,14 +8,16 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Solo;
 
-public class StandAndShootAction(BotOwner bot) : BotAction(bot, nameof(StandAndShootAction)), IBotAction
+public class StandAndShootAction(BotOwner bot)
+    : BotAction(bot, nameof(StandAndShootAction)),
+        IBotAction
 {
     public override void Update(CustomLayer.ActionData data)
     {
         Enemy enemy = Bot.GoalEnemy;
         //if (!shallMoveShoot)
         //{
-            Bot.Mover.Pose.SetPoseToCover(enemy);
+        Bot.Mover.Pose.SetPoseToCover(enemy);
         //}
     }
 
@@ -48,12 +48,14 @@ public class StandAndShootAction(BotOwner bot) : BotAction(bot, nameof(StandAndS
         return false;
     }
 
-    private static bool FindSwingMovePosition(PlayerNavData navData, Enemy enemy, out Vector3 movePosition)
+    private static bool FindSwingMovePosition(
+        PlayerNavData navData,
+        Enemy enemy,
+        out Vector3 movePosition
+    )
     {
         movePosition = Vector3.zero;
-        if (enemy != null && 
-            navData.IsOnNavMesh &&
-            enemy.RealDistance < 50)
+        if (enemy != null && navData.IsOnNavMesh && enemy.RealDistance < 50)
         {
             float angle = UnityEngine.Random.Range(70, 110);
             if (EFTMath.RandomBool())

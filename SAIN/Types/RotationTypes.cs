@@ -1,6 +1,4 @@
 ﻿using SAIN.Attributes;
-using SAIN.Preset.GlobalSettings;
-using UnityEngine;
 
 namespace SAIN.Components.RotationController;
 
@@ -11,7 +9,7 @@ public struct TurnSettings(float smoothingValue = 0.5f, float maxTurnSpeed = 360
 
     [MinMax(0.01f, 1000f, 100f)]
     public float MaxTurnSpeed = maxTurnSpeed;
-    
+
     [Advanced]
     [Hidden]
     public EBotLookSmoothingMode SmoothingMode = EBotLookSmoothingMode.SmoothDamp;

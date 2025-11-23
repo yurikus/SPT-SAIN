@@ -1,7 +1,6 @@
-﻿using SAIN.Components.CoverFinder;
-using SAIN.Components.PlayerComponentSpace;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using SAIN.Components.PlayerComponentSpace;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -46,11 +45,18 @@ public struct PlayerTickData
 
         OtherPlayerData.Clear();
         List<OtherPlayerData> OtherPlayers = Owner.OtherPlayersData.DataList;
-        OtherPlayerDirectionData = new NativeArray<PlayerDirectionData>(OtherPlayers.Count, Allocator.TempJob);
+        OtherPlayerDirectionData = new NativeArray<PlayerDirectionData>(
+            OtherPlayers.Count,
+            Allocator.TempJob
+        );
         for (int j = 0; j < OtherPlayers.Count; j++)
         {
             OtherPlayerData otherPlayer = OtherPlayers[j];
-            OtherPlayerDirectionData[j] = PlayerDirectionData.GetUpdatedDirectionData(otherPlayer.DistanceData.Data, Owner, otherPlayer.OtherPlayerComponent);
+            OtherPlayerDirectionData[j] = PlayerDirectionData.GetUpdatedDirectionData(
+                otherPlayer.DistanceData.Data,
+                Owner,
+                otherPlayer.OtherPlayerComponent
+            );
             OtherPlayerData.Add(otherPlayer);
         }
     }
@@ -82,8 +88,11 @@ public struct PlayerTickData
 
 public struct PlayerTickJob : IJobFor
 {
-    [ReadOnly] public NativeArray<PlayerTickData> Input;
-    [WriteOnly] public NativeArray<PlayerTickData> Output;
+    [ReadOnly]
+    public NativeArray<PlayerTickData> Input;
+
+    [WriteOnly]
+    public NativeArray<PlayerTickData> Output;
 
     public void Execute(int index)
     {
@@ -94,8 +103,10 @@ public struct PlayerTickJob : IJobFor
 
     public void Dispose()
     {
-        if (Input.IsCreated) Input.Dispose();
-        if (Output.IsCreated) Output.Dispose();
+        if (Input.IsCreated)
+            Input.Dispose();
+        if (Output.IsCreated)
+            Output.Dispose();
     }
 }
 
@@ -105,7 +116,8 @@ public class DirectionDataJob : BotManagerBase
     private PlayerTickJob _PlayerTickJob;
     private readonly List<PlayerTickData> _playerTickData = [];
 
-    public DirectionDataJob(BotManagerComponent botController) : base(botController)
+    public DirectionDataJob(BotManagerComponent botController)
+        : base(botController)
     {
         botController.StartCoroutine(DirectionDataJobLoop());
     }
@@ -133,9 +145,10 @@ public class DirectionDataJob : BotManagerBase
             int jobCount = _playerTickData.Count;
             if (jobCount > 0)
             {
-                _PlayerTickJob = new() {
+                _PlayerTickJob = new()
+                {
                     Input = new NativeArray<PlayerTickData>(jobCount, Allocator.TempJob),
-                    Output = new NativeArray<PlayerTickData>(jobCount, Allocator.TempJob)
+                    Output = new NativeArray<PlayerTickData>(jobCount, Allocator.TempJob),
                 };
                 for (int i = 0; i < jobCount; i++)
                 {
@@ -148,7 +161,8 @@ public class DirectionDataJob : BotManagerBase
                 yield return null;
 
                 var handle = _PlayerTickJobHandle;
-                if (!handle.IsCompleted) handle.Complete();
+                if (!handle.IsCompleted)
+                    handle.Complete();
                 _PlayerTickJobHandle = handle;
 
                 for (int i = 0; i < jobCount; i++)

@@ -1,17 +1,16 @@
-﻿using EFT;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using EFT;
 
 namespace SAIN.Components.PlayerComponentSpace;
 
 public class PlayerDictionary : Dictionary<string, PlayerComponent>
 {
     public event Action<string> OnPlayerComponentRemoved;
-    
+
     public PlayerComponent GetPlayerComponent(IPlayer Player)
     {
-        if (Player != null && 
-            this.TryGetValue(Player.ProfileId, out PlayerComponent component))
+        if (Player != null && this.TryGetValue(Player.ProfileId, out PlayerComponent component))
         {
             return component;
         }
@@ -20,8 +19,9 @@ public class PlayerDictionary : Dictionary<string, PlayerComponent>
 
     public PlayerComponent GetPlayerComponent(string profileId)
     {
-        if (!profileId.IsNullOrEmpty() &&
-            this.TryGetValue(profileId, out PlayerComponent component))
+        if (
+            !profileId.IsNullOrEmpty() && this.TryGetValue(profileId, out PlayerComponent component)
+        )
         {
             return component;
         }
@@ -55,13 +55,14 @@ public class PlayerDictionary : Dictionary<string, PlayerComponent>
         foreach (KeyValuePair<string, PlayerComponent> kvp in this)
         {
             PlayerComponent component = kvp.Value;
-            if (component == null ||
-                component.Player == null)
+            if (component == null || component.Player == null)
             {
                 _ids.Add(kvp.Key);
                 if (component.Player != null)
                 {
-                    Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
+                    Logger.LogDebug(
+                        $"Removing {component.Player.Profile?.Nickname} from player dictionary"
+                    );
                 }
             }
         }

@@ -1,5 +1,5 @@
-﻿using EFT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using EFT;
 using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace;
@@ -138,7 +138,8 @@ public struct PlayerPositionData
 
     public readonly bool GetBodyPartPosition(BodyPartType PartType, out Vector3 Result)
     {
-        Result = PartType switch {
+        Result = PartType switch
+        {
             BodyPartType.head => HeadPosition,
             BodyPartType.body => BodyPosition,
             _ => GetBodyPartPosition(PartType),
@@ -165,7 +166,9 @@ public struct PlayerPositionData
         if (!BodyParts.TryGetValue(PartType, out Result))
         {
 #if DEBUG
-            Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary");
+            Logger.LogError(
+                $"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary"
+            );
 #endif
             return null;
         }

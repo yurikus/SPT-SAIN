@@ -1,4 +1,5 @@
-﻿using CommonAssets.Scripts.Audio;
+﻿using System.Reflection;
+using CommonAssets.Scripts.Audio;
 using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
@@ -7,7 +8,6 @@ using SAIN.Components;
 using SAIN.Components.Helpers;
 using SAIN.Components.PlayerComponentSpace;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
 using StepAudioController = LocalPlayerStepAudioControllerClass;
@@ -57,7 +57,12 @@ public class TreeSoundPatch : ModulePatch
     }
 
     [PatchPostfix]
-    public static void Patch(Vector3 soundPosition, BetterSource source, IPlayerOwner player, SoundBank ____soundBank)
+    public static void Patch(
+        Vector3 soundPosition,
+        BetterSource source,
+        IPlayerOwner player,
+        SoundBank ____soundBank
+    )
     {
         if (player.iPlayer != null)
         {
@@ -67,7 +72,13 @@ public class TreeSoundPatch : ModulePatch
                 baseRange = ____soundBank.Rolloff * player.SoundRadius * 0.8f;
             }
             //Logger.LogDebug($"Playing Bush Sound Range: {baseRange}");
-            BotManagerComponent.Instance?.BotHearing.PlayAISound(player.iPlayer.ProfileId, SAINSoundType.Bush, soundPosition, baseRange, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                player.iPlayer.ProfileId,
+                SAINSoundType.Bush,
+                soundPosition,
+                baseRange,
+                1f
+            );
         }
     }
 }
@@ -76,14 +87,23 @@ public class DoorOpenSoundPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.StartInteraction));
+        return AccessTools.Method(
+            typeof(MovementContext),
+            nameof(MovementContext.StartInteraction)
+        );
     }
 
     [PatchPrefix]
     public static void PatchPrefix(Player ____player)
     {
         float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_OPEN_SOUND_RANGE;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            ____player.ProfileId,
+            SAINSoundType.Door,
+            ____player.Position,
+            baseRange,
+            1f
+        );
     }
 }
 
@@ -98,7 +118,13 @@ public class DoorBreachSoundPatch : ModulePatch
     public static void PatchPrefix(Player ____player)
     {
         float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_KICK_SOUND_RANGE;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            ____player.ProfileId,
+            SAINSoundType.Door,
+            ____player.Position,
+            baseRange,
+            1f
+        );
     }
 }
 
@@ -135,7 +161,11 @@ public class FootstepSoundPatch : ModulePatch
     }
 
     [PatchPostfix]
-    public static void Patch(Player __instance, BetterSource ___NestedStepSoundSource, SurfaceSet ____currentSet)
+    public static void Patch(
+        Player __instance,
+        BetterSource ___NestedStepSoundSource,
+        SurfaceSet ____currentSet
+    )
     {
         ///// Most Copypasted from original function to replicate audio ranges that players experience. This could change in the future, so this function should be checked to make sure the code hasn't changed
         //SoundBank soundBank = (__instance.Pose == EPlayerPose.Duck) ? ____currentSet.DuckSoundBank : ____currentSet.RunSoundBank;
@@ -180,7 +210,8 @@ public class FikaHeadlessTempFixPatch : ModulePatch
                 {
                     motion.y = 0f;
                 }
-                __instance.NextStepNoise = Time.time + LocalBotSettingsProviderClass.Core.STEP_NOISE_DELTA;
+                __instance.NextStepNoise =
+                    Time.time + LocalBotSettingsProviderClass.Core.STEP_NOISE_DELTA;
                 float num = ____player.Speed;
                 if (____player.IsSprintEnabled)
                 {
@@ -192,9 +223,18 @@ public class FikaHeadlessTempFixPatch : ModulePatch
                 {
                     return false;
                 }
-                float num3 = ____player.IsSprintEnabled ? 1f : __instance.CovertMovementVolumeBySpeed;
-                float power = LocalBotSettingsProviderClass.Core.BASE_WALK_SPEREAD2 * (num3 + num) / 2f;
-                BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.FootStep, ____player.Position, power, 1f);
+                float num3 = ____player.IsSprintEnabled
+                    ? 1f
+                    : __instance.CovertMovementVolumeBySpeed;
+                float power =
+                    LocalBotSettingsProviderClass.Core.BASE_WALK_SPEREAD2 * (num3 + num) / 2f;
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                    ____player.ProfileId,
+                    SAINSoundType.FootStep,
+                    ____player.Position,
+                    power,
+                    1f
+                );
             }
         }
         return false;
@@ -209,7 +249,12 @@ public class GenericMovementSoundPatch : ModulePatch
     }
 
     [PatchPostfix]
-    public static void Patch(Player __instance, SoundBank bank, float volume, EAudioMovementState movementState)
+    public static void Patch(
+        Player __instance,
+        SoundBank bank,
+        float volume,
+        EAudioMovementState movementState
+    )
     {
         //SAINSoundType soundType;
         //switch (movementState) {
@@ -240,7 +285,10 @@ public class GenericMovementSoundPatch : ModulePatch
 
 public class SpecificStepAudioControllerPatch : ModulePatch
 {
-    protected static readonly FieldInfo NestedStepSoundSourceField = AccessTools.Field(typeof(Player), "NestedStepSoundSource");
+    protected static readonly FieldInfo NestedStepSoundSourceField = AccessTools.Field(
+        typeof(Player),
+        "NestedStepSoundSource"
+    );
 
     protected override MethodBase GetTargetMethod()
     {
@@ -249,7 +297,15 @@ public class SpecificStepAudioControllerPatch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool Patch(StepAudioController __instance, EAudioMovementState movementState, EnvironmentType environment, float distance, float baseStepVolume, float blendParameter, bool stereo)
+    public static bool Patch(
+        StepAudioController __instance,
+        EAudioMovementState movementState,
+        EnvironmentType environment,
+        float distance,
+        float baseStepVolume,
+        float blendParameter,
+        bool stereo
+    )
     {
         // TEMPORARY SOLUTION TO HEADLESS HAVING NO BOT HEARING OF FOOTSTEPS
         if (ModDetection.ProjectFikaHeadlessLoaded)
@@ -263,21 +319,36 @@ public class SpecificStepAudioControllerPatch : ModulePatch
         }
         float volume = baseStepVolume;
         bool IsUnderRoof = __instance.Bool_0;
-        if (!IsUnderRoof && environment != EnvironmentType.Indoor && movementState != EAudioMovementState.None)
+        if (
+            !IsUnderRoof
+            && environment != EnvironmentType.Indoor
+            && movementState != EAudioMovementState.None
+        )
         {
             if (__instance.method_4(movementState, out SoundBank soundBank))
             {
                 volume = __instance.CalculateFinalVolume(baseStepVolume, soundBank);
-                soundBank.Play(__instance.BetterSource_0, EnvironmentType.Outdoor, distance, volume, blendParameter, stereo, true);
+                soundBank.Play(
+                    __instance.BetterSource_0,
+                    EnvironmentType.Outdoor,
+                    distance,
+                    volume,
+                    blendParameter,
+                    stereo,
+                    true
+                );
             }
             else
             {
-                Debug.LogError(string.Format("Can't find bank for movement state: {0}", movementState));
+                Debug.LogError(
+                    string.Format("Can't find bank for movement state: {0}", movementState)
+                );
             }
         }
         // END OF COPIED FUNCTION
 
-        SAINSoundType soundType = movementState switch {
+        SAINSoundType soundType = movementState switch
+        {
             EAudioMovementState.Run => SAINSoundType.FootStep,
             EAudioMovementState.Sprint => SAINSoundType.Sprint,
             EAudioMovementState.Land => SAINSoundType.Land,
@@ -295,7 +366,13 @@ public class SpecificStepAudioControllerPatch : ModulePatch
                 {
                     if (StepSourceObj is BetterSource NestedStepSoundSource)
                     {
-                        BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.Iplayer_0.ProfileId, soundType, __instance.Iplayer_0.Position, NestedStepSoundSource.MaxDistance, volume);
+                        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                            __instance.Iplayer_0.ProfileId,
+                            soundType,
+                            __instance.Iplayer_0.Position,
+                            NestedStepSoundSource.MaxDistance,
+                            volume
+                        );
                         //if (player.IsYourPlayer)
                         //    Logger.LogDebug($"SpecificStepAudioControllerPatch:: Played Sound [ Player: {___iplayer_0.Profile.Nickname}, MovementState: {movementState}, Environment: {environment}, Range: {NestedStepSoundSource.MaxDistance}, Volume: {volume}]");
                     }
@@ -326,14 +403,23 @@ public class DryShotPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.DryShot));
+        return AccessTools.Method(
+            typeof(Player.FirearmController),
+            nameof(Player.FirearmController.DryShot)
+        );
     }
 
     [PatchPrefix]
     public static void PatchPrefix(Player ____player)
     {
         float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_DryFire;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.DryFire, ____player.WeaponRoot.position, baseRange, 1f);
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            ____player.ProfileId,
+            SAINSoundType.DryFire,
+            ____player.WeaponRoot.position,
+            baseRange,
+            1f
+        );
     }
 }
 
@@ -359,7 +445,10 @@ public class TryPlayShootSoundPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(PlayerAIDataClass), nameof(PlayerAIDataClass.TryPlayShootSound));
+        return AccessTools.Method(
+            typeof(PlayerAIDataClass),
+            nameof(PlayerAIDataClass.TryPlayShootSound)
+        );
     }
 
     [PatchPrefix]
@@ -380,7 +469,12 @@ public class OnMakingShotPatch : ModulePatch
     [PatchPrefix]
     public static void PatchPrefix(Player __instance, IWeapon weapon, Vector3 force)
     {
-        if (GameWorldComponent.TryGetPlayerComponent(__instance, out PlayerComponent PlayerComponent))
+        if (
+            GameWorldComponent.TryGetPlayerComponent(
+                __instance,
+                out PlayerComponent PlayerComponent
+            )
+        )
         {
             PlayerComponent.OnMakingShot(weapon, force);
         }
@@ -391,7 +485,10 @@ public class RegisterShotPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.RegisterShot));
+        return AccessTools.Method(
+            typeof(Player.FirearmController),
+            nameof(Player.FirearmController.RegisterShot)
+        );
     }
 
     [PatchPrefix]
@@ -405,13 +502,21 @@ public class OnWeaponModifiedPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.WeaponModified));
+        return AccessTools.Method(
+            typeof(Player.FirearmController),
+            nameof(Player.FirearmController.WeaponModified)
+        );
     }
 
     [PatchPrefix]
     public static void PatchPrefix(Player.FirearmController __instance, Player ____player)
     {
-        if (GameWorldComponent.TryGetPlayerComponent(____player, out PlayerComponent PlayerComponent))
+        if (
+            GameWorldComponent.TryGetPlayerComponent(
+                ____player,
+                out PlayerComponent PlayerComponent
+            )
+        )
         {
             PlayerComponent.Equipment.WeaponModified(__instance.Weapon);
         }
@@ -427,7 +532,10 @@ public class SoundClipNameCheckerPatch : ModulePatch
     {
         _PlayerBridge = AccessTools.Field(typeof(BaseSoundPlayer), "playersBridge");
         _Player = AccessTools.PropertyGetter(_PlayerBridge.FieldType, "iPlayer");
-        return AccessTools.Method(typeof(BaseSoundPlayer), nameof(BaseSoundPlayer.SoundEventHandler));
+        return AccessTools.Method(
+            typeof(BaseSoundPlayer),
+            nameof(BaseSoundPlayer.SoundEventHandler)
+        );
     }
 
     [PatchPrefix]
@@ -446,7 +554,10 @@ public class SoundClipNameCheckerPatch2 : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(BaseSoundPlayer), nameof(BaseSoundPlayer.SoundAtPointEventHandler));
+        return AccessTools.Method(
+            typeof(BaseSoundPlayer),
+            nameof(BaseSoundPlayer.SoundAtPointEventHandler)
+        );
     }
 
     [PatchPrefix]
@@ -454,7 +565,10 @@ public class SoundClipNameCheckerPatch2 : ModulePatch
     {
         if (soundName == FUSE)
         {
-            BaseSoundPlayer.SoundElement soundElement = __instance.AdditionalSounds.Find((BaseSoundPlayer.SoundElement elem) => elem.EventName == FUSE || elem.EventName == "Snd" + FUSE);
+            BaseSoundPlayer.SoundElement soundElement = __instance.AdditionalSounds.Find(
+                (BaseSoundPlayer.SoundElement elem) =>
+                    elem.EventName == FUSE || elem.EventName == "Snd" + FUSE
+            );
             if (soundElement != null)
             {
                 soundElement.RollOff = 60;
@@ -474,12 +588,23 @@ public class ToggleSoundPatch : ModulePatch
     }
 
     [PatchPostfix]
-    public static void PatchPostfix(Player __instance, bool previousState, bool isOn, Vector3 ___SpeechLocalPosition)
+    public static void PatchPostfix(
+        Player __instance,
+        bool previousState,
+        bool isOn,
+        Vector3 ___SpeechLocalPosition
+    )
     {
         if (previousState != isOn)
         {
             float baseRange = 10f;
-            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, baseRange, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                __instance.ProfileId,
+                SAINSoundType.GearSound,
+                __instance.Position + ___SpeechLocalPosition,
+                baseRange,
+                1f
+            );
         }
     }
 }
@@ -511,7 +636,13 @@ public class PlaySwitchHeadlightSoundPatch : ModulePatch
     [PatchPostfix]
     public static void PatchPostfix(Player __instance, Vector3 ___SpeechLocalPosition)
     {
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position + ___SpeechLocalPosition, 10f, 1f);
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            __instance.ProfileId,
+            SAINSoundType.GearSound,
+            __instance.Position + ___SpeechLocalPosition,
+            10f,
+            1f
+        );
     }
 }
 
@@ -530,7 +661,13 @@ public class LootingSoundPatch : ModulePatch
             return;
         }
         float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Looting;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Looting, __instance.Position, baseRange, 1f);
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            __instance.ProfileId,
+            SAINSoundType.Looting,
+            __instance.Position,
+            baseRange,
+            1f
+        );
     }
 }
 
@@ -542,14 +679,26 @@ public class ProneSoundPatch : ModulePatch
     }
 
     [PatchPrefix]
-    public static void PatchPrefix(Player __instance, ref string soundBank, float ____runSurfaceCheck)
+    public static void PatchPrefix(
+        Player __instance,
+        ref string soundBank,
+        float ____runSurfaceCheck
+    )
     {
-        if (soundBank == "Prone"
+        if (
+            soundBank == "Prone"
             && __instance.SinceLastStep >= 0.5f
-            && __instance.CheckSurface(____runSurfaceCheck))
+            && __instance.CheckSurface(____runSurfaceCheck)
+        )
         {
             float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Prone;
-            BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.Prone, __instance.Position, range, 1f);
+            BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                __instance.ProfileId,
+                SAINSoundType.Prone,
+                __instance.Position,
+                range,
+                1f
+            );
         }
     }
 }
@@ -564,8 +713,18 @@ public class AimSoundPatch : ModulePatch
     [PatchPrefix]
     public static void PatchPrefix(float volume, Player __instance)
     {
-        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_AimingandGearRattle;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, baseRange, volume);
+        float baseRange = SAINPlugin
+            .LoadedPreset
+            .GlobalSettings
+            .Hearing
+            .BaseSoundRange_AimingandGearRattle;
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            __instance.ProfileId,
+            SAINSoundType.GearSound,
+            __instance.Position,
+            baseRange,
+            volume
+        );
     }
 }
 
@@ -573,7 +732,10 @@ public class BulletImpactPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(EffectsCommutator), nameof(EffectsCommutator.PlayHitEffect));
+        return AccessTools.Method(
+            typeof(EffectsCommutator),
+            nameof(EffectsCommutator.PlayHitEffect)
+        );
     }
 
     [PatchPostfix]

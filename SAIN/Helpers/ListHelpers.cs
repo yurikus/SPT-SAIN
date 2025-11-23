@@ -5,9 +5,13 @@ namespace SAIN.Helpers;
 
 internal static class ListHelpers
 {
-    public static void FilterByPredicateNonAlloc<T>(this List<T> input, List<T> output, Predicate<T> predicate)
+    public static void FilterByPredicateNonAlloc<T>(
+        this List<T> input,
+        List<T> output,
+        Predicate<T> predicate
+    )
     {
-            output.Clear();
+        output.Clear();
         for (int i = 0; i < input.Count; i++)
         {
             T item = input[i];
@@ -28,7 +32,8 @@ internal static class ListHelpers
         return false;
     }
 
-    public static void PopulateKeys<T, K>(Dictionary<T, K> dictionary, K defaultVal) where T : Enum
+    public static void PopulateKeys<T, K>(Dictionary<T, K> dictionary, K defaultVal)
+        where T : Enum
     {
         foreach (T item in EnumValues.GetEnum<T>())
         {
@@ -40,7 +45,8 @@ internal static class ListHelpers
         }
     }
 
-    public static void CloneEntries<T, K>(Dictionary<T, K> source, Dictionary<T, K> destination) where T : Enum
+    public static void CloneEntries<T, K>(Dictionary<T, K> source, Dictionary<T, K> destination)
+        where T : Enum
     {
         foreach (KeyValuePair<T, K> kvp in source)
         {

@@ -1,11 +1,8 @@
 ﻿using EFT;
-using HarmonyLib;
 using SAIN.Components;
 using SAIN.Helpers;
-using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover;
@@ -16,9 +13,8 @@ public class ProneClass : BotBase
     private bool _canshoot { get; set; }
     private float _nextCheckShootTime { get; set; }
 
-    public ProneClass(BotComponent sain) : base(sain)
-    {
-    }
+    public ProneClass(BotComponent sain)
+        : base(sain) { }
 
     public void SetProne(bool value)
     {
@@ -27,7 +23,10 @@ public class ProneClass : BotBase
 
     public bool ShallProne(bool withShoot, float mindist = 25f)
     {
-        if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
+        if (
+            !Bot.Info.FileSettings.Move.PRONE_TOGGLE
+            || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE
+        )
         {
             return false;
         }
@@ -56,7 +55,10 @@ public class ProneClass : BotBase
         {
             return false;
         }
-        if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
+        if (
+            !Bot.Info.FileSettings.Move.PRONE_TOGGLE
+            || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE
+        )
         {
             return false;
         }
@@ -84,13 +86,12 @@ public class ProneClass : BotBase
         }
         return Player.IsInPronePose;
 
-
         //Vector3? lastKnownPos = enemy.LastKnownPosition;
         //if (lastKnownPos == null)
         //{
         //    return false;
         //}
-       //// bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
+        //// bool isUnderDuress = Bot.Decision.CurrentSelfDecision != ESelfActionType.None || Bot.Suppression.IsHeavySuppressed;
         //bool isUnderDuress = false;
         //bool shallProne = isUnderDuress || !CheckShootProne(lastKnownPos.Value, enemy);
         //if (shallProne)
@@ -120,6 +121,12 @@ public class ProneClass : BotBase
         from.y = vector.y;
         float num = Vector3.Angle(from, vector2);
         float lay_DOWN_ANG_SHOOT = HelpersGClass.LAY_DOWN_ANG_SHOOT;
-        return num <= Mathf.Abs(lay_DOWN_ANG_SHOOT) && Vector.CanShootToTarget(new ShootPointClass(target, 1f), vector, BotOwner.LookSensor.Mask, true);
+        return num <= Mathf.Abs(lay_DOWN_ANG_SHOOT)
+            && Vector.CanShootToTarget(
+                new ShootPointClass(target, 1f),
+                vector,
+                BotOwner.LookSensor.Mask,
+                true
+            );
     }
 }

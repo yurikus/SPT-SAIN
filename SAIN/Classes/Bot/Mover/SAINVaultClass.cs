@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -9,7 +9,8 @@ namespace SAIN.SAINComponent.Classes.Mover;
 
 public class SAINVaultClass : BotComponentClassBase
 {
-    public SAINVaultClass(BotComponent sain) : base(sain)
+    public SAINVaultClass(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
     }
@@ -18,7 +19,13 @@ public class SAINVaultClass : BotComponentClassBase
 
     public static void DebugCheckObstacles(Player player)
     {
-        SpherecastCheck(player, player.WeaponRoot.position, player.LookDirection, out SAINVaultPoint notUsed, 5f);
+        SpherecastCheck(
+            player,
+            player.WeaponRoot.position,
+            player.LookDirection,
+            out SAINVaultPoint notUsed,
+            5f
+        );
     }
 
     public static void DebugVaultPointCount()
@@ -81,7 +88,7 @@ public class SAINVaultClass : BotComponentClassBase
                 break;
             }
         }
-        
+
 #if DEBUG
         if (SAINPlugin.DebugMode)
         {
@@ -92,7 +99,13 @@ public class SAINVaultClass : BotComponentClassBase
         return foundPoint;
     }
 
-    public static bool SpherecastCheck(Player player, Vector3 start, Vector3 end, out SAINVaultPoint result, float distance = 0)
+    public static bool SpherecastCheck(
+        Player player,
+        Vector3 start,
+        Vector3 end,
+        out SAINVaultPoint result,
+        float distance = 0
+    )
     {
         // Raise up the corner positions to get a clear line of sight to the next corner to test
         start.y += 0.33f;
@@ -105,7 +118,16 @@ public class SAINVaultClass : BotComponentClassBase
             distance = direction.magnitude;
         }
 
-        if (Physics.SphereCast(start, 0.1f, direction, out RaycastHit hit, direction.magnitude, LayerMaskClass.PlayerStaticCollisionsMask))
+        if (
+            Physics.SphereCast(
+                start,
+                0.1f,
+                direction,
+                out RaycastHit hit,
+                direction.magnitude,
+                LayerMaskClass.PlayerStaticCollisionsMask
+            )
+        )
         {
             if (CheckObstacleForVault(hit, player.VaultingParameters.VaultingHeight))
             {
@@ -134,7 +156,12 @@ public class SAINVaultClass : BotComponentClassBase
         // Debug Info
         Color debugSphereColor = heightGood ? Color.green : Color.red;
         float debugSphereSize = heightGood ? 1f : 0.5f;
-        DebugGizmos.DrawSphere(hit.collider.transform.position, debugSphereSize, debugSphereColor, 60f);
+        DebugGizmos.DrawSphere(
+            hit.collider.transform.position,
+            debugSphereSize,
+            debugSphereColor,
+            60f
+        );
 
         return heightGood;
     }
@@ -155,7 +182,7 @@ public class SAINVaultClass : BotComponentClassBase
             Player.OnVaulting();
             return true;
         }
-        
+
 #if DEBUG
         if (SAINPlugin.DebugMode)
         {
@@ -168,7 +195,11 @@ public class SAINVaultClass : BotComponentClassBase
 
     public bool CanVault()
     {
-        if (Player == null || Player.VaultingComponent == null || Player.VaultingGameplayRestrictions == null)
+        if (
+            Player == null
+            || Player.VaultingComponent == null
+            || Player.VaultingGameplayRestrictions == null
+        )
         {
 #if DEBUG
             if (SAINPlugin.DebugMode)
@@ -191,7 +222,7 @@ public class SAINVaultClass : BotComponentClassBase
 
             return true;
         }
-        
+
 #if DEBUG
         if (SAINPlugin.DebugMode)
         {

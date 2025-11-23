@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Models.Enums;
 using SAIN.Models.Structs;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -17,7 +17,11 @@ public class EnemyPartDataClass
 
     private readonly Dictionary<EBodyPartColliderType, BodyPartCollider> _colliderDictionary = [];
 
-    public EnemyPartDataClass(EBodyPart bodyPart, BifacialTransform transform, List<BodyPartCollider> colliders)
+    public EnemyPartDataClass(
+        EBodyPart bodyPart,
+        BifacialTransform transform,
+        List<BodyPartCollider> colliders
+    )
     {
         BodyPart = bodyPart;
         Transform = transform;
@@ -57,10 +61,17 @@ public class EnemyPartDataClass
             TimeSeen = -1f;
             return;
         }
-        if (TimeSeen <= 0f) TimeSeen = Time.time;
+        if (TimeSeen <= 0f)
+            TimeSeen = Time.time;
     }
 
-    public void SetLineOfSight(Vector3 castPoint, EBodyPartColliderType colliderType, RaycastHit raycastHit, ERaycastCheck type, float time)
+    public void SetLineOfSight(
+        Vector3 castPoint,
+        EBodyPartColliderType colliderType,
+        RaycastHit raycastHit,
+        ERaycastCheck type,
+        float time
+    )
     {
         RaycastResults[type].Update(castPoint, _colliderDictionary[colliderType], raycastHit, time);
     }
@@ -68,12 +79,12 @@ public class EnemyPartDataClass
     public SAINBodyPartRaycast GetRaycast()
     {
         BodyPartCollider collider = GetCollider();
-      
+
         return new SAINBodyPartRaycast
         {
             CastPoint = GetCastPoint(collider),
             PartType = BodyPart,
-            ColliderType = collider.BodyPartColliderType
+            ColliderType = collider.BodyPartColliderType,
         };
     }
 
@@ -94,7 +105,7 @@ public class EnemyPartDataClass
 
     private int _index;
     private readonly int _indexMax;
-  
+
     private Vector3 GetCastPoint(BodyPartCollider collider)
     {
         float size = GetColliderMinSize(collider);

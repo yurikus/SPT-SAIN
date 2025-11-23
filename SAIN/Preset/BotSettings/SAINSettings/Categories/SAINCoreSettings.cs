@@ -1,5 +1,4 @@
-﻿using EFT;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SAIN.Attributes;
 using SAIN.Preset.GlobalSettings;
 
@@ -19,7 +18,9 @@ public class SAINCoreSettings : SAINSettingsBase<SAINCoreSettings>, ISAINSetting
 
     [Category("Vision")]
     [Name("Gain Sight Coeficient")]
-    [Description("Default EFT Config. Affects how quickly this bot will notice their enemies. Small changes to this have dramatic affects on bot vision speed.")]
+    [Description(
+        "Default EFT Config. Affects how quickly this bot will notice their enemies. Small changes to this have dramatic affects on bot vision speed."
+    )]
     [MinMax(0.001f, 10f, 10000f)]
     [Advanced]
     public float GainSightCoef = 0.2f;
@@ -76,6 +77,4 @@ public class SAINCoreSettings : SAINSettingsBase<SAINCoreSettings>, ISAINSetting
         settings.Core.CanRun = CanRun;
         settings.Core.DamageCoeff = DamageCoeff;
     }
-
-
 }

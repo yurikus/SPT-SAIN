@@ -1,18 +1,17 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover;
 
 public class PoseClass : BotBase
 {
-    public PoseClass(BotComponent sain) : base(sain)
-    {
-    }
+    public PoseClass(BotComponent sain)
+        : base(sain) { }
 
     public override void ManualUpdate()
     {
@@ -71,7 +70,10 @@ public class PoseClass : BotBase
         {
             return false;
         }
-        if (!Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE)
+        if (
+            !Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE
+            || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE
+        )
         {
             return false;
         }
@@ -87,7 +89,7 @@ public class PoseClass : BotBase
 
     private bool canChangePose()
     {
-        return _stopSprintAndPoseChangeTime < Time.time && !Player.IsInPronePose;// && !Bot.Mover.Crawling;
+        return _stopSprintAndPoseChangeTime < Time.time && !Player.IsInPronePose; // && !Bot.Mover.Crawling;
     }
 
     private float _stopSprintAndPoseChangeTime;
@@ -124,17 +126,17 @@ public class PoseClass : BotBase
     {
         targetPose = 1f;
         //if ((Bot.AILimit.CurrentAILimit == AILimitSetting.None || Bot.GoalEnemy?.IsAI == false))
-            if (enemy.FindLookPoint(out Vector3 position, out _))
+        if (enemy.FindLookPoint(out Vector3 position, out _))
+        {
+            if (useCollider)
             {
-                if (useCollider)
-                {
-                    targetPose = FindCrouchHeightColliderSphereCast(position);
-                }
-                else
-                {
-                    targetPose = FindCrouchHeightRaycast(position);
-                }
+                targetPose = FindCrouchHeightColliderSphereCast(position);
             }
+            else
+            {
+                targetPose = FindCrouchHeightRaycast(position);
+            }
+        }
         //}
         return targetPose < 1f;
     }
@@ -167,7 +169,11 @@ public class PoseClass : BotBase
         return 1f;
     }
 
-    private float FindCrouchHeightColliderSphereCast(Vector3 target, float rayLength = 3f, bool flatDir = true)
+    private float FindCrouchHeightColliderSphereCast(
+        Vector3 target,
+        float rayLength = 3f,
+        bool flatDir = true
+    )
     {
         LayerMask Mask = LayerMaskClass.HighPolyWithTerrainMask;
         Vector3 start = Bot.Transform.Position + Vector3.up * 0.75f;

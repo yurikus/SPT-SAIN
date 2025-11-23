@@ -1,7 +1,6 @@
 ﻿using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Preset;
-using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.SAINComponent.Classes;
 
@@ -15,7 +14,8 @@ public class BotDifficultyClass : BotBase
     public float AggressionModifier { get; private set; } = 1f;
     public float HearingDistanceModifier { get; private set; } = 1f;
 
-    public BotDifficultyClass(BotComponent sain) : base(sain)
+    public BotDifficultyClass(BotComponent sain)
+        : base(sain)
     {
         GlobalDifficultyModifiers = new TemporaryStatModifiers();
         BotDifficultyModifiers = new TemporaryStatModifiers();
@@ -31,7 +31,6 @@ public class BotDifficultyClass : BotBase
 
     public void UpdateSettings(SAINPresetClass preset)
     {
-        
         dismiss();
         applyGlobal(preset);
         applyBot(preset);
@@ -48,15 +47,17 @@ public class BotDifficultyClass : BotBase
         var botSettings = Bot.Info.FileSettings.Difficulty;
         var personalitySettings = Bot.Info.PersonalitySettingsClass.Difficulty;
 
-        HearingDistanceModifier = 1f *
-            globalSettings.HearingDistanceCoef *
-            botSettings.HearingDistanceCoef *
-            personalitySettings.HearingDistanceCoef;
+        HearingDistanceModifier =
+            1f
+            * globalSettings.HearingDistanceCoef
+            * botSettings.HearingDistanceCoef
+            * personalitySettings.HearingDistanceCoef;
 
-        AggressionModifier = 1f *
-            globalSettings.AggressionCoef *
-            botSettings.AggressionCoef *
-            personalitySettings.AggressionCoef;
+        AggressionModifier =
+            1f
+            * globalSettings.AggressionCoef
+            * botSettings.AggressionCoef
+            * personalitySettings.AggressionCoef;
 
         var locationSettings = preset.GlobalSettings.Location.Current();
         if (locationSettings == null)

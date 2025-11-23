@@ -1,22 +1,20 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
 namespace SAIN.Types.Jobs;
 
-public struct RaycastJob
-    : IRaycastJob
-    , IBotRaycastJobSingleOwner
-    , IBotRaycastJobSingleTarget
+public struct RaycastJob : IRaycastJob, IBotRaycastJobSingleOwner, IBotRaycastJobSingleTarget
 {
-    public RaycastJob(Vector3[] Points
-    , Vector3 ViewPosition
-    , LayerMask InMask
-    , IPlayer inOwner
-    , IPlayer inTarget
+    public RaycastJob(
+        Vector3[] Points,
+        Vector3 ViewPosition,
+        LayerMask InMask,
+        IPlayer inOwner,
+        IPlayer inTarget
     )
     {
         Owner = inOwner;
@@ -27,11 +25,12 @@ public struct RaycastJob
         Commands = CreateCommands(Points.Length, Points, ViewPosition, InMask);
     }
 
-    public RaycastJob(List<Vector3> points
-    , Vector3 ViewPosition
-    , LayerMask InMask
-    , IPlayer inOwner
-    , IPlayer inTarget
+    public RaycastJob(
+        List<Vector3> points,
+        Vector3 ViewPosition,
+        LayerMask InMask,
+        IPlayer inOwner,
+        IPlayer inTarget
     )
     {
         Owner = inOwner;
@@ -43,11 +42,12 @@ public struct RaycastJob
         Commands = CreateCommands(TotalRaycasts, Points, ViewPosition, InMask);
     }
 
-    public RaycastJob(RandomDir[] Directions
-    , Vector3 OriginPoint
-    , LayerMask InMask
-    , IPlayer inOwner
-    , IPlayer inTarget
+    public RaycastJob(
+        RandomDir[] Directions,
+        Vector3 OriginPoint,
+        LayerMask InMask,
+        IPlayer inOwner,
+        IPlayer inTarget
     )
     {
         Owner = inOwner;
@@ -58,11 +58,12 @@ public struct RaycastJob
         Commands = CreateCommands(Directions, OriginPoint, InMask);
     }
 
-    public RaycastJob(List<RandomDir> Directions
-    , Vector3 OriginPoint
-    , LayerMask InMask
-    , IPlayer inOwner
-    , IPlayer inTarget
+    public RaycastJob(
+        List<RandomDir> Directions,
+        Vector3 OriginPoint,
+        LayerMask InMask,
+        IPlayer inOwner,
+        IPlayer inTarget
     )
     {
         Owner = inOwner;
@@ -83,7 +84,8 @@ public struct RaycastJob
     public void Complete()
     {
         var handle = Handle;
-        if (!handle.IsCompleted) handle.Complete();
+        if (!handle.IsCompleted)
+            handle.Complete();
         Handle = handle;
     }
 
@@ -100,65 +102,98 @@ public struct RaycastJob
 
     public void Dispose()
     {
-        if (!IsCompleted) Complete();
-        if (Hits.IsCreated) Hits.Dispose();
-        if (Commands.IsCreated) Commands.Dispose();
+        if (!IsCompleted)
+            Complete();
+        if (Hits.IsCreated)
+            Hits.Dispose();
+        if (Commands.IsCreated)
+            Commands.Dispose();
     }
 
     public int OffsetCount;
     private bool _IsScheduled;
     internal List<Vector3> Points;
 
-    private static NativeArray<RaycastCommand> CreateCommands(int Count, Vector3[] Points, Vector3 ViewPosition, LayerMask Mask)
+    private static NativeArray<RaycastCommand> CreateCommands(
+        int Count,
+        Vector3[] Points,
+        Vector3 ViewPosition,
+        LayerMask Mask
+    )
     {
         var Result = new NativeArray<RaycastCommand>(Count, Allocator.TempJob);
         for (int i = 0; i < Count; i++)
         {
             Vector3 Direction = Points[i] - ViewPosition;
-            Result[i] = new RaycastCommand(ViewPosition, Direction.normalized, new QueryParameters {
-                layerMask = Mask
-            }, Direction.magnitude);
+            Result[i] = new RaycastCommand(
+                ViewPosition,
+                Direction.normalized,
+                new QueryParameters { layerMask = Mask },
+                Direction.magnitude
+            );
         }
         return Result;
     }
 
-    private static NativeArray<RaycastCommand> CreateCommands(int Count, List<Vector3> Points, Vector3 ViewPosition, LayerMask Mask)
+    private static NativeArray<RaycastCommand> CreateCommands(
+        int Count,
+        List<Vector3> Points,
+        Vector3 ViewPosition,
+        LayerMask Mask
+    )
     {
         var Result = new NativeArray<RaycastCommand>(Count, Allocator.TempJob);
         for (int i = 0; i < Count; i++)
         {
             Vector3 Direction = Points[i] - ViewPosition;
-            Result[i] = new RaycastCommand(ViewPosition, Direction, new QueryParameters {
-                layerMask = Mask
-            }, 1f);
+            Result[i] = new RaycastCommand(
+                ViewPosition,
+                Direction,
+                new QueryParameters { layerMask = Mask },
+                1f
+            );
         }
         return Result;
     }
 
-    private static NativeArray<RaycastCommand> CreateCommands(RandomDir[] Points, Vector3 ViewPosition, LayerMask Mask)
+    private static NativeArray<RaycastCommand> CreateCommands(
+        RandomDir[] Points,
+        Vector3 ViewPosition,
+        LayerMask Mask
+    )
     {
         int Count = Points.Length;
         var Result = new NativeArray<RaycastCommand>(Count, Allocator.TempJob);
         for (int i = 0; i < Count; i++)
         {
             RandomDir Direction = Points[i];
-            Result[i] = new RaycastCommand(ViewPosition, Direction.DirectionNormal, new QueryParameters {
-                layerMask = Mask
-            }, Direction.Magnitude);
+            Result[i] = new RaycastCommand(
+                ViewPosition,
+                Direction.DirectionNormal,
+                new QueryParameters { layerMask = Mask },
+                Direction.Magnitude
+            );
         }
         return Result;
     }
 
-    private static NativeArray<RaycastCommand> CreateCommands(List<RandomDir> Points, Vector3 ViewPosition, LayerMask Mask)
+    private static NativeArray<RaycastCommand> CreateCommands(
+        List<RandomDir> Points,
+        Vector3 ViewPosition,
+        LayerMask Mask
+    )
     {
         int Count = Points.Count;
         var Result = new NativeArray<RaycastCommand>(Count, Allocator.TempJob);
         for (int i = 0; i < Count; i++)
         {
             RandomDir Direction = Points[i];
-            Result[i] = new RaycastCommand(ViewPosition, Direction.DirectionNormal, new QueryParameters {
-                layerMask = Mask
-            }, Direction.Magnitude);
+            Result[i] = new RaycastCommand(
+                ViewPosition,
+                Direction.DirectionNormal,
+                new QueryParameters { layerMask = Mask },
+                Direction.Magnitude
+            );
         }
         return Result;
     }
@@ -166,26 +201,47 @@ public struct RaycastJob
 
 public struct PathVisionJob
 {
-    public PathVisionJob(BotVisiblePathNode[] allPathNodes, int nodeCount, Vector3 origin, Enemy enemy, QueryParameters queryParameters)
+    public PathVisionJob(
+        BotVisiblePathNode[] allPathNodes,
+        int nodeCount,
+        Vector3 origin,
+        Enemy enemy,
+        QueryParameters queryParameters
+    )
     {
         Enemy = enemy;
         NativeArray<RaycastCommand> commands = new(nodeCount, Allocator.TempJob);
         for (int i = 0; i < nodeCount; i++)
         {
-            commands[i] = new RaycastCommand(origin, (allPathNodes[i].Point - origin), queryParameters, 1f);
+            commands[i] = new RaycastCommand(
+                origin,
+                (allPathNodes[i].Point - origin),
+                queryParameters,
+                1f
+            );
         }
         Commands = commands;
         Hits = new NativeArray<RaycastHit>(nodeCount, Allocator.TempJob);
     }
 
-    public PathVisionJob(List<BotVisiblePathNode> nodes, Vector3 origin, Enemy enemy, QueryParameters queryParameters)
+    public PathVisionJob(
+        List<BotVisiblePathNode> nodes,
+        Vector3 origin,
+        Enemy enemy,
+        QueryParameters queryParameters
+    )
     {
         Enemy = enemy;
         int nodeCount = nodes.Count;
         NativeArray<RaycastCommand> commands = new(nodeCount, Allocator.TempJob);
         for (int i = 0; i < nodeCount; i++)
         {
-            commands[i] = new RaycastCommand(origin, (nodes[i].Point - origin), queryParameters, 1f);
+            commands[i] = new RaycastCommand(
+                origin,
+                (nodes[i].Point - origin),
+                queryParameters,
+                1f
+            );
         }
         Commands = commands;
         Hits = new NativeArray<RaycastHit>(nodeCount, Allocator.TempJob);
@@ -198,10 +254,12 @@ public struct PathVisionJob
     public NativeArray<RaycastCommand> Commands { get; private set; }
 
     public void Dispose()
-    
     {
-        if (!Handle.IsCompleted) Handle.Complete();
-        if (Hits.IsCreated) Hits.Dispose();
-        if (Commands.IsCreated) Commands.Dispose();
+        if (!Handle.IsCompleted)
+            Handle.Complete();
+        if (Hits.IsCreated)
+            Hits.Dispose();
+        if (Commands.IsCreated)
+            Commands.Dispose();
     }
 }

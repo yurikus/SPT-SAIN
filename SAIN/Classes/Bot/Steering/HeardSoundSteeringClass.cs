@@ -1,9 +1,5 @@
-﻿using EFT;
-using SAIN.Helpers;
-using SAIN.Models.Enums;
-using SAIN.SAINComponent.Classes.EnemyClasses;
+﻿using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover;
 
@@ -26,9 +22,7 @@ public struct SoundStruct
 
     public Vector3 Position => Place.Position;
 
-    public bool ShallLook =>
-        clearForLook &&
-        TimeSinceHeard < TIME_TO_LOOK;
+    public bool ShallLook => clearForLook && TimeSinceHeard < TIME_TO_LOOK;
 
     private bool clearForLook => Place != null && Enemy != null && Enemy.WasValid;
 
@@ -40,9 +34,8 @@ public class HeardSoundSteeringClass : BotSubClass<SAINSteeringClass>, IBotClass
     public SoundStruct? LastHeardDanger { get; private set; }
     public SoundStruct? LastHeardVisibleDanger { get; private set; }
 
-    public HeardSoundSteeringClass(SAINSteeringClass steering) : base(steering)
-    {
-    }
+    public HeardSoundSteeringClass(SAINSteeringClass steering)
+        : base(steering) { }
 
     public override void Init()
     {

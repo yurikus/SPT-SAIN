@@ -1,8 +1,7 @@
-﻿using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace;
-using SAIN.Models.Structs;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SAIN.Components;
+using SAIN.Models.Structs;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -48,14 +47,13 @@ public class EnemyPlace : IDisposable
         return Position + Vector3.up * 1.5f;
     }
 
-    public bool ShallClear {
-        get
-        {
-                return PlayerLeftArea;
-        }
+    public bool ShallClear
+    {
+        get { return PlayerLeftArea; }
     }
 
-    private bool PlayerLeftArea {
+    private bool PlayerLeftArea
+    {
         get
         {
             if (_nextCheckLeaveTime < Time.time)
@@ -110,7 +108,13 @@ public class EnemyPlace : IDisposable
     private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE = 150;
     private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE_AI = 125f;
 
-    public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
+    public EnemyPlace(
+        PlaceData placeData,
+        Vector3 position,
+        bool isDanger,
+        EEnemyPlaceType placeType,
+        SAINSoundType? soundType
+    )
     {
         PlaceData = placeData;
         Visible = placeData.OwnerEnemy.InLineOfSight;
@@ -157,11 +161,9 @@ public class EnemyPlace : IDisposable
         OnDispose?.Invoke(this);
     }
 
-    public Vector3 Position {
-        get
-        {
-            return _position;
-        }
+    public Vector3 Position
+    {
+        get { return _position; }
     }
 
     public void UpdatePosition(Vector3 value)
@@ -193,7 +195,9 @@ public class EnemyPlace : IDisposable
     private void updateDistancesNow(Vector3 position)
     {
         DistanceToBot = (position - PlaceData.Owner.Position).magnitude;
-        DistanceToEnemyRealPosition = (position - PlaceData.OwnerEnemy.EnemyTransform.Position).magnitude;
+        DistanceToEnemyRealPosition = (
+            position - PlaceData.OwnerEnemy.EnemyTransform.Position
+        ).magnitude;
     }
 
     public float Distance(Vector3 point)
@@ -206,11 +210,9 @@ public class EnemyPlace : IDisposable
         return (_position - toPoint).sqrMagnitude;
     }
 
-    public bool HasArrivedPersonal {
-        get
-        {
-            return _hasArrivedPers;
-        }
+    public bool HasArrivedPersonal
+    {
+        get { return _hasArrivedPers; }
         set
         {
             if (value)
@@ -222,11 +224,9 @@ public class EnemyPlace : IDisposable
         }
     }
 
-    public bool HasArrivedSquad {
-        get
-        {
-            return _hasArrivedSquad;
-        }
+    public bool HasArrivedSquad
+    {
+        get { return _hasArrivedSquad; }
         set
         {
             if (value)
@@ -237,11 +237,9 @@ public class EnemyPlace : IDisposable
         }
     }
 
-    public bool HasSeenPersonal {
-        get
-        {
-            return _hasSeenPers;
-        }
+    public bool HasSeenPersonal
+    {
+        get { return _hasSeenPers; }
         set
         {
             if (value)
@@ -252,11 +250,9 @@ public class EnemyPlace : IDisposable
         }
     }
 
-    public bool HasSeenSquad {
-        get
-        {
-            return _hasSquadSeen;
-        }
+    public bool HasSeenSquad
+    {
+        get { return _hasSquadSeen; }
         set
         {
             if (value)

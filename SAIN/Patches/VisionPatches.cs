@@ -1,4 +1,6 @@
-﻿using EFT;
+﻿using System;
+using System.Reflection;
+using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
@@ -6,9 +8,6 @@ using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SPT.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.Patches.Vision;
@@ -21,10 +20,7 @@ public class UpdateLightEnablePatch : ModulePatch
     }
 
     [PatchPrefix]
-    public static bool PatchPrefix(
-        float curLightDist,
-        ref float __result,
-        BotLight __instance)
+    public static bool PatchPrefix(float curLightDist, ref float __result, BotLight __instance)
     {
         __result = curLightDist;
         if (__instance.BotOwner_0.FlashGrenade.IsFlashed)
@@ -82,22 +78,38 @@ public class UpdateLightEnablePatch : ModulePatch
                 if (gameworld == null)
                 {
 #if DEBUG
-                    Logger.LogError($"GameWorldComponent is null, cannot check if bot has flashlight on!");
+                    Logger.LogError(
+                        $"GameWorldComponent is null, cannot check if bot has flashlight on!"
+                    );
 #endif
                     return false;
                 }
-                PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(__instance.BotOwner_0.ProfileId);
+                PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(
+                    __instance.BotOwner_0.ProfileId
+                );
                 if (playerComponent == null)
                 {
 #if DEBUG
-                    Logger.LogError($"Player Component is null, cannot check if bot has flashlight on!");
+                    Logger.LogError(
+                        $"Player Component is null, cannot check if bot has flashlight on!"
+                    );
 #endif
                     return false;
                 }
-                if (playerComponent.Flashlight.WhiteLight ||
-                    (__instance.BotOwner_0.NightVision.UsingNow && playerComponent.Flashlight.IRLight))
+                if (
+                    playerComponent.Flashlight.WhiteLight
+                    || (
+                        __instance.BotOwner_0.NightVision.UsingNow
+                        && playerComponent.Flashlight.IRLight
+                    )
+                )
                 {
-                    float min = __instance.BotOwner_0.Settings.FileSettings.Look.VISIBLE_DISNACE_WITH_LIGHT;
+                    float min = __instance
+                        .BotOwner_0
+                        .Settings
+                        .FileSettings
+                        .Look
+                        .VISIBLE_DISNACE_WITH_LIGHT;
                     __result = Mathf.Clamp(curLightDist, min, float.MaxValue);
                 }
             }
@@ -199,8 +211,10 @@ public class SetPartPriorityPatch : ModulePatch
             return false;
         }
 
-        if (!isAI &&
-            SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent botComponent))
+        if (
+            !isAI
+            && SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent botComponent)
+        )
         {
             Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
             if (enemy != null)
@@ -210,8 +224,7 @@ public class SetPartPriorityPatch : ModulePatch
                     __instance.ActiveParts = __instance.Maxparts;
                     return false;
                 }
-                if (enemy.Status.ShotAtMeRecently ||
-                    enemy.Status.PositionalFlareEnabled)
+                if (enemy.Status.ShotAtMeRecently || enemy.Status.PositionalFlareEnabled)
                 {
                     __instance.ActiveParts = __instance.Maxparts;
                     return false;
@@ -236,7 +249,8 @@ public class DisableLookUpdatePatch : ModulePatch
     [PatchPrefix]
     public static bool Patch(LookSensor __instance)
     {
-        if (SAINEnableClass.IsBotExcluded(__instance.BotOwner)) return true;
+        if (SAINEnableClass.IsBotExcluded(__instance.BotOwner))
+            return true;
         __instance.method_2();
         return false;
     }
@@ -262,7 +276,13 @@ public class NoAIESPPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return typeof(BotOwner).GetMethod(nameof(BotOwner.IsEnemyLookingAtMe), BindingFlags.Instance | BindingFlags.Public, null, [typeof(IPlayer)], null);
+        return typeof(BotOwner).GetMethod(
+            nameof(BotOwner.IsEnemyLookingAtMe),
+            BindingFlags.Instance | BindingFlags.Public,
+            null,
+            [typeof(IPlayer)],
+            null
+        );
     }
 
     [PatchPrefix]
@@ -283,7 +303,15 @@ public class BotLightTurnOnPatch : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotLight __instance)
     {
-        if (__instance.IsInDarkPlace_1 && !SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.AllowLightOnForDarkBuildings)
+        if (
+            __instance.IsInDarkPlace_1
+            && !SAINPlugin
+                .LoadedPreset
+                .GlobalSettings
+                .General
+                .Flashlight
+                .AllowLightOnForDarkBuildings
+        )
         {
             __instance.IsInDarkPlace_1 = false;
         }
@@ -370,7 +398,6 @@ public class WeatherVisionPatch : ModulePatch
     }
 }
 
-
 //public class CheckPartLineOfSightPatch : ModulePatch
 //{
 //    protected override MethodBase GetTargetMethod()
@@ -442,16 +469,27 @@ public class CheckFlashlightPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.SetLightsState));
+        return AccessTools.Method(
+            typeof(Player.FirearmController),
+            nameof(Player.FirearmController.SetLightsState)
+        );
     }
 
     [PatchPostfix]
     public static void PatchPostfix(Player ____player)
     {
-        PlayerComponent playerComponent = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(____player?.ProfileId);
+        PlayerComponent playerComponent =
+            GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(____player?.ProfileId);
         if (playerComponent != null)
         {
-            BotManagerComponent.Instance.BotHearing.PlayAISound(playerComponent, SAINSoundType.GearSound, playerComponent.Player.WeaponRoot.position, 35f, 1f, true);
+            BotManagerComponent.Instance.BotHearing.PlayAISound(
+                playerComponent,
+                SAINSoundType.GearSound,
+                playerComponent.Player.WeaponRoot.position,
+                35f,
+                1f,
+                true
+            );
             var flashLight = playerComponent.Flashlight;
             flashLight.CheckDevice();
 

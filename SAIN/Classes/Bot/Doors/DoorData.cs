@@ -1,8 +1,5 @@
 ﻿using EFT.Interactive;
-using SAIN.Helpers;
-using System;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover;
 
@@ -65,10 +62,12 @@ public struct DoorDataStruct(NavMeshDoorLink link)
 
     public readonly bool InRangeToInteract(Door door)
     {
-        return door != null && door.DoorState switch {
-            EDoorState.Open => CurrentSqrMagnitude < DOORS_POSSIBLE_CLOSE_DISTANCE_SQR,
-            EDoorState.Shut => CurrentSqrMagnitude < DOORS_POSSIBLE_OPEN_DISTANCE_SQR,
-            _ => false,
-        };
+        return door != null
+            && door.DoorState switch
+            {
+                EDoorState.Open => CurrentSqrMagnitude < DOORS_POSSIBLE_CLOSE_DISTANCE_SQR,
+                EDoorState.Shut => CurrentSqrMagnitude < DOORS_POSSIBLE_OPEN_DISTANCE_SQR,
+                _ => false,
+            };
     }
 }

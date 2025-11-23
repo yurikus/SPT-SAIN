@@ -1,8 +1,7 @@
-﻿
+﻿using System.Collections.Generic;
 using SAIN.Components.BotControllerSpace.Classes.Raycasts;
 using SAIN.Helpers;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,7 +11,8 @@ public class ColliderCoverManager : MonoBehaviour
 {
     public ColliderCoverComponent CreateCover(Collider collider)
     {
-        ColliderCoverComponent component = collider.gameObject.GetComponent<ColliderCoverComponent>();
+        ColliderCoverComponent component =
+            collider.gameObject.GetComponent<ColliderCoverComponent>();
         if (component == null)
         {
             component = collider.gameObject.AddComponent<ColliderCoverComponent>();
@@ -75,7 +75,11 @@ public class ColliderCoverComponent : MonoBehaviour
 
     private static readonly Vector3[] StaticDirections;
 
-    private static void CheckCoverRealSize(Collider collider, out List<RaycastHit> Hits, Vector3 heightOffset)
+    private static void CheckCoverRealSize(
+        Collider collider,
+        out List<RaycastHit> Hits,
+        Vector3 heightOffset
+    )
     {
         Vector3 colliderPosition = collider.transform.position;
         Vector3 size = collider.bounds.size;
@@ -87,10 +91,7 @@ public class ColliderCoverComponent : MonoBehaviour
             Vector3 direction = staticDirNormal * magnitude;
             Vector3 rawPosition = direction + colliderPosition;
             DebugGizmos.DrawSphere(rawPosition, 0.1f, Color.white);
-            Ray ray = new() {
-                direction = -direction,
-                origin = rawPosition + heightOffset
-            };
+            Ray ray = new() { direction = -direction, origin = rawPosition + heightOffset };
             if (collider.Raycast(ray, out RaycastHit hit, magnitude))
                 Hits.Add(hit);
         }
@@ -119,7 +120,14 @@ public class ColliderCoverComponent : MonoBehaviour
                     Vector3 hitNormal = colliderHit.normal;
                     hitNormal.y = 0f;
                     hitNormal.Normalize();
-                    if (NavMesh.SamplePosition(wallPosition + hitNormal, out NavMeshHit navHit1, 0.5f, -1))
+                    if (
+                        NavMesh.SamplePosition(
+                            wallPosition + hitNormal,
+                            out NavMeshHit navHit1,
+                            0.5f,
+                            -1
+                        )
+                    )
                     {
                         navHits.Add(navHit1);
                     }
@@ -140,7 +148,12 @@ public class ColliderCoverComponent : MonoBehaviour
                     {
                         CoverPoints.Add(new(Collider, ColliderPosition, navHits[i].position));
                         DebugGizmos.DrawSphere(navHits[i].position, 0.25f, Color.red);
-                        DebugGizmos.DrawLine(navHits[i].position, ColliderPosition, Color.yellow, 0.02f);
+                        DebugGizmos.DrawLine(
+                            navHits[i].position,
+                            ColliderPosition,
+                            Color.yellow,
+                            0.02f
+                        );
                     }
                 }
             }
@@ -176,7 +189,13 @@ public class ColliderCoverDataClass(Collider collider)
     public HashSet<CoverPointClass> CoverPoints { get; } = [];
 }
 
-public struct ColliderCoverData(int index, Collider collider, Vector3 targetPos, Vector3 botPos, DirCalcData botToTargetData)
+public struct ColliderCoverData(
+    int index,
+    Collider collider,
+    Vector3 targetPos,
+    Vector3 botPos,
+    DirCalcData botToTargetData
+)
 {
     public bool Analyzed = false;
     public bool IsValid = true;

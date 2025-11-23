@@ -19,9 +19,8 @@ public class DogFight : BotBase
 {
     public EDogFightStatus Status { get; private set; }
 
-    public DogFight(BotComponent sain) : base(sain)
-    {
-    }
+    public DogFight(BotComponent sain)
+        : base(sain) { }
 
     public void ResetDogFightStatus()
     {
@@ -45,10 +44,7 @@ public class DogFight : BotBase
             }
             return;
         }
-        if (HasEnemy &&
-            Enemy.IsVisible &&
-            Enemy.CanShoot &&
-            Player.IsInPronePose)
+        if (HasEnemy && Enemy.IsVisible && Enemy.CanShoot && Player.IsInPronePose)
         {
             Bot.Mover.Lean.HoldLean(1f);
             return;
@@ -62,10 +58,13 @@ public class DogFight : BotBase
         Bot.Mover.SetTargetMoveSpeed(Bot.Info.FileSettings.Move.STRAFE_SPEED);
         Bot.Mover.ActivePath?.RequestEndSprint(ESprintUrgency.None, "dogfight");
 
-        if (HasEnemy &&
-            Enemy.InLineOfSight &&
+        if (
+            HasEnemy
+            && Enemy.InLineOfSight
+            &&
             //Enemy.CanShoot &&
-            Status == EDogFightStatus.MovingToEnemy)
+            Status == EDogFightStatus.MovingToEnemy
+        )
         {
             Status = EDogFightStatus.Shooting;
             Bot.Mover.Stop();
@@ -104,9 +103,7 @@ public class DogFight : BotBase
             return;
         }
 
-        if (HasEnemy &&
-            canMoveToEnemy(Enemy) &&
-            Bot.Mover.WalkToPointByWay(Enemy.Path.PathToEnemy))
+        if (HasEnemy && canMoveToEnemy(Enemy) && Bot.Mover.WalkToPointByWay(Enemy.Path.PathToEnemy))
         {
             Bot.Mover.SetTargetMoveSpeed(0.9f);
             Status = EDogFightStatus.MovingToEnemy;
@@ -119,8 +116,10 @@ public class DogFight : BotBase
 
     public bool BackUpFromEnemy(Enemy Enemy)
     {
-        if (Enemy == null) return false;
-        if (!Bot.Transform.NavData.IsOnNavMesh) return false;
+        if (Enemy == null)
+            return false;
+        if (!Bot.Transform.NavData.IsOnNavMesh)
+            return false;
         if (findStrafePoint(out Vector3 backupPoint, Enemy))
         {
             return true;
@@ -136,22 +135,32 @@ public class DogFight : BotBase
 
     private Vector3? findBackupTarget(Enemy Enemy)
     {
-        if (Enemy != null && (
-            Enemy.Bot.BotOwner.WeaponManager.Reload.Reloading ||
-            !Enemy.Bot.BotOwner.WeaponManager.HaveBullets ||
-            Enemy.Bot.BotOwner.Medecine?.Using == true ||
-            (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold) ||
-            (!Enemy.Seen && Enemy.LastKnownPosition != null && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold)
-            ))
+        if (
+            Enemy != null
+            && (
+                Enemy.Bot.BotOwner.WeaponManager.Reload.Reloading
+                || !Enemy.Bot.BotOwner.WeaponManager.HaveBullets
+                || Enemy.Bot.BotOwner.Medecine?.Using == true
+                || (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold)
+                || (
+                    !Enemy.Seen
+                    && Enemy.LastKnownPosition != null
+                    && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold
+                )
+            )
+        )
         {
-            return Enemy.VisiblePathPoint ?? Enemy.LastKnownPosition ?? Enemy.EnemyTransform.Position;
+            return Enemy.VisiblePathPoint
+                ?? Enemy.LastKnownPosition
+                ?? Enemy.EnemyTransform.Position;
         }
         return null;
     }
 
     private bool canMoveToEnemy(Enemy Enemy)
     {
-        return Enemy.LastKnownPosition != null && Enemy.Path.PathToEnemy.status != NavMeshPathStatus.PathInvalid;
+        return Enemy.LastKnownPosition != null
+            && Enemy.Path.PathToEnemy.status != NavMeshPathStatus.PathInvalid;
     }
 
     private float _enemyTimeSinceSeenThreshold = 1f;
@@ -173,7 +182,10 @@ public class DogFight : BotBase
                 Vector3 random = Random.onUnitSphere * 2f;
                 random.y = Mathf.Clamp(random.y, -0.5f, 0.5f);
                 Vector3 RandomBackupPoint = positionAwayFromTarget + random;
-                if (NavMesh.SamplePosition(RandomBackupPoint, out NavMeshHit navMeshHit, 2f, -1) && (navMeshHit.position - BotPosition).sqrMagnitude > 1)
+                if (
+                    NavMesh.SamplePosition(RandomBackupPoint, out NavMeshHit navMeshHit, 2f, -1)
+                    && (navMeshHit.position - BotPosition).sqrMagnitude > 1
+                )
                 {
                     movePosition = navMeshHit.position;
                     if (Bot.Mover.WalkToPoint(movePosition, false))
@@ -189,7 +201,10 @@ public class DogFight : BotBase
 
     private bool findStrafePoint2(out Vector3 MovePoint, Enemy Enemy)
     {
-        if (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold * Random.Range(0.66f, 1.33f))
+        if (
+            Enemy.Seen
+            && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold * Random.Range(0.66f, 1.33f)
+        )
         {
             Vector3? LastKnown = Enemy.LastKnownPosition;
             if (LastKnown != null)

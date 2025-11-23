@@ -1,9 +1,5 @@
-﻿using EFT;
-using EFT.InventoryLogic;
+﻿using EFT.InventoryLogic;
 using SAIN.SAINComponent;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
 
 namespace SAIN.Components.BotComponentSpace.Classes;
@@ -13,13 +9,18 @@ public class ReloadClass : BotBase
     /// <summary>
     /// Returns true if any weapon was successfully refilled
     /// </summary>
-    public static bool RefillMagsOnEachWeapon(BotComponent bot, BotWeaponManager weaponManager, int count = -1, bool includeActiveMag = false, params EquipmentSlot[] slotsToIgnore)
+    public static bool RefillMagsOnEachWeapon(
+        BotComponent bot,
+        BotWeaponManager weaponManager,
+        int count = -1,
+        bool includeActiveMag = false,
+        params EquipmentSlot[] slotsToIgnore
+    )
     {
         bool result = false;
         foreach (var item in weaponManager.Info)
         {
-            if (item.Value?.weapon != null &&
-                IsMagFed(item.Value.weapon.ReloadMode))
+            if (item.Value?.weapon != null && IsMagFed(item.Value.weapon.ReloadMode))
             {
                 bool canFill = true;
                 if (slotsToIgnore != null)
@@ -30,7 +31,10 @@ public class ReloadClass : BotBase
                             break;
                         }
 
-                if (canFill && BotMagazineWeapon.RefillMags(bot, item.Value, count, includeActiveMag))
+                if (
+                    canFill
+                    && BotMagazineWeapon.RefillMags(bot, item.Value, count, includeActiveMag)
+                )
                 {
                     result = true;
                 }
@@ -42,7 +46,13 @@ public class ReloadClass : BotBase
     /// <summary>
     /// Returns true if this weapon was refilled
     /// </summary>
-    public static bool RefillMagsInSlot(EquipmentSlot slot, BotComponent bot, BotWeaponManager weaponManager, int count = -1, bool includeActiveMag = false)
+    public static bool RefillMagsInSlot(
+        EquipmentSlot slot,
+        BotComponent bot,
+        BotWeaponManager weaponManager,
+        int count = -1,
+        bool includeActiveMag = false
+    )
     {
         if (weaponManager.Info.TryGetValue(slot, out var weapon))
         {
@@ -51,7 +61,8 @@ public class ReloadClass : BotBase
         return false;
     }
 
-    public ReloadClass(BotComponent bot) : base(bot)
+    public ReloadClass(BotComponent bot)
+        : base(bot)
     {
         _weaponManager = Bot.BotOwner.WeaponManager;
     }
@@ -85,8 +96,10 @@ public class ReloadClass : BotBase
 
     private static bool IsMagFed(EReloadMode reloadMode)
     {
-        return reloadMode switch {
-            EReloadMode.ExternalMagazine or EReloadMode.ExternalMagazineWithInternalReloadSupport => true,
+        return reloadMode switch
+        {
+            EReloadMode.ExternalMagazine or EReloadMode.ExternalMagazineWithInternalReloadSupport =>
+                true,
             _ => false,
         };
     }

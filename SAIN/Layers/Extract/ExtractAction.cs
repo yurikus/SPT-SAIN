@@ -42,7 +42,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
         {
             shallSprint = false;
         }
-        else 
+        else
         {
             shallSprint = true;
         }
@@ -118,7 +118,10 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 
         if (shallSprint && Bot.Mover.Moving)
         {
-            Bot.Mover.ActivePath.RequestStartSprint(SAINComponent.Classes.Mover.ESprintUrgency.High, "extract");
+            Bot.Mover.ActivePath.RequestStartSprint(
+                SAINComponent.Classes.Mover.ESprintUrgency.High,
+                "extract"
+            );
         }
 
         if (shouldStartExtract(distance))
@@ -149,7 +152,10 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
         }
 
         // If the path to the extract is invalid or the path is incomplete and the bot reached the end of it, select a new extract
-        float distanceToEndOfPath = Vector3.Distance(BotOwner.Position, pathController.ActivePath.GetLastCorner().Position);
+        float distanceToEndOfPath = Vector3.Distance(
+            BotOwner.Position,
+            pathController.ActivePath.GetLastCorner().Position
+        );
         if (distanceToEndOfPath < BotExtractManager.MinDistanceToExtract)
         {
             // Need to reset the search timer to prevent the bot from immediately selecting (possibly) the same extract
@@ -160,7 +166,9 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 
             Bot.Memory.Extract.ExtractStatus = EExtractStatus.None;
 
-            Logger.LogWarning($"{BotOwner.name} reached the end of an incomplete path when trying to find its extract. Searching for a new extract...");
+            Logger.LogWarning(
+                $"{BotOwner.name} reached the end of an incomplete path when trying to find its extract. Searching for a new extract..."
+            );
         }
     }
 
@@ -199,8 +207,11 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
         }
 
         // Need to first check if the bot has started moving to extract because there is currently a race condition that sometimes resets PathStatus
-        // to PathInvalid. If the path is invalid and the bot has not already started moving, it might actually be unable to travel there. 
-        if ((Bot.Memory.Extract.ExtractStatus == EExtractStatus.None) && (pathController.ActivePath.PathStatus == NavMeshPathStatus.PathInvalid))
+        // to PathInvalid. If the path is invalid and the bot has not already started moving, it might actually be unable to travel there.
+        if (
+            (Bot.Memory.Extract.ExtractStatus == EExtractStatus.None)
+            && (pathController.ActivePath.PathStatus == NavMeshPathStatus.PathInvalid)
+        )
         {
             Logger.LogWarning($"{BotOwner.name} has an invalid path to its extract");
 
@@ -215,7 +226,9 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
         Bot.Memory.Extract.ExtractStatus = EExtractStatus.ExtractingNow;
         if (ExtractTimer == -1f)
         {
-            ExtractTimer = BotManagerComponent.Instance.BotExtractManager.GetExfilTime(Bot.Memory.Extract.ExfilPoint);
+            ExtractTimer = BotManagerComponent.Instance.BotExtractManager.GetExfilTime(
+                Bot.Memory.Extract.ExfilPoint
+            );
 
             // Needed to get car extracts working
             ActivateExfil(Bot.Memory.Extract.ExfilPoint);
@@ -227,8 +240,15 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 
         if (ExtractTimer < Time.time)
         {
-            Logger.LogInfo($"{BotOwner.name} Extracted at {point} for extract {Bot.Memory.Extract.ExfilPoint.Settings.Name} at {System.DateTime.UtcNow}");
-            BotManagerComponent.Instance?.BotExtractManager?.LogExtractionOfBot(BotOwner, point, Bot.Memory.Extract.ExtractReason.ToString(), Bot.Memory.Extract.ExfilPoint);
+            Logger.LogInfo(
+                $"{BotOwner.name} Extracted at {point} for extract {Bot.Memory.Extract.ExfilPoint.Settings.Name} at {System.DateTime.UtcNow}"
+            );
+            BotManagerComponent.Instance?.BotExtractManager?.LogExtractionOfBot(
+                BotOwner,
+                point,
+                Bot.Memory.Extract.ExtractReason.ToString(),
+                Bot.Memory.Extract.ExfilPoint
+            );
 
             var botgame = Singleton<IBotGame>.Instance;
             Player player = Bot.Player;
@@ -258,7 +278,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 
                 case EExfiltrationType.SharedTimer:
                     exfil.SetStatusLogged(EExfiltrationStatus.Countdown, "Proceed-1");
-                    
+
 #if DEBUG
                     if (SAINPlugin.DebugMode)
                     {

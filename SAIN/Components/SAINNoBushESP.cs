@@ -1,10 +1,7 @@
-﻿using EFT;
-using HarmonyLib;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.Components;
@@ -28,13 +25,16 @@ public class SAINNoBushESP : MonoBehaviour
     {
         if (NoBushMask == 0)
         {
-            NoBushMask = LayerMaskClass.HighPolyWithTerrainMaskAI | (1 << LayerMask.NameToLayer(PropertyNames.PlayerSpirit));
+            NoBushMask =
+                LayerMaskClass.HighPolyWithTerrainMaskAI
+                | (1 << LayerMask.NameToLayer(PropertyNames.PlayerSpirit));
         }
         BotOwner = botOwner;
         SAIN = sain;
     }
 
-    private static NoBushESPSettings Settings => SAINPlugin.LoadedPreset.GlobalSettings.Look.NoBushESP;
+    private static NoBushESPSettings Settings =>
+        SAINPlugin.LoadedPreset.GlobalSettings.Look.NoBushESP;
     private static bool UserToggle => Settings.NoBushESPToggle;
     private static bool EnhancedChecks => Settings.NoBushESPEnhanced;
     private static float EnhancedRatio => Settings.NoBushESPEnhancedRatio;
@@ -106,7 +106,9 @@ public class SAINNoBushESP : MonoBehaviour
         bool active = ratio >= EnhancedRatio;
         if (active && DebugMode)
         {
-            Logger.LogDebug($"Enhanced Active: [{ratio}] visible from hit count: [{hitCount}] / [{partCount}]. Config Value: [{EnhancedRatio}]");
+            Logger.LogDebug(
+                $"Enhanced Active: [{ratio}] visible from hit count: [{hitCount}] / [{partCount}]. Config Value: [{EnhancedRatio}]"
+            );
         }
         return active;
     }
@@ -114,7 +116,15 @@ public class SAINNoBushESP : MonoBehaviour
     private static bool RayCast(Vector3 end, Vector3 start)
     {
         Vector3 direction = end - start;
-        if (Physics.Raycast(start, direction.normalized, out var hit, direction.magnitude, NoBushMask))
+        if (
+            Physics.Raycast(
+                start,
+                direction.normalized,
+                out var hit,
+                direction.magnitude,
+                NoBushMask
+            )
+        )
         {
             GameObject hitObject = hit.transform?.parent?.gameObject;
             if (hitObject != null)
@@ -152,7 +162,10 @@ public class SAINNoBushESP : MonoBehaviour
                 enemy.SetCanShoot(false);
                 enemy.SetVisible(false);
 
-                if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimData && aimData.AimStatus_0 != AimStatus.NoTarget)
+                if (
+                    BotOwner.AimingManager.CurrentAiming is BotAimingClass aimData
+                    && aimData.AimStatus_0 != AimStatus.NoTarget
+                )
                 {
                     aimData.AimStatus_0 = AimStatus.NoTarget;
                 }
@@ -168,5 +181,20 @@ public class SAINNoBushESP : MonoBehaviour
     }
 
     private static LayerMask NoBushMask = 0;
-    private static readonly List<string> ExclusionList = ["filbert", "fibert", "tree", "pine", "plant", "birch", "collider", "timber", "spruce", "bush", "metal", "wood", "grass"];
+    private static readonly List<string> ExclusionList =
+    [
+        "filbert",
+        "fibert",
+        "tree",
+        "pine",
+        "plant",
+        "birch",
+        "collider",
+        "timber",
+        "spruce",
+        "bush",
+        "metal",
+        "wood",
+        "grass",
+    ];
 }

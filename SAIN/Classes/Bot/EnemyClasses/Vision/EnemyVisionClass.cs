@@ -1,5 +1,4 @@
 ﻿using SAIN.Preset.GlobalSettings;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -25,7 +24,8 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
     public float LastGainSightResult { get; set; } = 1f;
 
     public EnemyAnglesClass Angles { get; } = new();
-    public EnemyPartsClass EnemyParts { get; } = new EnemyPartsClass(enemyData.EnemyPlayerComponent);
+    public EnemyPartsClass EnemyParts { get; } =
+        new EnemyPartsClass(enemyData.EnemyPlayerComponent);
 
     public static float AIVisionRangeLimit(Enemy enemy)
     {
@@ -57,10 +57,17 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
 
     private static float GetMaxVisionRange(AILimitSetting aiLimit)
     {
-        return aiLimit switch {
-            AILimitSetting.Far => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[AILimitSetting.Far],
-            AILimitSetting.VeryFar => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[AILimitSetting.VeryFar],
-            AILimitSetting.Narnia => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[AILimitSetting.Narnia],
+        return aiLimit switch
+        {
+            AILimitSetting.Far => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[
+                AILimitSetting.Far
+            ],
+            AILimitSetting.VeryFar => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[
+                AILimitSetting.VeryFar
+            ],
+            AILimitSetting.Narnia => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[
+                AILimitSetting.Narnia
+            ],
             _ => float.MaxValue,
         };
     }
@@ -90,7 +97,14 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
         }
         else if (!EnemyParts.CanBeSeen)
         {
-            if (EnemyInfo.IsVisible) try { EnemyInfo.SetVisible(false); } catch { /* eft code */ }
+            if (EnemyInfo.IsVisible)
+                try
+                {
+                    EnemyInfo.SetVisible(false);
+                }
+                catch
+                { /* eft code */
+                }
             IsVisible = false;
         }
         else
@@ -126,9 +140,11 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
             if (wasVisible)
                 Enemy.UpdateLastSeenPosition(EnemyTransform.Position, currentTime);
 
-            if (Seen &&
-                TimeSinceSeen > _lostContactMinSeenTime &&
-                _nextReportLostVisualTime < currentTime)
+            if (
+                Seen
+                && TimeSinceSeen > _lostContactMinSeenTime
+                && _nextReportLostVisualTime < currentTime
+            )
             {
                 _nextReportLostVisualTime = currentTime + 20f;
                 ShallReportLostVisual = true;

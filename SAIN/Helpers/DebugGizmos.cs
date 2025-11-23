@@ -1,14 +1,11 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using System.Text;
+using EFT;
 using SAIN.Editor.Util;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static System.Net.Mime.MediaTypeNames;
-using UnityEngine.UIElements;
 using Color = UnityEngine.Color;
 
 namespace SAIN.Helpers;
@@ -44,7 +41,8 @@ public class DebugGizmos
     public static void ManualUpdate()
     {
         float currentTime = Time.time;
-        if (_gizmos.Count == 0) return;
+        if (_gizmos.Count == 0)
+            return;
         for (int i = _gizmos.Count - 1; i >= 0; i--)
         {
             DebugGizmo gizmo = _gizmos[i];
@@ -68,16 +66,30 @@ public class DebugGizmos
             foreach (DebugGizmo gizmo in _gizmos)
             {
                 DebugLabel label = gizmo.Label;
-                if (label == null || !label.Enabled) continue;
-                string text = label.Text.IsNullOrEmpty() ? label.StringBuilder.ToString() : label.Text;
+                if (label == null || !label.Enabled)
+                    continue;
+                string text = label.Text.IsNullOrEmpty()
+                    ? label.StringBuilder.ToString()
+                    : label.Text;
                 OnGUIDrawLabel(label.WorldPos, text, label.Style, label.Scale);
             }
         }
     }
 
-    public static DebugLabel CreateLabel(Vector3 worldPos, string text, GUIStyle guiStyle = null, float scale = 1f)
+    public static DebugLabel CreateLabel(
+        Vector3 worldPos,
+        string text,
+        GUIStyle guiStyle = null,
+        float scale = 1f
+    )
     {
-        DebugLabel obj = new() { WorldPos = worldPos, Text = text, Style = guiStyle, Scale = scale };
+        DebugLabel obj = new()
+        {
+            WorldPos = worldPos,
+            Text = text,
+            Style = guiStyle,
+            Scale = scale,
+        };
         AddGUIObject(obj);
         return obj;
     }
@@ -96,7 +108,12 @@ public class DebugGizmos
         }
     }
 
-    public static void OnGUIDrawLabel(Vector3 worldPos, string text, GUIStyle guiStyle = null, float scale = 1f)
+    public static void OnGUIDrawLabel(
+        Vector3 worldPos,
+        string text,
+        GUIStyle guiStyle = null,
+        float scale = 1f
+    )
     {
         if (Camera.main == null)
         {
@@ -112,10 +129,11 @@ public class DebugGizmos
         {
             if (_defaultStyle == null)
             {
-                _defaultStyle = new GUIStyle(GUI.skin.box) {
+                _defaultStyle = new GUIStyle(GUI.skin.box)
+                {
                     alignment = TextAnchor.MiddleLeft,
                     fontSize = 20,
-                    margin = new RectOffset(3, 3, 3, 3)
+                    margin = new RectOffset(3, 3, 3, 3),
                 };
                 ApplyToStyle.BackgroundAllStates(null, _defaultStyle);
             }
@@ -145,12 +163,20 @@ public class DebugGizmos
         if (_nextCheckScreenTime < Time.time && CameraClass.Instance.SSAA.isActiveAndEnabled)
         {
             _nextCheckScreenTime = Time.time + 10f;
-            _screenScale = (float)CameraClass.Instance.SSAA.GetOutputWidth() / (float)CameraClass.Instance.SSAA.GetInputWidth();
+            _screenScale =
+                (float)CameraClass.Instance.SSAA.GetOutputWidth()
+                / (float)CameraClass.Instance.SSAA.GetInputWidth();
         }
         return _screenScale;
     }
 
-    public static GameObject DrawSphere(Vector3 position, float size, Color color, float expiretime = -1f, string label = null)
+    public static GameObject DrawSphere(
+        Vector3 position,
+        float size,
+        Color color,
+        float expiretime = -1f,
+        string label = null
+    )
     {
         if (DrawGizmos)
         {
@@ -173,7 +199,13 @@ public class DebugGizmos
         }
     }
 
-    public static GameObject DrawBox(Vector3 position, float length, float height, Color color, float expiretime = -1f)
+    public static GameObject DrawBox(
+        Vector3 position,
+        float length,
+        float height,
+        Color color,
+        float expiretime = -1f
+    )
     {
         if (!DrawGizmos)
         {
@@ -195,7 +227,12 @@ public class DebugGizmos
         return box;
     }
 
-    public static GameObject DrawBox(Vector3 position, Vector3 size, Color color, float expiretime = -1f)
+    public static GameObject DrawBox(
+        Vector3 position,
+        Vector3 size,
+        Color color,
+        float expiretime = -1f
+    )
     {
         if (!DrawGizmos)
         {
@@ -217,13 +254,30 @@ public class DebugGizmos
         return box;
     }
 
-    public static GameObject Ray(Vector3 startPoint, Vector3 direction, Color color, float length = 1f, float lineWidth = 0.1f, float expiretime = 1f, bool taperLine = false, string label = null)
+    public static GameObject Ray(
+        Vector3 startPoint,
+        Vector3 direction,
+        Color color,
+        float length = 1f,
+        float lineWidth = 0.1f,
+        float expiretime = 1f,
+        bool taperLine = false,
+        string label = null
+    )
     {
         Vector3 endPoint = startPoint + direction.normalized * length;
         return DrawLine(startPoint, endPoint, color, lineWidth, expiretime, taperLine, label);
     }
 
-    public static GameObject DrawLine(Vector3 startPoint, Vector3 endPoint, Color color, float lineWidth, float expiretime = -1, bool taperLine = false, string label = null)
+    public static GameObject DrawLine(
+        Vector3 startPoint,
+        Vector3 endPoint,
+        Color color,
+        float lineWidth,
+        float expiretime = -1,
+        bool taperLine = false,
+        string label = null
+    )
     {
 #if DEBUG
         if (DrawGizmos && SAINPlugin.DebugMode)
@@ -262,14 +316,12 @@ public class DebugGizmos
 
     public static void SetGizmoColor(GameObject gameObject, Color color)
     {
-        if (gameObject != null &&
-            gameObject.TryGetComponent<LineRenderer>(out var linerenderer))
+        if (gameObject != null && gameObject.TryGetComponent<LineRenderer>(out var linerenderer))
         {
             linerenderer.material.color = color;
             return;
         }
-        if (gameObject != null &&
-            gameObject.TryGetComponent<Renderer>(out var renderer))
+        if (gameObject != null && gameObject.TryGetComponent<Renderer>(out var renderer))
         {
             renderer.material.color = color;
         }
@@ -284,8 +336,16 @@ public class DebugGizmos
         LineRenderer lineRenderer = gameObject?.GetOrAddComponent<LineRenderer>();
         if (lineRenderer != null)
         {
-            lineRenderer.startWidth = Mathf.Clamp(taperLine ? lineWidth * LINE_TAPER_START_COEF : lineWidth, MIN_LINE_WIDTH, MAX_LINE_WIDTH);
-            lineRenderer.endWidth = Mathf.Clamp(taperLine ? lineWidth * LINE_TAPER_END_COEF : lineWidth, MIN_LINE_WIDTH, MAX_LINE_WIDTH);
+            lineRenderer.startWidth = Mathf.Clamp(
+                taperLine ? lineWidth * LINE_TAPER_START_COEF : lineWidth,
+                MIN_LINE_WIDTH,
+                MAX_LINE_WIDTH
+            );
+            lineRenderer.endWidth = Mathf.Clamp(
+                taperLine ? lineWidth * LINE_TAPER_END_COEF : lineWidth,
+                MIN_LINE_WIDTH,
+                MAX_LINE_WIDTH
+            );
         }
     }
 
@@ -315,7 +375,8 @@ public class DebugGizmos
         {
             gizmo.Label = new() { WorldPos = obj.transform.position, Text = label };
         }
-        if (expireTime > 0) gizmo.ExpireTime = Time.time + expireTime;
+        if (expireTime > 0)
+            gizmo.ExpireTime = Time.time + expireTime;
         _gizmos.Add(gizmo);
     }
 

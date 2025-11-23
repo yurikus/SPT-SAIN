@@ -1,15 +1,12 @@
+using System;
+using System.Collections.Generic;
 using Comfort.Common;
 using EFT;
 using EFT.EnvironmentEffect;
 using SAIN.BotController.Classes;
 using SAIN.Components.BotController;
 using SAIN.Components.BotControllerSpace.Classes;
-using SAIN.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace SAIN.Components;
 
@@ -21,7 +18,8 @@ public class BotManagerComponent : MonoBehaviour
     public GameWorld GameWorld => SAINGameWorld.GameWorld;
     public IBotGame BotGame => Singleton<IBotGame>.Instance;
 
-    public BotEventHandler BotEventHandler {
+    public BotEventHandler BotEventHandler
+    {
         get
         {
             if (_eventHandler == null)
@@ -41,11 +39,9 @@ public class BotManagerComponent : MonoBehaviour
     public GameWorldComponent SAINGameWorld { get; private set; }
     public BotsController DefaultController { get; set; }
 
-    public BotSpawner BotSpawner {
-        get
-        {
-            return _spawner;
-        }
+    public BotSpawner BotSpawner
+    {
+        get { return _spawner; }
         set
         {
             BotSpawnController.Subscribe(value);
@@ -65,7 +61,9 @@ public class BotManagerComponent : MonoBehaviour
 
     public void PlayerEnviromentChanged(string profileID, IndoorTrigger trigger)
     {
-        SAINGameWorld.PlayerTracker.GetPlayerComponent(profileID)?.AIData.PlayerLocation.UpdateEnvironment(trigger);
+        SAINGameWorld
+            .PlayerTracker.GetPlayerComponent(profileID)
+            ?.AIData.PlayerLocation.UpdateEnvironment(trigger);
     }
 
     public void Activate(GameWorldComponent gameWorldComp)
@@ -101,9 +99,7 @@ public class BotManagerComponent : MonoBehaviour
         }
     }
 
-    public void OnDestroy()
-    {
-    }
+    public void OnDestroy() { }
 
     public void Dispose()
     {

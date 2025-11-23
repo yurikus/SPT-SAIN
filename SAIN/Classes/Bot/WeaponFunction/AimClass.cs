@@ -1,16 +1,16 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Classes;
 using SAIN.Components;
-using SAIN.Helpers;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction;
 
 public class AimClass : BotComponentClassBase, IBotClass
 {
-    public AimClass(BotComponent sain) : base(sain)
+    public AimClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -21,7 +21,8 @@ public class AimClass : BotComponentClassBase, IBotClass
 
     public float LastAimTime { get; set; }
 
-    public AimStatus AimStatus {
+    public AimStatus AimStatus
+    {
         get
         {
             IBotAiming aim = BotOwner.AimingManager.CurrentAiming;
@@ -51,7 +52,13 @@ public class AimClass : BotComponentClassBase, IBotClass
         base.ManualUpdate();
     }
 
-    public bool AimAtTarget(Vector3 shootPoint, Enemy enemy, out bool AimComplete, IBotAiming currentAiming, BotComponent bot)
+    public bool AimAtTarget(
+        Vector3 shootPoint,
+        Enemy enemy,
+        out bool AimComplete,
+        IBotAiming currentAiming,
+        BotComponent bot
+    )
     {
         BotOwner botOwner = bot.BotOwner;
         BotWeaponManager weaponManager = botOwner.WeaponManager;
@@ -64,7 +71,12 @@ public class AimClass : BotComponentClassBase, IBotClass
         }
 
         Vector3 firePort = bot.Transform.WeaponData.FirePort;
-        Vector3 ballisticOffset = PlayerMovementController.Util.CalculateBallisticOffset(firePort, shootPoint, enemy.EnemyPlayer.Velocity, bot.PlayerComponent.Equipment.CurrentWeaponInfo.BulletSpeed);
+        Vector3 ballisticOffset = PlayerMovementController.Util.CalculateBallisticOffset(
+            firePort,
+            shootPoint,
+            enemy.EnemyPlayer.Velocity,
+            bot.PlayerComponent.Equipment.CurrentWeaponInfo.BulletSpeed
+        );
         Vector3 aimPoint = shootPoint + ballisticOffset;
 
         var smoother = enemy.PositionSmoother;
@@ -82,7 +94,14 @@ public class AimClass : BotComponentClassBase, IBotClass
         // Input the final aim point to EFT's bot aim system.
         currentAiming.SetTarget(smoother.Position);
 
-        if (!bot.FriendlyFire.UpdateFriendlyFireStatus(currentAiming.LastDist2Target, bot.Transform.WeaponData.FirePort, bot.Transform.WeaponData.PointDirection, bot))
+        if (
+            !bot.FriendlyFire.UpdateFriendlyFireStatus(
+                currentAiming.LastDist2Target,
+                bot.Transform.WeaponData.FirePort,
+                bot.Transform.WeaponData.PointDirection,
+                bot
+            )
+        )
         {
             botOwner.ShootData.EndShoot();
             AimComplete = false;
@@ -91,7 +110,12 @@ public class AimClass : BotComponentClassBase, IBotClass
         }
         currentAiming.NodeUpdate();
         Bot.Steering.LookToPoint(currentAiming.EndTargetPoint);
-        AimComplete = currentAiming.IsReady && (botOwner.ShootData.Shooting || Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.85f));
+        AimComplete =
+            currentAiming.IsReady
+            && (
+                botOwner.ShootData.Shooting
+                || Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.85f)
+            );
         return true;
     }
 
@@ -126,8 +150,10 @@ public class AimClass : BotComponentClassBase, IBotClass
 
     public void LoseAimTarget()
     {
-        if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass &&
-            aimClass.AimStatus_0 != AimStatus.NoTarget)
+        if (
+            BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass
+            && aimClass.AimStatus_0 != AimStatus.NoTarget
+        )
         {
             aimClass.AimStatus_0 = AimStatus.NoTarget;
         }

@@ -1,7 +1,6 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
 using SAIN.Components;
-using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Info;
 using UnityEngine;
@@ -12,7 +11,8 @@ public class SAINShootData : BotComponentClassBase
 {
     public Enemy LastShotEnemy { get; private set; }
 
-    public SAINShootData(BotComponent bot) : base(bot)
+    public SAINShootData(BotComponent bot)
+        : base(bot)
     {
         TickRequirement = ESAINTickState.OnlyBotInCombat;
     }
@@ -37,7 +37,8 @@ public class SAINShootData : BotComponentClassBase
 
     private void CheckEndShoot()
     {
-        if (!_shooting) return;
+        if (!_shooting)
+            return;
         BotWeaponManager weaponManager = BotOwner.WeaponManager;
         if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
         {
@@ -98,9 +99,13 @@ public class SAINShootData : BotComponentClassBase
         {
             return false;
         }
-        if (Bot.Mover.Running && 
-            (Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running || 
-            Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning))
+        if (
+            Bot.Mover.Running
+            && (
+                Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running
+                || Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning
+            )
+        )
         {
             return false;
         }
@@ -115,7 +120,11 @@ public class SAINShootData : BotComponentClassBase
     public Enemy CheckEnemiesForShootableTargets(EnemyList VisibleEnemies)
     {
         foreach (Enemy Enemy in VisibleEnemies)
-            if (Enemy.IsVisible && Time.time - Enemy.Vision.LastChangeVisionTime > 0.33f && AimAndShootAtEnemy(Enemy, Bot))
+            if (
+                Enemy.IsVisible
+                && Time.time - Enemy.Vision.LastChangeVisionTime > 0.33f
+                && AimAndShootAtEnemy(Enemy, Bot)
+            )
                 return Enemy;
         return null;
     }
@@ -135,7 +144,11 @@ public class SAINShootData : BotComponentClassBase
         bool reloading = weaponManager.Reload.Reloading;
         if (reloading || !weaponManager.HaveBullets)
         {
-            if (!reloading && weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster && !weaponManager.Selector.TryChangeToMain())
+            if (
+                !reloading
+                && weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster
+                && !weaponManager.Selector.TryChangeToMain()
+            )
                 SelectWeapon(Enemy);
 
             return false;
@@ -145,12 +158,19 @@ public class SAINShootData : BotComponentClassBase
             return false;
 
         Vector3? target = GetAimTarget(Enemy, bot);
-        if (target != null &&
-            Enemy != null)
+        if (target != null && Enemy != null)
         {
             bot.BotLight.HandleLightForEnemy(Enemy);
 
-            if (bot.Aim.AimAtTarget(target.Value, Enemy, out bool AimComplete, bot.BotOwner.AimingManager.CurrentAiming, bot))
+            if (
+                bot.Aim.AimAtTarget(
+                    target.Value,
+                    Enemy,
+                    out bool AimComplete,
+                    bot.BotOwner.AimingManager.CurrentAiming,
+                    bot
+                )
+            )
             {
                 ShootWhenAimComplete(Enemy, bot, AimComplete);
                 return true;
@@ -265,13 +285,12 @@ public class SAINShootData : BotComponentClassBase
         }
     }
 
-    private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f) => info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;
+    private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f) =>
+        info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;
 
     private static Vector3? GetAimTarget(Enemy enemy, BotComponent bot)
     {
-        if (enemy != null &&
-            enemy.IsVisible &&
-            enemy.CanShoot)
+        if (enemy != null && enemy.IsVisible && enemy.CanShoot)
         {
             //Vector3? test = enemy.Shoot.Targets.GetPointToShoot();
             //if (test == null) {
@@ -290,9 +309,7 @@ public class SAINShootData : BotComponentClassBase
 
     private static Vector3? CheckYValue(Vector3? centerMass, Vector3? partTarget)
     {
-        if (centerMass != null &&
-            partTarget != null &&
-            centerMass.Value.y < partTarget.Value.y)
+        if (centerMass != null && partTarget != null && centerMass.Value.y < partTarget.Value.y)
         {
             Vector3 newTarget = partTarget.Value;
             newTarget.y = centerMass.Value.y;

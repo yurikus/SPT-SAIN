@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SAIN.Attributes;
+﻿using SAIN.Attributes;
 using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.Preset.BotSettings.SAINSettings.Categories;
@@ -7,23 +6,29 @@ namespace SAIN.Preset.BotSettings.SAINSettings.Categories;
 public class SAINShootSettings : SAINSettingsBase<SAINShootSettings>, ISAINSettings
 {
     [Category("Recoil")]
-    [NameAndDescription("Recoil Scatter Multiplier",
-        "Modifies how much recoil a bot gets from firing their weapon. " +
-        "Higher = more recoil, more kick. 1.5 = 1.5x more recoil")]
+    [NameAndDescription(
+        "Recoil Scatter Multiplier",
+        "Modifies how much recoil a bot gets from firing their weapon. "
+            + "Higher = more recoil, more kick. 1.5 = 1.5x more recoil"
+    )]
     [MinMax(0.25f, 3f, 100f)]
     public float RecoilMultiplier = 1f;
 
     [Category("Firerate")]
-    [NameAndDescription("Burst Length Multiplier",
-        "Modifies how long bots shoot a burst during full auto fire. " +
-        "Higher = longer full auto time. 1.5 = 1.5x longer bursts")]
+    [NameAndDescription(
+        "Burst Length Multiplier",
+        "Modifies how long bots shoot a burst during full auto fire. "
+            + "Higher = longer full auto time. 1.5 = 1.5x longer bursts"
+    )]
     [MinMax(0.25f, 3f, 100f)]
     public float BurstMulti = 1.5f;
 
     [Category("Firerate")]
-    [NameAndDescription("Semiauto Firerate Multiplier",
-        "Modifies the time a bot waits between semiauto fire. " +
-        "Higher = faster firerate. 1.5 = 1.5x more shots per second")]
+    [NameAndDescription(
+        "Semiauto Firerate Multiplier",
+        "Modifies the time a bot waits between semiauto fire. "
+            + "Higher = faster firerate. 1.5 = 1.5x more shots per second"
+    )]
     [MinMax(0.25f, 3f, 100f)]
     public float FireratMulti = 1.5f;
 

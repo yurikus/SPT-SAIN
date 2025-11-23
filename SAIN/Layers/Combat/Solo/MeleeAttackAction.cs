@@ -30,9 +30,8 @@ internal class FightZombiesAction(BotOwner bot) : BotAction(bot, "Fight Zombies"
 
 internal class MeleeAttackAction : BotAction
 {
-    public MeleeAttackAction(BotOwner bot) : base(bot, "Melee Attack")
-    {
-    }
+    public MeleeAttackAction(BotOwner bot)
+        : base(bot, "Melee Attack") { }
 
     public override void OnSteeringTicked()
     {
@@ -41,8 +40,6 @@ internal class MeleeAttackAction : BotAction
 
     public override void Update(CustomLayer.ActionData data)
     {
-        
         BotOwner.WeaponManager.Melee.RunToEnemyUpdate();
-        
     }
 }

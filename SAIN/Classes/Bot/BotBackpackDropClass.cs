@@ -1,24 +1,23 @@
-﻿using EFT;
+﻿using System.Collections;
+using EFT;
 using EFT.InventoryLogic;
 using SAIN.Components;
 using SAIN.Models.Enums;
-using System.Collections;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
 
 public class BotBackpackDropClass : BotComponentClassBase
 {
-    public BotBackpackDropClass(BotComponent sain) : base(sain)
+    public BotBackpackDropClass(BotComponent sain)
+        : base(sain)
     {
-        
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
 
     public override void ManualUpdate()
     {
-        if (BackpackDropPosition != null &&
-            DroppedBackpack == null)
+        if (BackpackDropPosition != null && DroppedBackpack == null)
         {
             BackpackDropPosition = null;
         }
@@ -91,7 +90,8 @@ public class BotBackpackDropClass : BotComponentClassBase
 
     public EBackpackStatus BackpackStatus { get; private set; }
 
-    private Item CurrentBackpack => Bot.PlayerComponent.Equipment.GearInfo.GetItem(EquipmentSlot.Backpack);
+    private Item CurrentBackpack =>
+        Bot.PlayerComponent.Equipment.GearInfo.GetItem(EquipmentSlot.Backpack);
 
     public bool RetreiveBackpack()
     {

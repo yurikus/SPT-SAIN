@@ -1,20 +1,27 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Components;
 using SAIN.Helpers.Events;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
-using System;
-using EFT.UI;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision;
 
-public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<SAINDecisionClass>(decisionClass), IBotClass
+public class BotDecisionManager(SAINDecisionClass decisionClass)
+    : BotSubClass<SAINDecisionClass>(decisionClass),
+        IBotClass
 {
     private const float DECISION_FREQUENCY = 1f / 10;
 
-    public event Action<ECombatDecision, ESquadDecision, ESelfActionType, Enemy, BotComponent> OnDecisionMade;
+    public event Action<
+        ECombatDecision,
+        ESquadDecision,
+        ESelfActionType,
+        Enemy,
+        BotComponent
+    > OnDecisionMade;
 
     public ToggleEvent HasDecisionToggle { get; } = new ToggleEvent();
 
@@ -75,7 +82,11 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
             {
                 return false;
             }
-            if (enemy.RealDistance < 35 && enemy.Path.PathLength < 30 && enemy.Status.VulnerableAction != EEnemyAction.None)
+            if (
+                enemy.RealDistance < 35
+                && enemy.Path.PathLength < 30
+                && enemy.Status.VulnerableAction != EEnemyAction.None
+            )
             {
                 enemy.BotOwner.WeaponManager.Melee.ShallEndRun = false;
                 return true;
@@ -114,14 +125,24 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
         }
 
         // TODO: rework melee decisions
-        if (Bot.Info.Profile.WildSpawnType is WildSpawnType.bossTagilla or WildSpawnType.bossTagillaAgro)
+        if (
+            Bot.Info.Profile.WildSpawnType
+            is WildSpawnType.bossTagilla
+                or WildSpawnType.bossTagillaAgro
+        )
         {
             if (shallTagillaHammerAttack(enemy))
             {
-                SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
+                SetDecisions(
+                    ECombatDecision.MeleeAttack,
+                    ESquadDecision.None,
+                    ESelfActionType.None,
+                    enemy
+                );
                 return;
             }
-            if (BotOwner.WeaponManager.IsMelee) BotOwner.WeaponManager.Selector.ChangeToMain();
+            if (BotOwner.WeaponManager.IsMelee)
+                BotOwner.WeaponManager.Selector.ChangeToMain();
         }
 
         if (enemy != null && enemy.IsZombie)
@@ -132,25 +153,48 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
                     hasShooterContact = true;
             if (!hasShooterContact)
             {
-                BaseClass.SelfActionDecisions.GetDecision(out ESelfActionType zombieDecision, enemy);
+                BaseClass.SelfActionDecisions.GetDecision(
+                    out ESelfActionType zombieDecision,
+                    enemy
+                );
                 BaseClass.SquadDecisions.GetDecision(out ESquadDecision zombieSqdDecision, enemy);
-                SetDecisions(ECombatDecision.FightZombies, zombieSqdDecision, zombieDecision, enemy);
+                SetDecisions(
+                    ECombatDecision.FightZombies,
+                    zombieSqdDecision,
+                    zombieDecision,
+                    enemy
+                );
                 return;
             }
         }
         if (Bot.Decision.DogFightDecision.DogFightActive)
         {
-            SetDecisions(ECombatDecision.DogFight, ESquadDecision.None, ESelfActionType.None, enemy);
+            SetDecisions(
+                ECombatDecision.DogFight,
+                ESquadDecision.None,
+                ESelfActionType.None,
+                enemy
+            );
             return;
         }
         if (BotOwner.WeaponManager.IsMelee)
         {
-            SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
+            SetDecisions(
+                ECombatDecision.MeleeAttack,
+                ESquadDecision.None,
+                ESelfActionType.None,
+                enemy
+            );
             return;
         }
         if (ContinueMoveToCover())
         {
-            SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, Bot.Decision.CurrentSelfDecision, enemy);
+            SetDecisions(
+                ECombatDecision.SeekCover,
+                ESquadDecision.None,
+                Bot.Decision.CurrentSelfDecision,
+                enemy
+            );
             return;
         }
         if (BaseClass.SquadDecisions.GetDecision(out ESquadDecision squadDecision, enemy))
@@ -158,7 +202,13 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
             SetDecisions(ECombatDecision.None, squadDecision, ESelfActionType.None, enemy);
             return;
         }
-        if (BaseClass.EnemyDecisions.GetDecision(out ECombatDecision combatDecision, enemy, Bot.EnemyController.KnownEnemies))
+        if (
+            BaseClass.EnemyDecisions.GetDecision(
+                out ECombatDecision combatDecision,
+                enemy,
+                Bot.EnemyController.KnownEnemies
+            )
+        )
         {
             SetDecisions(combatDecision, ESquadDecision.None, ESelfActionType.None, enemy);
             return;
@@ -166,7 +216,12 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
         SetDecisions(ECombatDecision.None, ESquadDecision.None, ESelfActionType.None, enemy);
     }
 
-    private void SetDecisions(ECombatDecision solo, ESquadDecision squad, ESelfActionType self, Enemy enemy)
+    private void SetDecisions(
+        ECombatDecision solo,
+        ESquadDecision squad,
+        ESelfActionType self,
+        Enemy enemy
+    )
     {
 #if DEBUG
         if (SAINPlugin.DebugMode)
@@ -189,9 +244,9 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
         if (checkForNewDecision(solo, squad, self, enemy))
         {
             bool hasDecision =
-                solo != ECombatDecision.None ||
-                self != ESelfActionType.None ||
-                squad != ESquadDecision.None;
+                solo != ECombatDecision.None
+                || self != ESelfActionType.None
+                || squad != ESquadDecision.None;
 
             if (hasDecision)
             {
@@ -203,7 +258,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
             OnDecisionMade?.Invoke(solo, squad, self, enemy, Bot);
         }
     }
-    
+
     private void SetDecision(FSainBotDecision decision)
     {
 #if DEBUG
@@ -226,16 +281,30 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
 
         if (CurrentDecision != decision)
         {
-            bool hasDecision = decision.CombatDecision != ECombatDecision.None || decision.SelfAction != ESelfActionType.None || decision.SquadDecision != ESquadDecision.None;
+            bool hasDecision =
+                decision.CombatDecision != ECombatDecision.None
+                || decision.SelfAction != ESelfActionType.None
+                || decision.SquadDecision != ESquadDecision.None;
 
             ChangeDecisionTime = Time.time;
             HasDecisionToggle.CheckToggle(hasDecision, ChangeDecisionTime);
             CurrentDecision = decision;
-            OnDecisionMade?.Invoke(decision.CombatDecision, decision.SquadDecision, decision.SelfAction, decision.Enemy, Bot);
+            OnDecisionMade?.Invoke(
+                decision.CombatDecision,
+                decision.SquadDecision,
+                decision.SelfAction,
+                decision.Enemy,
+                Bot
+            );
         }
     }
 
-    private bool checkForNewDecision(ECombatDecision newSoloDecision, ESquadDecision newSquadDecision, ESelfActionType newSelfDecision, Enemy enemy)
+    private bool checkForNewDecision(
+        ECombatDecision newSoloDecision,
+        ESquadDecision newSquadDecision,
+        ESelfActionType newSelfDecision,
+        Enemy enemy
+    )
     {
         bool newDecision = false;
 
@@ -292,12 +361,16 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
     private bool ContinueMoveToCover()
     {
         bool runningToCover = Bot.Decision.RunningToCover;
-        if (!runningToCover) return false;
-        if (!Bot.Mover.Moving) return false;
-        if (Bot.Cover.HasCover) return false;
+        if (!runningToCover)
+            return false;
+        if (!Bot.Mover.Moving)
+            return false;
+        if (Bot.Cover.HasCover)
+            return false;
 
         float timeChangeDec = Bot.Decision.TimeSinceChangeDecision;
-        if (timeChangeDec < 0.5f) return true;
+        if (timeChangeDec < 0.5f)
+            return true;
 
         //if (timeChangeDec > 3 &&
         //    !Bot.BotStuck.BotHasChangedPosition)
@@ -306,11 +379,13 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
         //}
 
         CoverPoint coverMovingTo = Bot.Cover.CoverPoint_MovingTo;
-        return coverMovingTo != null && coverMovingTo.PathDistanceStatus switch {
-            CoverStatus.InCover => false,
-            CoverStatus.CloseToCover => true,
-            _ => !coverMovingTo.CoverData.IsBad,
-        };
+        return coverMovingTo != null
+            && coverMovingTo.PathDistanceStatus switch
+            {
+                CoverStatus.InCover => false,
+                CoverStatus.CloseToCover => true,
+                _ => !coverMovingTo.CoverData.IsBad,
+            };
     }
 
     private float _nextGetDecisionTime;

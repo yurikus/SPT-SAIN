@@ -5,18 +5,19 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo;
 
-internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEngageAction)), IBotAction
+internal class MoveToEngageAction(BotOwner bot)
+    : BotAction(bot, nameof(MoveToEngageAction)),
+        IBotAction
 {
     private float RecalcPathTimer;
 
     public override void Update(CustomLayer.ActionData data)
     {
-        
         Enemy enemy = Bot.GoalEnemy;
         if (enemy == null)
         {
             Bot.Steering.SteerByPriority();
-            
+
             return;
         }
 
@@ -27,7 +28,7 @@ internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEn
         {
             Shoot.ShootAnyVisibleEnemies(enemy);
             Bot.Steering.SteerByPriority(enemy);
-            
+
             return;
         }
 
@@ -50,7 +51,7 @@ internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEn
         {
             Shoot.ShootAnyVisibleEnemies(enemy);
             Bot.Steering.SteerByPriority(enemy);
-            
+
             return;
         }
 
@@ -69,13 +70,16 @@ internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEn
                 //BotOwner.BotRun.Run(movePos, false, SAINPlugin.LoadedPreset.GlobalSettings.General.SprintReachDistance);
                 Bot.Steering.LookToMovingDirection(true);
             }
-            
+
             return;
         }
 
         if (Bot.Mover.Moving)
         {
-            Bot.Mover.ActivePath?.RequestStartSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
+            Bot.Mover.ActivePath?.RequestStartSprint(
+                SAINComponent.Classes.Mover.ESprintUrgency.None,
+                "enemy in sight"
+            );
         }
 
         if (RecalcPathTimer < Time.time)
@@ -89,12 +93,12 @@ internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEn
             Bot.Steering.LookToMovingDirection();
             //SAIN.Steering.LookToPoint(movePos + Vector3.up * 1f);
         }
-        
     }
 
     public override void OnSteeringTicked()
     {
-        if (!TryShootAnyTarget(Bot.GoalEnemy) && !Bot.Steering.LookToMovingDirection()) {
+        if (!TryShootAnyTarget(Bot.GoalEnemy) && !Bot.Steering.LookToMovingDirection())
+        {
             Bot.Steering.LookToLastKnownEnemyPosition(Bot.GoalEnemy);
         }
     }

@@ -1,13 +1,11 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using EFT;
 using SAIN.Components;
-using SAIN.Components.BotController;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
-using SAIN.Models.Enums;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
@@ -28,7 +26,8 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
     public bool IgnoreUnderFire { get; private set; }
     public bool IgnoreHearing { get; private set; }
 
-    public bool IsBotDeafened {
+    public bool IsBotDeafened
+    {
         get
         {
             if (_BotDeafedTime > 0)
@@ -43,9 +42,8 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         }
     }
 
-    public HearingInputClass(SAINHearingSensorClass hearing) : base(hearing)
-    {
-    }
+    public HearingInputClass(SAINHearingSensorClass hearing)
+        : base(hearing) { }
 
     public override void Init()
     {
@@ -60,8 +58,20 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         Enemy Enemy = Bot.EnemyController.CheckAddEnemy(Source.Player);
         if (Enemy != null)
         {
-            SoundEvent SoundEvent = new(SAINSoundType.BulletImpact, Source.Position, Source, 100, 1, 999);
-            AISoundData Sound = new(SoundEvent, Bot, PlayerComponent.GetDistanceToPlayer(Source.ProfileId), Enemy);
+            SoundEvent SoundEvent = new(
+                SAINSoundType.BulletImpact,
+                Source.Position,
+                Source,
+                100,
+                1,
+                999
+            );
+            AISoundData Sound = new(
+                SoundEvent,
+                Bot,
+                PlayerComponent.GetDistanceToPlayer(Source.ProfileId),
+                Enemy
+            );
             Vector3 BulletPosition = Bullet.CurrentPosition;
             Vector3 MyHeadPosition = Bot.Transform.HeadData.HeadPosition;
             float Dist = (BulletPosition - MyHeadPosition).magnitude;
@@ -126,15 +136,29 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         bool AlreadyDeafened = IsBotDeafened;
 
         // Process gunshots first, since they can trigger a bot to be deaf to other sounds
-        if (AISoundCachedEvents_Gunshots.Count > 0 && 
-            ProcessGunshots(AISoundCachedEvents_Gunshots, false, DeafenCoef_Gunfire, SoundDataToReactTo))
+        if (
+            AISoundCachedEvents_Gunshots.Count > 0
+            && ProcessGunshots(
+                AISoundCachedEvents_Gunshots,
+                false,
+                DeafenCoef_Gunfire,
+                SoundDataToReactTo
+            )
+        )
         {
             DeafeningShot = true;
             AlreadyDeafened = true;
         }
 
-        if (AISoundCachedEvents_Gunshots_Suppressed.Count > 0 && 
-            ProcessGunshots(AISoundCachedEvents_Gunshots_Suppressed, AlreadyDeafened, DeafenCoef_Suppressed, SoundDataToReactTo))
+        if (
+            AISoundCachedEvents_Gunshots_Suppressed.Count > 0
+            && ProcessGunshots(
+                AISoundCachedEvents_Gunshots_Suppressed,
+                AlreadyDeafened,
+                DeafenCoef_Suppressed,
+                SoundDataToReactTo
+            )
+        )
         {
             DeafeningShot = true;
             AlreadyDeafened = true;
@@ -143,11 +167,21 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         // Process most sounds if we aren't deafened
         if (AISoundCachedEvents_Conversations.Count > 0)
         {
-            ProcessSounds(AISoundCachedEvents, AlreadyDeafened, DeafenCoef_Convo, SoundDataToReactTo);
+            ProcessSounds(
+                AISoundCachedEvents,
+                AlreadyDeafened,
+                DeafenCoef_Convo,
+                SoundDataToReactTo
+            );
         }
         if (AISoundCachedEvents.Count > 0)
         {
-            ProcessSounds(AISoundCachedEvents, AlreadyDeafened, DeafenCoef_Generic, SoundDataToReactTo);
+            ProcessSounds(
+                AISoundCachedEvents,
+                AlreadyDeafened,
+                DeafenCoef_Generic,
+                SoundDataToReactTo
+            );
         }
 
         bool SoundRemoved = false;
@@ -183,7 +217,12 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
 
     private float _BotDeafedTime = -1;
 
-    private static bool ProcessSounds(List<AISoundData> Sounds, bool PreviouslyDeaf, float DeafenCoef, List<AISoundData> Results)
+    private static bool ProcessSounds(
+        List<AISoundData> Sounds,
+        bool PreviouslyDeaf,
+        float DeafenCoef,
+        List<AISoundData> Results
+    )
     {
         bool DeafeningShot = false;
         int Count = Sounds.Count;
@@ -196,7 +235,10 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
                 // If Sounds is closer than or equal to the input fraction of the Baserange of this sound, always report it. If we are checking gunshots, then this sound will deafen the bot for a duration.
                 if (Sound.PlayerDistance <= Sound.Sound.BaseRangeWithVolume)
                 {
-                    if (PreviouslyDeaf && Sound.PlayerDistance > Sound.Sound.BaseRangeWithVolume * DeafenCoef)
+                    if (
+                        PreviouslyDeaf
+                        && Sound.PlayerDistance > Sound.Sound.BaseRangeWithVolume * DeafenCoef
+                    )
                         continue;
                     Results.Add(Sound);
                 }
@@ -206,7 +248,12 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         return DeafeningShot;
     }
 
-    private static bool ProcessGunshots(List<AISoundData> Sounds, bool previouslyDeaf, float DeafenCoef, List<AISoundData> Results)
+    private static bool ProcessGunshots(
+        List<AISoundData> Sounds,
+        bool previouslyDeaf,
+        float DeafenCoef,
+        List<AISoundData> Results
+    )
     {
         bool DeafeningShot = false;
         int Count = Sounds.Count;
@@ -219,7 +266,8 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
                 // If Sounds is closer than or equal to the input fraction of the Baserange of this sound, always report it. If we are checking gunshots, then this sound will deafen the bot for a duration.
                 if (Sound.PlayerDistance <= Sound.Sound.BaseRangeWithVolume)
                 {
-                    bool thisShotDeafened = Sound.PlayerDistance <= Sound.Sound.BaseRangeWithVolume * DeafenCoef;
+                    bool thisShotDeafened =
+                        Sound.PlayerDistance <= Sound.Sound.BaseRangeWithVolume * DeafenCoef;
                     if (previouslyDeaf && !thisShotDeafened)
                         continue;
                     if (!DeafeningShot)
@@ -240,8 +288,7 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
                 IgnoreUnderFire = false;
             return;
         }
-        if (_ignoreUntilTime > 0 &&
-            _ignoreUntilTime < Time.time)
+        if (_ignoreUntilTime > 0 && _ignoreUntilTime < Time.time)
         {
             IgnoreHearing = false;
             IgnoreUnderFire = false;
@@ -292,7 +339,10 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         {
             return;
         }
-        if (Bot.PlayerComponent.AIData.PlayerLocation.InBunker != enemy.EnemyPlayerComponent.AIData.PlayerLocation.InBunker)
+        if (
+            Bot.PlayerComponent.AIData.PlayerLocation.InBunker
+            != enemy.EnemyPlayerComponent.AIData.PlayerLocation.InBunker
+        )
         {
             return;
         }
@@ -310,7 +360,8 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
         random = random.normalized * dispersion;
         Vector3 estimatedPos = enemy.EnemyPosition + random;
 
-        SAINHearingReport report = new() {
+        SAINHearingReport report = new()
+        {
             position = estimatedPos,
             soundType = SAINSoundType.BulletImpact,
             placeType = EEnemyPlaceType.Hearing,
@@ -352,7 +403,12 @@ public class HearingInputClass : BotSubClass<SAINHearingSensorClass>, IBotClass
 
     private bool _hearingStarted;
 
-    public bool SetIgnoreHearingExternal(bool value, bool ignoreUnderFire, float duration, out string reason)
+    public bool SetIgnoreHearingExternal(
+        bool value,
+        bool ignoreUnderFire,
+        float duration,
+        out string reason
+    )
     {
         // Only allow the bot to ignore hearing if it's not in combat
         if (value)

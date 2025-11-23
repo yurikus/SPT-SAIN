@@ -1,9 +1,7 @@
-﻿using EFT;
+﻿using System.Reflection;
 using HarmonyLib;
 using SAIN.Components;
 using SPT.Reflection.Patching;
-using System.Reflection;
-using UnityEngine;
 
 namespace SAIN.Patches.Shoot.Grenades;
 
@@ -11,7 +9,10 @@ public class SetGrenadePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(BotGrenadeController), nameof(BotGrenadeController.method_3));
+        return AccessTools.Method(
+            typeof(BotGrenadeController),
+            nameof(BotGrenadeController.method_3)
+        );
     }
 
     [PatchPostfix]
@@ -34,7 +35,10 @@ public class ResetGrenadePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(BotGrenadeController), nameof(BotGrenadeController.method_2));
+        return AccessTools.Method(
+            typeof(BotGrenadeController),
+            nameof(BotGrenadeController.method_2)
+        );
     }
 
     [PatchPostfix]

@@ -1,9 +1,8 @@
-﻿using EFT;
-using SAIN.Components.PlayerComponentSpace;
-using System;
+﻿using System;
 using System.Collections;
+using EFT;
+using SAIN.Components.PlayerComponentSpace;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace SAIN.Components.BotControllerSpace.Classes;
 
@@ -15,9 +14,8 @@ public class BotHearingClass : BotManagerBase
 
     public event Action<EftBulletClass> BulletImpact;
 
-    public BotHearingClass(BotManagerComponent botController) : base(botController)
-    {
-    }
+    public BotHearingClass(BotManagerComponent botController)
+        : base(botController) { }
 
     public void BulletImpacted(EftBulletClass bullet)
     {
@@ -36,33 +34,60 @@ public class BotHearingClass : BotManagerBase
         {
             return;
         }
-        
+
         PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(player);
         if (playerComponent != null)
         {
-            var Range = phrase switch {
+            var Range = phrase switch
+            {
                 EPhraseTrigger.OnBreath => 35,
                 EPhraseTrigger.OnBeingHurt or EPhraseTrigger.OnAgony => 70,
                 _ => (float)(mask == ETagStatus.Unaware ? 40 : 70),
             };
-            playerComponent.PlayAISound(SAINSoundType.Conversation, player.Position, Range, 1, phrase, mask);
+            playerComponent.PlayAISound(
+                SAINSoundType.Conversation,
+                player.Position,
+                Range,
+                1,
+                phrase,
+                mask
+            );
             PlayerTalk?.Invoke(phrase, mask, player);
         }
     }
 
-    public void PlayAISound(string profileId, SAINSoundType soundType, Vector3 position, float range, float volume)
+    public void PlayAISound(
+        string profileId,
+        SAINSoundType soundType,
+        Vector3 position,
+        float range,
+        float volume
+    )
     {
         PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(profileId);
         PlayAISound(playerComponent, soundType, position, range, volume, true);
     }
 
-    public void PlayAISound(IPlayer Player, SAINSoundType soundType, Vector3 position, float range, float volume)
+    public void PlayAISound(
+        IPlayer Player,
+        SAINSoundType soundType,
+        Vector3 position,
+        float range,
+        float volume
+    )
     {
         PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(Player);
         PlayAISound(playerComponent, soundType, position, range, volume, true);
     }
 
-    public void PlayAISound(PlayerComponent playerComponent, SAINSoundType soundType, Vector3 position, float range, float volume, bool limitFreq)
+    public void PlayAISound(
+        PlayerComponent playerComponent,
+        SAINSoundType soundType,
+        Vector3 position,
+        float range,
+        float volume,
+        bool limitFreq
+    )
     {
         if (playerComponent == null)
         {
@@ -85,10 +110,19 @@ public class BotHearingClass : BotManagerBase
         //{
         //    Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
         //}
-        BotController.StartCoroutine(WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume));
+        BotController.StartCoroutine(
+            WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume)
+        );
     }
 
-    private IEnumerator WaitDelayThenPlayDefaultBotEvent(SAINSoundType soundType, PlayerComponent playerComponent, Vector3 position, float range, float volume, float delay = 0.1f)
+    private IEnumerator WaitDelayThenPlayDefaultBotEvent(
+        SAINSoundType soundType,
+        PlayerComponent playerComponent,
+        Vector3 position,
+        float range,
+        float volume,
+        float delay = 0.1f
+    )
     {
         yield return new WaitForSeconds(delay);
         if (playerComponent?.Player?.HealthController?.IsAlive == true && playerComponent.IsActive)

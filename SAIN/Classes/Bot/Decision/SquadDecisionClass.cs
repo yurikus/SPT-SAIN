@@ -9,7 +9,8 @@ namespace SAIN.SAINComponent.Classes.Decision;
 
 public class SquadDecisionClass : BotBase
 {
-    public SquadDecisionClass(BotComponent sain) : base(sain)
+    public SquadDecisionClass(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
     }
@@ -19,7 +20,11 @@ public class SquadDecisionClass : BotBase
     public bool GetDecision(out ESquadDecision Decision, Enemy enemy)
     {
         Decision = ESquadDecision.None;
-        if (!Squad.BotInGroup || Bot.Squad.SquadInfo?.LeaderComponent == null || Squad.LeaderComponent?.IsDead == true)
+        if (
+            !Squad.BotInGroup
+            || Bot.Squad.SquadInfo?.LeaderComponent == null
+            || Squad.LeaderComponent?.IsDead == true
+        )
         {
             return false;
         }
@@ -58,8 +63,7 @@ public class SquadDecisionClass : BotBase
                 return false;
             }
         }
-        if (Bot.Squad.LeaderComponent != null &&
-            shallGroupSearch())
+        if (Bot.Squad.LeaderComponent != null && shallGroupSearch())
         {
             Decision = ESquadDecision.GroupSearch;
             return true;
@@ -71,12 +75,15 @@ public class SquadDecisionClass : BotBase
             {
                 continue;
             }
-            if (!HasRadioComms && (Bot.Transform.Position - member.Transform.Position).sqrMagnitude > SquaDecision_RadioCom_MaxDistSq)
+            if (
+                !HasRadioComms
+                && (Bot.Transform.Position - member.Transform.Position).sqrMagnitude
+                    > SquaDecision_RadioCom_MaxDistSq
+            )
             {
                 continue;
             }
-            if (myEnemy != null
-                && member.HasEnemy)
+            if (myEnemy != null && member.HasEnemy)
             {
                 if (myEnemy.EnemyPlayer == member.GoalEnemy.EnemyPlayer)
                 {
@@ -103,14 +110,19 @@ public class SquadDecisionClass : BotBase
 
     private bool shallPushSuppressedEnemy(Enemy enemy)
     {
-        if (enemy != null
+        if (
+            enemy != null
             && !Bot.Decision.SelfActionDecisions.LowOnAmmo(PushSuppressedEnemyLowAmmoRatio)
-            && Bot.Info.PersonalitySettings.Rush.CanRushEnemyReloadHeal)
+            && Bot.Info.PersonalitySettings.Rush.CanRushEnemyReloadHeal
+        )
         {
             bool inRange = false;
-            float modifier = enemy.Status.VulnerableAction == EEnemyAction.UsingSurgery ? 1.25f : 1f;
-            if (enemy.Path.PathLength < PushSuppressedEnemyMaxPathDistanceSprint * modifier
-                && BotOwner?.CanSprintPlayer == true)
+            float modifier =
+                enemy.Status.VulnerableAction == EEnemyAction.UsingSurgery ? 1.25f : 1f;
+            if (
+                enemy.Path.PathLength < PushSuppressedEnemyMaxPathDistanceSprint * modifier
+                && BotOwner?.CanSprintPlayer == true
+            )
             {
                 inRange = true;
             }
@@ -119,10 +131,18 @@ public class SquadDecisionClass : BotBase
                 inRange = true;
             }
 
-            if (inRange
-                && (Bot.Memory.Health.HealthStatus == ETagStatus.Healthy || Bot.Memory.Health.HealthStatus == ETagStatus.Injured)
-                && Bot.Squad.SquadInfo.SquadIsSuppressEnemy(enemy.EnemyPlayer.ProfileId, out var suppressingMember)
-                && suppressingMember != Bot)
+            if (
+                inRange
+                && (
+                    Bot.Memory.Health.HealthStatus == ETagStatus.Healthy
+                    || Bot.Memory.Health.HealthStatus == ETagStatus.Injured
+                )
+                && Bot.Squad.SquadInfo.SquadIsSuppressEnemy(
+                    enemy.EnemyPlayer.ProfileId,
+                    out var suppressingMember
+                )
+                && suppressingMember != Bot
+            )
             {
                 var enemyStatus = enemy.Status;
                 if (enemy.Status.VulnerableAction != EEnemyAction.None)
@@ -175,7 +195,9 @@ public class SquadDecisionClass : BotBase
 
     private bool shallGroupSearch(BotComponent member)
     {
-        bool squadSearching = member.Decision.CurrentCombatDecision == ECombatDecision.Search || member.Decision.CurrentSquadDecision == ESquadDecision.Search;
+        bool squadSearching =
+            member.Decision.CurrentCombatDecision == ECombatDecision.Search
+            || member.Decision.CurrentSquadDecision == ESquadDecision.Search;
         if (squadSearching)
         {
             return true;
@@ -185,17 +207,18 @@ public class SquadDecisionClass : BotBase
 
     private bool shallGroupSearch()
     {
-        if (Bot.Info.Profile.IsBoss &&
-            Bot.Info.Profile.WildSpawnType != WildSpawnType.bossKnight)
+        if (Bot.Info.Profile.IsBoss && Bot.Info.Profile.WildSpawnType != WildSpawnType.bossKnight)
         {
             //return false;
         }
 
         foreach (var member in Bot.Squad.Members.Values)
         {
-            if (member.Decision.CurrentCombatDecision == ECombatDecision.Search && 
-                Bot.GoalEnemy != null && 
-                doesMemberShareEnemy(member))
+            if (
+                member.Decision.CurrentCombatDecision == ECombatDecision.Search
+                && Bot.GoalEnemy != null
+                && doesMemberShareEnemy(member)
+            )
             {
                 return true;
             }
@@ -223,11 +246,11 @@ public class SquadDecisionClass : BotBase
         float distance = member.GoalEnemy.Path.PathLength;
         bool visible = member.GoalEnemy.IsVisible;
 
-        if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Help
-            && member.GoalEnemy.Seen)
+        if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Help && member.GoalEnemy.Seen)
         {
             return distance < SquadDecision_EndHelpFriendDist
-                && member.GoalEnemy.TimeSinceSeen < SquadDecision_EndHelp_FriendsEnemySeenRecentTime;
+                && member.GoalEnemy.TimeSinceSeen
+                    < SquadDecision_EndHelp_FriendsEnemySeenRecentTime;
         }
         return distance < SquadDecision_StartHelpFriendDist && visible;
     }
@@ -252,7 +275,10 @@ public class SquadDecisionClass : BotBase
         var enemy = Bot.GoalEnemy;
         if (enemy != null)
         {
-            if (enemy.IsVisible || (enemy.Seen && enemy.TimeSinceSeen < SquadDecision_Regroup_EnemySeenRecentTime))
+            if (
+                enemy.IsVisible
+                || (enemy.Seen && enemy.TimeSinceSeen < SquadDecision_Regroup_EnemySeenRecentTime)
+            )
             {
                 return false;
             }
@@ -274,7 +300,11 @@ public class SquadDecisionClass : BotBase
                 float EnemyDistance = directionToEnemy.magnitude;
                 if (EnemyDistance < leadDistance)
                 {
-                    if (EnemyDistance < 30f && Vector3.Dot(directionToEnemy.normalized, directionToLead.normalized) > 0.25f)
+                    if (
+                        EnemyDistance < 30f
+                        && Vector3.Dot(directionToEnemy.normalized, directionToLead.normalized)
+                            > 0.25f
+                    )
                     {
                         return false;
                     }

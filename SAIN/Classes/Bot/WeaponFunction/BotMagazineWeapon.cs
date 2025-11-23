@@ -1,7 +1,5 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
 using EFT.InventoryLogic;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace SAIN.Components.BotComponentSpace.Classes;
 
@@ -9,7 +7,12 @@ public class BotMagazineWeapon
 {
     private static readonly List<MagazineItemClass> _preAllocMagList = new(20);
 
-    public static bool RefillMags(BotComponent bot, BotWeaponInfo weapon, int numberToRefill = -1, bool includeActiveMag = false)
+    public static bool RefillMags(
+        BotComponent bot,
+        BotWeaponInfo weapon,
+        int numberToRefill = -1,
+        bool includeActiveMag = false
+    )
     {
         Slot slot = weapon.weapon.GetMagazineSlot();
         if (slot == null)
@@ -22,13 +25,18 @@ public class BotMagazineWeapon
         if (slot.ContainedItem is not MagazineItemClass activeMag)
         {
 #if DEBUG
-            Logger.LogError($"mag null :: {slot.ContainedItem?.Name} :: {slot.ContainedItem?.ShortName}");
+            Logger.LogError(
+                $"mag null :: {slot.ContainedItem?.Name} :: {slot.ContainedItem?.ShortName}"
+            );
 #endif
             return false;
         }
 
         _preAllocMagList.Clear();
-        bot.Player.InventoryController.GetReachableItemsOfTypeNonAlloc<MagazineItemClass>(_preAllocMagList, null);
+        bot.Player.InventoryController.GetReachableItemsOfTypeNonAlloc<MagazineItemClass>(
+            _preAllocMagList,
+            null
+        );
         if (_preAllocMagList.Count == 0)
         {
             _preAllocMagList.Clear();
@@ -49,8 +57,10 @@ public class BotMagazineWeapon
             if (slot.CanAccept(mag))
             {
                 CheckMag(weapon, ref refilledMags, ref fullMags, mag);
-                if (numberToRefill < 0) continue;
-                if (refilledMags >= numberToRefill) break;
+                if (numberToRefill < 0)
+                    continue;
+                if (refilledMags >= numberToRefill)
+                    break;
             }
         }
         _preAllocMagList.Clear();
@@ -58,7 +68,9 @@ public class BotMagazineWeapon
         if (refilledMags > 0 || fullMags >= numberToRefill)
         {
 #if DEBUG
-            Logger.LogDebug($"[{bot.Info.Profile.NickName}] success mags {refilledMags} : {fullMags}");
+            Logger.LogDebug(
+                $"[{bot.Info.Profile.NickName}] success mags {refilledMags} : {fullMags}"
+            );
 #endif
             return true;
         }
@@ -68,9 +80,15 @@ public class BotMagazineWeapon
         return false;
     }
 
-    private static void CheckMag(BotWeaponInfo weapon, ref int refilled, ref int full, MagazineItemClass mag)
+    private static void CheckMag(
+        BotWeaponInfo weapon,
+        ref int refilled,
+        ref int full,
+        MagazineItemClass mag
+    )
     {
-        if (mag == null) return;
+        if (mag == null)
+            return;
         if (mag.Count == mag.MaxCount)
         {
             full++;
@@ -82,7 +100,8 @@ public class BotMagazineWeapon
 
     public static float GetAmmoRatio(MagazineItemClass magazine)
     {
-        if (magazine == null) return 0.0f;
+        if (magazine == null)
+            return 0.0f;
 
         return (float)magazine.Count / (float)magazine.MaxCount;
     }

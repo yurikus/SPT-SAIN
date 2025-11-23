@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Helpers;
 using SAIN.Preset;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.Plugin;
@@ -12,11 +12,15 @@ internal static class SAINDifficultyClass
     private const string PresetNameNormal = "Less Difficult";
     private const string PresetNameHard = "Default";
     private const string PresetNameHarderPMCs = "Default with Harder PMCs";
-    private const string DefaultPresetDescription = "Bots are difficult but fair, the way SAIN was meant to played.";
+    private const string DefaultPresetDescription =
+        "Bots are difficult but fair, the way SAIN was meant to played.";
     private const string PresetNameVeryHard = "I Like Pain";
     private const string PresetNameImpossible = "Death Wish";
 
-    public static readonly Dictionary<SAINDifficulty, SAINPresetDefinition> DefaultPresetDefinitions = new();
+    public static readonly Dictionary<
+        SAINDifficulty,
+        SAINPresetDefinition
+    > DefaultPresetDefinitions = new();
 
     static SAINDifficultyClass()
     {
@@ -25,42 +29,54 @@ internal static class SAINDifficultyClass
             SAINPresetDefinition.CreateDefaultDefinition(
                 PresetNameEasy,
                 SAINDifficulty.easy,
-                "Bots react slowly and are incredibly inaccurate."));
+                "Bots react slowly and are incredibly inaccurate."
+            )
+        );
 
         DefaultPresetDefinitions.Add(
             SAINDifficulty.lesshard,
             SAINPresetDefinition.CreateDefaultDefinition(
                 PresetNameNormal,
                 SAINDifficulty.lesshard,
-                "Bots react more slowly, and are less accurate than usual."));
+                "Bots react more slowly, and are less accurate than usual."
+            )
+        );
 
         DefaultPresetDefinitions.Add(
             SAINDifficulty.hard,
             SAINPresetDefinition.CreateDefaultDefinition(
                 PresetNameHard,
                 SAINDifficulty.hard,
-                DefaultPresetDescription));
+                DefaultPresetDescription
+            )
+        );
 
         DefaultPresetDefinitions.Add(
             SAINDifficulty.harderpmcs,
             SAINPresetDefinition.CreateDefaultDefinition(
                 PresetNameHarderPMCs,
                 SAINDifficulty.harderpmcs,
-                "Default Settings, but PMCs are harder than normal."));
+                "Default Settings, but PMCs are harder than normal."
+            )
+        );
 
         DefaultPresetDefinitions.Add(
             SAINDifficulty.veryhard,
             SAINPresetDefinition.CreateDefaultDefinition(
                 PresetNameVeryHard,
                 SAINDifficulty.veryhard,
-                "Bots react faster, are more accurate, and can see further."));
+                "Bots react faster, are more accurate, and can see further."
+            )
+        );
 
         DefaultPresetDefinitions.Add(
             SAINDifficulty.deathwish,
             SAINPresetDefinition.CreateDefaultDefinition(
                 PresetNameImpossible,
                 SAINDifficulty.deathwish,
-                "Prepare To Die. Bots have almost no scatter, get less recoil from their weapon while shooting, are more accurate, and react deadly fast."));
+                "Prepare To Die. Bots have almost no scatter, get less recoil from their weapon while shooting, are more accurate, and react deadly fast."
+            )
+        );
     }
 
     public static SAINPresetClass GetDefaultPreset(SAINDifficulty difficulty)
@@ -114,7 +130,9 @@ internal static class SAINDifficultyClass
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
-            bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 0.5f, 0.01f, 2f).Round100();
+            bot.Value.DifficultyModifier = Mathf
+                .Clamp(bot.Value.DifficultyModifier * 0.5f, 0.01f, 2f)
+                .Round100();
             foreach (var setting in bot.Value.Settings)
             {
                 setting.Value.Core.VisibleAngle = 120f;
@@ -148,7 +166,13 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 0.65f;
             }
-            if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
+            if (
+                botsetting.Key.IsPMC()
+                || botsetting.Key == WildSpawnType.exUsec
+                || botsetting.Key == WildSpawnType.pmcBot
+                || botsetting.Key == WildSpawnType.arenaFighter
+                || botsetting.Key == WildSpawnType.arenaFighterEvent
+            )
             {
                 var pmcSettings = botsetting.Value.Settings;
 
@@ -164,7 +188,10 @@ internal static class SAINDifficultyClass
                 var impossible = pmcSettings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 0.75f;
             }
-            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+            if (
+                botsetting.Key == WildSpawnType.assault
+                || botsetting.Key == WildSpawnType.assaultGroup
+            )
             {
                 var settings = botsetting.Value.Settings;
 
@@ -200,7 +227,9 @@ internal static class SAINDifficultyClass
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
-            bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 0.85f, 0.01f, 2f).Round100();
+            bot.Value.DifficultyModifier = Mathf
+                .Clamp(bot.Value.DifficultyModifier * 0.85f, 0.01f, 2f)
+                .Round100();
             foreach (var setting in bot.Value.Settings)
             {
                 setting.Value.Core.VisibleAngle = 150f;
@@ -231,7 +260,13 @@ internal static class SAINDifficultyClass
                 hard.Aiming.AimCenterMass = false;
                 impossible.Aiming.AimCenterMass = false;
             }
-            if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
+            if (
+                botsetting.Key.IsPMC()
+                || botsetting.Key == WildSpawnType.exUsec
+                || botsetting.Key == WildSpawnType.pmcBot
+                || botsetting.Key == WildSpawnType.arenaFighter
+                || botsetting.Key == WildSpawnType.arenaFighterEvent
+            )
             {
                 var pmcSettings = botsetting.Value.Settings;
 
@@ -247,7 +282,10 @@ internal static class SAINDifficultyClass
                 var impossible = pmcSettings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 0.9f;
             }
-            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+            if (
+                botsetting.Key == WildSpawnType.assault
+                || botsetting.Key == WildSpawnType.assaultGroup
+            )
             {
                 var settings = botsetting.Value.Settings;
 
@@ -455,7 +493,7 @@ internal static class SAINDifficultyClass
                 case WildSpawnType.bossTagilla:
                 case WildSpawnType.bossTagillaAgro:
                 case WildSpawnType.bossKolontay:
-                    
+
                     easy.Aiming.AimCenterMass = false;
                     normal.Aiming.AimCenterMass = false;
                     hard.Aiming.AimCenterMass = false;
@@ -475,7 +513,7 @@ internal static class SAINDifficultyClass
 
                 case WildSpawnType.bossKojaniy:
                 case WildSpawnType.bossPartisan:
-                    
+
                     easy.Aiming.AimCenterMass = false;
                     normal.Aiming.AimCenterMass = false;
                     hard.Aiming.AimCenterMass = false;
@@ -683,7 +721,9 @@ internal static class SAINDifficultyClass
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
-            bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 1.33f, 0.01f, 2f).Round100();
+            bot.Value.DifficultyModifier = Mathf
+                .Clamp(bot.Value.DifficultyModifier * 1.33f, 0.01f, 2f)
+                .Round100();
             foreach (var setting in bot.Value.Settings)
             {
                 setting.Value.Core.VisibleAngle = 170f;
@@ -710,7 +750,13 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 1.0f;
             }
-            if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
+            if (
+                botsetting.Key.IsPMC()
+                || botsetting.Key == WildSpawnType.exUsec
+                || botsetting.Key == WildSpawnType.pmcBot
+                || botsetting.Key == WildSpawnType.arenaFighter
+                || botsetting.Key == WildSpawnType.arenaFighterEvent
+            )
             {
                 var settings = botsetting.Value.Settings;
 
@@ -726,7 +772,10 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 1.0f;
             }
-            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+            if (
+                botsetting.Key == WildSpawnType.assault
+                || botsetting.Key == WildSpawnType.assaultGroup
+            )
             {
                 var settings = botsetting.Value.Settings;
 
@@ -793,7 +842,13 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 1.0f;
             }
-            if (botsetting.Key.IsPMC() || botsetting.Key == WildSpawnType.exUsec || botsetting.Key == WildSpawnType.pmcBot || botsetting.Key == WildSpawnType.arenaFighter || botsetting.Key == WildSpawnType.arenaFighterEvent)
+            if (
+                botsetting.Key.IsPMC()
+                || botsetting.Key == WildSpawnType.exUsec
+                || botsetting.Key == WildSpawnType.pmcBot
+                || botsetting.Key == WildSpawnType.arenaFighter
+                || botsetting.Key == WildSpawnType.arenaFighterEvent
+            )
             {
                 var settings = botsetting.Value.Settings;
 
@@ -809,7 +864,10 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 1.0f;
             }
-            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
+            if (
+                botsetting.Key == WildSpawnType.assault
+                || botsetting.Key == WildSpawnType.assaultGroup
+            )
             {
                 var settings = botsetting.Value.Settings;
 

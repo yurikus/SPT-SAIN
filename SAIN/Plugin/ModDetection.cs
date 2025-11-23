@@ -25,7 +25,7 @@ public static class ModDetection
     public static bool RealismLoaded { get; private set; }
     public static bool QuestingBotsLoaded { get; private set; }
     public static bool ProjectFikaLoaded { get; private set; }
-    public static bool ProjectFikaHeadlessLoaded { get; private set;  }
+    public static bool ProjectFikaHeadlessLoaded { get; private set; }
 
     public static void CheckPlugins()
     {
@@ -59,7 +59,9 @@ public static class ModDetection
         if (RealismLoaded)
         {
             EFTCoreSettings.UpdateArmorClassCoef(3.5f);
-            Logger.LogInfo($"Realism Detected, updating armor class number to reflect new armor classes...");
+            Logger.LogInfo(
+                $"Realism Detected, updating armor class number to reflect new armor classes..."
+            );
         }
         else
         {

@@ -1,10 +1,10 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Helpers;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -42,11 +42,9 @@ public class CoverPointClass
     public float TimeLastUpdated { get; private set; }
     public float TimeSinceUpdated => Time.time - TimeLastUpdated;
 
-    public Vector3 CoverPosition {
-        get
-        {
-            return _position;
-        }
+    public Vector3 CoverPosition
+    {
+        get { return _position; }
         set
         {
             var current = _position;
@@ -86,15 +84,10 @@ public class CoverPointBotDataClass
 
     public CoverPointClass CoverPoint { get; }
 
-    public Vector3 Position {
-        get
-        {
-            return CoverPoint.CoverPosition;
-        }
-        set
-        {
-            CoverPoint.CoverPosition = value;
-        }
+    public Vector3 Position
+    {
+        get { return CoverPoint.CoverPosition; }
+        set { CoverPoint.CoverPosition = value; }
     }
 
     public float BotDistance { get; set; }
@@ -104,7 +97,8 @@ public class CoverPointBotDataClass
         CoverPoint.IsInUse = inInUse;
     }
 
-    public bool Spotted {
+    public bool Spotted
+    {
         get
         {
             // are we already spotted? check if it has expired
@@ -127,7 +121,8 @@ public class CoverPointBotDataClass
         }
     }
 
-    public CoverStatus StraightDistanceStatus {
+    public CoverStatus StraightDistanceStatus
+    {
         get
         {
             float distance = BotDistance;
@@ -142,7 +137,8 @@ public class CoverPointBotDataClass
 
     private CoverStatus _straightDistStatus;
 
-    public CoverStatus PathDistanceStatus {
+    public CoverStatus PathDistanceStatus
+    {
         get
         {
             float pathLength = PathData.PathLength;
@@ -242,7 +238,8 @@ public class CoverPointBotDataClass
     {
         var hits = _hitsInCover;
         int total = hits.Total;
-        if (total == 0) return false;
+        if (total == 0)
+            return false;
 
         if (total >= SPOTTED_HITINCOVER_COUNT_TOTAL)
             return true;
@@ -310,11 +307,9 @@ public class CoverPoint
 
     public CoverData CoverData { get; } = new CoverData();
 
-    public Vector3 Position {
-        get
-        {
-            return CoverData.Position;
-        }
+    public Vector3 Position
+    {
+        get { return CoverData.Position; }
         set
         {
             var current = CoverData.Position;
@@ -342,7 +337,8 @@ public class CoverPoint
         return (Position - from).sqrMagnitude;
     }
 
-    public bool Spotted {
+    public bool Spotted
+    {
         get
         {
             // are we already spotted? check if it has expired
@@ -365,7 +361,8 @@ public class CoverPoint
         }
     }
 
-    public CoverStatus StraightDistanceStatus {
+    public CoverStatus StraightDistanceStatus
+    {
         get
         {
             float distance = UpdateDist(Bot.Transform.NavData.Position);
@@ -377,7 +374,10 @@ public class CoverPoint
     {
         _nextGetDistTime = Time.time + 0.25f;
         DistanceToBot = distance;
-        if (CoverData.StraightLengthStatus == CoverStatus.InCover && distance <= DIST_COVER_INCOVER_STAY)
+        if (
+            CoverData.StraightLengthStatus == CoverStatus.InCover
+            && distance <= DIST_COVER_INCOVER_STAY
+        )
         {
             CoverData.StraightLengthStatus = CoverStatus.InCover;
             return CoverStatus.InCover;
@@ -396,12 +396,15 @@ public class CoverPoint
         return DistanceToBot;
     }
 
-    public CoverStatus PathDistanceStatus {
+    public CoverStatus PathDistanceStatus
+    {
         get
         {
             float pathLength = PathData.PathLength;
-            if (CoverData.PathLengthStatus == CoverStatus.InCover &&
-                pathLength <= DIST_COVER_INCOVER_STAY)
+            if (
+                CoverData.PathLengthStatus == CoverStatus.InCover
+                && pathLength <= DIST_COVER_INCOVER_STAY
+            )
             {
                 CoverData.PathLengthStatus = CoverStatus.InCover;
                 return CoverStatus.InCover;
@@ -438,7 +441,12 @@ public class CoverPoint
 
     private string _lastCheckedProfileId;
     public int RoundedPathLength => PathData.RoundedPathLength;
-    public bool BotInThisCover => IsCurrent && (StraightDistanceStatus == CoverStatus.InCover || PathDistanceStatus == CoverStatus.InCover);
+    public bool BotInThisCover =>
+        IsCurrent
+        && (
+            StraightDistanceStatus == CoverStatus.InCover
+            || PathDistanceStatus == CoverStatus.InCover
+        );
 
     public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart partHit, Enemy currentEnemy)
     {
@@ -497,7 +505,8 @@ public class CoverPoint
         Collider = collider;
         PathData = pathData;
         Vector3 size = collider.bounds.size;
-        HardData = new SAINHardCoverData {
+        HardData = new SAINHardCoverData
+        {
             Id = _count,
             Height = size.y,
             Value = (size.x + size.y + size.z).Round10(),
@@ -539,7 +548,8 @@ public class CoverPoint
     {
         var hits = _hitsInCover;
         int total = hits.Total;
-        if (total == 0) return false;
+        if (total == 0)
+            return false;
 
         if (total >= SPOTTED_HITINCOVER_COUNT_TOTAL)
             return true;

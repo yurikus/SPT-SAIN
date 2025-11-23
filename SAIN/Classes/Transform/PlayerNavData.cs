@@ -59,7 +59,11 @@ public struct PlayerNavData
         return navData;
     }
 
-    private static void DrawDebugGizmos(PlayerNavData navData, Vector3 playerPosition, float expireTime)
+    private static void DrawDebugGizmos(
+        PlayerNavData navData,
+        Vector3 playerPosition,
+        float expireTime
+    )
     {
         Color color;
         if (navData.IsOnNavMesh)
@@ -68,7 +72,8 @@ public struct PlayerNavData
         }
         else
         {
-            color = navData.Status switch {
+            color = navData.Status switch
+            {
                 EPlayerNavMeshDistance.OnNavMesh => Color.green,
                 EPlayerNavMeshDistance.CloseToNavMesh => Color.magenta,
                 EPlayerNavMeshDistance.FarFromNavMesh => Color.yellow,

@@ -1,3 +1,4 @@
+using System.Linq;
 using EFT.InventoryLogic;
 using SAIN.Components;
 using SAIN.Components.BotComponentSpace.Classes;
@@ -5,7 +6,6 @@ using SAIN.Helpers;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.WeaponFunction;
-using System.Linq;
 using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
 
@@ -24,7 +24,8 @@ public class BotWeaponInfoClass : BotBase
     public Firemode Firemode { get; private set; }
     public ReloadClass Reload { get; private set; }
 
-    public BotWeaponInfoClass(BotComponent bot) : base(bot)
+    public BotWeaponInfoClass(BotComponent bot)
+        : base(bot)
     {
         Recoil = new Recoil(bot);
         Firerate = new Firerate(this);
@@ -58,7 +59,12 @@ public class BotWeaponInfoClass : BotBase
             if (currentWeapon != null)
             {
                 _nextCheckWeapTime = Time.time + _checkWeapFreq;
-                if (_forceNewCheck || _nextRecalcTime < Time.time || _lastCheckedWeapon == null || _lastCheckedWeapon != currentWeapon)
+                if (
+                    _forceNewCheck
+                    || _nextRecalcTime < Time.time
+                    || _lastCheckedWeapon == null
+                    || _lastCheckedWeapon != currentWeapon
+                )
                 {
                     if (_forceNewCheck)
                         _forceNewCheck = false;
@@ -100,7 +106,9 @@ public class BotWeaponInfoClass : BotBase
 
     private static float getWeaponSwapToSemiDist(ECaliber caliber, EWeaponClass weaponClass)
     {
-        if (_shootSettings.AmmoCaliberFullAutoMaxDistances.TryGetValue(caliber, out var caliberDist))
+        if (
+            _shootSettings.AmmoCaliberFullAutoMaxDistances.TryGetValue(caliber, out var caliberDist)
+        )
         {
             return caliberDist;
         }
@@ -116,38 +124,44 @@ public class BotWeaponInfoClass : BotBase
     {
         var weapInfo = Bot.Info.WeaponInfo;
 
-        float AmmoCaliberModifier =
-            getAmmoShootability(ECaliber)
+        float AmmoCaliberModifier = getAmmoShootability(ECaliber)
             .Scale0to1(_shootSettings.AmmoCaliberScaling)
             .Round100();
 
-        float WeaponClassModifier =
-            getWeaponShootability(EWeaponClass)
+        float WeaponClassModifier = getWeaponShootability(EWeaponClass)
             .Scale0to1(_shootSettings.WeaponClassScaling)
             .Round100();
 
-        float ProficiencyModifier =
-            Bot.Info.FileSettings.Mind.WeaponProficiency
-            .Scale0to1(_shootSettings.WeaponProficiencyScaling)
+        float ProficiencyModifier = Bot
+            .Info.FileSettings.Mind.WeaponProficiency.Scale0to1(
+                _shootSettings.WeaponProficiencyScaling
+            )
             .Round100();
 
         var weapon = weapInfo.CurrentWeapon;
-        float ErgoModifier =
-            Mathf.Clamp(1f - weapon.ErgonomicsTotal / 100f, 0.01f, 1f)
+        float ErgoModifier = Mathf
+            .Clamp(1f - weapon.ErgonomicsTotal / 100f, 0.01f, 1f)
             .Scale0to1(_shootSettings.ErgoScaling)
             .Round100();
 
-        float RecoilModifier = ((weapon.RecoilTotal / weapon.RecoilBase) + (weapon.CurrentAmmoTemplate.ammoRec / 200f))
+        float RecoilModifier = (
+            (weapon.RecoilTotal / weapon.RecoilBase) + (weapon.CurrentAmmoTemplate.ammoRec / 200f)
+        )
             .Scale0to1(_shootSettings.RecoilScaling)
             .Round100();
 
-        float DifficultyModifier =
-            Bot.Info.Profile.DifficultyModifier
-            .Scale0to1(_shootSettings.DifficultyScaling)
+        float DifficultyModifier = Bot
+            .Info.Profile.DifficultyModifier.Scale0to1(_shootSettings.DifficultyScaling)
             .Round100();
 
-        FinalModifier = (WeaponClassModifier * RecoilModifier * ErgoModifier * AmmoCaliberModifier * ProficiencyModifier * DifficultyModifier)
-            .Round100();
+        FinalModifier = (
+            WeaponClassModifier
+            * RecoilModifier
+            * ErgoModifier
+            * AmmoCaliberModifier
+            * ProficiencyModifier
+            * DifficultyModifier
+        ).Round100();
     }
 
     public override void Dispose()
@@ -156,14 +170,20 @@ public class BotWeaponInfoClass : BotBase
         base.Dispose();
     }
 
-    public float EffectiveWeaponDistance {
+    public float EffectiveWeaponDistance
+    {
         get
         {
             if (ECaliber == ECaliber.Caliber9x39)
             {
                 return 125f;
             }
-            if (GlobalSettings.Shoot.EngagementDistance.TryGetValue(EWeaponClass, out float engagementDist))
+            if (
+                GlobalSettings.Shoot.EngagementDistance.TryGetValue(
+                    EWeaponClass,
+                    out float engagementDist
+                )
+            )
             {
                 return engagementDist;
             }
@@ -179,11 +199,13 @@ public class BotWeaponInfoClass : BotBase
     public bool HasFireMode(EFireMode fireMode)
     {
         var modes = CurrentWeapon?.WeapFireType;
-        if (modes == null) return false;
+        if (modes == null)
+            return false;
         return modes.Contains(fireMode);
     }
 
-    public EFireMode SelectedFireMode {
+    public EFireMode SelectedFireMode
+    {
         get
         {
             if (CurrentWeapon != null)
@@ -194,11 +216,9 @@ public class BotWeaponInfoClass : BotBase
         }
     }
 
-    public Weapon CurrentWeapon {
-        get
-        {
-            return BotOwner?.WeaponManager?.CurrentWeapon;
-        }
+    public Weapon CurrentWeapon
+    {
+        get { return BotOwner?.WeaponManager?.CurrentWeapon; }
     }
 
     private Weapon _lastCheckedWeapon;

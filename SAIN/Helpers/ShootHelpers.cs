@@ -1,6 +1,4 @@
-﻿using EFT;
-using SAIN.Components;
-using SAIN.Models.Enums;
+﻿using SAIN.Components;
 using UnityEngine;
 
 namespace SAIN.Helpers;
@@ -14,7 +12,10 @@ public class Shoot
             return 1f;
         }
 
-        if (bot.Suppression.SuppressingTarget && bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun)
+        if (
+            bot.Suppression.SuppressingTarget
+            && bot.Info.WeaponInfo.EWeaponClass == EWeaponClass.machinegun
+        )
         {
             return 0.75f * Random.Range(0.66f, 1.33f);
         }
@@ -41,7 +42,11 @@ public class Shoot
         return scaledBurstLength * Random.Range(0.66f, 1.33f);
     }
 
-    public static float InverseScaleWithLogisticFunction(float originalValue, float k, float x0 = 20f)
+    public static float InverseScaleWithLogisticFunction(
+        float originalValue,
+        float k,
+        float x0 = 20f
+    )
     {
         float scaledValue = 1f - 1f / (1f + Mathf.Exp(k * (originalValue - x0)));
         return (float)System.Math.Round(scaledValue, 3);

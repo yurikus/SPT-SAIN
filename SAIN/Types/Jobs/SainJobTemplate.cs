@@ -1,17 +1,11 @@
-﻿using SAIN.Components;
-using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent;
-using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.Collections;
-using Unity.Jobs;
-using UnityEngine;
-using System.Collections;
-using SAIN.Components.PlayerComponentSpace;
-using SAIN.Components.BotController;
-using EFT;
 using Comfort.Common;
-using UnityEngine.Experimental.AI;
+using EFT;
+using SAIN.Components;
+using SAIN.Components.BotController;
+using SAIN.Components.PlayerComponentSpace;
+using UnityEngine;
 
 namespace SAIN.Types.Jobs;
 
@@ -22,7 +16,12 @@ public interface ISainJob
     public void Stop();
 }
 
-public abstract class SainJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 30.0f) : ISainJob
+public abstract class SainJobTemplate(
+    string InName,
+    MonoBehaviour InOwner,
+    bool InLooping = true,
+    float InLoopInterval = 1.0f / 30.0f
+) : ISainJob
 {
     protected readonly string Name = InName;
     protected readonly bool Looping = InLooping;
@@ -107,21 +106,30 @@ public abstract class SainJobTemplate(string InName, MonoBehaviour InOwner, bool
     protected static IBotGame BotGame => Singleton<IBotGame>.Instance;
     protected static GameWorldComponent SAINGameWorld => GameWorldComponent.Instance;
     protected static BotManagerComponent SAINBotController => BotManagerComponent.Instance;
-    protected static Dictionary<string, PlayerComponent> AlivePlayers => GameWorldComponent.Instance?.PlayerTracker?.AlivePlayersDictionary;
-    protected static List<IPlayer> DeadPlayers => GameWorldComponent.Instance?.PlayerTracker?.DeadPlayers;
-    protected static Dictionary<string, BotComponent> AliveBots => BotSpawnController.Instance?.BotDictionary;
+    protected static Dictionary<string, PlayerComponent> AlivePlayers =>
+        GameWorldComponent.Instance?.PlayerTracker?.AlivePlayersDictionary;
+    protected static List<IPlayer> DeadPlayers =>
+        GameWorldComponent.Instance?.PlayerTracker?.DeadPlayers;
+    protected static Dictionary<string, BotComponent> AliveBots =>
+        BotSpawnController.Instance?.BotDictionary;
 
-    protected static bool GameActive {
+    protected static bool GameActive
+    {
         get
         {
-            return GameStatus switch {
-                GameStatus.Running or GameStatus.Runned or GameStatus.Starting or GameStatus.Started => true,
+            return GameStatus switch
+            {
+                GameStatus.Running
+                or GameStatus.Runned
+                or GameStatus.Starting
+                or GameStatus.Started => true,
                 _ => false,
             };
         }
     }
 
-    protected static GameStatus GameStatus {
+    protected static GameStatus GameStatus
+    {
         get
         {
             if (BotGame == null)

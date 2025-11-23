@@ -1,18 +1,19 @@
-﻿using EFT;
+﻿using System;
+using System.Reflection;
+using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision;
 
 public class SelfActionDecisionClass : BotBase
 {
-    public SelfActionDecisionClass(BotComponent sain) : base(sain)
+    public SelfActionDecisionClass(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
     }
@@ -60,17 +61,21 @@ public class SelfActionDecisionClass : BotBase
         if (Time.time - _lastReloadTime < 1f)
             return false;
 
-        if (Player.HandsController is Player.FirearmController firearmController &&
-            (firearmController.IsInReloadOperation() || firearmController.IsInInteraction()))
+        if (
+            Player.HandsController is Player.FirearmController firearmController
+            && (firearmController.IsInReloadOperation() || firearmController.IsInInteraction())
+        )
         {
             return false;
         }
 
         BotOwner botOwner = bot.BotOwner;
-        if (botOwner.Medecine?.Using == true) return false;
+        if (botOwner.Medecine?.Using == true)
+            return false;
 
         var weaponManager = botOwner.WeaponManager;
-        if (weaponManager == null) return false;
+        if (weaponManager == null)
+            return false;
 
         if (weaponManager.IsMelee)
         {
@@ -88,30 +93,52 @@ public class SelfActionDecisionClass : BotBase
             //    Logger.LogWarning("Cant refill weapons!");
             //    return false;
             //}
-            if (weaponManager.Reload?.Reloading != true) weaponManager.Selector.TryChangeWeapon(true);
+            if (weaponManager.Reload?.Reloading != true)
+                weaponManager.Selector.TryChangeWeapon(true);
             return false;
         }
 
         var reload = weaponManager.Reload;
-        if (reload == null) return false;
-        if (reload.Reloading) return false;
+        if (reload == null)
+            return false;
+        if (reload.Reloading)
+            return false;
 
-        if (!weaponManager.IsReady) return false;
-        if (weaponManager.ShootController?.CanStartReload() != true) return false;
+        if (!weaponManager.IsReady)
+            return false;
+        if (weaponManager.ShootController?.CanStartReload() != true)
+            return false;
 
-        if (botOwner.WeaponManager.Malfunctions.HaveMalfunction() && botOwner.WeaponManager.Malfunctions.MalfunctionType() != Weapon.EMalfunctionState.Misfire)
+        if (
+            botOwner.WeaponManager.Malfunctions.HaveMalfunction()
+            && botOwner.WeaponManager.Malfunctions.MalfunctionType()
+                != Weapon.EMalfunctionState.Misfire
+        )
             return false;
 
         _nextGetRatioTime = Time.time + 0.025f;
         _ammoRatio = getAmmoRatio(reload);
 
-        if (CheckReloadRatiosCanReload(enemy, RELOAD_AMMORATIO_MIN_PEACE, RELOAD_AMMORATIO_MAX, _ammoRatio))
+        if (
+            CheckReloadRatiosCanReload(
+                enemy,
+                RELOAD_AMMORATIO_MIN_PEACE,
+                RELOAD_AMMORATIO_MAX,
+                _ammoRatio
+            )
+        )
         {
             if (TryReload(botOwner, reload))
             {
                 return true;
             }
-            if (enemy != null && enemy.IsVisible && enemy.RealDistance < 10f && !weaponManager.Selector.TryChangeWeapon(true) && weaponManager.Selector.CanChangeToMeleeWeapons)
+            if (
+                enemy != null
+                && enemy.IsVisible
+                && enemy.RealDistance < 10f
+                && !weaponManager.Selector.TryChangeWeapon(true)
+                && weaponManager.Selector.CanChangeToMeleeWeapons
+            )
             {
                 weaponManager.Selector.ChangeToMelee();
             }
@@ -140,7 +167,12 @@ public class SelfActionDecisionClass : BotBase
         return false;
     }
 
-    private static bool CheckReloadRatiosCanReload(Enemy enemy, float RELOAD_AMMORATIO_MIN_PEACE, float RELOAD_AMMORATIO_MAX, float ammoRatio)
+    private static bool CheckReloadRatiosCanReload(
+        Enemy enemy,
+        float RELOAD_AMMORATIO_MIN_PEACE,
+        float RELOAD_AMMORATIO_MAX,
+        float ammoRatio
+    )
     {
         if (ammoRatio > 0f)
         {
@@ -255,23 +287,31 @@ public class SelfActionDecisionClass : BotBase
     private bool checkContinueReload(float timeSinceChange, Enemy enemy)
     {
         BotComponent bot = Bot;
-        if (bot.Decision.CurrentSelfDecision != ESelfActionType.Reload) return false;
-        if (timeSinceChange < 0.5f) return true;
+        if (bot.Decision.CurrentSelfDecision != ESelfActionType.Reload)
+            return false;
+        if (timeSinceChange < 0.5f)
+            return true;
         BotWeaponManager weaponManager = bot.BotOwner.WeaponManager;
-        if (weaponManager == null) return false;
+        if (weaponManager == null)
+            return false;
         BotReload reload = weaponManager.Reload;
-        if (reload == null) return false;
+        if (reload == null)
+            return false;
         bool reloading = reload.Reloading;
-        if (!reloading) return false;
+        if (!reloading)
+            return false;
         Weapon currentWeapon = weaponManager.CurrentWeapon;
-        if (currentWeapon == null) return false;
+        if (currentWeapon == null)
+            return false;
 
         const int BULLET_COUNT_TO_STOP_RELOAD = 3;
-        if (currentWeapon.ReloadMode == Weapon.EReloadMode.InternalMagazine &&
-            reload.BulletCount >= BULLET_COUNT_TO_STOP_RELOAD &&
-            enemy != null &&
-            enemy.IsVisible &&
-            Time.time - enemy.Vision.VisibleStartTime > 0.25f)
+        if (
+            currentWeapon.ReloadMode == Weapon.EReloadMode.InternalMagazine
+            && reload.BulletCount >= BULLET_COUNT_TO_STOP_RELOAD
+            && enemy != null
+            && enemy.IsVisible
+            && Time.time - enemy.Vision.VisibleStartTime > 0.25f
+        )
         {
             //reload.TryStopReload();
             //if (this._nextPossibleTryStopReload < Time.time)
@@ -301,8 +341,7 @@ public class SelfActionDecisionClass : BotBase
         }
         var medical = Bot.Medical;
         medical.Surgery.CheckAreaClearForSurgery();
-        if (medical.Surgery.AreaClearForSurgery &&
-            !checkDecisionTooLong())
+        if (medical.Surgery.AreaClearForSurgery && !checkDecisionTooLong())
         {
             Decision = ESelfActionType.Surgery;
             return true;
@@ -312,7 +351,11 @@ public class SelfActionDecisionClass : BotBase
         return false;
     }
 
-    private bool checkContinueFirstAid(float timeSinceChange, out ESelfActionType Decision, Enemy enemy)
+    private bool checkContinueFirstAid(
+        float timeSinceChange,
+        out ESelfActionType Decision,
+        Enemy enemy
+    )
     {
         if (BotOwner?.Medecine == null)
         {
@@ -355,19 +398,26 @@ public class SelfActionDecisionClass : BotBase
         return Time.time - Bot.Decision.ChangeDecisionTime > 60f;
     }
 
-    public bool UsingMeds => BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfActionType.None;
+    public bool UsingMeds =>
+        BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfActionType.None;
 
     public bool GetCanUseStims()
     {
         var stims = BotOwner.Medecine?.Stimulators;
-        return stims?.HaveSmt == true && Time.time - stims.LastEndUseTime > 3f && stims?.CanUseNow() == true;
+        return stims?.HaveSmt == true
+            && Time.time - stims.LastEndUseTime > 3f
+            && stims?.CanUseNow() == true;
     }
 
     public bool CanUseFirstAid => BotOwner.Medecine?.FirstAid?.ShallStartUse() == true;
 
-    public bool CanUseSurgery => BotOwner.Medecine?.SurgicalKit?.ShallStartUse() == true && BotOwner.Medecine?.FirstAid?.IsBleeding == false;
+    public bool CanUseSurgery =>
+        BotOwner.Medecine?.SurgicalKit?.ShallStartUse() == true
+        && BotOwner.Medecine?.FirstAid?.IsBleeding == false;
 
-    public bool CanReload => BotOwner.WeaponManager?.IsReady == true && BotOwner.WeaponManager?.Reload.CanReload(false) == true;
+    public bool CanReload =>
+        BotOwner.WeaponManager?.IsReady == true
+        && BotOwner.WeaponManager?.Reload.CanReload(false) == true;
 
     private bool startUseStims()
     {
@@ -442,7 +492,8 @@ public class SelfActionDecisionClass : BotBase
             return true;
         }
 
-        return enemy.EPathDistance switch {
+        return enemy.EPathDistance switch
+        {
             EPathDistance.VeryClose => timeSinceLastKnownUpdated > 6f,
             EPathDistance.Close => timeSinceLastKnownUpdated > 3f,
             EPathDistance.Mid => enemy.TimeSinceSeen > 2f,
@@ -468,34 +519,58 @@ public class SelfActionDecisionClass : BotBase
         }
         float timeSinceLastKnownUpdated = enemy.TimeSinceLastKnownUpdated;
         ETagStatus healthStatus = Bot.Memory.Health.HealthStatus;
-        if (healthStatus != ETagStatus.BadlyInjured && healthStatus != ETagStatus.Dying && !enemy.Seen && timeSinceLastKnownUpdated > 8f)
+        if (
+            healthStatus != ETagStatus.BadlyInjured
+            && healthStatus != ETagStatus.Dying
+            && !enemy.Seen
+            && timeSinceLastKnownUpdated > 8f
+        )
         {
             return true;
         }
 
-        return healthStatus switch {
-            ETagStatus.Injured => enemy.EPathDistance switch {
-                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 20f && (!enemy.Seen || enemy.TimeSinceSeen > 20f),
-                EPathDistance.Close => timeSinceLastKnownUpdated > 15f && (!enemy.Seen || enemy.TimeSinceSeen > 15f),
-                EPathDistance.Mid => enemy.TimeSinceSeen > 8f && (!enemy.Seen || enemy.TimeSinceSeen > 8f),
-                EPathDistance.Far => enemy.TimeSinceSeen > 5f && (!enemy.Seen || enemy.TimeSinceSeen > 5f),
-                EPathDistance.VeryFar => enemy.TimeSinceSeen > 3f && (!enemy.Seen || enemy.TimeSinceSeen > 3f),
+        return healthStatus switch
+        {
+            ETagStatus.Injured => enemy.EPathDistance switch
+            {
+                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 20f
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 20f),
+                EPathDistance.Close => timeSinceLastKnownUpdated > 15f
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 15f),
+                EPathDistance.Mid => enemy.TimeSinceSeen > 8f
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 8f),
+                EPathDistance.Far => enemy.TimeSinceSeen > 5f
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 5f),
+                EPathDistance.VeryFar => enemy.TimeSinceSeen > 3f
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 3f),
                 _ => false,
             },
-            ETagStatus.BadlyInjured => enemy.EPathDistance switch {
-                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 18 && (!enemy.Seen || enemy.TimeSinceSeen > 18),
-                EPathDistance.Close => timeSinceLastKnownUpdated > 12 && (!enemy.Seen || enemy.TimeSinceSeen > 12),
-                EPathDistance.Mid => timeSinceLastKnownUpdated > 6 && (!enemy.Seen || enemy.TimeSinceSeen > 6),
-                EPathDistance.Far => timeSinceLastKnownUpdated > 4 && (!enemy.Seen || enemy.TimeSinceSeen > 4),
-                EPathDistance.VeryFar => timeSinceLastKnownUpdated > 2 && (!enemy.Seen || enemy.TimeSinceSeen > 2),
+            ETagStatus.BadlyInjured => enemy.EPathDistance switch
+            {
+                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 18
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 18),
+                EPathDistance.Close => timeSinceLastKnownUpdated > 12
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 12),
+                EPathDistance.Mid => timeSinceLastKnownUpdated > 6
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 6),
+                EPathDistance.Far => timeSinceLastKnownUpdated > 4
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 4),
+                EPathDistance.VeryFar => timeSinceLastKnownUpdated > 2
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 2),
                 _ => false,
             },
-            ETagStatus.Dying => enemy.EPathDistance switch {
-                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 15 && (!enemy.Seen || enemy.TimeSinceSeen > 15),
-                EPathDistance.Close => timeSinceLastKnownUpdated > 10 && (!enemy.Seen || enemy.TimeSinceSeen > 10),
-                EPathDistance.Mid => timeSinceLastKnownUpdated > 4 && (!enemy.Seen || enemy.TimeSinceSeen > 4),
-                EPathDistance.Far => timeSinceLastKnownUpdated > 3 && (!enemy.Seen || enemy.TimeSinceSeen > 3),
-                EPathDistance.VeryFar => timeSinceLastKnownUpdated > 2 && (!enemy.Seen || enemy.TimeSinceSeen > 2),
+            ETagStatus.Dying => enemy.EPathDistance switch
+            {
+                EPathDistance.VeryClose => timeSinceLastKnownUpdated > 15
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 15),
+                EPathDistance.Close => timeSinceLastKnownUpdated > 10
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 10),
+                EPathDistance.Mid => timeSinceLastKnownUpdated > 4
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 4),
+                EPathDistance.Far => timeSinceLastKnownUpdated > 3
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 3),
+                EPathDistance.VeryFar => timeSinceLastKnownUpdated > 2
+                    && (!enemy.Seen || enemy.TimeSinceSeen > 2),
                 _ => false,
             },
             _ => false,
@@ -566,7 +641,8 @@ public class SelfActionDecisionClass : BotBase
         }
         if (ammoRatio > RELOAD_AMMORATIO_MID)
         {
-            return distance switch {
+            return distance switch
+            {
                 EPathDistance.VeryClose => false,
                 EPathDistance.Close => false,
                 EPathDistance.Mid => timeSinceSeen > RELOAD_AMMORATIO_MID_DIST_ENEMY_Mid,
@@ -623,7 +699,8 @@ public class SelfActionDecisionClass : BotBase
         return AmmoRatio < ratio;
     }
 
-    public float AmmoRatio {
+    public float AmmoRatio
+    {
         get
         {
             if (_nextGetRatioTime < Time.time)
@@ -670,13 +747,10 @@ public class SelfActionDecisionClass : BotBase
         [PatchPrefix]
         public static void PatchPrefix(BotFirstAidClass __instance, Action callback)
         {
-
             //if (SAINEnableClass.IsBotExluded(__instance.botOwner_0)) return;
             if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent sain))
             {
-                if (sain.SAINLayersActive)
-                {
-                }
+                if (sain.SAINLayersActive) { }
             }
         }
     }

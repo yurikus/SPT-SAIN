@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace SAIN.Preset.GlobalSettings.Categories;
 
@@ -17,6 +16,7 @@ public enum EBrain
     Tagilla,
     TagillaAgro,
     BossTest,
+
     //BossZryachiy,
     Obdolbs,
     ExUsec,
@@ -36,6 +36,7 @@ public enum EBrain
     FollowerKolontaySecurity,
     TagillaFollower,
     TagillaHelperAgro,
+
     //Fl_Zraychiy,
     Gifter,
     Killa,
@@ -100,8 +101,7 @@ public static class AIBrains
                 {
                     brains.Add(EBrain.PMC);
                 }
-                _allowedPMCBrains = brains.ConvertAll(brain => brain.ToString())
-                    .AsReadOnly();
+                _allowedPMCBrains = brains.ConvertAll(brain => brain.ToString()).AsReadOnly();
             }
             return _allowedPMCBrains;
         }
@@ -117,8 +117,7 @@ public static class AIBrains
             {
                 // PMC brain is needed for assaultGroup scavs
                 List<EBrain> brains = [EBrain.PMC, .. Scavs];
-                _allowedScavBrains = brains.ConvertAll(brain => brain.ToString())
-                    .AsReadOnly();
+                _allowedScavBrains = brains.ConvertAll(brain => brain.ToString()).AsReadOnly();
             }
             return _allowedScavBrains;
         }
@@ -126,29 +125,13 @@ public static class AIBrains
 
     private static IReadOnlyCollection<string> _allowedScavBrains;
 
-    public static readonly List<EBrain> PMCs =
-    [
-        EBrain.PmcBear,
-        EBrain.PmcUsec,
-    ];
+    public static readonly List<EBrain> PMCs = [EBrain.PmcBear, EBrain.PmcUsec];
 
-    public static readonly List<EBrain> Scavs =
-    [
-        EBrain.CursAssault,
-        EBrain.Assault,
-    ];
+    public static readonly List<EBrain> Scavs = [EBrain.CursAssault, EBrain.Assault];
 
-    public static readonly List<EBrain> Goons =
-    [
-        EBrain.Knight,
-        EBrain.BirdEye,
-        EBrain.BigPipe,
-    ];
+    public static readonly List<EBrain> Goons = [EBrain.Knight, EBrain.BirdEye, EBrain.BigPipe];
 
-    public static readonly List<EBrain> Others =
-    [
-        EBrain.Obdolbs,
-    ];
+    public static readonly List<EBrain> Others = [EBrain.Obdolbs];
 
     public static readonly List<EBrain> Bosses =
     [
@@ -166,7 +149,7 @@ public static class AIBrains
         EBrain.SectantPriest,
         EBrain.BossBoar,
         EBrain.BossKolontay,
-        EBrain.BossPartisan
+        EBrain.BossPartisan,
     ];
 
     public static readonly List<EBrain> Followers =

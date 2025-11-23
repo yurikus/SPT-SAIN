@@ -5,7 +5,6 @@ using SAIN.Models.Structs;
 using SAIN.Preset.Personalities;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Search;
@@ -24,7 +23,8 @@ public class SAINSearchClass : BotComponentClassBase
     public SearchDeciderClass SearchDecider { get; private set; }
     public SearchPathFinder PathFinder { get; private set; }
 
-    public SAINSearchClass(BotComponent sain) : base(sain)
+    public SAINSearchClass(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
         SearchDecider = new SearchDeciderClass(this);
@@ -90,10 +90,19 @@ public class SAINSearchClass : BotComponentClassBase
 
     private bool MoveToEnemy(Enemy enemy, bool shallSprint)
     {
-        if (Time.time - _timeLastMoved < 1f) return true;
+        if (Time.time - _timeLastMoved < 1f)
+            return true;
 
-        if (shallSprint &&
-            Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, false, 1f, Mover.ESprintUrgency.Middle, true))
+        if (
+            shallSprint
+            && Bot.Mover.RunToPointByWay(
+                enemy.Path.PathToEnemy,
+                false,
+                1f,
+                Mover.ESprintUrgency.Middle,
+                true
+            )
+        )
         {
             _timeLastMoved = Time.time;
             return true;
@@ -148,8 +157,16 @@ public class SAINSearchClass : BotComponentClassBase
         {
             shallSprint = false;
         }
-        if (shallSprint && 
-            Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, Mover.ESprintUrgency.Middle, true))
+        if (
+            shallSprint
+            && Bot.Mover.RunToPointByWay(
+                enemy.Path.PathToEnemy,
+                true,
+                -1,
+                Mover.ESprintUrgency.Middle,
+                true
+            )
+        )
         {
             LastState = CurrentState;
             CurrentState = ESearchMove.DirectMove;
@@ -266,9 +283,11 @@ public class SAINSearchClass : BotComponentClassBase
             return;
         }
         // we are outside...
-        if (_searchSettings.Sneaky &&
-            Bot.Cover.CoverPoints.Count > 2 &&
-            Time.time - BotOwner.Memory.UnderFireTime > 30f)
+        if (
+            _searchSettings.Sneaky
+            && Bot.Cover.CoverPoints.Count > 2
+            && Time.time - BotOwner.Memory.UnderFireTime > 30f
+        )
         {
             speed = 0.25f;
             pose = 0.6f;
@@ -306,8 +325,7 @@ public class SAINSearchClass : BotComponentClassBase
 
     private bool CheckShallWaitandReload()
     {
-        if (BotOwner.WeaponManager?.Reload?.Reloading == true &&
-            CurrentState != ESearchMove.Wait)
+        if (BotOwner.WeaponManager?.Reload?.Reloading == true && CurrentState != ESearchMove.Wait)
         {
             NextState = CurrentState;
             CurrentState = ESearchMove.Wait;

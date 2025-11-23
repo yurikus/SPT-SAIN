@@ -1,6 +1,6 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Models.Enums;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -21,8 +21,17 @@ public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyDa
             if (_nextCheckEnemyLookTime < currentTime)
             {
                 _nextCheckEnemyLookTime = currentTime + 0.25f;
-                EnemyLookAtMe = Vector3.Dot((Bot.Position - EnemyTransform.WeaponRoot).normalized, EnemyTransform.LookDirection) >= DOT_THRESHOLD_LOOK_AT_ME;
-                PointingWeaponAtMe = Enemy.IsShooter() && Vector3.Dot((Bot.Position - EnemyTransform.WeaponData.FirePort).normalized, EnemyTransform.WeaponData.PointDirection) < DOT_THRESHOLD_POINTWEAPON_AT_ME;
+                EnemyLookAtMe =
+                    Vector3.Dot(
+                        (Bot.Position - EnemyTransform.WeaponRoot).normalized,
+                        EnemyTransform.LookDirection
+                    ) >= DOT_THRESHOLD_LOOK_AT_ME;
+                PointingWeaponAtMe =
+                    Enemy.IsShooter()
+                    && Vector3.Dot(
+                        (Bot.Position - EnemyTransform.WeaponData.FirePort).normalized,
+                        EnemyTransform.WeaponData.PointDirection
+                    ) < DOT_THRESHOLD_POINTWEAPON_AT_ME;
             }
             UpdateVulnerableState();
             updateHealthStatus();
@@ -135,25 +144,18 @@ public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyDa
     }
 
     public bool PositionalFlareEnabled =>
-        Enemy.EnemyKnown &&
-        Enemy.KnownPlaces.EnemyDistanceFromLastKnown < _maxDistFromPosFlareEnabled;
+        Enemy.EnemyKnown
+        && Enemy.KnownPlaces.EnemyDistanceFromLastKnown < _maxDistFromPosFlareEnabled;
 
-    public bool HeardRecently {
-        get
-        {
-            return _heardRecently.Value;
-        }
-        set
-        {
-            _heardRecently.Value = value;
-        }
+    public bool HeardRecently
+    {
+        get { return _heardRecently.Value; }
+        set { _heardRecently.Value = value; }
     }
 
-    public bool ShotMeRecently {
-        get
-        {
-            return _shotByEnemy.Value;
-        }
+    public bool ShotMeRecently
+    {
+        get { return _shotByEnemy.Value; }
         set
         {
             if (value)
@@ -177,109 +179,62 @@ public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyDa
         }
     }
 
-    private void UpdateShotPos()
+    private void UpdateShotPos() { }
+
+    public bool PointingWeaponAtMe
     {
+        get { return _pointWeaponAtMe.Value; }
+        private set { _pointWeaponAtMe.Value = value; }
     }
 
-    public bool PointingWeaponAtMe {
-        get
-        {
-            return _pointWeaponAtMe.Value;
-        }
-        private set
-        {
-            _pointWeaponAtMe.Value = value;
-        }
+    public bool EnemyUsingSurgery
+    {
+        get { return _enemySurgery.Value; }
+        set { _enemySurgery.Value = value; }
     }
 
-    public bool EnemyUsingSurgery {
-        get
-        {
-            return _enemySurgery.Value;
-        }
-        set
-        {
-            _enemySurgery.Value = value;
-        }
-    }
-
-    public bool EnemyIsLooting {
-        get
-        {
-            return _enemyLooting.Value;
-        }
-        set
-        {
-            _enemyLooting.Value = value;
-        }
+    public bool EnemyIsLooting
+    {
+        get { return _enemyLooting.Value; }
+        set { _enemyLooting.Value = value; }
     }
 
     public bool SearchingBecauseLooting { get; set; }
 
-    public bool EnemyIsSuppressed {
-        get
-        {
-            return _enemyIsSuppressed.Value;
-        }
-        set
-        {
-            _enemyIsSuppressed.Value = value;
-        }
+    public bool EnemyIsSuppressed
+    {
+        get { return _enemyIsSuppressed.Value; }
+        set { _enemyIsSuppressed.Value = value; }
     }
 
-    public bool ShotAtMeRecently {
-        get
-        {
-            return _enemyShotAtMe.Value;
-        }
-        set
-        {
-            _enemyShotAtMe.Value = value;
-        }
+    public bool ShotAtMeRecently
+    {
+        get { return _enemyShotAtMe.Value; }
+        set { _enemyShotAtMe.Value = value; }
     }
 
-    public bool EnemyIsReloading {
-        get
-        {
-            return _enemyIsReloading.Value;
-        }
-        set
-        {
-            _enemyIsReloading.Value = value;
-        }
+    public bool EnemyIsReloading
+    {
+        get { return _enemyIsReloading.Value; }
+        set { _enemyIsReloading.Value = value; }
     }
 
-    public bool EnemyHasGrenadeOut {
-        get
-        {
-            return _enemyHasGrenade.Value;
-        }
-        set
-        {
-            _enemyHasGrenade.Value = value;
-        }
+    public bool EnemyHasGrenadeOut
+    {
+        get { return _enemyHasGrenade.Value; }
+        set { _enemyHasGrenade.Value = value; }
     }
 
-    public bool EnemyIsHealing {
-        get
-        {
-            return _enemyIsHealing.Value;
-        }
-        set
-        {
-            _enemyIsHealing.Value = value;
-        }
+    public bool EnemyIsHealing
+    {
+        get { return _enemyIsHealing.Value; }
+        set { _enemyIsHealing.Value = value; }
     }
 
-    public bool EnemyLookAtMe {
-        get
-        {
-            return _lookAtMe.Value;
-        }
-        set
-        {
-            _lookAtMe.Value = value;
-        }
+    public bool EnemyLookAtMe
+    {
+        get { return _lookAtMe.Value; }
+        set { _lookAtMe.Value = value; }
     }
 
     public int NumberOfSearchesStarted { get; set; }
@@ -321,7 +276,6 @@ public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyDa
         TimeLastShotAtMe = time;
         OnEnemyShotAtMe?.Invoke(Enemy);
     }
-
 
     private readonly ExpirableBool _heardRecently = new(2f, 0.5f, 1.5f);
     private readonly ExpirableBool _enemyIsReloading = new(4f, 0.5f, 1.5f);

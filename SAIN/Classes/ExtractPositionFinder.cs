@@ -1,11 +1,11 @@
-﻿using EFT.Interactive;
-using HarmonyLib;
-using SAIN.Helpers;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using EFT.Interactive;
+using HarmonyLib;
+using SAIN.Helpers;
 using UnityEngine;
 
 namespace SAIN.Components.Extract;
@@ -15,7 +15,10 @@ public class ExtractPositionFinder
     public bool ValidPathFound { get; private set; } = false;
     public Vector3? ExtractPosition { get; private set; } = null;
 
-    private static FieldInfo colliderField = AccessTools.Field(typeof(ExfiltrationPoint), "_collider");
+    private static FieldInfo colliderField = AccessTools.Field(
+        typeof(ExfiltrationPoint),
+        "_collider"
+    );
 
     // Parameters to determine the range of how dense the 3D mesh in the extract collider will be. Denser meshes have a higher
     // chance of finding valid NavMesh points, but performance will be worse.
@@ -91,7 +94,9 @@ public class ExtractPositionFinder
         ExtractPosition = navMeshTestPoints.Pop();
 #if DEBUG
         if (ExtractFinderComponent.DebugMode)
-            Logger.LogInfo($"Testing point {ExtractPosition} for {ex.Settings.Name}. {navMeshTestPoints.Count} test points remaining.");
+            Logger.LogInfo(
+                $"Testing point {ExtractPosition} for {ex.Settings.Name}. {navMeshTestPoints.Count} test points remaining."
+            );
 #endif
 
         // Choose endpoints from which pathing to the extract will be tested
@@ -112,7 +117,7 @@ public class ExtractPositionFinder
             if (NavMeshHelpers.DoesCompletePathExist(pathEndPoint, ExtractPosition.Value))
             {
                 ValidPathFound = true;
-                
+
 #if DEBUG
                 if (ExtractFinderComponent.DebugMode)
                     Logger.LogInfo($"Found complete path to {ex.Settings.Name}");
@@ -120,19 +125,21 @@ public class ExtractPositionFinder
 
                 yield break;
             }
-            
+
 #if DEBUG
             if (ExtractFinderComponent.DebugMode)
             {
                 float distanceBetweenPoints = Vector3.Distance(ExtractPosition.Value, pathEndPoint);
-                Logger.LogWarning($"Could not find a complete path to {ex.Settings.Name} from {pathEndPoint} ({distanceBetweenPoints}m away).");
+                Logger.LogWarning(
+                    $"Could not find a complete path to {ex.Settings.Name} from {pathEndPoint} ({distanceBetweenPoints}m away)."
+                );
             }
 #endif
 
             // Wait one frame to reduce the performance impact
             yield return null;
         }
-        
+
 #if DEBUG
         if (ExtractFinderComponent.DebugMode)
             Logger.LogWarning($"Could not find a complete path to {ex.Settings.Name}");
@@ -142,17 +149,20 @@ public class ExtractPositionFinder
     private float GetColliderTestPointSearchRadius(BoxCollider collider)
     {
         // The search radius should be no larger than the extents of the collider (up to the maximum allowed radius)
-        float searchRadius = Math.Min(Math.Min(collider.size.x, collider.size.y), collider.size.z) / 2;
+        float searchRadius =
+            Math.Min(Math.Min(collider.size.x, collider.size.y), collider.size.z) / 2;
         searchRadius = Math.Min(searchRadius, maxExtractNavMeshSearchRadius);
 
         // Failsafe for a junk extract collider
         if (searchRadius == 0)
         {
             searchRadius = defaultExtractNavMeshSearchRadius;
-            
+
 #if DEBUG
             if (ExtractFinderComponent.DebugMode)
-                Logger.LogWarning($"Collider size of {ex.Settings.Name} is (0, 0, 0). Using {searchRadius}m to check accessibility.");
+                Logger.LogWarning(
+                    $"Collider size of {ex.Settings.Name} is (0, 0, 0). Using {searchRadius}m to check accessibility."
+                );
 #endif
         }
 
@@ -188,16 +198,23 @@ public class ExtractPositionFinder
         // Generate the 3D mesh of test points and filter them to only include points that intersect with the NavMesh
         float searchRadius = GetColliderTestPointSearchRadius(collider);
         IEnumerable<Vector3> colliderTestPoints = GetColliderTestPoints(collider, searchRadius);
-        IList<Vector3> navMeshPoints = GetColliderTestPointsOnNavMesh(colliderTestPoints, searchRadius + finalExtractNavMeshSearchRadiusAddition);
+        IList<Vector3> navMeshPoints = GetColliderTestPointsOnNavMesh(
+            colliderTestPoints,
+            searchRadius + finalExtractNavMeshSearchRadiusAddition
+        );
 
         // Sort the filtered points to first test the one closest to the center of the collider and then its extremities
         Vector3 referencePoint = ex.transform.position;
         bool chooseFirst = true;
         while (navMeshPoints.Count > 0)
         {
-            IEnumerable<Vector3> tmpSortedNavMeshPoints = navMeshPoints.OrderBy(x => Vector3.Distance(x, referencePoint));
+            IEnumerable<Vector3> tmpSortedNavMeshPoints = navMeshPoints.OrderBy(x =>
+                Vector3.Distance(x, referencePoint)
+            );
 
-            referencePoint = chooseFirst ? tmpSortedNavMeshPoints.First() : tmpSortedNavMeshPoints.Last();
+            referencePoint = chooseFirst
+                ? tmpSortedNavMeshPoints.First()
+                : tmpSortedNavMeshPoints.Last();
             chooseFirst = false;
 
             sortedNavMeshPoints.Add(referencePoint);
@@ -214,10 +231,12 @@ public class ExtractPositionFinder
         {
             navMeshTestPoints.Push(testPoint);
         }
-        
+
 #if DEBUG
         if (ExtractFinderComponent.DebugMode)
-            Logger.LogInfo($"Found {navMeshTestPoints.Count} extract postions for {ex.Settings.Name}");
+            Logger.LogInfo(
+                $"Found {navMeshTestPoints.Count} extract postions for {ex.Settings.Name}"
+            );
 #endif
     }
 
@@ -225,18 +244,29 @@ public class ExtractPositionFinder
     {
         // Adjust the 3D mesh density to limit the number of points in it, but do not allow the density to drop below a certain point
         float navNeshTestPointDensityFactor = initialColliderTestPointDensityFactor;
-        IEnumerable<Vector3> colliderTestPoints = Enumerable.Repeat(Vector3.positiveInfinity, maxColliderTestPoints + 1);
+        IEnumerable<Vector3> colliderTestPoints = Enumerable.Repeat(
+            Vector3.positiveInfinity,
+            maxColliderTestPoints + 1
+        );
         int lastPointCount = colliderTestPoints.Count();
-        while ((lastPointCount > maxColliderTestPoints) && (navNeshTestPointDensityFactor >= minColliderTestPointDensityFactor))
+        while (
+            (lastPointCount > maxColliderTestPoints)
+            && (navNeshTestPointDensityFactor >= minColliderTestPointDensityFactor)
+        )
         {
-            colliderTestPoints = collider.GetNavMeshTestPoints(searchRadius, navNeshTestPointDensityFactor);
+            colliderTestPoints = collider.GetNavMeshTestPoints(
+                searchRadius,
+                navNeshTestPointDensityFactor
+            );
 
             // If the number of points is the same as the previous iteration, give up
             if (colliderTestPoints.Count() == lastPointCount)
             {
 #if DEBUG
                 if (ExtractFinderComponent.DebugMode)
-                    Logger.LogWarning($"Could not minimize collider test point count for {ex.Settings.Name}");
+                    Logger.LogWarning(
+                        $"Could not minimize collider test point count for {ex.Settings.Name}"
+                    );
 #endif
 
                 break;
@@ -250,7 +280,7 @@ public class ExtractPositionFinder
         if (!colliderTestPoints.Any())
         {
             colliderTestPoints = Enumerable.Repeat(collider.transform.position, 1);
-            
+
 #if DEBUG
             if (ExtractFinderComponent.DebugMode)
                 Logger.LogWarning($"Could not create test points. Using collider position instead");
@@ -261,8 +291,12 @@ public class ExtractPositionFinder
 #if DEBUG
             if (ExtractFinderComponent.DebugMode)
             {
-                Logger.LogInfo($"Generated {colliderTestPoints.Count()} collider test points using a density factor of {Math.Round(navNeshTestPointDensityFactor, 3)} and a search radius of {searchRadius}m");
-                Logger.LogInfo($"Extract collider: center={collider.transform.position}, size={collider.size}.");
+                Logger.LogInfo(
+                    $"Generated {colliderTestPoints.Count()} collider test points using a density factor of {Math.Round(navNeshTestPointDensityFactor, 3)} and a search radius of {searchRadius}m"
+                );
+                Logger.LogInfo(
+                    $"Extract collider: center={collider.transform.position}, size={collider.size}."
+                );
             }
 #endif
         }
@@ -270,7 +304,10 @@ public class ExtractPositionFinder
         return colliderTestPoints;
     }
 
-    private IList<Vector3> GetColliderTestPointsOnNavMesh(IEnumerable<Vector3> colliderTestPoints, float searchRadius)
+    private IList<Vector3> GetColliderTestPointsOnNavMesh(
+        IEnumerable<Vector3> colliderTestPoints,
+        float searchRadius
+    )
     {
         // For each point in the 3D mesh, try to find a point on the NavMesh within a certain radius
         List<Vector3> navMeshPoints = new();
@@ -290,11 +327,13 @@ public class ExtractPositionFinder
 
             navMeshPoints.Add(navMeshPoint.Value);
         }
-        
+
 #if DEBUG
         if (ExtractFinderComponent.DebugMode && !navMeshPoints.Any())
         {
-            Logger.LogWarning($"Could not find any NavMesh points for {ex.Settings.Name} from {colliderTestPoints.Count()} test points using radius {searchRadius}m");
+            Logger.LogWarning(
+                $"Could not find any NavMesh points for {ex.Settings.Name} from {colliderTestPoints.Count()} test points using radius {searchRadius}m"
+            );
             Logger.LogWarning($"Test points: {string.Join(",", colliderTestPoints)}");
         }
 #endif
@@ -310,7 +349,9 @@ public class ExtractPositionFinder
             return;
         }
 
-        List<Vector3> navMeshPoints = GameWorldComponent.Instance.GetAllSpawnPointPositionsOnNavMesh()?.ToList();
+        List<Vector3> navMeshPoints = GameWorldComponent
+            .Instance.GetAllSpawnPointPositionsOnNavMesh()
+            ?.ToList();
         if (navMeshPoints == null || navMeshPoints.Count == 0)
         {
             return;
@@ -318,11 +359,14 @@ public class ExtractPositionFinder
 
         // Create a dictionary of the distance between each spawn point and the extract test point, but deprioritize points with
         // much different elevation
-        Dictionary<Vector3, float> navMeshPointDistances = new Dictionary<Vector3, float>(navMeshPoints.Count);
+        Dictionary<Vector3, float> navMeshPointDistances = new Dictionary<Vector3, float>(
+            navMeshPoints.Count
+        );
         foreach (var point in navMeshPoints)
         {
             float distance = Vector3.Distance(point, testPoint);
-            float elevationPenalty = Math.Abs(point.y - testPoint.y) * pathEndpointHeightDeprioritizationFactor;
+            float elevationPenalty =
+                Math.Abs(point.y - testPoint.y) * pathEndpointHeightDeprioritizationFactor;
             navMeshPointDistances[point] = distance + elevationPenalty;
         }
 

@@ -1,11 +1,9 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using SAIN.Helpers;
 using SAIN.Models.Enums;
-using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Search;
-using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -57,7 +55,6 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
             }
             Search.Search(_sprintEnabled, _searchTarget);
         }
-        
     }
 
     public override void OnSteeringTicked()
@@ -75,8 +72,10 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
                 _sprintEnabled = false;
             }
 
-            if (!isBeingStealthy &&
-                !Bot.Suppression.TrySuppressAnyEnemy(_searchTarget, KnownEnemies))
+            if (
+                !isBeingStealthy
+                && !Bot.Suppression.TrySuppressAnyEnemy(_searchTarget, KnownEnemies)
+            )
             {
                 checkWeapon();
                 Bot.Steering.LookToLastKnownEnemyPosition(_searchTarget);
@@ -107,7 +106,8 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
             return;
         }
         clearSearchTarget();
-        if (enemy != null) setSearchTarget(enemy);
+        if (enemy != null)
+            setSearchTarget(enemy);
     }
 
     private void clearSearchTarget()
@@ -118,17 +118,22 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
     private void setTargetEnemy()
     {
         Enemy searchTarget = _searchTarget;
-        if (searchTarget != null &&
-            (!searchTarget.EnemyKnown ||
-            !Enemy.IsEnemyActive(searchTarget) ||
-            !searchTarget.CheckValid()))
+        if (
+            searchTarget != null
+            && (
+                !searchTarget.EnemyKnown
+                || !Enemy.IsEnemyActive(searchTarget)
+                || !searchTarget.CheckValid()
+            )
+        )
         {
             clearSearchTarget();
         }
         if (_searchTarget == null)
         {
             var activeEnemy = Bot.GoalEnemy;
-            if (activeEnemy == null) return;
+            if (activeEnemy == null)
+                return;
             setSearchTarget(activeEnemy);
         }
     }
@@ -147,9 +152,7 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
         }
 
         // Scavs will speak out and be more vocal
-        if (!_haveTalked &&
-            Bot.Info.Profile.IsScav &&
-            targetPlace.DistanceToBot < 50f)
+        if (!_haveTalked && Bot.Info.Profile.IsScav && targetPlace.DistanceToBot < 50f)
         {
             _haveTalked = true;
             if (EFTMath.RandomBool(40))
@@ -196,7 +199,10 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
             return;
         }
 
-        if (_searchTarget.IsSniper && Bot.Info.PersonalitySettings.General.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH)
+        if (
+            _searchTarget.IsSniper
+            && Bot.Info.PersonalitySettings.General.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH
+        )
         {
             _sprintEnabled = true;
             return;
@@ -207,7 +213,10 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
         if (_sprintTimer < Time.time && chance > 0)
         {
             float myPower = Bot.Info.Profile.PowerLevel;
-            if (_searchTarget?.EnemyPlayer != null && _searchTarget.EnemyPlayer.AIData.PowerOfEquipment < myPower * 0.5f)
+            if (
+                _searchTarget?.EnemyPlayer != null
+                && _searchTarget.EnemyPlayer.AIData.PowerOfEquipment < myPower * 0.5f
+            )
             {
                 chance = 100f;
             }

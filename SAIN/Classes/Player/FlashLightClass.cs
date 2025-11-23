@@ -1,11 +1,10 @@
-using EFT;
-using EFT.Visual;
-using HarmonyLib;
-using SAIN.Components.PlayerComponentSpace;
-using SAIN.SAINComponent;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using EFT;
+using HarmonyLib;
+using SAIN.Components.PlayerComponentSpace;
+using SAIN.SAINComponent;
 using UnityEngine;
 
 namespace SAIN.Components;
@@ -32,23 +31,24 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
 
     private readonly List<DeviceMode> activeModes = [];
 
-    public void Update()
-    {
-    }
+    public void Update() { }
 
     public void CheckDevice()
     {
         CheckUsingLightModes();
 
         bool wasUsingLight = UsingLight;
-        UsingLight = ActiveModes.Contains(DeviceMode.WhiteLight) || ActiveModes.Contains(DeviceMode.IRLight);
+        UsingLight =
+            ActiveModes.Contains(DeviceMode.WhiteLight) || ActiveModes.Contains(DeviceMode.IRLight);
         if (wasUsingLight != UsingLight)
         {
             OnLightToggle?.Invoke(UsingLight);
         }
 
         bool wasUsingLaser = UsingLaser;
-        UsingLaser = ActiveModes.Contains(DeviceMode.VisibleLaser) || ActiveModes.Contains(DeviceMode.IRLaser);
+        UsingLaser =
+            ActiveModes.Contains(DeviceMode.VisibleLaser)
+            || ActiveModes.Contains(DeviceMode.IRLaser);
         if (wasUsingLaser != UsingLaser)
         {
             OnLaserToggle?.Invoke(UsingLaser);
@@ -59,7 +59,8 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
     {
         ActiveModes.Clear();
         Player player = Player;
-        if (player == null) return;
+        if (player == null)
+            return;
 
         if (_tacticalModesField == null)
         {
@@ -70,7 +71,8 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
         }
 
         // Get the firearmsController for the player, this will be their IsCurrentEnemy weapon
-        Player.FirearmController firearmController = player.HandsController as Player.FirearmController;
+        Player.FirearmController firearmController =
+            player.HandsController as Player.FirearmController;
         if (firearmController == null)
         {
 #if DEBUG
@@ -81,7 +83,8 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
 
         // Get the list of tacticalComboVisualControllers for the current weapon (One should exist for every flashlight, laser, or combo device)
         Transform weaponRoot = firearmController.WeaponRoot;
-        TacticalDevices = weaponRoot.GetComponentsInChildrenActiveIgnoreFirstLevel<TacticalComboVisualController>();
+        TacticalDevices =
+            weaponRoot.GetComponentsInChildrenActiveIgnoreFirstLevel<TacticalComboVisualController>();
         if (TacticalDevices == null)
         {
 #if DEBUG
@@ -98,7 +101,8 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
         // Loop through all of the tacticalComboVisualControllers, then its modes, then that modes children, and look for a light
         foreach (TacticalComboVisualController tacticalComboVisualController in TacticalDevices)
         {
-            List<Transform> tacticalModes = _tacticalModesField.GetValue(tacticalComboVisualController) as List<Transform>;
+            List<Transform> tacticalModes =
+                _tacticalModesField.GetValue(tacticalComboVisualController) as List<Transform>;
             foreach (var mode in tacticalModes)
             {
                 // Skip disabled modes
@@ -149,9 +153,13 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
         }
     }
 
-    private static bool _debugMode => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash;
+    private static bool _debugMode =>
+        SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash;
 
     public List<DeviceMode> ActiveModes => activeModes;
 
-    private static readonly FieldInfo _tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
+    private static readonly FieldInfo _tacticalModesField = AccessTools.Field(
+        typeof(TacticalComboVisualController),
+        "list_0"
+    );
 }

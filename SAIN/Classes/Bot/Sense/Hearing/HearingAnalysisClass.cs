@@ -1,6 +1,5 @@
 ﻿using EFT;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Helpers;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
@@ -10,9 +9,8 @@ namespace SAIN.SAINComponent.Classes;
 
 public class HearingAnalysisClass : BotSubClass<SAINHearingSensorClass>, IBotClass
 {
-    public HearingAnalysisClass(SAINHearingSensorClass hearing) : base(hearing)
-    {
-    }
+    public HearingAnalysisClass(SAINHearingSensorClass hearing)
+        : base(hearing) { }
 
     public bool CheckIfSoundHeard(AISoundData sound)
     {
@@ -28,11 +26,19 @@ public class HearingAnalysisClass : BotSubClass<SAINHearingSensorClass>, IBotCla
         {
             return false;
         }
-        
+
         float EnvironmentModifier = CalcEnvironmentMod(sound);
         float ConditionModifier = CalcConditionMod(sound.SoundType);
         float OcclusionModifier = CalcOcclusionMod(sound.Enemy, sound.SoundType);
-        float FinalModifier = Mathf.Clamp(1.0f * EnvironmentModifier * ConditionModifier * OcclusionModifier * Bot.Info.Difficulty.HearingDistanceModifier, _settings.HEAR_MODIFIER_MIN_CLAMP, _settings.HEAR_MODIFIER_MAX_CLAMP);
+        float FinalModifier = Mathf.Clamp(
+            1.0f
+                * EnvironmentModifier
+                * ConditionModifier
+                * OcclusionModifier
+                * Bot.Info.Difficulty.HearingDistanceModifier,
+            _settings.HEAR_MODIFIER_MIN_CLAMP,
+            _settings.HEAR_MODIFIER_MAX_CLAMP
+        );
         float FinalRange = sound.Sound.Range * sound.Sound.Volume * FinalModifier;
         if (sound.PlayerDistance > FinalRange)
         {
@@ -73,14 +79,18 @@ public class HearingAnalysisClass : BotSubClass<SAINHearingSensorClass>, IBotCla
     private bool DoIDetectFootsteps(AISoundData sound)
     {
         bool hasheadPhones = Bot.PlayerComponent.Equipment.GearInfo.HasEarPiece;
-        float closehearing = hasheadPhones ? _settings.HEAR_CHANCE_MIN_DIST_HEADPHONES : _settings.HEAR_CHANCE_MIN_DIST;
+        float closehearing = hasheadPhones
+            ? _settings.HEAR_CHANCE_MIN_DIST_HEADPHONES
+            : _settings.HEAR_CHANCE_MIN_DIST;
         float distance = sound.PlayerDistance;
         if (distance <= closehearing)
         {
             return true;
         }
 
-        float farhearing = hasheadPhones ? SAINPlugin.LoadedPreset.GlobalSettings.Hearing.MaxFootstepAudioDistance : SAINPlugin.LoadedPreset.GlobalSettings.Hearing.MaxFootstepAudioDistanceNoHeadphones;
+        float farhearing = hasheadPhones
+            ? SAINPlugin.LoadedPreset.GlobalSettings.Hearing.MaxFootstepAudioDistance
+            : SAINPlugin.LoadedPreset.GlobalSettings.Hearing.MaxFootstepAudioDistanceNoHeadphones;
         if (distance > farhearing)
         {
             return false;
@@ -103,15 +113,21 @@ public class HearingAnalysisClass : BotSubClass<SAINHearingSensorClass>, IBotCla
             }
         }
 
-        if (Bot.PlayerComponent.Transform.VelocityData.VelocityMagnitudeNormal < _settings.HEAR_CHANCE_NOTMOVING_VELOCITY)
+        if (
+            Bot.PlayerComponent.Transform.VelocityData.VelocityMagnitudeNormal
+            < _settings.HEAR_CHANCE_NOTMOVING_VELOCITY
+        )
         {
-            minimumChance += hasheadPhones ? _settings.HEAR_CHANCE_NOTMOVING_MINCHANCE_HEADPHONES : _settings.HEAR_CHANCE_NOTMOVING_MINCHANCE;
+            minimumChance += hasheadPhones
+                ? _settings.HEAR_CHANCE_NOTMOVING_MINCHANCE_HEADPHONES
+                : _settings.HEAR_CHANCE_NOTMOVING_MINCHANCE;
         }
 
-        if (Bot.HasEnemy &&
-            Bot.GoalEnemy.EnemyProfileId == sound.Sound.PlayerComponent.ProfileId)
+        if (Bot.HasEnemy && Bot.GoalEnemy.EnemyProfileId == sound.Sound.PlayerComponent.ProfileId)
         {
-            minimumChance += hasheadPhones ? _settings.HEAR_CHANCE_CURRENTENEMY_MINCHANCE_HEADPHONES : _settings.HEAR_CHANCE_CURRENTENEMY_MINCHANCE;
+            minimumChance += hasheadPhones
+                ? _settings.HEAR_CHANCE_CURRENTENEMY_MINCHANCE_HEADPHONES
+                : _settings.HEAR_CHANCE_CURRENTENEMY_MINCHANCE;
         }
 
         float num = farhearing - closehearing;
@@ -249,8 +265,7 @@ public class HearingAnalysisClass : BotSubClass<SAINHearingSensorClass>, IBotCla
             {
                 modifier *= _settings.HEAR_MODIFIER_HEAVY_HELMET;
             }
-            if (Bot.Memory.Health.Dying &&
-                !Bot.Memory.Health.OnPainKillers)
+            if (Bot.Memory.Health.Dying && !Bot.Memory.Health.OnPainKillers)
             {
                 modifier *= _settings.HEAR_MODIFIER_DYING;
             }

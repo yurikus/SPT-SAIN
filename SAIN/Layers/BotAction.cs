@@ -1,10 +1,10 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
-using System.Text;
 
 namespace SAIN.Layers;
 
@@ -12,7 +12,11 @@ public interface IBotAction
 {
     public string Name { get; }
 
-    public void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners);
+    public void OnPathSteeringTicked(
+        BotPathCorner cornerDestination,
+        int currentCornerIndex,
+        int totalCorners
+    );
 
     public void OnSteeringTicked();
 
@@ -30,11 +34,11 @@ public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(bo
         DebugOverlay.AddBaseInfo(Bot, BotOwner, stringBuilder);
     }
 
-    public BotComponent Bot {
+    public BotComponent Bot
+    {
         get
         {
-            if (_bot == null &&
-                BotManagerComponent.Instance.GetSAIN(BotOwner, out var bot))
+            if (_bot == null && BotManagerComponent.Instance.GetSAIN(BotOwner, out var bot))
             {
                 _bot = bot;
             }
@@ -52,11 +56,13 @@ public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(bo
 
     protected EnemyList KnownEnemies { get; private set; }
 
-    public virtual void UpdateMovement()
-    {
-    }
+    public virtual void UpdateMovement() { }
 
-    public virtual void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners)
+    public virtual void OnPathSteeringTicked(
+        BotPathCorner cornerDestination,
+        int currentCornerIndex,
+        int totalCorners
+    )
     {
         OnSteeringTicked();
     }
@@ -70,7 +76,8 @@ public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(bo
 
     protected bool TryShootAnyTarget(Enemy priorityEnemy)
     {
-        return Shoot.ShootAnyVisibleEnemies(priorityEnemy) || Bot.Suppression.TrySuppressAnyEnemy(priorityEnemy, Bot.EnemyController.KnownEnemies);
+        return Shoot.ShootAnyVisibleEnemies(priorityEnemy)
+            || Bot.Suppression.TrySuppressAnyEnemy(priorityEnemy, Bot.EnemyController.KnownEnemies);
     }
 
     public override void Start()
@@ -79,9 +86,7 @@ public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(bo
         Bot.BotActivation.SetCurrentAction(this);
     }
 
-    public override void Stop()
-    {
-    }
+    public override void Stop() { }
 
     private BotComponent _bot;
 }

@@ -1,8 +1,8 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using EFT.Interactive;
 using SAIN.Components;
 using SAIN.Helpers;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover;
@@ -13,7 +13,8 @@ public class DoorOpener : BotComponentClassBase
 
     public EInteractionType InteractionType { get; private set; }
 
-    public DoorOpener(BotComponent sain) : base(sain)
+    public DoorOpener(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -24,7 +25,11 @@ public class DoorOpener : BotComponentClassBase
     private List<DoorDataStruct> _allDoors { get; } = [];
     public NavGraphVoxelSimple CurrentVoxel { get; private set; }
 
-    public bool TryInteractWithDoor(EInteractionType interactionType, float time, DoorDataStruct data)
+    public bool TryInteractWithDoor(
+        EInteractionType interactionType,
+        float time,
+        DoorDataStruct data
+    )
     {
         if (!InteractWithDoor(ref data, interactionType))
         {
@@ -52,7 +57,11 @@ public class DoorOpener : BotComponentClassBase
         return ActiveDoor;
     }
 
-    public bool SelectDoor(out EInteractionType interactionType, out DoorDataStruct currentDoor, IBotPathData pathData)
+    public bool SelectDoor(
+        out EInteractionType interactionType,
+        out DoorDataStruct currentDoor,
+        IBotPathData pathData
+    )
     {
         const float RAY_LENGTH = 3f;
         Vector3 botPosition = Bot.Position;
@@ -86,13 +95,23 @@ public class DoorOpener : BotComponentClassBase
         }
 
         CornerMoveData moveData = pathData.CurrentCornerMoveData;
-        Ray ray = new() {
+        Ray ray = new()
+        {
             origin = botPosition + Vector3.up,
             direction = moveData.CornerDirectionFromBotNormal * RAY_LENGTH,
         };
 
         DoorDataStruct data = ActiveDoor;
-        if (!RaycastToDoors(out interactionType, ref data, out int index, RAY_LENGTH, ray, _interactionDoors))
+        if (
+            !RaycastToDoors(
+                out interactionType,
+                ref data,
+                out int index,
+                RAY_LENGTH,
+                ray,
+                _interactionDoors
+            )
+        )
         {
             currentDoor = ActiveDoor;
             return false;
@@ -157,7 +176,12 @@ public class DoorOpener : BotComponentClassBase
         }
     }
 
-    private static bool FindDoorFromCollider(Collider collider, out DoorDataStruct data, out int index, List<DoorDataStruct> doors)
+    private static bool FindDoorFromCollider(
+        Collider collider,
+        out DoorDataStruct data,
+        out int index,
+        List<DoorDataStruct> doors
+    )
     {
         if (collider == null)
         {
@@ -182,11 +206,26 @@ public class DoorOpener : BotComponentClassBase
         return false;
     }
 
-    private static bool RaycastToDoors(out EInteractionType interactionType, ref DoorDataStruct data, out int index, float RAY_LENGTH, Ray ray, List<DoorDataStruct> doors)
+    private static bool RaycastToDoors(
+        out EInteractionType interactionType,
+        ref DoorDataStruct data,
+        out int index,
+        float RAY_LENGTH,
+        Ray ray,
+        List<DoorDataStruct> doors
+    )
     {
         const float SPHERECAST_RADIUS = 0.15f;
         const float SPHERECAST_DISTANCE = 1.5f;
-        if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out RaycastHit hit, SPHERECAST_DISTANCE, LayerMaskClass.PlayerStaticDoorMask))
+        if (
+            Physics.SphereCast(
+                ray,
+                SPHERECAST_RADIUS,
+                out RaycastHit hit,
+                SPHERECAST_DISTANCE,
+                LayerMaskClass.PlayerStaticDoorMask
+            )
+        )
         {
 #if DEBUG
             DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
@@ -194,7 +233,9 @@ public class DoorOpener : BotComponentClassBase
             if (FindDoorFromCollider(hit.collider, out data, out index, doors))
             {
 #if DEBUG
-                Logger.LogDebug($"Found door from hit collider [PlayerStaticDoorMask] [{hit.collider.name}]");
+                Logger.LogDebug(
+                    $"Found door from hit collider [PlayerStaticDoorMask] [{hit.collider.name}]"
+                );
 #endif
                 if (data.Door.DoorState == EDoorState.Open)
                 {
@@ -212,7 +253,15 @@ public class DoorOpener : BotComponentClassBase
                 //Logger.LogDebug($"Failed to find door, but we hit something on [PlayerStaticDoorMask] [{hit.collider.name}]");
             }
         }
-        if (Physics.SphereCast(ray, SPHERECAST_RADIUS, out hit, SPHERECAST_DISTANCE, LayerMaskClass.DoorLayer))
+        if (
+            Physics.SphereCast(
+                ray,
+                SPHERECAST_RADIUS,
+                out hit,
+                SPHERECAST_DISTANCE,
+                LayerMaskClass.DoorLayer
+            )
+        )
         {
             DebugGizmos.DrawLine(ray.origin, hit.point, Color.red, 0.25f, 30f, true);
             if (FindDoorFromCollider(hit.collider, out data, out index, doors))
@@ -239,10 +288,13 @@ public class DoorOpener : BotComponentClassBase
         for (index = 0; index < doors.Count; index++)
         {
             data = doors[index];
-            if (data.CurrentSqrMagnitude > RAY_LENGTH * RAY_LENGTH) continue;
-            if (!CanInteract(data.Link)) continue;
+            if (data.CurrentSqrMagnitude > RAY_LENGTH * RAY_LENGTH)
+                continue;
+            if (!CanInteract(data.Link))
+                continue;
             Collider doorCollider = data.Door.Collider;
-            if (doorCollider == null) continue;
+            if (doorCollider == null)
+                continue;
             if (doorCollider.Raycast(ray, out hit, SPHERECAST_DISTANCE))
             {
 #if DEBUG
@@ -297,7 +349,8 @@ public class DoorOpener : BotComponentClassBase
 
     private bool InteractWithDoor(ref DoorDataStruct data, EInteractionType type)
     {
-        if (data.Door == null) return false;
+        if (data.Door == null)
+            return false;
         switch (data.Door.DoorState)
         {
             case EDoorState.Shut:

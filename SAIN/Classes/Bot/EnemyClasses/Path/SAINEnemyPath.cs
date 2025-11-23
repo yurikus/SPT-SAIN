@@ -1,5 +1,5 @@
-﻿using SAIN.Preset.GlobalSettings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Preset.GlobalSettings;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -54,7 +54,8 @@ public struct BotVisiblePathNode
 
 public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData.Enemy.Bot)
 {
-    public EPathDistance EPathDistance {
+    public EPathDistance EPathDistance
+    {
         get
         {
             float distance = PathLength;
@@ -91,7 +92,8 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
     public NavMeshPathStatus PathToEnemyStatus => PathToEnemy.status;
     public Vector3[] PathCorners => PathToEnemy.corners;
 
-    public BotVisiblePathNode[] AllPathNodes { get; } = enemyData.EnemyPlayer.IsAI ? new BotVisiblePathNode[512] : new BotVisiblePathNode[1024];
+    public BotVisiblePathNode[] AllPathNodes { get; } =
+        enemyData.EnemyPlayer.IsAI ? new BotVisiblePathNode[512] : new BotVisiblePathNode[1024];
     public List<BotVisiblePathNode> VisibleNodes { get; } = [];
 
     public int AllPathNodeCount { get; private set; } = 0;
@@ -116,13 +118,26 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
         {
             Vector3 enemyPosition = Enemy.KnownPlaces.LastKnownPosition.Value;
             PathToEnemy.ClearCorners();
-            NavMesh.CalculatePath(Bot.NavMeshPosition, enemyPosition, NavMesh.AllAreas, PathToEnemy);
+            NavMesh.CalculatePath(
+                Bot.NavMeshPosition,
+                enemyPosition,
+                NavMesh.AllAreas,
+                PathToEnemy
+            );
             _newPath = true;
             int max = AllPathNodes.Length;
-            PathLength = CalcPathLengthCreateVisionNodes(pathVisibilityConfig, AllPathNodes, PathCorners, out int nodeCount, max);
+            PathLength = CalcPathLengthCreateVisionNodes(
+                pathVisibilityConfig,
+                AllPathNodes,
+                PathCorners,
+                out int nodeCount,
+                max
+            );
             AllPathNodeCount = nodeCount;
             if (PathCorners.Length > 0)
-                DistanceToEnemyPositionFromLastCorner = (Enemy.LastKnownPosition.Value - PathCorners[PathCorners.Length - 1]).magnitude;
+                DistanceToEnemyPositionFromLastCorner = (
+                    Enemy.LastKnownPosition.Value - PathCorners[PathCorners.Length - 1]
+                ).magnitude;
             else
                 DistanceToEnemyPositionFromLastCorner = 0;
         }
@@ -130,8 +145,10 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
 
     public bool ShallCheckPathVision(float currentTime, Vector3 botWeaponRoot)
     {
-        if (!Enemy.WasValid || !Enemy.EnemyKnown) return false;
-        if (!_newPath && _nextPathVisionCheck > currentTime) return false;
+        if (!Enemy.WasValid || !Enemy.EnemyKnown)
+            return false;
+        if (!_newPath && _nextPathVisionCheck > currentTime)
+            return false;
         float interval;
         if (Enemy.IsAI)
         {
@@ -198,7 +215,13 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
         return true;
     }
 
-    private static float CalcPathLengthCreateVisionNodes(PathVisibilityConfig pathVisibilityConfig, BotVisiblePathNode[] allPathPoints, Vector3[] pathCorners, out int nodeCount, int max)
+    private static float CalcPathLengthCreateVisionNodes(
+        PathVisibilityConfig pathVisibilityConfig,
+        BotVisiblePathNode[] allPathPoints,
+        Vector3[] pathCorners,
+        out int nodeCount,
+        int max
+    )
     {
         float maxPathLength = pathVisibilityConfig.maxPathLength;
         int stackHeight = pathVisibilityConfig.stackHeight;
@@ -223,8 +246,20 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
             {
                 if (pathLength < maxPathLength)
                 {
-                    GeneratePoints(allPathPoints, cornerA, stackHeight, startHeightOffset, heightStep, ref nodeCount, ref full, i, i + 1, max);
-                    if (full) continue;
+                    GeneratePoints(
+                        allPathPoints,
+                        cornerA,
+                        stackHeight,
+                        startHeightOffset,
+                        heightStep,
+                        ref nodeCount,
+                        ref full,
+                        i,
+                        i + 1,
+                        max
+                    );
+                    if (full)
+                        continue;
                     // Create Equal dist points along the line between two corners.
                     if (magnitude > minGenerationMagnitude)
                     {
@@ -233,22 +268,57 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
                         for (int j = 0; j < pointCount; j++)
                         {
                             Vector3 point = cornerA + lengthStep * j;
-                            GeneratePoints(allPathPoints, point, stackHeight, startHeightOffset, heightStep, ref nodeCount, ref full, i, i + 1, max);
-                            if (full) break;
+                            GeneratePoints(
+                                allPathPoints,
+                                point,
+                                stackHeight,
+                                startHeightOffset,
+                                heightStep,
+                                ref nodeCount,
+                                ref full,
+                                i,
+                                i + 1,
+                                max
+                            );
+                            if (full)
+                                break;
                         }
                     }
                     else if (magnitude > distanceBetweenPoints)
                     {
-                        GeneratePoints(allPathPoints, cornerA + direction * 0.5f, stackHeight, startHeightOffset, heightStep, ref nodeCount, ref full, i, i + 1, max);
+                        GeneratePoints(
+                            allPathPoints,
+                            cornerA + direction * 0.5f,
+                            stackHeight,
+                            startHeightOffset,
+                            heightStep,
+                            ref nodeCount,
+                            ref full,
+                            i,
+                            i + 1,
+                            max
+                        );
                     }
                 }
                 else if (i == pathCorners.Length - 2)
                 {
-                    GeneratePoints(allPathPoints, cornerB, stackHeight, startHeightOffset, heightStep, ref nodeCount, ref full, i + 1, i + 1, max);
+                    GeneratePoints(
+                        allPathPoints,
+                        cornerB,
+                        stackHeight,
+                        startHeightOffset,
+                        heightStep,
+                        ref nodeCount,
+                        ref full,
+                        i + 1,
+                        i + 1,
+                        max
+                    );
                 }
             }
         }
-        for (int i = nodeCount + 1; i < allPathPoints.Length; i++) allPathPoints[i] = default;
+        for (int i = nodeCount + 1; i < allPathPoints.Length; i++)
+            allPathPoints[i] = default;
         return pathLength;
     }
 
@@ -263,7 +333,7 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
         int cornerAindex,
         int cornerBindex,
         int max
-        )
+    )
     {
         Vector3 point = checkPoint + startHeightOffset;
         for (int i = 0; i < stackHeight; i++)
@@ -274,7 +344,11 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
                 break;
             }
             Vector3 nodePosition = point + step * i;
-            allPathPoints[currentIndex] = new BotVisiblePathNode(nodePosition, cornerAindex, cornerBindex);
+            allPathPoints[currentIndex] = new BotVisiblePathNode(
+                nodePosition,
+                cornerAindex,
+                cornerBindex
+            );
             currentIndex++;
         }
     }
@@ -289,7 +363,12 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
 
     private float calcDelayOnDistance()
     {
-        bool performanceMode = SAINPlugin.LoadedPreset.GlobalSettings.General.Performance.PerformanceMode;
+        bool performanceMode = SAINPlugin
+            .LoadedPreset
+            .GlobalSettings
+            .General
+            .Performance
+            .PerformanceMode;
         bool currentEnemy = Enemy.IsCurrentEnemy;
         bool isAI = Enemy.IsAI;
         //bool searchingForEnemy = Enemy.Events.OnSearch.Value;
@@ -345,14 +424,15 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
     private const float MIN_FREQ_CALCPATH_AI = 2f;
     private const float MIN_FREQ_CALCPATH_DISTANCE = 25f;
 
-    private const float DISTANCE_DIFFERENCE = MAX_FREQ_CALCPATH_DISTANCE - MIN_FREQ_CALCPATH_DISTANCE;
+    private const float DISTANCE_DIFFERENCE =
+        MAX_FREQ_CALCPATH_DISTANCE - MIN_FREQ_CALCPATH_DISTANCE;
     private const float PERFORMANCE_MODE_COEF = 1.5f;
     private const float CURRENTENEMY_COEF = 0.25f;
 
     private bool isEnemyInRange()
     {
-        return Enemy.IsAI && Enemy.RealDistance <= MAX_CALCPATH_RANGE_AI ||
-            !Enemy.IsAI && Enemy.RealDistance <= MAX_CALCPATH_RANGE;
+        return Enemy.IsAI && Enemy.RealDistance <= MAX_CALCPATH_RANGE_AI
+            || !Enemy.IsAI && Enemy.RealDistance <= MAX_CALCPATH_RANGE;
     }
 
     private const float MAX_CALCPATH_RANGE = 500f;
@@ -361,9 +441,11 @@ public class SAINEnemyPath(EnemyData enemyData) : EnemyBase(enemyData, enemyData
     private bool checkPositionsChanged(Vector3 botPosition, Vector3 enemyPosition)
     {
         // Did we already check the current enemy position and has the bot not moved? dont recalc path then
-        if (_enemyLastPosChecked != null
+        if (
+            _enemyLastPosChecked != null
             && (_enemyLastPosChecked.Value - enemyPosition).sqrMagnitude < 0.1f
-            && (_botLastPosChecked - botPosition).sqrMagnitude < 0.1f)
+            && (_botLastPosChecked - botPosition).sqrMagnitude < 0.1f
+        )
         {
             return false;
         }

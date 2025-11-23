@@ -1,8 +1,6 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Helpers.Events;
-using SAIN.Models.Enums;
-using System;
-using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
 
@@ -43,7 +41,8 @@ public class EnemyEvents
 
     public void Dispose(Player enemyPlayer)
     {
-        if (enemyPlayer != null) enemyPlayer.BeingHitAction -= enemyHit;
+        if (enemyPlayer != null)
+            enemyPlayer.BeingHitAction -= enemyHit;
     }
 
     public void EnemyLocationsSearched()
@@ -92,15 +91,13 @@ public class EnemyEvents
 
     public class EnemyToggleEvent : ToggleEventForObject<Enemy>
     {
-        public EnemyToggleEvent(Enemy enemy, bool defaultValue) : base(enemy, defaultValue)
-        {
-        }
+        public EnemyToggleEvent(Enemy enemy, bool defaultValue)
+            : base(enemy, defaultValue) { }
     }
 
     public class EnemyToggleEventTimeTracked : ToggleEventForObjectTimeTracked<Enemy>
     {
-        public EnemyToggleEventTimeTracked(Enemy enemy, bool defaultValue) : base(enemy, defaultValue)
-        {
-        }
+        public EnemyToggleEventTimeTracked(Enemy enemy, bool defaultValue)
+            : base(enemy, defaultValue) { }
     }
 }

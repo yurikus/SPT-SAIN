@@ -1,8 +1,4 @@
-﻿using EFT;
-using SAIN.Components;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -11,7 +7,13 @@ namespace SAIN.Helpers;
 
 public static class Vector
 {
-    public static void GeneratePointsAlongDirection(List<Vector3> points, Vector3 start, Vector3 direction, float distance, float spacing)
+    public static void GeneratePointsAlongDirection(
+        List<Vector3> points,
+        Vector3 start,
+        Vector3 direction,
+        float distance,
+        float spacing
+    )
     {
         Vector3 step = direction.normalized * spacing;
         int pointCount = Mathf.FloorToInt(distance / spacing);
@@ -49,17 +51,36 @@ public static class Vector
         return result;
     }
 
-    private static bool CheckThreePoints(Vector3 from, Vector3 midPoint, Vector3 target, out Vector3 hitPos)
+    private static bool CheckThreePoints(
+        Vector3 from,
+        Vector3 midPoint,
+        Vector3 target,
+        out Vector3 hitPos
+    )
     {
         Vector3 direction = midPoint - from;
-        if (Physics.Raycast(new Ray(from, direction), out RaycastHit raycastHit, direction.magnitude, LayerMaskClass.HighPolyWithTerrainMask))
+        if (
+            Physics.Raycast(
+                new Ray(from, direction),
+                out RaycastHit raycastHit,
+                direction.magnitude,
+                LayerMaskClass.HighPolyWithTerrainMask
+            )
+        )
         {
             hitPos = raycastHit.point;
             return false;
         }
 
         Vector3 direction2 = midPoint - target;
-        if (Physics.Raycast(new Ray(midPoint, direction2), out raycastHit, direction2.magnitude, LayerMaskClass.HighPolyWithTerrainMask))
+        if (
+            Physics.Raycast(
+                new Ray(midPoint, direction2),
+                out raycastHit,
+                direction2.magnitude,
+                LayerMaskClass.HighPolyWithTerrainMask
+            )
+        )
         {
             hitPos = raycastHit.point;
             return false;
@@ -85,7 +106,12 @@ public static class Vector
         return NormalizeFastSelf(v) * num + from;
     }
 
-    public static bool CanShootToTarget(ShootPointClass shootToPoint, Vector3 firePos, LayerMask mask, bool doubleSide = false)
+    public static bool CanShootToTarget(
+        ShootPointClass shootToPoint,
+        Vector3 firePos,
+        LayerMask mask,
+        bool doubleSide = false
+    )
     {
         if (shootToPoint == null)
         {
@@ -95,11 +121,25 @@ public static class Vector
         Vector3 vector = shootToPoint.Point - firePos;
         Ray ray = new(firePos, vector);
         float magnitude = vector.magnitude;
-        if (!Physics.Raycast(ray, out RaycastHit raycastHit, magnitude * shootToPoint.DistCoef, mask))
+        if (
+            !Physics.Raycast(
+                ray,
+                out RaycastHit raycastHit,
+                magnitude * shootToPoint.DistCoef,
+                mask
+            )
+        )
         {
             if (doubleSide)
             {
-                if (!Physics.Raycast(new Ray(shootToPoint.Point, -vector), out raycastHit, magnitude, mask))
+                if (
+                    !Physics.Raycast(
+                        new Ray(shootToPoint.Point, -vector),
+                        out raycastHit,
+                        magnitude,
+                        mask
+                    )
+                )
                 {
                     flag = true;
                 }
@@ -133,7 +173,15 @@ public static class Vector
         return result.Round10();
     }
 
-    public static List<Vector3> NavMeshPointsFromSampledPoint(Vector3 point, Vector3 start, List<Vector3> list, int count = 5, float magnitude = 4f, float sampleDistance = 0.25f, int maxIterations = 15)
+    public static List<Vector3> NavMeshPointsFromSampledPoint(
+        Vector3 point,
+        Vector3 start,
+        List<Vector3> list,
+        int count = 5,
+        float magnitude = 4f,
+        float sampleDistance = 0.25f,
+        int maxIterations = 15
+    )
     {
         if (list == null)
         {
@@ -186,7 +234,6 @@ public static class Vector
         return a.x * b.x + a.y * b.y + a.z * b.z > cos;
     }
 
-
     public static Vector3 NormalizeFastSelf(Vector3 v)
     {
         float num = (float)System.Math.Sqrt((double)(v.x * v.x + v.y * v.y + v.z * v.z));
@@ -214,8 +261,6 @@ public static class Vector
         float z = b.z * num2 + b.x * num;
         return new Vector3(x, 0f, z);
     }
-
-
 
     private static void CreateVectorArray8Dir(Vector3 startDir, int[] indexOfDirs)
     {
@@ -295,5 +340,5 @@ public static class Vector
 public enum SideTurn
 {
     left,
-    right
+    right,
 }

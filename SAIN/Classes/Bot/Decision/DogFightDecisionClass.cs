@@ -1,6 +1,5 @@
 ﻿using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision;
@@ -9,7 +8,8 @@ public class DogFightDecisionClass : BotBase
 {
     public bool DogFightActive => _lastDogFightTarget != null;
 
-    public DogFightDecisionClass(BotComponent bot) : base(bot)
+    public DogFightDecisionClass(BotComponent bot)
+        : base(bot)
     {
         CanEverTick = false;
     }
@@ -59,7 +59,8 @@ public class DogFightDecisionClass : BotBase
                 break;
         }
 
-        if (!KnownEnemies.Contains(_lastDogFightTarget)) _lastDogFightTarget = null;
+        if (!KnownEnemies.Contains(_lastDogFightTarget))
+            _lastDogFightTarget = null;
         if (_lastDogFightTarget != null)
         {
             if (ShallDogfightEnemy(_lastDogFightTarget))
@@ -94,9 +95,17 @@ public class DogFightDecisionClass : BotBase
 
     private bool ShallDogfightEnemy(Enemy enemy)
     {
-        return enemy.EnemyKnown && enemy.LastKnownPosition != null && enemy.Path.PathLength <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START && 
-            ((enemy.Seen && enemy.TimeSinceSeen < Bot.Info.PersonalitySettings.General.DOGFIGHT_TIMESINCESEEN_START) 
-            ||  enemy.Status.ShotMeRecently);
+        return enemy.EnemyKnown
+            && enemy.LastKnownPosition != null
+            && enemy.Path.PathLength
+                <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START
+            && (
+                (
+                    enemy.Seen
+                    && enemy.TimeSinceSeen
+                        < Bot.Info.PersonalitySettings.General.DOGFIGHT_TIMESINCESEEN_START
+                ) || enemy.Status.ShotMeRecently
+            );
     }
 
     private bool shallClearDogfightTarget(Enemy enemy)
@@ -120,8 +129,7 @@ public class DogFightDecisionClass : BotBase
 
     private void checkClear(string profileID, Enemy enemy)
     {
-        if (_lastDogFightTarget != null &&
-            _lastDogFightTarget.EnemyProfileId == profileID)
+        if (_lastDogFightTarget != null && _lastDogFightTarget.EnemyProfileId == profileID)
         {
             _lastDogFightTarget = null;
         }

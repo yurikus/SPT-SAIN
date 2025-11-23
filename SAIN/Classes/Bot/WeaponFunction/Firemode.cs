@@ -18,17 +18,25 @@ public class Firemode
         {
             _nextSwapTime = Time.time + _swapFreq;
             Player player = bot.Player;
-            if (player.HandsController is Player.FirearmController firearmController && (firearmController.IsInReloadOperation() || firearmController.IsInInteraction()))
+            if (
+                player.HandsController is Player.FirearmController firearmController
+                && (firearmController.IsInReloadOperation() || firearmController.IsInInteraction())
+            )
             {
                 return;
             }
             var manager = bot.BotOwner.WeaponManager;
-            if (manager.Selector?.IsWeaponReady == true &&
-                manager.Reload?.Reloading == false &&
-                !bot.BotOwner.ShootData.Shooting && 
-                manager.Stationary?.Taken == false)
+            if (
+                manager.Selector?.IsWeaponReady == true
+                && manager.Reload?.Reloading == false
+                && !bot.BotOwner.ShootData.Shooting
+                && manager.Stationary?.Taken == false
+            )
             {
-                if (GetModeToSwap(bot.IsCheater, weaponInfo, out EFireMode mode) && CanSetMode(mode, weaponInfo))
+                if (
+                    GetModeToSwap(bot.IsCheater, weaponInfo, out EFireMode mode)
+                    && CanSetMode(mode, weaponInfo)
+                )
                 {
                     SetFireMode(mode, weaponInfo.CurrentWeapon, player);
                     return;
@@ -39,10 +47,16 @@ public class Firemode
         }
     }
 
-    private static bool GetModeToSwap(bool isCheater, BotWeaponInfoClass weaponInfo, out EFireMode mode)
+    private static bool GetModeToSwap(
+        bool isCheater,
+        BotWeaponInfoClass weaponInfo,
+        out EFireMode mode
+    )
     {
-        if (weaponInfo.EWeaponClass == EWeaponClass.machinegun &&
-            weaponInfo.HasFireMode(EFireMode.fullauto))
+        if (
+            weaponInfo.EWeaponClass == EWeaponClass.machinegun
+            && weaponInfo.HasFireMode(EFireMode.fullauto)
+        )
         {
             mode = EFireMode.fullauto;
             return true;
@@ -64,10 +78,12 @@ public class Firemode
             return false;
         }
 
-
         float distanceToTarget = weaponInfo.Bot.DistanceToAimTarget;
         mode = EFireMode.doublet;
-        if (distanceToTarget > weaponInfo.SwapToSemiDist || GlobalSettingsClass.Instance.Shoot.ONLY_SEMIAUTO_TOGGLE)
+        if (
+            distanceToTarget > weaponInfo.SwapToSemiDist
+            || GlobalSettingsClass.Instance.Shoot.ONLY_SEMIAUTO_TOGGLE
+        )
         {
             if (weaponInfo.HasFireMode(EFireMode.single))
             {
@@ -104,7 +120,9 @@ public class Firemode
 
     public static bool CanSetMode(EFireMode fireMode, BotWeaponInfoClass weaponInfo)
     {
-        return weaponInfo?.CurrentWeapon != null && weaponInfo.HasFireMode(fireMode) && !weaponInfo.IsFireModeSet(fireMode);
+        return weaponInfo?.CurrentWeapon != null
+            && weaponInfo.HasFireMode(fireMode)
+            && !weaponInfo.IsFireModeSet(fireMode);
     }
 
     private void TryCheckWeapon(Player player, Enemy currentEnemy)

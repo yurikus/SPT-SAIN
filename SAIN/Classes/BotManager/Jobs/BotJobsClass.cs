@@ -1,8 +1,4 @@
 using SAIN.Components.BotControllerSpace.Classes.Raycasts;
-using SAIN.Plugin;
-using SAIN.Preset;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace SAIN.Components;
 
@@ -18,5 +14,4 @@ public class BotJobsClass(BotManagerComponent botController) : BotManagerBase(bo
         EnemyPlaceJob.Dispose();
         PlayerDistancesJob.Dispose();
     }
-
 }

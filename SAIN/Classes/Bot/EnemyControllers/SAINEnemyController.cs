@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
-using System.Collections.Generic;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
 
@@ -28,7 +28,8 @@ public class SAINEnemyController : BotComponentClassBase
     public bool ActiveHumanEnemy => Events.ActiveHumanEnemyEvent.Value;
     public bool HumanEnemyInLineofSight => Events.HumanInLineOfSightEvent.Value;
 
-    public SAINEnemyController(BotComponent sain) : base(sain)
+    public SAINEnemyController(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyBotActive;
         _listController = new EnemyListController(this);
@@ -81,7 +82,8 @@ public class SAINEnemyController : BotComponentClassBase
         base.Dispose();
     }
 
-    public Enemy GetEnemy(string profileID, bool mustBeActive) => _listController.GetEnemy(profileID, mustBeActive);
+    public Enemy GetEnemy(string profileID, bool mustBeActive) =>
+        _listController.GetEnemy(profileID, mustBeActive);
 
     public Enemy CheckAddEnemy(IPlayer IPlayer) => _listController.CheckAddEnemy(IPlayer);
 
@@ -143,7 +145,9 @@ public class SAINEnemyController : BotComponentClassBase
             {
 #if DEBUG
                 if (SAINPlugin.DebugMode)
-                    Logger.LogWarning($"{Enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection");
+                    Logger.LogWarning(
+                        $"{Enemy.EnemyPlayer.name} is an ally of {Bot.Player.name} and will be removed from its enemies collection"
+                    );
 #endif
 
                 _allyIdsToRemove.Add(Enemy.EnemyProfileId);
@@ -174,11 +178,9 @@ public class SAINEnemyController : BotComponentClassBase
         }
     }
 
-    public Enemy GoalEnemy {
-        get
-        {
-            return _goalEnemy;
-        }
+    public Enemy GoalEnemy
+    {
+        get { return _goalEnemy; }
         private set
         {
             if (value == _goalEnemy)
@@ -236,7 +238,15 @@ public class SAINEnemyController : BotComponentClassBase
         const float CHANGE_ENEMY_KNOWN_SHOT_AT_ME_DIST_RATIO = 0.5f;
         const float MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST = 50f;
 
-        if (_goalEnemy != null && (!_goalEnemy.CheckValid() || !Enemy.IsEnemyActive(_goalEnemy) || !_goalEnemy.EnemyKnown || _goalEnemy.LastKnownPosition == null))
+        if (
+            _goalEnemy != null
+            && (
+                !_goalEnemy.CheckValid()
+                || !Enemy.IsEnemyActive(_goalEnemy)
+                || !_goalEnemy.EnemyKnown
+                || _goalEnemy.LastKnownPosition == null
+            )
+        )
         {
             LastGoalEnemy = _goalEnemy;
             _goalEnemy = null;
@@ -244,7 +254,10 @@ public class SAINEnemyController : BotComponentClassBase
 
         if (VisibleEnemies.Count > 0)
         {
-            return SelectVisibleEnemy(CHANGE_ENEMY_DIST_RATIO_SHOOTER, CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER);
+            return SelectVisibleEnemy(
+                CHANGE_ENEMY_DIST_RATIO_SHOOTER,
+                CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER
+            );
         }
 
         if (Bot.Medical.TimeSinceShot < 2f)
@@ -304,51 +317,82 @@ public class SAINEnemyController : BotComponentClassBase
 
         KnownEnemies.SortBy(EnemyList.EBotListSortType.ByLastKnownDistance);
         Enemy closestKnownEnemy = KnownEnemies[0];
-        if (_goalEnemy == null) return closestKnownEnemy;
-        if (_goalEnemy == closestKnownEnemy) return closestKnownEnemy;
+        if (_goalEnemy == null)
+            return closestKnownEnemy;
+        if (_goalEnemy == closestKnownEnemy)
+            return closestKnownEnemy;
         for (int i = 0; i < KnownEnemies.Count; i++)
         {
             Enemy knownEnemy = KnownEnemies[i];
-            if (knownEnemy.KnownPlaces.BotDistanceFromLastKnown <= MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST) return knownEnemy;
-            if (knownEnemy.KnownPlaces.EnemyDistanceFromLastKnown < CHANGE_ENEMY_KNOWN_KNOWN_DIST_RATIO * _goalEnemy.RealDistance) return closestKnownEnemy;
+            if (
+                knownEnemy.KnownPlaces.BotDistanceFromLastKnown
+                <= MAX_DISTANCE_NON_ENGAGED_PRIORITIZE_DIST
+            )
+                return knownEnemy;
+            if (
+                knownEnemy.KnownPlaces.EnemyDistanceFromLastKnown
+                < CHANGE_ENEMY_KNOWN_KNOWN_DIST_RATIO * _goalEnemy.RealDistance
+            )
+                return closestKnownEnemy;
         }
 
         List<Enemy> enemiesWhoEngagedMe = _preAllocList;
-        KnownEnemies.FilterByPredicateNonAlloc(enemiesWhoEngagedMe, x => x.Status.ShotAtMe || x.Status.ShotMe);
+        KnownEnemies.FilterByPredicateNonAlloc(
+            enemiesWhoEngagedMe,
+            x => x.Status.ShotAtMe || x.Status.ShotMe
+        );
         if (enemiesWhoEngagedMe.Count > 0)
         {
             Enemy lastEngagedEnemy = enemiesWhoEngagedMe[0];
-            if (_goalEnemy == null) return lastEngagedEnemy;
-            if (_goalEnemy == lastEngagedEnemy) return lastEngagedEnemy;
+            if (_goalEnemy == null)
+                return lastEngagedEnemy;
+            if (_goalEnemy == lastEngagedEnemy)
+                return lastEngagedEnemy;
             for (int i = 0; i < KnownEnemies.Count; i++)
             {
                 Enemy engagedEnemy = enemiesWhoEngagedMe[i];
-                if (engagedEnemy.KnownPlaces.EnemyDistanceFromLastKnown < CHANGE_ENEMY_KNOWN_SHOT_AT_ME_DIST_RATIO * _goalEnemy.RealDistance) return engagedEnemy;
+                if (
+                    engagedEnemy.KnownPlaces.EnemyDistanceFromLastKnown
+                    < CHANGE_ENEMY_KNOWN_SHOT_AT_ME_DIST_RATIO * _goalEnemy.RealDistance
+                )
+                    return engagedEnemy;
             }
         }
         return closestKnownEnemy;
     }
 
-    private Enemy SelectVisibleEnemy(float CHANGE_ENEMY_DIST_RATIO_SHOOTER, float CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER)
+    private Enemy SelectVisibleEnemy(
+        float CHANGE_ENEMY_DIST_RATIO_SHOOTER,
+        float CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER
+    )
     {
-        if (VisibleEnemies.Count > 1) VisibleEnemies.SortBy(EnemyList.EBotListSortType.ByRealDistance);
+        if (VisibleEnemies.Count > 1)
+            VisibleEnemies.SortBy(EnemyList.EBotListSortType.ByRealDistance);
         Enemy closestVisibleEnemy = VisibleEnemies[0];
 
-        if (_goalEnemy == null) return closestVisibleEnemy;
+        if (_goalEnemy == null)
+            return closestVisibleEnemy;
 
         List<Enemy> visibleShooters = _preAllocList;
         VisibleEnemies.FilterByPredicateNonAlloc(visibleShooters, x => x.IsShooter());
         if (visibleShooters.Count > 0)
         {
             Enemy visibleShooter = visibleShooters[0];
-            if (closestVisibleEnemy != visibleShooter &&
-                closestVisibleEnemy.RealDistance < CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER * visibleShooter.RealDistance)
+            if (
+                closestVisibleEnemy != visibleShooter
+                && closestVisibleEnemy.RealDistance
+                    < CHANGE_ENEMY_DIST_RATIO_NON_SHOOTER * visibleShooter.RealDistance
+            )
             {
                 return closestVisibleEnemy;
             }
 
-            if (visibleShooter == _goalEnemy) return _goalEnemy;
-            else if (visibleShooter.RealDistance < CHANGE_ENEMY_DIST_RATIO_SHOOTER * _goalEnemy.RealDistance)
+            if (visibleShooter == _goalEnemy)
+                return _goalEnemy;
+            else if (
+                visibleShooter.RealDistance
+                < CHANGE_ENEMY_DIST_RATIO_SHOOTER * _goalEnemy.RealDistance
+            )
                 return visibleShooter;
         }
 
@@ -359,12 +403,19 @@ public class SAINEnemyController : BotComponentClassBase
             {
                 return _goalEnemy;
             }
-            else if (visibleEnemy.RealDistance < CHANGE_ENEMY_DIST_RATIO_SHOOTER * _goalEnemy.RealDistance)
+            else if (
+                visibleEnemy.RealDistance
+                < CHANGE_ENEMY_DIST_RATIO_SHOOTER * _goalEnemy.RealDistance
+            )
             {
                 return visibleEnemy;
             }
-            if (visibleEnemy == _goalEnemy) return _goalEnemy;
-            else if (visibleEnemy.RealDistance < CHANGE_ENEMY_DIST_RATIO_SHOOTER * _goalEnemy.RealDistance)
+            if (visibleEnemy == _goalEnemy)
+                return _goalEnemy;
+            else if (
+                visibleEnemy.RealDistance
+                < CHANGE_ENEMY_DIST_RATIO_SHOOTER * _goalEnemy.RealDistance
+            )
                 return visibleEnemy;
         }
         return closestVisibleEnemy;

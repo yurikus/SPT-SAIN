@@ -1,9 +1,9 @@
+using System;
+using System.Linq;
 using EFT;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
-using System.Linq;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover;
@@ -16,7 +16,8 @@ public class LeanClass : BotBase
     private const float LEAN_MAX_RAYCAST_DIST = 16f;
     private const float RESET_LEAN_AFTER_TIME = 0.66f;
     private const float MAX_CORNER_DISTANCE_LEAN = 12f;
-    private const float MAX_CORNER_DISTANCE_LEAN_SQR = MAX_CORNER_DISTANCE_LEAN * MAX_CORNER_DISTANCE_LEAN;
+    private const float MAX_CORNER_DISTANCE_LEAN_SQR =
+        MAX_CORNER_DISTANCE_LEAN * MAX_CORNER_DISTANCE_LEAN;
 
     public LeanSetting LeanDirection { get; private set; }
     public LeanSetting LastLeanDirection { get; private set; }
@@ -24,7 +25,8 @@ public class LeanClass : BotBase
     public bool IsRaycastLeaning { get; private set; }
     public SmoothDampenedFloat LeanAngleValue { get; } = new(0.2f);
 
-    public LeanClass(BotComponent sain) : base(sain)
+    public LeanClass(BotComponent sain)
+        : base(sain)
     {
         TickInterval = 1f / 20f;
     }
@@ -53,7 +55,8 @@ public class LeanClass : BotBase
         }
         else
         {
-            var num = LeanDirection switch {
+            var num = LeanDirection switch
+            {
                 LeanSetting.Left => -5f,
                 LeanSetting.Right => 5f,
                 _ => 0f,
@@ -87,7 +90,10 @@ public class LeanClass : BotBase
                 {
                     var enemy = Bot.GoalEnemy;
                     FindLean(enemy);
-                    float timeAdd = LeanDirection == LeanSetting.None ? LEAN_UPDATE_NOT_FOUND_FREQ : LEAN_UPDATE_FOUND_FREQ;
+                    float timeAdd =
+                        LeanDirection == LeanSetting.None
+                            ? LEAN_UPDATE_NOT_FOUND_FREQ
+                            : LEAN_UPDATE_FOUND_FREQ;
                     _leanTimer = Time.time + timeAdd;
                 }
                 return;
@@ -102,7 +108,10 @@ public class LeanClass : BotBase
     private bool CheckCanLeanByState(out bool resetLean)
     {
         resetLean = true;
-        if (!Bot.Info.FileSettings.Move.LEAN_TOGGLE || !GlobalSettingsClass.Instance.Move.LEAN_TOGGLE)
+        if (
+            !Bot.Info.FileSettings.Move.LEAN_TOGGLE
+            || !GlobalSettingsClass.Instance.Move.LEAN_TOGGLE
+        )
         {
             return false;
         }
@@ -116,7 +125,11 @@ public class LeanClass : BotBase
         }
         var CurrentDecision = Bot.Decision.CurrentCombatDecision;
         var enemy = Bot.GoalEnemy;
-        if (enemy == null || DontLean.Contains(CurrentDecision) || Bot.Suppression.IsHeavySuppressed)
+        if (
+            enemy == null
+            || DontLean.Contains(CurrentDecision)
+            || Bot.Suppression.IsHeavySuppressed
+        )
         {
             return false;
         }
@@ -129,9 +142,11 @@ public class LeanClass : BotBase
         {
             return false;
         }
-        if (GlobalSettingsClass.Instance.General.AILimit.LimitAIvsAIGlobal
+        if (
+            GlobalSettingsClass.Instance.General.AILimit.LimitAIvsAIGlobal
             && enemy.IsAI
-            && Bot.CurrentAILimit != AILimitSetting.None)
+            && Bot.CurrentAILimit != AILimitSetting.None
+        )
         {
             return false;
         }
@@ -156,7 +171,7 @@ public class LeanClass : BotBase
         }
 
         var blindCornerLean = FindLeanFromBlindCornerAngle(enemy, 1);
-            FastLean(blindCornerLean);
+        FastLean(blindCornerLean);
         //DirectLineOfSight = CheckOffSetRay(lastKnownPlace.Position, 0f, 0f, out var direct);
         //if (DirectLineOfSight)
         //{
@@ -330,13 +345,26 @@ public class LeanClass : BotBase
     {
         var direction = target - start;
         float distance = Mathf.Clamp(direction.magnitude, 0f, LEAN_MAX_RAYCAST_DIST);
-        return !Physics.Raycast(start, direction.normalized, distance, LayerMaskClass.HighPolyWithTerrainMask);
+        return !Physics.Raycast(
+            start,
+            direction.normalized,
+            distance,
+            LayerMaskClass.HighPolyWithTerrainMask
+        );
     }
 
     private Vector3 FindOffset(Vector3 start, Vector3 direction, float distance)
     {
         Vector3 normal = direction.normalized;
-        if (Physics.Raycast(start, normal, out var hit, distance, LayerMaskClass.HighPolyWithTerrainMask))
+        if (
+            Physics.Raycast(
+                start,
+                normal,
+                out var hit,
+                distance,
+                LayerMaskClass.HighPolyWithTerrainMask
+            )
+        )
         {
             return hit.point;
         }

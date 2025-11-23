@@ -1,13 +1,8 @@
-﻿using Comfort.Common;
+﻿using System.Reflection;
+using Comfort.Common;
 using EFT;
-using EFT.Interactive;
 using HarmonyLib;
-using SAIN.Components;
-using SAIN.Components.PlayerComponentSpace;
-using SAIN.Preset.GlobalSettings;
 using SPT.Reflection.Patching;
-using System.Collections;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.Patches.Movement;
@@ -30,7 +25,8 @@ public class SprintLookDirPatch : ModulePatch
             return false;
         }
         BotOwner botOwner = __instance.BotOwner_0;
-        if (SAINEnableClass.IsBotInCombat(botOwner)) return false;
+        if (SAINEnableClass.IsBotInCombat(botOwner))
+            return false;
         if (__instance.NoSprint)
         {
             __instance.Player.EnableSprint(false);
@@ -64,7 +60,10 @@ public class SprintLookDirPatch : ModulePatch
 /// </summary>
 public class PlayerSetPosePatch : ModulePatch
 {
-    private static readonly FieldInfo playerField = AccessTools.Field(typeof(MovementContext), "_player");
+    private static readonly FieldInfo playerField = AccessTools.Field(
+        typeof(MovementContext),
+        "_player"
+    );
 
     protected override MethodBase GetTargetMethod()
     {
@@ -163,7 +162,10 @@ public class PoseStaminaPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(PlayerPhysicalClass), nameof(PlayerPhysicalClass.ConsumePoseLevelChange));
+        return AccessTools.Method(
+            typeof(PlayerPhysicalClass),
+            nameof(PlayerPhysicalClass.ConsumePoseLevelChange)
+        );
     }
 
     [PatchPrefix]
@@ -267,7 +269,10 @@ public class EncumberedPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(BasePhysicalClass), nameof(BasePhysicalClass.UpdateWeightLimits));
+        return AccessTools.Method(
+            typeof(BasePhysicalClass),
+            nameof(BasePhysicalClass.UpdateWeightLimits)
+        );
     }
 
     [PatchPrefix]
@@ -295,8 +300,16 @@ public class EncumberedPatch : ModulePatch
         }
 
         // Copy Pasted from original EFT code, there is a check to not enable weight limits for AI
-        BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>.Instance.Inertia;
-        Vector3 b2 = new(inertia.InertiaLimitsStep * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, inertia.InertiaLimitsStep * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel, 0f);
+        BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>
+            .Instance
+            .Inertia;
+        Vector3 b2 = new(
+            inertia.InertiaLimitsStep
+                * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel,
+            inertia.InertiaLimitsStep
+                * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel,
+            0f
+        );
         __instance.BaseInertiaLimits = inertia.InertiaLimits + b2;
         //__instance.WalkOverweightLimits = stamina.WalkOverweightLimits * d + b;
         //__instance.BaseOverweightLimits = stamina.BaseOverweightLimits * d + b;

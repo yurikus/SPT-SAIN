@@ -4,17 +4,15 @@ using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Plugin;
 using SAIN.Preset;
-using SAIN.Preset.GlobalSettings;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
 
 public readonly struct EnemyData(Enemy enemy)
 {
     public readonly Enemy Enemy = enemy;
-    public readonly EnemyInfo EnemyInfo  = enemy.EnemyInfo;
-    public readonly PlayerTransformClass EnemyTransform  = enemy.EnemyTransform;
+    public readonly EnemyInfo EnemyInfo = enemy.EnemyInfo;
+    public readonly PlayerTransformClass EnemyTransform = enemy.EnemyTransform;
     public readonly PlayerComponent EnemyPlayerComponent = enemy.EnemyPlayerComponent;
     public readonly Player EnemyPlayer = enemy.EnemyPlayer;
 }
@@ -42,8 +40,8 @@ public abstract class EnemyBase
     protected Player EnemyPlayer { get; }
 
     public BotComponent Bot { get; }
-    public PlayerComponent PlayerComponent  { get; }
-    public BotOwner BotOwner  { get; }
+    public PlayerComponent PlayerComponent { get; }
+    public BotOwner BotOwner { get; }
     public Player Player { get; }
 
     public virtual void Init()
@@ -53,13 +51,9 @@ public abstract class EnemyBase
         Enemy.Events.OnEnemyKnownChanged.OnToggle += OnEnemyKnownChanged;
     }
 
-    protected virtual void OnEnemyKnownChanged(bool known, Enemy enemy)
-    {
-    }
+    protected virtual void OnEnemyKnownChanged(bool known, Enemy enemy) { }
 
-    protected virtual void UpdatePresetSettings(SAINPresetClass preset)
-    {
-    }
+    protected virtual void UpdatePresetSettings(SAINPresetClass preset) { }
 
     public virtual void Dispose()
     {

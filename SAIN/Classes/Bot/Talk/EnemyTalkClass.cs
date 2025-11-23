@@ -1,21 +1,21 @@
+using System.Collections;
 using Comfort.Common;
 using EFT;
 using SAIN.Components;
-using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Models.Structs;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;
 using SAIN.Preset.Personalities;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Talk;
 
 public class EnemyTalk : BotBase
 {
-    public EnemyTalk(BotComponent bot) : base(bot)
+    public EnemyTalk(BotComponent bot)
+        : base(bot)
     {
         _randomizationFactor = Random.Range(0.75f, 1.25f);
     }
@@ -33,13 +33,13 @@ public class EnemyTalk : BotBase
 
     private void enemyKilled(Player player)
     {
-        if (Bot.Talk.CanTalk &&
-            CanTaunt &&
-            EFTMath.RandomBool(70))
+        if (Bot.Talk.CanTalk && CanTaunt && EFTMath.RandomBool(70))
         {
             EPhraseTrigger trigger;
-            if (EFTMath.RandomBool(15) ||
-                (Bot.Memory.Health.HealthStatus == ETagStatus.Healthy && EFTMath.RandomBool(50)))
+            if (
+                EFTMath.RandomBool(15)
+                || (Bot.Memory.Health.HealthStatus == ETagStatus.Healthy && EFTMath.RandomBool(50))
+            )
             {
                 trigger = EPhraseTrigger.GoodWork;
             }
@@ -73,13 +73,11 @@ public class EnemyTalk : BotBase
                     _nextCheckTime = time + 15f;
                     return;
                 }
-                if (CanTaunt &&
-                    _tauntTimer < time)
+                if (CanTaunt && _tauntTimer < time)
                 {
                     float freq = TauntFreq * Random.Range(0.5f, 1.5f);
                     _tauntTimer = time;
-                    if (EFTMath.RandomBool(PersonalitySettings.TauntChance) &&
-                        TauntEnemy())
+                    if (EFTMath.RandomBool(PersonalitySettings.TauntChance) && TauntEnemy())
                     {
                         _nextCheckTime = time + 1f;
                         _tauntTimer += freq;
@@ -129,7 +127,9 @@ public class EnemyTalk : BotBase
         }
         else
         {
-            Logger.LogAndNotifyError("Personality settings or filesettings are null! Cannot Apply Settings!");
+            Logger.LogAndNotifyError(
+                "Personality settings or filesettings are null! Cannot Apply Settings!"
+            );
         }
 
         var talkSettings = preset.GlobalSettings.Talk;
@@ -151,13 +151,18 @@ public class EnemyTalk : BotBase
 
     private bool ShallFakeDeath()
     {
-        if (CanFakeDeath
+        if (
+            CanFakeDeath
             && EFTMath.RandomBool(FakeDeathChance)
             && Bot.GoalEnemy != null
             && !Bot.Squad.BotInGroup
             && _fakeDeathTimer < Time.time
-            && (Bot.Memory.Health.HealthStatus == ETagStatus.Dying || Bot.Memory.Health.HealthStatus == ETagStatus.BadlyInjured)
-            && (Bot.GoalEnemy.EnemyPosition - BotOwner.Position).sqrMagnitude < 70f * 70f)
+            && (
+                Bot.Memory.Health.HealthStatus == ETagStatus.Dying
+                || Bot.Memory.Health.HealthStatus == ETagStatus.BadlyInjured
+            )
+            && (Bot.GoalEnemy.EnemyPosition - BotOwner.Position).sqrMagnitude < 70f * 70f
+        )
         {
             _fakeDeathTimer = Time.time + 30f;
             Bot.Talk.Say(EPhraseTrigger.OnDeath);
@@ -166,15 +171,24 @@ public class EnemyTalk : BotBase
         return false;
     }
 
-    private void tryFakeDeathGrenade(Vector3 grenadeExplosionPosition, string playerProfileID, bool isSmoke, float smokeRadius, float smokeLifeTime, int throwableId)
+    private void tryFakeDeathGrenade(
+        Vector3 grenadeExplosionPosition,
+        string playerProfileID,
+        bool isSmoke,
+        float smokeRadius,
+        float smokeLifeTime,
+        int throwableId
+    )
     {
-        if (CanFakeDeath
+        if (
+            CanFakeDeath
             && EFTMath.RandomBool(FakeDeathChance)
             && !isSmoke
             && Bot.GoalEnemy != null
             && _fakeDeathTimer < Time.time
             && playerProfileID != Bot.ProfileId
-            && (grenadeExplosionPosition - Bot.Position).sqrMagnitude < 25f * 25f)
+            && (grenadeExplosionPosition - Bot.Position).sqrMagnitude < 25f * 25f
+        )
         {
             _fakeDeathTimer = Time.time + 30f;
             Bot.Talk.Say(EPhraseTrigger.OnDeath);
@@ -202,10 +216,12 @@ public class EnemyTalk : BotBase
         _begTimer = Time.time + 3f;
 
         bool shallBeg = Bot.Info.Profile.IsPMC ? !Bot.Squad.BotInGroup : Bot.Info.Profile.IsScav;
-        if (shallBeg
+        if (
+            shallBeg
             && CanBegForLife
             && Bot.Memory.Health.HealthStatus != ETagStatus.Healthy
-            && (currentTarget.Value - Bot.Position).sqrMagnitude < 50f * 50f)
+            && (currentTarget.Value - Bot.Position).sqrMagnitude < 50f * 50f
+        )
         {
             IsBeggingForLife = true;
             Bot.Talk.Say(BegPhrases.PickRandom());
@@ -248,33 +264,33 @@ public class EnemyTalk : BotBase
         {
             tauntEnemy = EFTMath.RandomBool(50);
         }
-        if (!tauntEnemy &&
-            (enemy.IsVisible || enemy.TimeSinceSeen < 15f))
+        if (!tauntEnemy && (enemy.IsVisible || enemy.TimeSinceSeen < 15f))
         {
             tauntEnemy = enemy.EnemyLookingAtMe || Bot.Info.PersonalitySettings.Talk.FrequentTaunt;
         }
 
-        if (!tauntEnemy &&
-            enemy.TimeSinceLastKnownUpdated < 5f &&
-            EFTMath.RandomBool(5))
+        if (!tauntEnemy && enemy.TimeSinceLastKnownUpdated < 5f && EFTMath.RandomBool(5))
         {
             tauntEnemy = true;
         }
 
         if (tauntEnemy)
         {
-            if (!enemy.IsVisible
-                && enemy.Seen)
+            if (!enemy.IsVisible && enemy.Seen)
             {
-                if (enemy.TimeSinceSeen > 60f
-                    && EFTMath.RandomBool(10) &&
-                    Bot.Talk.Say(EPhraseTrigger.Rat, ETagStatus.Combat, true))
+                if (
+                    enemy.TimeSinceSeen > 60f
+                    && EFTMath.RandomBool(10)
+                    && Bot.Talk.Say(EPhraseTrigger.Rat, ETagStatus.Combat, true)
+                )
                 {
                     return true;
                 }
-                if (enemy.TimeSinceSeen > 30f
-                    && EFTMath.RandomBool(20) &&
-                    Bot.Talk.Say(EPhraseTrigger.OnLostVisual, ETagStatus.Combat, true))
+                if (
+                    enemy.TimeSinceSeen > 30f
+                    && EFTMath.RandomBool(20)
+                    && Bot.Talk.Say(EPhraseTrigger.OnLostVisual, ETagStatus.Combat, true)
+                )
                 {
                     return true;
                 }
@@ -328,7 +344,13 @@ public class EnemyTalk : BotBase
         return true;
     }
 
-    private IEnumerator RespondToFriendly(EPhraseTrigger trigger, ETagStatus mask, float delay, Player sourcePlayer, float chance = 100f)
+    private IEnumerator RespondToFriendly(
+        EPhraseTrigger trigger,
+        ETagStatus mask,
+        float delay,
+        Player sourcePlayer,
+        float chance = 100f
+    )
     {
         if (!EFTMath.RandomBool(chance))
         {
@@ -337,15 +359,11 @@ public class EnemyTalk : BotBase
 
         yield return new WaitForSeconds(delay);
 
-        if (sourcePlayer == null ||
-            BotOwner == null ||
-            Player == null ||
-            Bot == null)
+        if (sourcePlayer == null || BotOwner == null || Player == null || Bot == null)
         {
             yield break;
         }
-        if (!sourcePlayer.HealthController.IsAlive
-            || !Player.HealthController.IsAlive)
+        if (!sourcePlayer.HealthController.IsAlive || !Player.HealthController.IsAlive)
         {
             yield break;
         }
@@ -369,7 +387,12 @@ public class EnemyTalk : BotBase
         Bot.Talk.Say(trigger, mask, false);
     }
 
-    private IEnumerator RespondToEnemy(EPhraseTrigger trigger, ETagStatus mask, float delay, Enemy enemy)
+    private IEnumerator RespondToEnemy(
+        EPhraseTrigger trigger,
+        ETagStatus mask,
+        float delay,
+        Enemy enemy
+    )
     {
         yield return new WaitForSeconds(delay);
 
@@ -377,9 +400,7 @@ public class EnemyTalk : BotBase
         {
             yield break;
         }
-        if (BotOwner == null ||
-            Player == null ||
-            Bot == null)
+        if (BotOwner == null || Player == null || Bot == null)
         {
             yield break;
         }
@@ -398,13 +419,11 @@ public class EnemyTalk : BotBase
     {
         if (EFTMath.RandomBool(10))
         {
-            if (EFTMath.RandomBool(80f) &&
-                Bot.Talk.CanSay(EPhraseTrigger.BadWork, false, false))
+            if (EFTMath.RandomBool(80f) && Bot.Talk.CanSay(EPhraseTrigger.BadWork, false, false))
             {
                 return EPhraseTrigger.BadWork;
             }
-            if (EFTMath.RandomBool(20) &&
-                Bot.Talk.CanSay(EPhraseTrigger.GoodWork, false, false))
+            if (EFTMath.RandomBool(20) && Bot.Talk.CanSay(EPhraseTrigger.GoodWork, false, false))
             {
                 return EPhraseTrigger.GoodWork;
             }
@@ -418,8 +437,7 @@ public class EnemyTalk : BotBase
 
     public void SetEnemyTalk(Enemy enemy)
     {
-        if (_canRespondToEnemy &&
-            _nextResponseTime < Time.time)
+        if (_canRespondToEnemy && _nextResponseTime < Time.time)
         {
             if (!EFTMath.RandomBool(60))
             {
@@ -431,7 +449,9 @@ public class EnemyTalk : BotBase
                 return;
             }
             _nextResponseTime = Time.time + 2f;
-            Bot.StartCoroutine(RespondToEnemy(trigger.Value, ETagStatus.Combat, Random.Range(0.4f, 0.75f), enemy));
+            Bot.StartCoroutine(
+                RespondToEnemy(trigger.Value, ETagStatus.Combat, Random.Range(0.4f, 0.75f), enemy)
+            );
         }
     }
 
@@ -453,9 +473,7 @@ public class EnemyTalk : BotBase
         Enemy enemy = Bot.EnemyController.GetEnemy(player.ProfileId, true);
         if (enemy == null)
         {
-            if (!isPain &&
-                phrase != EPhraseTrigger.OnBreath &&
-                phrase != EPhraseTrigger.OnFight)
+            if (!isPain && phrase != EPhraseTrigger.OnBreath && phrase != EPhraseTrigger.OnFight)
             {
                 SetFriendlyTalked(player);
             }
@@ -549,7 +567,13 @@ public class EnemyTalk : BotBase
         var role = Bot.Info.Profile.WildSpawnType;
         if ((Bot.Info.Profile.IsBoss || Bot.Info.Profile.IsFollower))
         {
-            if ((role == WildSpawnType.bossKnight || role == WildSpawnType.followerBirdEye || role == WildSpawnType.followerBigPipe))
+            if (
+                (
+                    role == WildSpawnType.bossKnight
+                    || role == WildSpawnType.followerBirdEye
+                    || role == WildSpawnType.followerBigPipe
+                )
+            )
             {
                 return SAINPlugin.LoadedPreset.GlobalSettings.Talk.TalkativeGoons;
             }
@@ -570,8 +594,10 @@ public class EnemyTalk : BotBase
             return;
         }
 
-        if ((BotOwner.Memory.IsPeace || (Bot.Squad.HumanFriendClose && !player.IsAI))
-            && _nextResponseTime < Time.time)
+        if (
+            (BotOwner.Memory.IsPeace || (Bot.Squad.HumanFriendClose && !player.IsAI))
+            && _nextResponseTime < Time.time
+        )
         {
             _nextResponseTime = Time.time + _friendlyResponseFrequencyLimit;
 
@@ -579,32 +605,42 @@ public class EnemyTalk : BotBase
             {
                 float chance = player.IsAI ? _friendlyResponseChanceAI : _friendlyResponseChance;
 
-                Bot.StartCoroutine(RespondToFriendly(
-                    EPhraseTrigger.MumblePhrase,
-                    Bot.EnemyController.AtPeace ? ETagStatus.Unaware : ETagStatus.Combat,
-                    Random.Range(_friendlyResponseMinRandom, _friendlyResponseMaxRandom),
-                    player,
-                    chance
-                ));
+                Bot.StartCoroutine(
+                    RespondToFriendly(
+                        EPhraseTrigger.MumblePhrase,
+                        Bot.EnemyController.AtPeace ? ETagStatus.Unaware : ETagStatus.Combat,
+                        Random.Range(_friendlyResponseMinRandom, _friendlyResponseMaxRandom),
+                        player,
+                        chance
+                    )
+                );
             }
         }
-        else if (Bot?.Squad.SquadInfo != null
+        else if (
+            Bot?.Squad.SquadInfo != null
             && Bot.Talk.GroupTalk.FriendIsClose
-            && (Bot.Squad.SquadInfo.SquadPersonality != ESquadPersonality.GigaChads
-                || Bot.Squad.SquadInfo.SquadPersonality != ESquadPersonality.Elite)
-            && (Bot.Info.Personality == EPersonality.GigaChad
-                || Bot.Info.Personality == EPersonality.Chad))
+            && (
+                Bot.Squad.SquadInfo.SquadPersonality != ESquadPersonality.GigaChads
+                || Bot.Squad.SquadInfo.SquadPersonality != ESquadPersonality.Elite
+            )
+            && (
+                Bot.Info.Personality == EPersonality.GigaChad
+                || Bot.Info.Personality == EPersonality.Chad
+            )
+        )
         {
             if (_saySilenceTime < Time.time)
             {
                 _saySilenceTime = Time.time + 20f;
-                Bot.StartCoroutine(RespondToFriendly(
-                    EPhraseTrigger.Silence,
-                    Bot.EnemyController.AtPeace ? ETagStatus.Unaware : ETagStatus.Aware,
-                    Random.Range(0.2f, 0.5f),
-                    player,
-                    33f
-                    ));
+                Bot.StartCoroutine(
+                    RespondToFriendly(
+                        EPhraseTrigger.Silence,
+                        Bot.EnemyController.AtPeace ? ETagStatus.Unaware : ETagStatus.Aware,
+                        Random.Range(0.2f, 0.5f),
+                        player,
+                        33f
+                    )
+                );
             }
         }
     }
@@ -622,7 +658,7 @@ public class EnemyTalk : BotBase
     [
         EPhraseTrigger.Stop,
         EPhraseTrigger.HoldFire,
-        EPhraseTrigger.GetBack
+        EPhraseTrigger.GetBack,
     ];
 
     private float _friendlyResponseDistance = 60f;

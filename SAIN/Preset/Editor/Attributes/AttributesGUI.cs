@@ -1,5 +1,8 @@
-﻿using EFT;
-using EFT.InventoryLogic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using EFT;
 using EFT.UI;
 using SAIN.Components.RotationController;
 using SAIN.Editor;
@@ -15,13 +18,7 @@ using SAIN.Preset.GlobalSettings;
 using SAIN.Preset.GlobalSettings.Categories;
 using SAIN.Preset.Personalities;
 using SAIN.SAINComponent.Classes.WeaponFunction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Xml.Linq;
 using UnityEngine;
-using static SAIN.Attributes.AttributesGUI;
 using static SAIN.Editor.SAINLayout;
 
 namespace SAIN.Attributes;
@@ -55,9 +52,25 @@ public class AttributesGUI
         }
     }
 
-    public static object EditValue(ref object value, object settingsObject, ConfigInfoClass attributes, out bool wasEdited, int listDepth, GUIEntryConfig config = null, string search = null)
+    public static object EditValue(
+        ref object value,
+        object settingsObject,
+        ConfigInfoClass attributes,
+        out bool wasEdited,
+        int listDepth,
+        GUIEntryConfig config = null,
+        string search = null
+    )
     {
-        CheckEditValue(ref value, settingsObject, attributes, out wasEdited, listDepth, config, search);
+        CheckEditValue(
+            ref value,
+            settingsObject,
+            attributes,
+            out wasEdited,
+            listDepth,
+            config,
+            search
+        );
         if (wasEdited)
         {
             if (value is ISAINSettings || value is ISettingsGroup)
@@ -72,7 +85,15 @@ public class AttributesGUI
         return value;
     }
 
-    private static object CheckEditValue(ref object value, object settingsObject, ConfigInfoClass info, out bool wasEdited, int listDepth, GUIEntryConfig config = null, string search = null)
+    private static object CheckEditValue(
+        ref object value,
+        object settingsObject,
+        ConfigInfoClass info,
+        out bool wasEdited,
+        int listDepth,
+        GUIEntryConfig config = null,
+        string search = null
+    )
     {
         wasEdited = false;
         if (value != null && info != null && !info.DoNotShowGUI)
@@ -87,7 +108,14 @@ public class AttributesGUI
 
             if (value is float || value is bool || value is int)
             {
-                value = EditFloatBoolInt(ref value, settingsObject, info, config, listDepth, out wasEdited);
+                value = EditFloatBoolInt(
+                    ref value,
+                    settingsObject,
+                    info,
+                    config,
+                    listDepth,
+                    out wasEdited
+                );
                 return value;
             }
 
@@ -116,12 +144,26 @@ public class AttributesGUI
                 EditAllValuesInObj(group, out wasEdited, search, config, listDepth);
                 return value;
             }
-            value = FindListTypeAndEdit(ref value, settingsObject, info, listDepth, out wasEdited, config, search);
+            value = FindListTypeAndEdit(
+                ref value,
+                settingsObject,
+                info,
+                listDepth,
+                out wasEdited,
+                config,
+                search
+            );
         }
         return value;
     }
 
-    private static bool CheckEditDictionary(ref object value, ref bool wasEdited, int listDepth, GUIEntryConfig config, string search)
+    private static bool CheckEditDictionary(
+        ref object value,
+        ref bool wasEdited,
+        int listDepth,
+        GUIEntryConfig config,
+        string search
+    )
     {
         if (value is Dictionary<EBotLookMode, TurnSettings> dictionary)
         {
@@ -132,16 +174,33 @@ public class AttributesGUI
         return false;
     }
 
-    private static void EditGenericStructDictionary<T, K>(Dictionary<T, K> dictionary, out bool wasEdited, GUIEntryConfig entryConfig, int listDepth, string search) where T : Enum where K : struct
+    private static void EditGenericStructDictionary<T, K>(
+        Dictionary<T, K> dictionary,
+        out bool wasEdited,
+        GUIEntryConfig entryConfig,
+        int listDepth,
+        string search
+    )
+        where T : Enum
+        where K : struct
     {
         wasEdited = false;
         Dictionary<T, K> changedValues = [];
         foreach (KeyValuePair<T, K> item in dictionary)
         {
             object value = item.Value;
-            if (ExpandableList(item.Key.ToString(), string.Empty, PresetHandler.EditorDefaults.ConfigEntryHeight + 3, listDepth, entryConfig))
+            if (
+                ExpandableList(
+                    item.Key.ToString(),
+                    string.Empty,
+                    PresetHandler.EditorDefaults.ConfigEntryHeight + 3,
+                    listDepth,
+                    entryConfig
+                )
+            )
             {
-                ConfigParams config = new() {
+                ConfigParams config = new()
+                {
                     EntryConfig = entryConfig,
                     ListDepth = listDepth,
                     SettingsObject = value,
@@ -166,7 +225,10 @@ public class AttributesGUI
         }
     }
 
-    private static void EditSuppressionDict(Dictionary<ESuppressionState, SuppressionConfig> suppDict, out bool wasEdited)
+    private static void EditSuppressionDict(
+        Dictionary<ESuppressionState, SuppressionConfig> suppDict,
+        out bool wasEdited
+    )
     {
         wasEdited = false;
         CreateLabelStyle();
@@ -176,29 +238,47 @@ public class AttributesGUI
         {
             BeginHorizontal(150f);
             string suppStateString = $"Suppression State: {kvp.Key}";
-            if (ExpandableList(suppStateString, null, PresetHandler.EditorDefaults.ConfigEntryHeight, 1, _defaultEntryConfig))
-            {
-            }
+            if (
+                ExpandableList(
+                    suppStateString,
+                    null,
+                    PresetHandler.EditorDefaults.ConfigEntryHeight,
+                    1,
+                    _defaultEntryConfig
+                )
+            ) { }
             EndHorizontal(150f);
         }
         EndVertical(5f);
     }
 
-    public static void DisplayString(string value, float listDepth, GUIEntryConfig entryConfig, ConfigInfoClass info)
+    public static void DisplayString(
+        string value,
+        float listDepth,
+        GUIEntryConfig entryConfig,
+        ConfigInfoClass info
+    )
     {
-        if (value != null &&
-            info != null &&
-            !info.DoNotShowGUI)
+        if (value != null && info != null && !info.DoNotShowGUI)
         {
             entryConfig ??= _defaultEntryConfig;
             StartConfigEntry(listDepth, entryConfig, info);
-            Label($"{info.Name}: ", Width(80), Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+            Label(
+                $"{info.Name}: ",
+                Width(80),
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
             Box(value, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
             EndHorizontal(100f);
         }
     }
 
-    public static void DisplayString(string value, float listDepth, GUIEntryConfig entryConfig, float heightOverride = -1)
+    public static void DisplayString(
+        string value,
+        float listDepth,
+        GUIEntryConfig entryConfig,
+        float heightOverride = -1
+    )
     {
         if (value != null)
         {
@@ -216,7 +296,15 @@ public class AttributesGUI
         }
     }
 
-    public static object FindListTypeAndEdit(ref object value, object settingsObject, ConfigInfoClass info, int listDepth, out bool wasEdited, GUIEntryConfig config = null, string search = null)
+    public static object FindListTypeAndEdit(
+        ref object value,
+        object settingsObject,
+        ConfigInfoClass info,
+        int listDepth,
+        out bool wasEdited,
+        GUIEntryConfig config = null,
+        string search = null
+    )
     {
         wasEdited = false;
         CreateLabelStyle();
@@ -230,7 +318,15 @@ public class AttributesGUI
 
         if (value is Dictionary<ELocation, DifficultySettings> locationDict)
         {
-            EditLocationDict(locationDict, settingsObject, info, listDepth, config, out wasEdited, search);
+            EditLocationDict(
+                locationDict,
+                settingsObject,
+                info,
+                listDepth,
+                config,
+                out wasEdited,
+                search
+            );
             return value;
         }
 
@@ -309,7 +405,10 @@ public class AttributesGUI
         return value;
     }
 
-    private static void CreatePersonalityDict(Dictionary<string, EPersonality> persDictionary, out bool wasEdited)
+    private static void CreatePersonalityDict(
+        Dictionary<string, EPersonality> persDictionary,
+        out bool wasEdited
+    )
     {
         CreateLabelStyle();
         BeginVertical(5f);
@@ -319,14 +418,28 @@ public class AttributesGUI
         foreach (KeyValuePair<string, EPersonality> kvp in persDictionary)
         {
             BeginHorizontal(150f);
-            string outputNickname = TextArea(kvp.Key, null, Width(300f), Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
-            string outputPers = TextArea(kvp.Value.ToString(), null, Width(300f), Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+            string outputNickname = TextArea(
+                kvp.Key,
+                null,
+                Width(300f),
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
+            string outputPers = TextArea(
+                kvp.Value.ToString(),
+                null,
+                Width(300f),
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
             EndHorizontal(150f);
         }
         EndVertical(5f);
     }
 
-    private static void CreatePersonalityDict(Dictionary<WildSpawnType, EPersonality> persDictionary, GUIEntryConfig entryConfig, out bool wasEdited)
+    private static void CreatePersonalityDict(
+        Dictionary<WildSpawnType, EPersonality> persDictionary,
+        GUIEntryConfig entryConfig,
+        out bool wasEdited
+    )
     {
         CreateLabelStyle();
         _tempBossPersDict.Clear();
@@ -388,7 +501,11 @@ public class AttributesGUI
         BeginVertical(5f);
 
         // select from string array
-        EPersonality newPersonality = BotPersonalityEditor.SelectPersonality(selected, gridOptionHeight, 3);
+        EPersonality newPersonality = BotPersonalityEditor.SelectPersonality(
+            selected,
+            gridOptionHeight,
+            3
+        );
         //int newSelection = GUILayout.SelectionGrid(selectedId, personalities_strings, 4, GetStyle(Style.selectionGrid), Width(gridWidth), Height(gridHeight));
         if (newPersonality != selected)
         {
@@ -409,15 +526,20 @@ public class AttributesGUI
         if (_labelStyle == null)
         {
             GUIStyle boxstyle = GetStyle(Style.box);
-            _labelStyle = new GUIStyle(GetStyle(Style.label)) {
+            _labelStyle = new GUIStyle(GetStyle(Style.label))
+            {
                 alignment = TextAnchor.MiddleLeft,
                 margin = boxstyle.margin,
-                padding = boxstyle.padding
+                padding = boxstyle.padding,
             };
         }
     }
 
-    private static void StartConfigEntry(float listDepth, GUIEntryConfig entryConfig, ConfigInfoClass info)
+    private static void StartConfigEntry(
+        float listDepth,
+        GUIEntryConfig entryConfig,
+        ConfigInfoClass info
+    )
     {
         entryConfig ??= _defaultEntryConfig;
         float horizDepth = listDepth;
@@ -435,10 +557,12 @@ public class AttributesGUI
             var oldAlignment = _labelStyle.alignment;
             _labelStyle.alignment = TextAnchor.MiddleCenter;
             Space(horizDepth);
-            Box(info.AdvancedOption ? "Advanced" : "Developer",
+            Box(
+                info.AdvancedOption ? "Advanced" : "Developer",
                 _labelStyle,
                 Width(70f),
-                Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
             _labelStyle.alignment = oldAlignment;
         }
         else
@@ -447,7 +571,16 @@ public class AttributesGUI
         }
     }
 
-    public static object EditFloatBoolInt(ref object value, object settingsObject, ConfigInfoClass info, GUIEntryConfig entryConfig, int listDepth, out bool wasEdited, bool showLabel = true, bool beginHoriz = true)
+    public static object EditFloatBoolInt(
+        ref object value,
+        object settingsObject,
+        ConfigInfoClass info,
+        GUIEntryConfig entryConfig,
+        int listDepth,
+        out bool wasEdited,
+        bool showLabel = true,
+        bool beginHoriz = true
+    )
     {
         if (value == null)
         {
@@ -471,22 +604,14 @@ public class AttributesGUI
                 layoutParams =
                 [
                     GUILayout.Width(450f),
-                    GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+                    GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight),
                 ];
             }
             else
             {
-                layoutParams =
-                [
-                    GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
-                ];
+                layoutParams = [GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight)];
             }
-            Box(new GUIContent(
-                info.Name,
-                info.Description),
-                _labelStyle,
-                layoutParams
-                );
+            Box(new GUIContent(info.Name, info.Description), _labelStyle, layoutParams);
         }
 
         object originalValue = value;
@@ -496,7 +621,12 @@ public class AttributesGUI
         {
             if (!useSimpleLayout)
             {
-                value = Toggle((bool)value, (bool)value ? "On" : "Off", EUISoundType.MenuCheckBox, entryConfig.Toggle);
+                value = Toggle(
+                    (bool)value,
+                    (bool)value ? "On" : "Off",
+                    EUISoundType.MenuCheckBox,
+                    entryConfig.Toggle
+                );
             }
             result = value.ToString();
         }
@@ -505,7 +635,13 @@ public class AttributesGUI
             float flValue = (float)value;
             if (!useSimpleLayout)
             {
-                flValue = BuilderClass.CreateSlider(flValue, info.Min, info.Max, info.Rounding, entryConfig.Toggle);
+                flValue = BuilderClass.CreateSlider(
+                    flValue,
+                    info.Min,
+                    info.Max,
+                    info.Rounding,
+                    entryConfig.Toggle
+                );
             }
             value = flValue;
             result = flValue.Round(info.Rounding).ToString();
@@ -516,7 +652,7 @@ public class AttributesGUI
             layoutParams =
             [
                 GUILayout.Width(100),
-                GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+                GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight),
             ];
         }
         else
@@ -526,7 +662,12 @@ public class AttributesGUI
 
         if (useSimpleLayout && info.ValueType == typeof(bool))
         {
-            value = Toggle((bool)value, (bool)value ? "On" : "Off", EUISoundType.MenuCheckBox, layoutParams);
+            value = Toggle(
+                (bool)value,
+                (bool)value ? "On" : "Off",
+                EUISoundType.MenuCheckBox,
+                layoutParams
+            );
         }
         else
         {
@@ -546,7 +687,7 @@ public class AttributesGUI
             layoutParams =
             [
                 GUILayout.Width(100),
-                GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+                GUILayout.Height(PresetHandler.EditorDefaults.ConfigEntryHeight),
             ];
         }
         else
@@ -589,7 +730,15 @@ public class AttributesGUI
             var type = possibleTypes[i];
             if (values.TryGetValue(type, out var list))
             {
-                if (!ExpandableList(type.ToString(), string.Empty, _defaultEntryConfig.EntryHeight + 5, 0, _defaultEntryConfig))
+                if (
+                    !ExpandableList(
+                        type.ToString(),
+                        string.Empty,
+                        _defaultEntryConfig.EntryHeight + 5,
+                        0,
+                        _defaultEntryConfig
+                    )
+                )
                 {
                     continue;
                 }
@@ -600,9 +749,13 @@ public class AttributesGUI
         EndVertical(5f);
     }
 
-    private static void EditStealthValueList(List<ItemStealthValue> list, List<ItemStealthValue> defaults)
+    private static void EditStealthValueList(
+        List<ItemStealthValue> list,
+        List<ItemStealthValue> defaults
+    )
     {
-        if (list.Count == 0) return;
+        if (list.Count == 0)
+            return;
         BeginVertical(10f);
         for (int i = 0; i < list.Count; i++)
         {
@@ -613,7 +766,10 @@ public class AttributesGUI
         EndVertical(10f);
     }
 
-    private static ItemStealthValue GetDefault(ItemStealthValue value, List<ItemStealthValue> defaults)
+    private static ItemStealthValue GetDefault(
+        ItemStealthValue value,
+        List<ItemStealthValue> defaults
+    )
     {
         if (!defaults.Contains(value))
             return null;
@@ -626,7 +782,10 @@ public class AttributesGUI
         return null;
     }
 
-    private static void EditStealthValue(ItemStealthValue stealthValue, ItemStealthValue defaultValue)
+    private static void EditStealthValue(
+        ItemStealthValue stealthValue,
+        ItemStealthValue defaultValue
+    )
     {
         BeginHorizontal(150);
         string name = stealthValue.Name;
@@ -636,8 +795,7 @@ public class AttributesGUI
         float max = 2;
 
         fvalue = Slider(name, description, fvalue, min, max, 1000f);
-        if (defaultValue != null &&
-            ResetButton())
+        if (defaultValue != null && ResetButton())
         {
             fvalue = defaultValue.StealthValue;
         }
@@ -650,12 +808,23 @@ public class AttributesGUI
         EndHorizontal(150);
     }
 
-    private static bool ExpandableList(ConfigInfoClass info, float height, int listDepth, GUIEntryConfig config)
+    private static bool ExpandableList(
+        ConfigInfoClass info,
+        float height,
+        int listDepth,
+        GUIEntryConfig config
+    )
     {
         return ExpandableList(info.Name, info.Description, height, listDepth, config);
     }
 
-    private static bool ExpandableList(string name, string description, float height, int listDepth, GUIEntryConfig config)
+    private static bool ExpandableList(
+        string name,
+        string description,
+        float height,
+        int listDepth,
+        GUIEntryConfig config
+    )
     {
         BeginHorizontal(100f + (listDepth * config.SubList_Indent_Horizontal));
 
@@ -671,7 +840,12 @@ public class AttributesGUI
         return isOpen;
     }
 
-    public static void EditBoolDictionary<T>(object dictValue, ConfigInfoClass info, out bool edited) where T : Enum
+    public static void EditBoolDictionary<T>(
+        object dictValue,
+        ConfigInfoClass info,
+        out bool edited
+    )
+        where T : Enum
     {
         edited = false;
 
@@ -689,8 +863,19 @@ public class AttributesGUI
 
             var item = list[i];
             var name = item.ToString();
-            Box(new GUIContent(name), _labelStyle, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
-            if (Toggle(dictionary[item], dictionary[item] ? "On" : "Off", EUISoundType.MenuCheckBox, _defaultEntryConfig.Toggle))
+            Box(
+                new GUIContent(name),
+                _labelStyle,
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
+            if (
+                Toggle(
+                    dictionary[item],
+                    dictionary[item] ? "On" : "Off",
+                    EUISoundType.MenuCheckBox,
+                    _defaultEntryConfig.Toggle
+                )
+            )
             {
                 // Option was selected, set all other values to false, other than the 1 selected
                 for (int j = 0; j < list.Count; j++)
@@ -699,16 +884,14 @@ public class AttributesGUI
                     bool selected = item2.ToString() == name;
 
                     // Set all other options to false
-                    if (!selected &&
-                        dictionary[item2] != false)
+                    if (!selected && dictionary[item2] != false)
                     {
                         dictionary[item2] = false;
                         edited = true;
                     }
 
                     // Set the selected option to true
-                    if (selected &&
-                        dictionary[item2] != true)
+                    if (selected && dictionary[item2] != true)
                     {
                         dictionary[item2] = true;
                         edited = true;
@@ -729,11 +912,17 @@ public class AttributesGUI
         EndVertical(5f);
     }
 
-    public static void EditDispersionDictionary(Dictionary<ESoundDispersionType, DispersionValues> dictionary, object settingsObject, ConfigInfoClass info, out bool wasEdited)
+    public static void EditDispersionDictionary(
+        Dictionary<ESoundDispersionType, DispersionValues> dictionary,
+        object settingsObject,
+        ConfigInfoClass info,
+        out bool wasEdited
+    )
     {
         BeginVertical(5f);
 
-        var defaultDictionary = info.GetDefault(settingsObject) as Dictionary<ESoundDispersionType, DispersionValues>;
+        var defaultDictionary =
+            info.GetDefault(settingsObject) as Dictionary<ESoundDispersionType, DispersionValues>;
         ESoundDispersionType[] array = EnumValues.GetEnum<ESoundDispersionType>();
         wasEdited = false;
 
@@ -751,11 +940,20 @@ public class AttributesGUI
         EndVertical(5f);
     }
 
-    private static void EditLocationDict(Dictionary<ELocation, DifficultySettings> dictionary, object settingsObject, ConfigInfoClass info, int listDepth, GUIEntryConfig config, out bool wasEdited, string search = null)
+    private static void EditLocationDict(
+        Dictionary<ELocation, DifficultySettings> dictionary,
+        object settingsObject,
+        ConfigInfoClass info,
+        int listDepth,
+        GUIEntryConfig config,
+        out bool wasEdited,
+        string search = null
+    )
     {
         BeginVertical(5f);
 
-        var defaultDictionary = info.GetDefault(settingsObject) as Dictionary<ELocation, DifficultySettings>;
+        var defaultDictionary =
+            info.GetDefault(settingsObject) as Dictionary<ELocation, DifficultySettings>;
         ELocation[] array = EnumValues.GetEnum<ELocation>();
         wasEdited = false;
 
@@ -768,7 +966,15 @@ public class AttributesGUI
             }
             string name = location.ToString();
 
-            if (!ExpandableList(name, string.Empty, PresetHandler.EditorDefaults.ConfigEntryHeight + 3, listDepth, config))
+            if (
+                !ExpandableList(
+                    name,
+                    string.Empty,
+                    PresetHandler.EditorDefaults.ConfigEntryHeight + 3,
+                    listDepth,
+                    config
+                )
+            )
             {
                 continue;
             }
@@ -787,11 +993,17 @@ public class AttributesGUI
         EndVertical(5f);
     }
 
-    public static void EditAILimitDictionary(Dictionary<AILimitSetting, float> dictionary, object settingsObject, ConfigInfoClass info, out bool wasEdited)
+    public static void EditAILimitDictionary(
+        Dictionary<AILimitSetting, float> dictionary,
+        object settingsObject,
+        ConfigInfoClass info,
+        out bool wasEdited
+    )
     {
         BeginVertical(5f);
 
-        var defaultDictionary = info.GetDefault(settingsObject) as Dictionary<AILimitSetting, float>;
+        var defaultDictionary =
+            info.GetDefault(settingsObject) as Dictionary<AILimitSetting, float>;
         AILimitSetting[] array = EnumValues.GetEnum<AILimitSetting>();
         wasEdited = false;
 
@@ -827,20 +1039,30 @@ public class AttributesGUI
         EndVertical(5f);
     }
 
-    private static void EditDispStruct(DispersionValues values, ESoundDispersionType soundType, Dictionary<ESoundDispersionType, DispersionValues> defaultDictionary, out bool wasEdited)
+    private static void EditDispStruct(
+        DispersionValues values,
+        ESoundDispersionType soundType,
+        Dictionary<ESoundDispersionType, DispersionValues> defaultDictionary,
+        out bool wasEdited
+    )
     {
         wasEdited = false;
 
         BeginVertical(2f);
         BeginHorizontal(150);
 
-        Box(new GUIContent(soundType.ToString()), _labelStyle, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+        Box(
+            new GUIContent(soundType.ToString()),
+            _labelStyle,
+            Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+        );
 
         EndHorizontal(150);
         BeginHorizontal(200f);
 
         string name = nameof(values.DistanceModifier);
-        string description = "How much to randomize the distance that a bot thinks a sound originated from.";
+        string description =
+            "How much to randomize the distance that a bot thinks a sound originated from.";
         float fvalue = values.DistanceModifier;
         float min = 0f;
         float max = 20f;
@@ -922,15 +1144,33 @@ public class AttributesGUI
         return Button("Reset", EUISoundType.ButtonClick, _defaultEntryConfig.Reset);
     }
 
-    private static float Slider(string name, string description, float value, float min, float max, float rounding)
+    private static float Slider(
+        string name,
+        string description,
+        float value,
+        float min,
+        float max,
+        float rounding
+    )
     {
-        Box(new GUIContent(name, description), _labelStyle, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
-        value = BuilderClass.CreateSlider(value, min, max, rounding, _defaultEntryConfig.Toggle).Round(100f);
+        Box(
+            new GUIContent(name, description),
+            _labelStyle,
+            Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+        );
+        value = BuilderClass
+            .CreateSlider(value, min, max, rounding, _defaultEntryConfig.Toggle)
+            .Round(100f);
         Box(value.Round(rounding).ToString(), _defaultEntryConfig.Result);
         return value;
     }
 
-    public static void EditFloatDictionary<T>(object dictValue, ConfigInfoClass info, out bool wasEdited) where T : Enum
+    public static void EditFloatDictionary<T>(
+        object dictValue,
+        ConfigInfoClass info,
+        out bool wasEdited
+    )
+        where T : Enum
     {
         BeginVertical(5f);
 
@@ -970,8 +1210,18 @@ public class AttributesGUI
             float originalValue = dictionary[item];
             float floatValue = originalValue;
 
-            Box(new GUIContent(item.ToString()), _labelStyle, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
-            floatValue = BuilderClass.CreateSlider(floatValue, min, max, rounding, _defaultEntryConfig.Toggle);
+            Box(
+                new GUIContent(item.ToString()),
+                _labelStyle,
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
+            floatValue = BuilderClass.CreateSlider(
+                floatValue,
+                min,
+                max,
+                rounding,
+                _defaultEntryConfig.Toggle
+            );
             Box(floatValue.Round(rounding).ToString(), _defaultEntryConfig.Result);
 
             if (ResetButton())
@@ -988,13 +1238,20 @@ public class AttributesGUI
         EndVertical(5f);
     }
 
-    public static void EditAllValuesInObj(object obj, out bool wasEdited, string search = null, GUIEntryConfig entryConfig = null, int listDepth = 0)
+    public static void EditAllValuesInObj(
+        object obj,
+        out bool wasEdited,
+        string search = null,
+        GUIEntryConfig entryConfig = null,
+        int listDepth = 0
+    )
     {
-        ConfigParams configParams = new() {
+        ConfigParams configParams = new()
+        {
             SettingsObject = obj,
             Search = search,
             EntryConfig = entryConfig,
-            ListDepth = listDepth
+            ListDepth = listDepth,
         };
         EditAllValuesInObj(configParams, out wasEdited);
     }
@@ -1005,7 +1262,11 @@ public class AttributesGUI
         BeginVertical(0f);
         if (!configParams.Name.IsNullOrEmpty())
         {
-            Box(new GUIContent(configParams.Name), _labelStyle, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+            Box(
+                new GUIContent(configParams.Name),
+                _labelStyle,
+                Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+            );
         }
         List<ConfigInfoClass> attributeInfos = [];
         GetAllAttributeInfos(configParams.SettingsObject, attributeInfos, configParams.Search);
@@ -1029,7 +1290,12 @@ public class AttributesGUI
         return indent;
     }
 
-    private static void DisplayCategory(ConfigParams configParams, List<ConfigInfoClass> attributeInfos, string category, out bool wasEdited)
+    private static void DisplayCategory(
+        ConfigParams configParams,
+        List<ConfigInfoClass> attributeInfos,
+        string category,
+        out bool wasEdited
+    )
     {
         wasEdited = false;
         bool categoryDrawn = false;
@@ -1118,19 +1384,32 @@ public class AttributesGUI
         }
     }
 
-    private static void DrawCategory(ConfigParams configParams, ConfigInfoClass configInfo, string category)
+    private static void DrawCategory(
+        ConfigParams configParams,
+        ConfigInfoClass configInfo,
+        string category
+    )
     {
         if (category == "None")
         {
             return;
         }
         BeginHorizontal(0f);
-        DisplayString($"    Category: {category}    ", configParams.ListDepth, configParams.EntryConfig, 15f);
+        DisplayString(
+            $"    Category: {category}    ",
+            configParams.ListDepth,
+            configParams.EntryConfig,
+            15f
+        );
         FlexibleSpace();
         EndHorizontal();
     }
 
-    private static void DisplayOptionsByCategory(ConfigParams configParams, List<ConfigInfoClass> configInfos, out bool wasEdited)
+    private static void DisplayOptionsByCategory(
+        ConfigParams configParams,
+        List<ConfigInfoClass> configInfos,
+        out bool wasEdited
+    )
     {
         wasEdited = false;
         List<string> categoriesList = new();
@@ -1154,8 +1433,7 @@ public class AttributesGUI
         {
             ConfigInfoClass configInfo = configInfos[i];
             string category = configInfo.Category;
-            if (category.IsNullOrEmpty() ||
-                outputList.Contains(category))
+            if (category.IsNullOrEmpty() || outputList.Contains(category))
             {
                 continue;
             }
@@ -1172,10 +1450,23 @@ public class AttributesGUI
         public string Name;
     }
 
-    private static void DisplayConfigGUI(ConfigInfoClass configInfo, ConfigParams configParams, int count, out bool edited)
+    private static void DisplayConfigGUI(
+        ConfigInfoClass configInfo,
+        ConfigParams configParams,
+        int count,
+        out bool edited
+    )
     {
         object oldValue = GetConfigValue(configInfo, configParams.SettingsObject);
-        object newValue = EditValue(ref oldValue, configParams.SettingsObject, configInfo, out bool newEdit, configParams.ListDepth, configParams.EntryConfig, configParams.Search);
+        object newValue = EditValue(
+            ref oldValue,
+            configParams.SettingsObject,
+            configInfo,
+            out bool newEdit,
+            configParams.ListDepth,
+            configParams.EntryConfig,
+            configParams.Search
+        );
         if (newEdit)
         {
             SetConfigValue(newValue, configInfo.MemberInfo, configParams.SettingsObject);
@@ -1218,7 +1509,11 @@ public class AttributesGUI
         }
     }
 
-    private static void GetAllAttributeInfos(object obj, List<ConfigInfoClass> outputList, string search)
+    private static void GetAllAttributeInfos(
+        object obj,
+        List<ConfigInfoClass> outputList,
+        string search
+    )
     {
         outputList.Clear();
         FieldInfo[] fieldInfos = obj.GetType().GetFields();
@@ -1233,7 +1528,12 @@ public class AttributesGUI
         }
     }
 
-    public static void EditAllValuesInObj(Category category, object categoryObject, out bool wasEdited, string search = null)
+    public static void EditAllValuesInObj(
+        Category category,
+        object categoryObject,
+        out bool wasEdited,
+        string search = null
+    )
     {
         EditAllValuesInObj(categoryObject, out wasEdited, search);
         //BeginVertical(5);
@@ -1267,10 +1567,12 @@ public class AttributesGUI
 
     public static bool SkipForSearch(ConfigInfoClass attributes, string searchQuerry)
     {
-        return !string.IsNullOrEmpty(searchQuerry) &&
-            (attributes.Name?.ToLower().Contains(searchQuerry) == false &&
-            attributes.Description?.ToLower().Contains(searchQuerry) == false &&
-            attributes.Category?.ToLower().Contains(searchQuerry) == false);
+        return !string.IsNullOrEmpty(searchQuerry)
+            && (
+                attributes.Name?.ToLower().Contains(searchQuerry) == false
+                && attributes.Description?.ToLower().Contains(searchQuerry) == false
+                && attributes.Category?.ToLower().Contains(searchQuerry) == false
+            );
     }
 
     private static readonly Dictionary<string, bool> _listOpen = new();

@@ -3,14 +3,14 @@ using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover;
 
 public class SAINSteeringClass : BotComponentClassBase
 {
-    public SAINSteeringClass(BotComponent sain) : base(sain)
+    public SAINSteeringClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         _randomLook = new RandomLookClass(this);
@@ -24,14 +24,16 @@ public class SAINSteeringClass : BotComponentClassBase
 
     public EEnemySteerDir EnemySteerDir { get; private set; }
 
-    public Vector3 WeaponRootOffset {
-        get
-        {
-            return Bot.Transform.WeaponRoot - Bot.Position;
-        }
+    public Vector3 WeaponRootOffset
+    {
+        get { return Bot.Transform.WeaponRoot - Bot.Position; }
     }
 
-    public bool SteerByPriority(Enemy enemy = null, bool lookRandom = true, bool ignoreRunningPath = false)
+    public bool SteerByPriority(
+        Enemy enemy = null,
+        bool lookRandom = true,
+        bool ignoreRunningPath = false
+    )
     {
         enemy ??= Bot.GoalEnemy;
 
@@ -106,7 +108,7 @@ public class SAINSteeringClass : BotComponentClassBase
         }
         return false;
     }
-    
+
     /// <summary>
     /// Look Directly at point
     /// </summary>
@@ -217,7 +219,11 @@ public class SAINSteeringClass : BotComponentClassBase
         LookToRandomPosition();
     }
 
-    internal bool IsLookingAtPoint(Vector3 point, out float dotResult, float dotProductThreshold = 0.66f)
+    internal bool IsLookingAtPoint(
+        Vector3 point,
+        out float dotResult,
+        float dotProductThreshold = 0.66f
+    )
     {
         Vector3 lookDirection = Bot.PlayerComponent.CharacterController.CurrentControlLookDirection;
         Vector3 pointDirection = point - Bot.Transform.WeaponData.WeaponRoot;
@@ -227,7 +233,11 @@ public class SAINSteeringClass : BotComponentClassBase
 
     internal void TickPlayerSteering()
     {
-        PlayerComponent.CharacterController.SetTargetLookDirection(_targetLookDirection, BotOwner, Bot);
+        PlayerComponent.CharacterController.SetTargetLookDirection(
+            _targetLookDirection,
+            BotOwner,
+            Bot
+        );
     }
 
     private Vector3 _targetLookDirection = Vector3.forward;

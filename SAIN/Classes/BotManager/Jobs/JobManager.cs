@@ -1,7 +1,6 @@
-﻿using EFT.UI.Ragfair;
-using SAIN.Types.Jobs;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SAIN.Types.Jobs;
 using UnityEngine;
 
 namespace SAIN.Components;
@@ -14,7 +13,7 @@ public class JobManager : IDisposable
         Jobs.Add(new EnemyPathVisibilityRaycastJob(Owner));
         //Jobs.Add(new RandomVisiblePointGeneratorJob(Owner));
     }
-    
+
     public void Start()
     {
         foreach (var job in Jobs)
@@ -25,7 +24,6 @@ public class JobManager : IDisposable
     {
         Dispose();
     }
-
 
     public readonly List<ISainJob> Jobs = [];
 

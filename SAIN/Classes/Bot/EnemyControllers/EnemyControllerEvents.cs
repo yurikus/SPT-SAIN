@@ -1,7 +1,6 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Helpers.Events;
-using SAIN.Models.Enums;
-using System;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
 
@@ -27,9 +26,8 @@ public class EnemyControllerEvents : BotSubClass<SAINEnemyController>, IBotClass
 
     public event Action<ETagStatus, Enemy> OnEnemyHealthChanged;
 
-    public EnemyControllerEvents(SAINEnemyController controller) : base(controller)
-    {
-    }
+    public EnemyControllerEvents(SAINEnemyController controller)
+        : base(controller) { }
 
     public override void Init()
     {
@@ -45,8 +43,10 @@ public class EnemyControllerEvents : BotSubClass<SAINEnemyController>, IBotClass
     public override void Dispose()
     {
         Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirst -= OnPeaceChanged.CheckToggle;
-        Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirstHuman -= ActiveHumanEnemyEvent.CheckToggle;
-        Bot.EnemyController.EnemiesInLineOfSight.OnListEmptyOrGetFirstHuman -= HumanInLineOfSightEvent.CheckToggle;
+        Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirstHuman -=
+            ActiveHumanEnemyEvent.CheckToggle;
+        Bot.EnemyController.EnemiesInLineOfSight.OnListEmptyOrGetFirstHuman -=
+            HumanInLineOfSightEvent.CheckToggle;
         base.Dispose();
     }
 
@@ -92,13 +92,17 @@ public class EnemyControllerEvents : BotSubClass<SAINEnemyController>, IBotClass
         OnEnemyHit?.Invoke(enemy);
     }
 
-    private void enemyKilled(Player player, IPlayer lastAggressor, DamageInfoStruct lastDamageInfoStruct, EBodyPart lastBodyPart)
+    private void enemyKilled(
+        Player player,
+        IPlayer lastAggressor,
+        DamageInfoStruct lastDamageInfoStruct,
+        EBodyPart lastBodyPart
+    )
     {
         if (player != null)
         {
             player.OnPlayerDead -= enemyKilled;
-            if (lastAggressor != null &&
-                lastAggressor.ProfileId == Bot.ProfileId)
+            if (lastAggressor != null && lastAggressor.ProfileId == Bot.ProfileId)
             {
                 OnEnemyKilled?.Invoke(player);
             }

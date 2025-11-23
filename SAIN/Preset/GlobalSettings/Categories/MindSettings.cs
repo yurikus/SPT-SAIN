@@ -1,118 +1,135 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using Newtonsoft.Json;
 using SAIN.Attributes;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.WeaponFunction;
-using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings.Categories;
 
 public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
 {
-    public override void Update()
-    {
-    }
-    
+    public override void Update() { }
+
     [Name("Enemy Suppression Toggle")]
     [Category("Enemy Suppression")]
     public bool TARGET_SUPPRESS_TOGGLE = true;
 
     [Name("Force Single Personality For All Bots")]
-    [Description("All Spawned SAIN bots will be assigned the selected Personality, if any are set to true, no matter what.")]
+    [Description(
+        "All Spawned SAIN bots will be assigned the selected Personality, if any are set to true, no matter what."
+    )]
     [Category("Personality")]
     public Dictionary<EPersonality, bool> ForcePersonality = new()
     {
-        { EPersonality.Wreckless, false},
+        { EPersonality.Wreckless, false },
         { EPersonality.GigaChad, false },
         { EPersonality.Chad, false },
-        { EPersonality.SnappingTurtle, false},
+        { EPersonality.SnappingTurtle, false },
         { EPersonality.Rat, false },
         { EPersonality.Coward, false },
-        { EPersonality.Timmy, false},
-        { EPersonality.Normal, false},
+        { EPersonality.Timmy, false },
+        { EPersonality.Normal, false },
     };
 
     [Name("Boss Personalities")]
     [Description("Sets the pesonality that a boss will always use.")]
     [Category("Personality")]
     [Hidden]
-    public Dictionary<WildSpawnType, EPersonality> PERS_BOSSES = new() {
-        { WildSpawnType.bossKilla, EPersonality.Wreckless},
-        { WildSpawnType.bossKillaAgro, EPersonality.Wreckless},
-        { WildSpawnType.bossTagilla, EPersonality.Wreckless},
-        { WildSpawnType.bossTagillaAgro, EPersonality.Wreckless},
-        { WildSpawnType.bossKolontay, EPersonality.Wreckless},
-
-        { WildSpawnType.bossKnight, EPersonality.GigaChad},
-        { WildSpawnType.followerBigPipe, EPersonality.GigaChad},
-
-        { WildSpawnType.followerBirdEye, EPersonality.SnappingTurtle},
-        { WildSpawnType.bossGluhar, EPersonality.SnappingTurtle},
-
-        { WildSpawnType.bossKojaniy, EPersonality.Rat},
-        { WildSpawnType.bossPartisan, EPersonality.Rat},
-
-        { WildSpawnType.bossBully, EPersonality.Coward},
-        { WildSpawnType.bossSanitar, EPersonality.Coward},
-        { WildSpawnType.bossBoar, EPersonality.Coward},
+    public Dictionary<WildSpawnType, EPersonality> PERS_BOSSES = new()
+    {
+        { WildSpawnType.bossKilla, EPersonality.Wreckless },
+        { WildSpawnType.bossKillaAgro, EPersonality.Wreckless },
+        { WildSpawnType.bossTagilla, EPersonality.Wreckless },
+        { WildSpawnType.bossTagillaAgro, EPersonality.Wreckless },
+        { WildSpawnType.bossKolontay, EPersonality.Wreckless },
+        { WildSpawnType.bossKnight, EPersonality.GigaChad },
+        { WildSpawnType.followerBigPipe, EPersonality.GigaChad },
+        { WildSpawnType.followerBirdEye, EPersonality.SnappingTurtle },
+        { WildSpawnType.bossGluhar, EPersonality.SnappingTurtle },
+        { WildSpawnType.bossKojaniy, EPersonality.Rat },
+        { WildSpawnType.bossPartisan, EPersonality.Rat },
+        { WildSpawnType.bossBully, EPersonality.Coward },
+        { WildSpawnType.bossSanitar, EPersonality.Coward },
+        { WildSpawnType.bossBoar, EPersonality.Coward },
     };
 
     [MinMax(0.1f, 5f, 100f)]
     [Category("Personality")]
     [Name("Global Aggression")]
-    [Description("Higher = More aggressive bots, less time before seeking enemies. 2x = half the wait time.")]
+    [Description(
+        "Higher = More aggressive bots, less time before seeking enemies. 2x = half the wait time."
+    )]
     public float GlobalAggression = 1f;
 
     [Name("Bots can use Stealth Search")]
-    [Description("If a bot thinks he was not heard, and isn't currently fighting an enemy, they can decide to be stealthy while they seek out an enemy, if they are inside a building.")]
+    [Description(
+        "If a bot thinks he was not heard, and isn't currently fighting an enemy, they can decide to be stealthy while they seek out an enemy, if they are inside a building."
+    )]
     [Category("Personality")]
     public bool SneakyBots = true;
 
     [Name("Only Sneaky Personalities can be Stealthy")]
-    [Description("Only allow sneaky personality types (rat, snapping turtle) to be stealthy while searching for an enemy, ignored if Stealth Search is disabled above")]
+    [Description(
+        "Only allow sneaky personality types (rat, snapping turtle) to be stealthy while searching for an enemy, ignored if Stealth Search is disabled above"
+    )]
     [Category("Personality")]
     public bool OnlySneakyPersonalitiesSneaky = true;
 
-    [Description("The distance from a bot's search destination that they will begin to be stealthy, if enabled.")]
+    [Description(
+        "The distance from a bot's search destination that they will begin to be stealthy, if enabled."
+    )]
     [Category("Personality")]
     [Advanced]
     [MinMax(5f, 200f, 10f)]
     public float MaximumDistanceToBeSneaky = 80f;
 
     [Name("Bot Suppression")]
-    [Description("Toggles whether bots get suppressed or not. If disabled, all options below will do nothing.")]
+    [Description(
+        "Toggles whether bots get suppressed or not. If disabled, all options below will do nothing."
+    )]
     [Category("Suppression")]
     public bool SUPP_TOGGLE = true;
 
     [Name("Suppression Distance Scale Start")]
-    [Description("The distance between the bullet, and a bot's head to receive full suppression effect. In Meters.")]
+    [Description(
+        "The distance between the bullet, and a bot's head to receive full suppression effect. In Meters."
+    )]
     [Category("Suppression")]
     [MinMax(1f, 30f, 100f)]
     [Advanced]
     public float SUPP_DISTANCE_SCALE_START = 4f;
 
     [Name("Suppression Distance Scale End")]
-    [Description("The maximum distance between the bullet, and a bot's head to be considered Suppressing fire. In Meters. Scales linearly between Scale End and Scale Start.")]
+    [Description(
+        "The maximum distance between the bullet, and a bot's head to be considered Suppressing fire. In Meters. Scales linearly between Scale End and Scale Start."
+    )]
     [Category("Suppression")]
     [MinMax(1f, 30f, 100f)]
     [Advanced]
     public float SUPP_DISTANCE_SCALE_END = 10f;
 
     [Name("Suppression Distance Amplify Distance")]
-    [Description("If a bullet is closer than this distance, in meters, to the bot's head. Amplify the amount of suppression.")]
+    [Description(
+        "If a bullet is closer than this distance, in meters, to the bot's head. Amplify the amount of suppression."
+    )]
     [Category("Suppression")]
     [MinMax(0f, 5f, 100f)]
     [Advanced]
     public float SUPP_DISTANCE_AMP_DIST = 0.5f;
 
     [Name("Suppression Distance Amplify Amount")]
-    [Description("If a bullet is closer than Amplify Distance to the bot's head. Amplify the amount of suppression by this multiplier.")]
+    [Description(
+        "If a bullet is closer than Amplify Distance to the bot's head. Amplify the amount of suppression by this multiplier."
+    )]
     [Category("Suppression")]
     [MinMax(1f, 3f, 100f)]
     [Advanced]
     public float SUPP_DISTANCE_AMP_AMOUNT = 1.5f;
 
-    [Description("The maximum distance between the bullet, and a bot's head to be considered under active enemy fire.")]
+    [Description(
+        "The maximum distance between the bullet, and a bot's head to be considered under active enemy fire."
+    )]
     [MinMax(0.1f, 20f, 100f)]
     [Category("Suppression")]
     [Advanced]
@@ -126,56 +143,72 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
     [Advanced]
     public Dictionary<ESuppressionState, SuppressionConfig> SUPPRESSION_STATES = new()
     {
-        {ESuppressionState.Light, new SuppressionConfig {
-            Threshold = 1f,
-            PrecisionSpeedCoef = 0.8f,
-            AccuracySpeedCoef = 1.2f,
-            GainSightCoef = 0.9f,
-            ScatteringCoef = 1.35f,
-            VisibleDistCoef = 0.85f,
-            HearingDistCoef = 0.8f,
+        {
+            ESuppressionState.Light,
+            new SuppressionConfig
+            {
+                Threshold = 1f,
+                PrecisionSpeedCoef = 0.8f,
+                AccuracySpeedCoef = 1.2f,
+                GainSightCoef = 0.9f,
+                ScatteringCoef = 1.35f,
+                VisibleDistCoef = 0.85f,
+                HearingDistCoef = 0.8f,
             }
         },
-        {ESuppressionState.Medium, new SuppressionConfig {
-            Threshold = 6f,
-            PrecisionSpeedCoef = 0.75f,
-            AccuracySpeedCoef = 1.5f,
-            GainSightCoef = 0.75f,
-            ScatteringCoef = 1.75f,
-            VisibleDistCoef = 0.6f,
-            HearingDistCoef = 0.6f,
+        {
+            ESuppressionState.Medium,
+            new SuppressionConfig
+            {
+                Threshold = 6f,
+                PrecisionSpeedCoef = 0.75f,
+                AccuracySpeedCoef = 1.5f,
+                GainSightCoef = 0.75f,
+                ScatteringCoef = 1.75f,
+                VisibleDistCoef = 0.6f,
+                HearingDistCoef = 0.6f,
             }
         },
-        {ESuppressionState.Heavy, new SuppressionConfig {
-            Threshold = 15f,
-            PrecisionSpeedCoef = 0.5f,
-            AccuracySpeedCoef = 2f,
-            GainSightCoef = 0.65f,
-            ScatteringCoef = 2.5f,
-            VisibleDistCoef = 0.5f,
-            HearingDistCoef = 0.4f,
+        {
+            ESuppressionState.Heavy,
+            new SuppressionConfig
+            {
+                Threshold = 15f,
+                PrecisionSpeedCoef = 0.5f,
+                AccuracySpeedCoef = 2f,
+                GainSightCoef = 0.65f,
+                ScatteringCoef = 2.5f,
+                VisibleDistCoef = 0.5f,
+                HearingDistCoef = 0.4f,
             }
         },
-        {ESuppressionState.Extreme, new SuppressionConfig {
-            Threshold = 25f,
-            PrecisionSpeedCoef = 0.25f,
-            AccuracySpeedCoef = 3f,
-            GainSightCoef = 0.5f,
-            ScatteringCoef = 3f,
-            VisibleDistCoef = 0.33f,
-            HearingDistCoef = 0.25f,
+        {
+            ESuppressionState.Extreme,
+            new SuppressionConfig
+            {
+                Threshold = 25f,
+                PrecisionSpeedCoef = 0.25f,
+                AccuracySpeedCoef = 3f,
+                GainSightCoef = 0.5f,
+                ScatteringCoef = 3f,
+                VisibleDistCoef = 0.33f,
+                HearingDistCoef = 0.25f,
             }
         },
     };
 
     [Name("Amount Multiplier")]
-    [Description("Linearly increase or decrease the amount of suppression points bots receive from 1 bullet. Higher = Bots get suppressed more easily.")]
+    [Description(
+        "Linearly increase or decrease the amount of suppression points bots receive from 1 bullet. Higher = Bots get suppressed more easily."
+    )]
     [MinMax(0.01f, 5f, 100f)]
     [Category("Suppression")]
     public float SUPP_AMOUNT_MULTI = 1f;
 
     [Name("Strength Multiplier")]
-    [Description("Linearly increase or decrease the strength of suppression effects on bots. Higher = Suppression has more effect on bot stats.")]
+    [Description(
+        "Linearly increase or decrease the strength of suppression effects on bots. Higher = Suppression has more effect on bot stats."
+    )]
     [MinMax(0.01f, 5f, 100f)]
     [Category("Suppression")]
     public float SUPP_STRENGTH_MULTI = 1f;
@@ -203,7 +236,9 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
 
     [Advanced]
     [Name("Suppression Amounts Per Caliber")]
-    [Description("For each bullet that flies by a bot, add this number to their suppression counter, which decays constantly and linearly.")]
+    [Description(
+        "For each bullet that flies by a bot, add this number to their suppression counter, which decays constantly and linearly."
+    )]
     [MinMax(0.1f, 20f, 100f)]
     [Category("Suppression")]
     [DefaultDictionary(nameof(SUPP_AMOUNTS_DEFAULT))]

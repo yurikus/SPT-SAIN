@@ -1,6 +1,5 @@
 ﻿using EFT;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace SAIN.Types.PlayerSmoothing;
 
@@ -63,8 +62,14 @@ public class PredictivePositionSmoother
         }
 
         // Calculate target velocity with SmoothDamp
-        _targetVelocity = Vector3.SmoothDamp(_targetVelocity, targetVelocity,
-            ref _velocitySmoothing, VelocitySmoothTime, Mathf.Infinity, deltaTime);
+        _targetVelocity = Vector3.SmoothDamp(
+            _targetVelocity,
+            targetVelocity,
+            ref _velocitySmoothing,
+            VelocitySmoothTime,
+            Mathf.Infinity,
+            deltaTime
+        );
 
         // Predict target position with lag compensation
         var lagCompensation = SmoothTime * PredictionStrength;
@@ -79,14 +84,21 @@ public class PredictivePositionSmoother
         }
 
         // Smooth towards predicted position using SmoothDamp
-        _smoothedPosition = Vector3.SmoothDamp(_smoothedPosition, predictedTarget,
-            ref _currentVelocity, SmoothTime, Mathf.Infinity, deltaTime);
+        _smoothedPosition = Vector3.SmoothDamp(
+            _smoothedPosition,
+            predictedTarget,
+            ref _currentVelocity,
+            SmoothTime,
+            Mathf.Infinity,
+            deltaTime
+        );
 
         // Convergence guarantee
         var distanceToTarget = Vector3.Distance(_smoothedPosition, targetPosition);
         var velocityMagnitude = _targetVelocity.magnitude;
 
-        if (!(distanceToTarget < 0.001f) || !(velocityMagnitude < 0.01f)) return _smoothedPosition;
+        if (!(distanceToTarget < 0.001f) || !(velocityMagnitude < 0.01f))
+            return _smoothedPosition;
 
         _smoothedPosition = targetPosition;
         _currentVelocity = Vector3.zero;
@@ -136,24 +148,43 @@ public class SmoothingDebugger : MonoBehaviour
     private void FixedUpdate()
     {
         var targetPosition = player.PlayerBones.Head.Original.position;
-        var smoothedPos = _positionSmoother.Update(targetPosition, player.Velocity, Time.fixedDeltaTime);
+        var smoothedPos = _positionSmoother.Update(
+            targetPosition,
+            player.Velocity,
+            Time.fixedDeltaTime
+        );
 
         _naiveSmoothedPosition = Vector3.SmoothDamp(
-            _naiveSmoothedPosition, targetPosition, ref _naiveSmoothedVelocity, 0.35f, Mathf.Infinity, Time.fixedDeltaTime
+            _naiveSmoothedPosition,
+            targetPosition,
+            ref _naiveSmoothedVelocity,
+            0.35f,
+            Mathf.Infinity,
+            Time.fixedDeltaTime
         );
 
         UpdatePositions(_naiveSmoothedPosition, targetPosition, _sphere1, _line1);
         UpdatePositions(smoothedPos, targetPosition, _sphere2, _line2);
     }
 
-    private void UpdatePositions(Vector3 smoothedPosition, Vector3 targetPosition, GameObject sphere, LineRenderer line)
+    private void UpdatePositions(
+        Vector3 smoothedPosition,
+        Vector3 targetPosition,
+        GameObject sphere,
+        LineRenderer line
+    )
     {
         sphere.transform.position = smoothedPosition;
         line.SetPosition(0, targetPosition);
         line.SetPosition(1, smoothedPosition);
     }
 
-    private LineRenderer CreateLine(GameObject sphere, Color startColor, Color endColor, float width)
+    private LineRenderer CreateLine(
+        GameObject sphere,
+        Color startColor,
+        Color endColor,
+        float width
+    )
     {
         var line = sphere.AddComponent<LineRenderer>();
 
@@ -177,9 +208,7 @@ public class SmoothingDebugger : MonoBehaviour
         var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
         var sphereRenderer = sphere.GetComponent<Renderer>();
-        sphereRenderer.material = new Material(Shader.Find("Sprites/Default")) {
-            color = color
-        };
+        sphereRenderer.material = new Material(Shader.Find("Sprites/Default")) { color = color };
 
         sphere.transform.localScale = Vector3.one * 0.1f;
 

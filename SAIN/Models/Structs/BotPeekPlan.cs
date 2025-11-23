@@ -1,6 +1,4 @@
-﻿using SAIN.Helpers;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SAIN.Models.Structs;
 
@@ -23,5 +21,4 @@ public struct BotPeekPlan(Vector3 start, Vector3 end, Vector3 dangerPoint)
         }
         return LeanSetting.None;
     }
-
 }

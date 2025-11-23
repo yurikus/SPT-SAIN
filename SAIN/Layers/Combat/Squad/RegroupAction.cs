@@ -9,7 +9,6 @@ internal class RegroupAction(BotOwner bot) : BotAction(bot, nameof(RegroupAction
 {
     public override void Update(CustomLayer.ActionData data)
     {
-        
         Enemy enemy = Bot.GoalEnemy;
         var SquadLeadPos = Bot.Squad.LeaderComponent?.Position;
         if (SquadLeadPos != null)
@@ -19,11 +18,7 @@ internal class RegroupAction(BotOwner bot) : BotAction(bot, nameof(RegroupAction
             float leadDist = (SquadLeadPos.Value - BotOwner.Position).magnitude;
             float enemyDist = hasEnemy ? enemy.KnownPlaces.BotDistanceFromLastKnown : 999f;
 
-            bool sprint =
-                hasEnemy &&
-                leadDist > 30f &&
-                !enemyLOS &&
-                enemyDist > 50f;
+            bool sprint = hasEnemy && leadDist > 30f && !enemyLOS && enemyDist > 50f;
 
             if (_nextChangeSprintTime < Time.time)
             {
@@ -41,7 +36,6 @@ internal class RegroupAction(BotOwner bot) : BotAction(bot, nameof(RegroupAction
 
         Bot.Mover.SetTargetPose(1f);
         Bot.Mover.SetTargetMoveSpeed(1f);
-        
     }
 
     public override void OnSteeringTicked()
@@ -56,7 +50,6 @@ internal class RegroupAction(BotOwner bot) : BotAction(bot, nameof(RegroupAction
             Bot.Steering.LookToMovingDirection();
         }
     }
-
 
     private float _nextChangeSprintTime;
 }

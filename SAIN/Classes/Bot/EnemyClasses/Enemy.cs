@@ -1,4 +1,5 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Classes.Transform;
 using SAIN.Components;
 using SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
@@ -7,7 +8,6 @@ using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.Types.PlayerSmoothing;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -37,7 +37,8 @@ public class Enemy : BotBase, ISPlayer
     {
         if (_nextCheckLoSTime < currentTime)
         {
-            if (!CheckValid()) return false;
+            if (!CheckValid())
+                return false;
             _nextCheckLoSTime = currentTime + LookUpdateInterval();
             return true;
         }
@@ -99,7 +100,8 @@ public class Enemy : BotBase, ISPlayer
     public void TickEnemy(float currentTime, float forgetEnemyTime, bool botSearching)
     {
         UpdateDistAndDirection();
-        if (IsSniper) IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
+        if (IsSniper)
+            IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
         KnownChecker.TickEnemy(currentTime, forgetEnemyTime, botSearching);
         Vision.TickEnemy(currentTime);
         Hearing.TickEnemy(currentTime);
@@ -158,7 +160,8 @@ public class Enemy : BotBase, ISPlayer
     public float VisiblePathPointDistanceToEnemyLastKnown { get; private set; }
     public float? VisiblePathPointSignedAngle { get; private set; }
 
-    public Vector3? SuppressionTarget {
+    public Vector3? SuppressionTarget
+    {
         get
         {
             if (!GlobalSettingsClass.Instance.Mind.TARGET_SUPPRESS_TOGGLE)
@@ -170,7 +173,10 @@ public class Enemy : BotBase, ISPlayer
             {
                 return null;
             }
-            if (GetVisibilePathPoint(out Vector3 point) && IsTargetInSuppRange(enemyLastKnown.Value, point))
+            if (
+                GetVisibilePathPoint(out Vector3 point)
+                && IsTargetInSuppRange(enemyLastKnown.Value, point)
+            )
             {
                 return point;
             }
@@ -210,19 +216,25 @@ public class Enemy : BotBase, ISPlayer
 
     public static bool IsEnemyActive(Enemy enemy)
     {
-        if (enemy == null) return false;
-        if (!enemy.PlayerComponent.IsActive) return false;
+        if (enemy == null)
+            return false;
+        if (!enemy.PlayerComponent.IsActive)
+            return false;
         if (enemy.IsAI)
         {
             BotOwner enemyBotOwner = enemy.EnemyPlayerComponent.BotOwner;
-            if (enemyBotOwner == null) return false;
-            if (enemyBotOwner.BotState != EBotState.Active) return false;
-            if (enemyBotOwner.StandBy.StandByType != BotStandByType.active) return false;
+            if (enemyBotOwner == null)
+                return false;
+            if (enemyBotOwner.BotState != EBotState.Active)
+                return false;
+            if (enemyBotOwner.StandBy.StandByType != BotStandByType.active)
+                return false;
         }
         return true;
     }
 
-    public Enemy(BotComponent bot, PlayerComponent enemyComponent, EnemyInfo enemyInfo) : base(bot)
+    public Enemy(BotComponent bot, PlayerComponent enemyComponent, EnemyInfo enemyInfo)
+        : base(bot)
     {
         EnemyPlayerComponent = enemyComponent;
         EnemyPlayer = enemyComponent.Player;
@@ -232,7 +244,9 @@ public class Enemy : BotBase, ISPlayer
         EnemyProfileId = enemyComponent.ProfileId;
         OwnerProfileId = bot.ProfileId;
 
-        EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[enemyComponent.ProfileId];
+        EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[
+            enemyComponent.ProfileId
+        ];
         UpdateDistAndDirection();
 
         var _enemyData = new EnemyData(this);
@@ -289,12 +303,24 @@ public class Enemy : BotBase, ISPlayer
 
     private void UpdateVisiblePathPointDist(Vector3 headPosition)
     {
-        TryUpdateVisPathDist(headPosition, VisiblePathPoint, LastKnownPosition, out float distToBot, out float distToEnemy);
+        TryUpdateVisPathDist(
+            headPosition,
+            VisiblePathPoint,
+            LastKnownPosition,
+            out float distToBot,
+            out float distToEnemy
+        );
         VisiblePathPointDistanceToBot = distToBot;
         VisiblePathPointDistanceToEnemyLastKnown = distToEnemy;
     }
 
-    private static void TryUpdateVisPathDist(Vector3 headPosition, Vector3? visPathPoint, Vector3? lastKnown, out float distToBot, out float distToEnemy)
+    private static void TryUpdateVisPathDist(
+        Vector3 headPosition,
+        Vector3? visPathPoint,
+        Vector3? lastKnown,
+        out float distToBot,
+        out float distToEnemy
+    )
     {
         distToBot = float.MaxValue;
         distToEnemy = float.MaxValue;
@@ -393,8 +419,14 @@ public class Enemy : BotBase, ISPlayer
             return false;
         }
         var lastSeen = Places.LastSeenPlace;
-        if (lastSeen != null &&
-            (lastSeen == lastKnown || (lastSeen.Position - lastKnown.Position).sqrMagnitude < GlobalSettingsClass.Instance.Steering.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr()))
+        if (
+            lastSeen != null
+            && (
+                lastSeen == lastKnown
+                || (lastSeen.Position - lastKnown.Position).sqrMagnitude
+                    < GlobalSettingsClass.Instance.Steering.STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE.Sqr()
+            )
+        )
         {
             EnemySteerDir = EEnemySteerDir.LastSeenPos;
             Position = lastSeen.Position + Bot.Steering.WeaponRootOffset;
@@ -408,7 +440,8 @@ public class Enemy : BotBase, ISPlayer
 
     public bool CheckValid()
     {
-        if (!WasValid) return false;
+        if (!WasValid)
+            return false;
         WasValid = IsEnemyValid(OwnerProfileId, EnemyPlayerComponent);
         return WasValid;
     }
@@ -496,7 +529,11 @@ public class Enemy : BotBase, ISPlayer
     {
         Vector3 headPos = playerComp.Player.MainParts[BodyPartType.head].Position;
         Vector3 floorPos = playerComp.Position;
-        Vector3 centerMass = Vector3.Lerp(headPos, floorPos, SAINPlugin.LoadedPreset.GlobalSettings.Aiming.CenterMassVal);
+        Vector3 centerMass = Vector3.Lerp(
+            headPos,
+            floorPos,
+            SAINPlugin.LoadedPreset.GlobalSettings.Aiming.CenterMassVal
+        );
         return centerMass;
     }
 
@@ -540,7 +577,11 @@ public class Enemy : BotBase, ISPlayer
         IsSniper = isSniper;
         if (isSniper && Bot.Squad.BotInGroup && Bot.Talk.GroupTalk.FriendIsClose)
         {
-            Bot.Talk.TalkAfterDelay(EPhraseTrigger.SniperPhrase, ETagStatus.Combat, UnityEngine.Random.Range(0.33f, 0.66f));
+            Bot.Talk.TalkAfterDelay(
+                EPhraseTrigger.SniperPhrase,
+                ETagStatus.Combat,
+                UnityEngine.Random.Range(0.33f, 0.66f)
+            );
         }
     }
 

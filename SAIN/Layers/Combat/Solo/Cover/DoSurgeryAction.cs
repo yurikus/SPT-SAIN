@@ -1,16 +1,15 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Components;
-using System.Text;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover;
 
-internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery") , IBotAction
+internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery"), IBotAction
 {
     public override void Update(CustomLayer.ActionData data)
     {
-        
         checkDoSurgery();
     }
 
@@ -24,9 +23,7 @@ internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery
             bot.Mover.SetTargetMoveSpeed(0f);
             bot.Cover.TrySetProneConditional(bot.GoalEnemy);
             var eftSurgery = bot.BotOwner.Medecine.SurgicalKit;
-            if (_startSurgeryTime < Time.time
-                && !eftSurgery.Using
-                && eftSurgery.ShallStartUse())
+            if (_startSurgeryTime < Time.time && !eftSurgery.Using && eftSurgery.ShallStartUse())
             {
                 sainSurgery.SurgeryStarted = true;
                 eftSurgery.ApplyToCurrentPart(new System.Action(onSurgeryDone));
@@ -50,10 +47,8 @@ internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery
 
     public override void OnSteeringTicked()
     {
-        if (!TryShootAnyTarget(Bot.GoalEnemy))
-        {
-        }
-            Bot.Steering.SteerByPriority(Bot.GoalEnemy, true);
+        if (!TryShootAnyTarget(Bot.GoalEnemy)) { }
+        Bot.Steering.SteerByPriority(Bot.GoalEnemy, true);
     }
 
     private void onSurgeryDone()
@@ -76,7 +71,7 @@ internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery
 
     public override void Start()
     {
-        base.Start();   
+        base.Start();
         Bot.Mover.PauseMovement(3f);
         _startSurgeryTime = Time.time + 1f;
         _actionStartedTime = Time.time;
@@ -109,9 +104,13 @@ internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery
     {
         stringBuilder.AppendLine($"Health Status {Bot.Memory.Health.HealthStatus}");
         stringBuilder.AppendLine($"Surgery Started? {Bot.Medical.Surgery.SurgeryStarted}");
-        stringBuilder.AppendLine($"Time Since Surgery Started {Time.time - Bot.Medical.Surgery.SurgeryStartTime}");
+        stringBuilder.AppendLine(
+            $"Time Since Surgery Started {Time.time - Bot.Medical.Surgery.SurgeryStartTime}"
+        );
         stringBuilder.AppendLine($"Area Clear? {Bot.Medical.Surgery.AreaClearForSurgery}");
-        stringBuilder.AppendLine($"ShallStartUse Surgery? {BotOwner.Medecine.SurgicalKit.ShallStartUse()}");
+        stringBuilder.AppendLine(
+            $"ShallStartUse Surgery? {BotOwner.Medecine.SurgicalKit.ShallStartUse()}"
+        );
         stringBuilder.AppendLine($"IsBleeding? {BotOwner.Medecine.FirstAid.IsBleeding}");
     }
 }

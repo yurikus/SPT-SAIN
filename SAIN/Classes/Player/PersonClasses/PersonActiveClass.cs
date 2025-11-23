@@ -1,6 +1,5 @@
-﻿using EFT;
-using System;
-using UnityEngine;
+﻿using System;
+using EFT;
 
 namespace SAIN.Components.PlayerComponentSpace.PersonClasses;
 
@@ -13,7 +12,7 @@ public class PersonActiveClass(PlayerComponent playerComponent)
 
     public void CheckActive(PlayerComponent playerComponent)
     {
-        if (IsAlive) 
+        if (IsAlive)
             IsAlive = CheckAlive(playerComponent);
 
         bool wasActive = PlayerActive;

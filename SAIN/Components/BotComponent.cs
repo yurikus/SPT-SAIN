@@ -1,6 +1,8 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using EFT;
 using SAIN.Components.PlayerComponentSpace;
-using SAIN.Helpers;
 using SAIN.Layers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
@@ -15,9 +17,6 @@ using SAIN.SAINComponent.Classes.Mover;
 using SAIN.SAINComponent.Classes.Search;
 using SAIN.SAINComponent.Classes.Talk;
 using SAIN.SAINComponent.Classes.WeaponFunction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace SAIN.Components;
@@ -126,7 +125,8 @@ public class BotComponent : BotComponentBase, ISPlayer
     public bool GameEnding => BotActivation.GameEnding;
     public bool SAINLayersActive => BotActivation.SAINLayersActive;
 
-    public float DistanceToAimTarget {
+    public float DistanceToAimTarget
+    {
         get
         {
             //if (BotOwner.AimingManager.CurrentAiming != null)
@@ -143,15 +143,10 @@ public class BotComponent : BotComponentBase, ISPlayer
 
     public float LastCheckVisibleTime;
 
-    public ESAINLayer ActiveLayer {
-        get
-        {
-            return BotActivation.ActiveLayer;
-        }
-        set
-        {
-            BotActivation.SetActiveLayer(value);
-        }
+    public ESAINLayer ActiveLayer
+    {
+        get { return BotActivation.ActiveLayer; }
+        set { BotActivation.SetActiveLayer(value); }
     }
 
     public void ManualUpdate(float currentTime, float deltaTime)
@@ -191,7 +186,7 @@ public class BotComponent : BotComponentBase, ISPlayer
     {
         for (int i = 0; i < List.Count; i++)
         {
-             List[i]?.ManualUpdate();
+            List[i]?.ManualUpdate();
         }
     }
 
@@ -365,21 +360,33 @@ public class BotComponent : BotComponentBase, ISPlayer
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error setting MaxShootDist during init, but continuing with initialization...: {ex}");
+                Logger.LogError(
+                    $"Error setting MaxShootDist during init, but continuing with initialization...: {ex}"
+                );
             }
 
             try
             {
                 var settings = GlobalSettingsClass.Instance.General.Jokes;
-                if (settings.RandomCheaters &&
-                    (EFTMath.RandomBool(settings.RandomCheaterChance) || Player.Profile.Nickname.Contains("solarint", StringComparison.OrdinalIgnoreCase)))
+                if (
+                    settings.RandomCheaters
+                    && (
+                        EFTMath.RandomBool(settings.RandomCheaterChance)
+                        || Player.Profile.Nickname.Contains(
+                            "solarint",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                )
                 {
                     IsCheater = true;
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogWarning($"Error when initializing dumb shit for this bot, continuing anyways since its some dumb shit. Error: {ex}");
+                Logger.LogWarning(
+                    $"Error when initializing dumb shit for this bot, continuing anyways since its some dumb shit. Error: {ex}"
+                );
             }
         }
         catch (Exception ex)
@@ -406,7 +413,11 @@ public class BotComponent : BotComponentBase, ISPlayer
 
         if (Info.Profile.IsPlayerScav)
         {
-            return IsAssignedBrainAllowed(assignedBrainName, AIBrains.AllowedPlayerScavBrains, "PlayerScav");
+            return IsAssignedBrainAllowed(
+                assignedBrainName,
+                AIBrains.AllowedPlayerScavBrains,
+                "PlayerScav"
+            );
         }
 
         if (Info.Profile.IsScav)
@@ -417,14 +428,20 @@ public class BotComponent : BotComponentBase, ISPlayer
         return true;
     }
 
-    private bool IsAssignedBrainAllowed(string assignedBrainName, IReadOnlyCollection<string> allowedBrainNames, string botCategory)
+    private bool IsAssignedBrainAllowed(
+        string assignedBrainName,
+        IReadOnlyCollection<string> allowedBrainNames,
+        string botCategory
+    )
     {
         if (allowedBrainNames.Contains(assignedBrainName))
         {
             return true;
         }
 
-        Logger.LogAndNotifyError($"{BotOwner.name} is a {botCategory} but does not have any of these BaseBrains: ${string.Join(", ", allowedBrainNames)}! Current Brain Assignment: [{assignedBrainName}] : Destroying SAIN for this bot...");
+        Logger.LogAndNotifyError(
+            $"{BotOwner.name} is a {botCategory} but does not have any of these BaseBrains: ${string.Join(", ", allowedBrainNames)}! Current Brain Assignment: [{assignedBrainName}] : Destroying SAIN for this bot..."
+        );
 
         return false;
     }
@@ -435,10 +452,7 @@ public class BotComponent : BotComponentBase, ISPlayer
         StopAllCoroutines();
     }
 
-    private void OnEnable()
-    {
-
-    }
+    private void OnEnable() { }
 
     public void LateUpdate()
     {

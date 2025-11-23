@@ -6,16 +6,15 @@ namespace SAIN.SAINComponent.Classes;
 
 public class BotSurgery : BotBase
 {
-    public BotSurgery(BotComponent bot) : base(bot)
+    public BotSurgery(BotComponent bot)
+        : base(bot)
     {
         CanEverTick = false;
     }
 
-    public bool SurgeryStarted {
-        get
-        {
-            return _surgeryStarted;
-        }
+    public bool SurgeryStarted
+    {
+        get { return _surgeryStarted; }
         set
         {
             if (_surgeryStarted != value && value)
@@ -26,10 +25,7 @@ public class BotSurgery : BotBase
         }
     }
 
-    public void StartSurgery()
-    {
-
-    }
+    public void StartSurgery() { }
 
     public float SurgeryStartTime { get; private set; }
 
@@ -44,7 +40,8 @@ public class BotSurgery : BotBase
 
     public bool CheckCanStartUsingKit()
     {
-        return BotOwner?.Medecine?.FirstAid?.IsBleeding == false && BotOwner?.Medecine?.SurgicalKit?.ShallStartUse() == true;
+        return BotOwner?.Medecine?.FirstAid?.IsBleeding == false
+            && BotOwner?.Medecine?.SurgicalKit?.ShallStartUse() == true;
     }
 
     private bool CheckEnemies()
@@ -102,9 +99,11 @@ public class BotSurgery : BotBase
 
     private bool checkThisEnemy(Enemy enemy, float minPathDist, float minTimeSinceLastKnown)
     {
-        if (enemy?.EnemyPlayer?.HealthController.IsAlive == true
+        if (
+            enemy?.EnemyPlayer?.HealthController.IsAlive == true
             && (enemy.Seen || enemy.Heard)
-            && enemy.TimeSinceLastKnownUpdated < 360f)
+            && enemy.TimeSinceLastKnownUpdated < 360f
+        )
         {
             if (enemy.IsVisible)
             {

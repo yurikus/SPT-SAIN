@@ -1,8 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using System.Text;
 using SAIN.Helpers;
 using SAIN.Models.Structs;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -14,11 +13,13 @@ public class EnemyKnownPlaces
     public EnemyPlace LastHeardPlace { get; private set; }
     public EnemyPlace LastSquadSeenPlace { get; private set; }
     public EnemyPlace LastSquadHeardPlace { get; private set; }
-    public float TimeSinceLastKnownUpdated => LastKnownPlace == null ? float.MaxValue : Time.time - TimeLastKnownUpdated;
+    public float TimeSinceLastKnownUpdated =>
+        LastKnownPlace == null ? float.MaxValue : Time.time - TimeLastKnownUpdated;
 
     public Vector3? LastKnownPosition => LastKnownPlace?.Position;
 
-    public float EnemyDistanceFromLastKnown {
+    public float EnemyDistanceFromLastKnown
+    {
         get
         {
             if (LastKnownPlace == null)
@@ -29,7 +30,8 @@ public class EnemyKnownPlaces
         }
     }
 
-    public float BotDistanceFromLastKnown {
+    public float BotDistanceFromLastKnown
+    {
         get
         {
             if (LastKnownPlace == null)
@@ -40,7 +42,8 @@ public class EnemyKnownPlaces
         }
     }
 
-    public float EnemyDistanceFromLastSeen {
+    public float EnemyDistanceFromLastSeen
+    {
         get
         {
             if (LastSeenPlace == null)
@@ -51,7 +54,8 @@ public class EnemyKnownPlaces
         }
     }
 
-    public float EnemyDistanceFromLastHeard {
+    public float EnemyDistanceFromLastHeard
+    {
         get
         {
             if (LastHeardPlace == null)
@@ -73,13 +77,16 @@ public class EnemyKnownPlaces
         _nextCheckSearchTime = currentTime + 0.25f;
 
         bool allSearched = true;
-        if (LastKnownPlace != null && !LastKnownPlace.HasArrivedPersonal && !LastKnownPlace.HasArrivedSquad)
+        if (
+            LastKnownPlace != null
+            && !LastKnownPlace.HasArrivedPersonal
+            && !LastKnownPlace.HasArrivedSquad
+        )
         {
             allSearched = false;
         }
 
-        if (allSearched
-            && !SearchedAllKnownLocations)
+        if (allSearched && !SearchedAllKnownLocations)
         {
             Enemy.Events.EnemyLocationsSearched();
         }
@@ -92,11 +99,12 @@ public class EnemyKnownPlaces
     public EnemyKnownPlaces(EnemyData enemyData)
     {
         Enemy = enemyData.Enemy;
-        _placeData = new PlaceData {
+        _placeData = new PlaceData
+        {
             OwnerEnemy = enemyData.Enemy,
             Owner = enemyData.Enemy.Bot,
             IsAI = enemyData.Enemy.IsAI,
-            OwnerID = enemyData.Enemy.Bot.ProfileId
+            OwnerID = enemyData.Enemy.Bot.ProfileId,
         };
     }
 
@@ -178,8 +186,15 @@ public class EnemyKnownPlaces
 
     private void tryTalk()
     {
-        if (_nextTalkClearTime < Time.time
-            && Enemy.Bot.Talk.GroupSay(EFTMath.RandomBool(75) ? EPhraseTrigger.Clear : EPhraseTrigger.LostVisual, null, true, 75))
+        if (
+            _nextTalkClearTime < Time.time
+            && Enemy.Bot.Talk.GroupSay(
+                EFTMath.RandomBool(75) ? EPhraseTrigger.Clear : EPhraseTrigger.LostVisual,
+                null,
+                true,
+                75
+            )
+        )
         {
             _nextTalkClearTime = Time.time + 10f;
         }
@@ -215,19 +230,32 @@ public class EnemyKnownPlaces
 
         stringBuilder.AppendLine($"Time Since Position Updated: {place.TimeSincePositionUpdated}");
 
-        stringBuilder.AppendLine($"Arrived? [{place.HasArrivedPersonal}]"
-            + (place.HasArrivedPersonal ? $"Time Since Arrived: [{Time.time - place._timeArrivedPers}]" : string.Empty));
+        stringBuilder.AppendLine(
+            $"Arrived? [{place.HasArrivedPersonal}]"
+                + (
+                    place.HasArrivedPersonal
+                        ? $"Time Since Arrived: [{Time.time - place._timeArrivedPers}]"
+                        : string.Empty
+                )
+        );
 
-        stringBuilder.AppendLine($"Seen? [{place.HasSeenPersonal}]"
-            + (place.HasSeenPersonal ? $"Time Since Seen: [{Time.time - place._timeSeenPers}]" : string.Empty));
+        stringBuilder.AppendLine(
+            $"Seen? [{place.HasSeenPersonal}]"
+                + (
+                    place.HasSeenPersonal
+                        ? $"Time Since Seen: [{Time.time - place._timeSeenPers}]"
+                        : string.Empty
+                )
+        );
     }
 
     public EnemyPlace UpdateSeenPlace(Vector3 position, float currentTime)
     {
         if (LastSeenPlace == null)
         {
-            LastSeenPlace = new EnemyPlace(_placeData, position, true, EEnemyPlaceType.Vision, null) {
-                HasSeenPersonal = true
+            LastSeenPlace = new EnemyPlace(_placeData, position, true, EEnemyPlaceType.Vision, null)
+            {
+                HasSeenPersonal = true,
             };
             AllEnemyPlaces.Add(LastSeenPlace);
         }
@@ -247,8 +275,15 @@ public class EnemyKnownPlaces
         }
         if (LastSquadSeenPlace == null)
         {
-            LastSquadSeenPlace = new EnemyPlace(_placeData, memberPlace.Position, true, EEnemyPlaceType.Vision, null) {
-                HasSeenSquad = true
+            LastSquadSeenPlace = new EnemyPlace(
+                _placeData,
+                memberPlace.Position,
+                true,
+                EEnemyPlaceType.Vision,
+                null
+            )
+            {
+                HasSeenSquad = true,
             };
             AllEnemyPlaces.Add(LastSquadSeenPlace);
         }
@@ -267,8 +302,8 @@ public class EnemyKnownPlaces
             LastHeardPlace.SoundType = report.soundType;
             LastHeardPlace.UpdatePosition(report.position);
         }
-        else 
-        {                
+        else
+        {
             LastHeardPlace = new EnemyPlace(_placeData, report);
             AllEnemyPlaces.Add(LastHeardPlace);
         }
@@ -291,7 +326,13 @@ public class EnemyKnownPlaces
         }
         else
         {
-            LastSquadHeardPlace = new EnemyPlace(_placeData, memberPlace.Position, memberPlace.IsDanger, memberPlace.PlaceType, memberPlace.SoundType);
+            LastSquadHeardPlace = new EnemyPlace(
+                _placeData,
+                memberPlace.Position,
+                memberPlace.IsDanger,
+                memberPlace.PlaceType,
+                memberPlace.SoundType
+            );
             AllEnemyPlaces.Add(LastSquadHeardPlace);
         }
         SetLastKnown(LastSquadHeardPlace, currentTime);

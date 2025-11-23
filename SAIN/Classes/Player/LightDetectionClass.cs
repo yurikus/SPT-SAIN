@@ -1,10 +1,6 @@
-using BSG.CameraEffects;
-using Comfort.Common;
-using EFT;
-using SAIN.Helpers;
-using SAIN.SAINComponent;
-using SAIN.SAINComponent.Classes.EnemyClasses;
 using System.Collections.Generic;
+using EFT;
+using SAIN.SAINComponent;
 using UnityEngine;
 
 namespace SAIN.Components.PlayerComponentSpace;
@@ -16,9 +12,11 @@ public class LightDetectionClass(PlayerComponent component) : PlayerComponentBas
     public bool CheckIsBeamVisible(FlashLightClass EnemyFlashlight)
     {
         // If this isn't visible light, and the bot doesn't have night vision, ignore it
-        if (!EnemyFlashlight.WhiteLight &&
-            !EnemyFlashlight.Laser &&
-            Player.AIData?.BotOwner?.NightVision?.UsingNow == false)
+        if (
+            !EnemyFlashlight.WhiteLight
+            && !EnemyFlashlight.Laser
+            && Player.AIData?.BotOwner?.NightVision?.UsingNow == false
+        )
         {
             return false;
         }
@@ -31,21 +29,32 @@ public class LightDetectionClass(PlayerComponent component) : PlayerComponentBas
 
     public void TryToInvestigate(IPlayer Player)
     {
-        Vector3 estimatedPosition = EstimatePosition(Player.Position, PlayerComponent.GetDistanceToPlayer(Player.ProfileId), 10f);
+        Vector3 estimatedPosition = EstimatePosition(
+            Player.Position,
+            PlayerComponent.GetDistanceToPlayer(Player.ProfileId),
+            10f
+        );
         var botComponent = PlayerComponent.BotComponent;
         if (botComponent != null)
         {
-            botComponent.Squad.SquadInfo.AddPointToSearch
-                (estimatedPosition,
+            botComponent.Squad.SquadInfo.AddPointToSearch(
+                estimatedPosition,
                 25f,
                 botComponent,
                 AISoundType.step,
                 Player,
-                SAIN.BotController.Classes.Squad.ESearchPointType.Flashlight);
+                SAIN.BotController.Classes.Squad.ESearchPointType.Flashlight
+            );
         }
         else
         {
-            PlayerComponent.BotOwner?.BotsGroup.AddPointToSearch(estimatedPosition, 20f, PlayerComponent.BotOwner, true, false);
+            PlayerComponent.BotOwner?.BotsGroup.AddPointToSearch(
+                estimatedPosition,
+                20f,
+                PlayerComponent.BotOwner,
+                true,
+                false
+            );
         }
     }
 

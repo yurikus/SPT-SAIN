@@ -1,20 +1,17 @@
 ﻿using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
-using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;
 using SAIN.Preset.Personalities;
-using System.Collections.Generic;
-using System.Reflection;
-using static HBAO_Core;
 using Random = UnityEngine.Random;
 
 namespace SAIN.SAINComponent.Classes.Info;
 
 public class SAINBotInfoClass : BotComponentClassBase
 {
-    public SAINBotInfoClass(BotComponent sain) : base(sain)
+    public SAINBotInfoClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         Profile = new BotProfile(sain);
@@ -51,7 +48,10 @@ public class SAINBotInfoClass : BotComponentClassBase
         {
             if (_fileSettings == null)
             {
-                _fileSettings = SAINPresetClass.Instance.BotSettings.GetSAINSettings(Profile.WildSpawnType, Profile.BotDifficulty);
+                _fileSettings = SAINPresetClass.Instance.BotSettings.GetSAINSettings(
+                    Profile.WildSpawnType,
+                    Profile.BotDifficulty
+                );
             }
             return _fileSettings;
         }
@@ -70,10 +70,14 @@ public class SAINBotInfoClass : BotComponentClassBase
     public float ForgetEnemyTime { get; private set; }
     public float AggressionMultiplier => Difficulty.AggressionModifier;
 
-
     public void SetPersonality(EPersonality personality)
     {
-        if (SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.TryGetValue(personality, out var personalitySettings))
+        if (
+            SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.TryGetValue(
+                personality,
+                out var personalitySettings
+            )
+        )
         {
             PersonalitySettingsClass = personalitySettings;
             Personality = personality;
@@ -110,7 +114,13 @@ public class SAINBotInfoClass : BotComponentClassBase
     public void CalcTimeBeforeSearch()
     {
         float searchTime;
-        if (Profile.WildSpawnType is WildSpawnType.bossKilla or WildSpawnType.bossKillaAgro or WildSpawnType.bossTagilla or WildSpawnType.bossTagillaAgro)
+        if (
+            Profile.WildSpawnType
+            is WildSpawnType.bossKilla
+                or WildSpawnType.bossKillaAgro
+                or WildSpawnType.bossTagilla
+                or WildSpawnType.bossTagillaAgro
+        )
         {
             searchTime = 0.1f;
         }
@@ -143,7 +153,10 @@ public class SAINBotInfoClass : BotComponentClassBase
 
     private void UpdateExtractTime()
     {
-        float percentage = Random.Range(FileSettings.Mind.MinExtractPercentage, FileSettings.Mind.MaxExtractPercentage);
+        float percentage = Random.Range(
+            FileSettings.Mind.MinExtractPercentage,
+            FileSettings.Mind.MaxExtractPercentage
+        );
 
         var squad = Bot?.Squad;
         var members = squad?.Members;
@@ -178,7 +191,10 @@ public class SAINBotInfoClass : BotComponentClassBase
 
     public EPersonality GetPersonality(out PersonalitySettingsClass settings)
     {
-        return SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.GetPersonality(this, out settings);
+        return SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.GetPersonality(
+            this,
+            out settings
+        );
     }
 
     private void SetConfigValues(SAINSettingsClass sainFileSettings)

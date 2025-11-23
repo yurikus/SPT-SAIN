@@ -1,8 +1,6 @@
 ﻿using EFT;
-using HarmonyLib;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Memory;
@@ -17,7 +15,8 @@ public class SAINMemoryClass : BotComponentClassBase
     public HealthTracker Health { get; private set; }
     public LocationTracker Location { get; private set; }
 
-    public SAINMemoryClass(BotComponent sain) : base(sain)
+    public SAINMemoryClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         Health = new HealthTracker(sain);
@@ -77,8 +76,12 @@ public class SAINMemoryClass : BotComponentClassBase
 
     private void resetUnderFire()
     {
-        if (BotOwner.Memory.IsUnderFire &&
-            (LastUnderFireSource == null || LastUnderFireSource.HealthController.IsAlive == false))
+        if (
+            BotOwner.Memory.IsUnderFire
+            && (
+                LastUnderFireSource == null || LastUnderFireSource.HealthController.IsAlive == false
+            )
+        )
         {
             //Reset the UnderFireTime
             BotOwner.Memory.Float_4 = Time.time;

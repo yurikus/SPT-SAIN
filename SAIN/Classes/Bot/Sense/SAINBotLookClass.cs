@@ -1,10 +1,7 @@
 ﻿using EFT;
-using SAIN.Classes.Transform;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections.Generic;
 using UnityEngine;
-
 // Found in Botowner.Looksensor
 using EnemyVisionCheck = BotReportsDataClass;
 using LookAllData = LookAllDataClass;
@@ -13,7 +10,8 @@ namespace SAIN.SAINComponent.Classes;
 
 public class SAINBotLookClass : BotBase
 {
-    public SAINBotLookClass(BotComponent component) : base(component)
+    public SAINBotLookClass(BotComponent component)
+        : base(component)
     {
         LookData = new LookAllData();
     }
@@ -39,7 +37,11 @@ public class SAINBotLookClass : BotBase
         for (int i = 0; i < lookData.ReportsData.Count; i++)
         {
             EnemyVisionCheck enemyVision = lookData.ReportsData[i];
-            BotOwner.BotsGroup.ReportAboutEnemy(enemyVision.Enemy, enemyVision.VisibleOnlyBySence, BotOwner);
+            BotOwner.BotsGroup.ReportAboutEnemy(
+                enemyVision.Enemy,
+                enemyVision.VisibleOnlyBySence,
+                BotOwner
+            );
         }
 
         if (lookData.ReportsData.Count > 0)
@@ -55,7 +57,11 @@ public class SAINBotLookClass : BotBase
         lookData.Reset();
     }
 
-    private static int UpdateLookForEnemies(LookAllData lookAll, float currentTime, BotComponent bot)
+    private static int UpdateLookForEnemies(
+        LookAllData lookAll,
+        float currentTime,
+        BotComponent bot
+    )
     {
         int updated = 0;
         var lookSensor = bot.BotOwner.LookSensor;
@@ -66,9 +72,9 @@ public class SAINBotLookClass : BotBase
 
         // Update look sensors fields since we are not calling the original botowner code that does this.
         // We should check for changes between tarkov updates.
-			lookSensor.WeaponRootPoint = weaponRoot;
-			lookSensor.LookSensorShootPosition.UpdateShootPosition(weaponRoot);
-			lookSensor.HeadPoint = viewPosition;
+        lookSensor.WeaponRootPoint = weaponRoot;
+        lookSensor.LookSensorShootPosition.UpdateShootPosition(weaponRoot);
+        lookSensor.HeadPoint = viewPosition;
 
         lookAll.Reset();
         var enemies = bot.EnemyController.EnemiesArray;
