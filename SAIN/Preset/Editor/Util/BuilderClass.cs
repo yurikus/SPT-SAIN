@@ -1,10 +1,10 @@
-﻿using EFT.UI;
+﻿using System.Collections.Generic;
+using System.Linq;
+using EFT.UI;
 using SAIN.Attributes;
 using SAIN.Editor.Util;
 using SAIN.Helpers;
 using SAIN.Plugin;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static SAIN.Editor.SAINLayout;
 
@@ -12,7 +12,10 @@ namespace SAIN.Editor;
 
 public static class BuilderClass
 {
-    private static float ExpandMenuWidth => 250f;
+    private static float ExpandMenuWidth
+    {
+        get { return 250f; }
+    }
 
     public static string SearchBox(SettingsContainer container, float height = 30, SearchParams config = null)
     {
@@ -44,38 +47,32 @@ public static class BuilderClass
 
     public sealed class SearchParams : GUIParams
     {
-        public SearchParams(float height = 30) : base(height)
+        public SearchParams(float height = 30)
+            : base(height)
         {
-            Options =
-            [
-                EGUIConfig.horizontal,
-                EGUIConfig.startFlexSpace
-            ];
+            Options = [EGUIConfig.horizontal, EGUIConfig.startFlexSpace];
         }
 
         public float labelWidth = 150;
 
-        public GUILayoutOption[] Label =>
-        [
-            GUILayout.Width(labelWidth),
-            Height
-        ];
+        public GUILayoutOption[] Label
+        {
+            get { return [GUILayout.Width(labelWidth), Height]; }
+        }
 
         public float textFieldWidth = 250;
 
-        public GUILayoutOption[] TextField =>
-        [
-            GUILayout.Width(textFieldWidth),
-            Height
-        ];
+        public GUILayoutOption[] TextField
+        {
+            get { return [GUILayout.Width(textFieldWidth), Height]; }
+        }
 
         public float clearWidth = 75;
 
-        public GUILayoutOption[] Clear =>
-        [
-            GUILayout.Width(labelWidth),
-            Height
-        ];
+        public GUILayoutOption[] Clear
+        {
+            get { return [GUILayout.Width(labelWidth), Height]; }
+        }
     }
 
     public class GUIParams
@@ -85,23 +82,46 @@ public static class BuilderClass
             this.optionHeight = height;
         }
 
-        public EGUIConfig[] Options =
-        [
-            EGUIConfig.beginHorizontal,
-            EGUIConfig.endHorizontal,
-        ];
+        public EGUIConfig[] Options = [EGUIConfig.beginHorizontal, EGUIConfig.endHorizontal];
 
         public float optionHeight = 30;
         public float optionSpacing = 5;
 
-        public void Spacing() => GUILayout.Space(optionSpacing);
+        public void Spacing()
+        {
+            GUILayout.Space(optionSpacing);
+        }
 
-        public GUILayoutOption Height => GUILayout.Height(optionHeight);
-        public bool StartFlexSpace => Options.Contains(EGUIConfig.startFlexSpace);
-        public bool EndFlexSpace => Options.Contains(EGUIConfig.endFlexSpace);
-        public bool Horizontal => Options.Contains(EGUIConfig.horizontal);
-        public bool Vertical => Options.Contains(EGUIConfig.vertical);
-        public bool FixedSpace => Options.Contains(EGUIConfig.fixedSpace);
+        public GUILayoutOption Height
+        {
+            get { return GUILayout.Height(optionHeight); }
+        }
+
+        public bool StartFlexSpace
+        {
+            get { return Options.Contains(EGUIConfig.startFlexSpace); }
+        }
+
+        public bool EndFlexSpace
+        {
+            get { return Options.Contains(EGUIConfig.endFlexSpace); }
+        }
+
+        public bool Horizontal
+        {
+            get { return Options.Contains(EGUIConfig.horizontal); }
+        }
+
+        public bool Vertical
+        {
+            get { return Options.Contains(EGUIConfig.vertical); }
+        }
+
+        public bool FixedSpace
+        {
+            get { return Options.Contains(EGUIConfig.fixedSpace); }
+        }
+
         public float FixedSpaceWidth = 10;
 
         public void Start()
@@ -172,7 +192,13 @@ public static class BuilderClass
 
         if (ConfigEditingTracker.UnsavedChanges)
         {
-            Alert("Click Save to export changes, and send changes to bots if in-game", "YOU HAVE UNSAVED CHANGES", height, alertWidth, ColorNames.LightRed);
+            Alert(
+                "Click Save to export changes, and send changes to bots if in-game",
+                "YOU HAVE UNSAVED CHANGES",
+                height,
+                alertWidth,
+                ColorNames.LightRed
+            );
         }
         else
         {
@@ -224,13 +250,21 @@ public static class BuilderClass
 
     public static void MinValueBox(object value, params GUILayoutOption[] options)
     {
-        if (value == null) return;
+        if (value == null)
+        {
+            return;
+        }
+
         Box(value.ToString(), "Minimum", options);
     }
 
     public static void MaxValueBox(object value, params GUILayoutOption[] options)
     {
-        if (value == null) return;
+        if (value == null)
+        {
+            return;
+        }
+
         Box(value.ToString(), "Maximum", options);
     }
 
@@ -347,11 +381,7 @@ public static class BuilderClass
     {
         BeginHorizontalSpace();
         float width = 1850f / optionsCount;
-        options =
-        [
-            Height(height),
-            Width(width),
-        ];
+        options = [Height(height), Width(width)];
         return 0;
     }
 
@@ -381,7 +411,16 @@ public static class BuilderClass
         return value;
     }
 
-    public static string SelectionGridExpandHeight(Rect menuRect, string[] options, string selectedOption, Rect[] optionRects, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f, string[] toolTips = null)
+    public static string SelectionGridExpandHeight(
+        Rect menuRect,
+        string[] options,
+        string selectedOption,
+        Rect[] optionRects,
+        float min = 15f,
+        float incPerFrame = 3f,
+        float closeMulti = 0.66f,
+        string[] toolTips = null
+    )
     {
         BeginGroup(menuRect);
 
@@ -437,7 +476,15 @@ public static class BuilderClass
         return style;
     }
 
-    public static string SelectionGridExpandWidth(Rect menuRect, string[] options, string selectedOption, Rect[] optionRects, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
+    public static string SelectionGridExpandWidth(
+        Rect menuRect,
+        string[] options,
+        string selectedOption,
+        Rect[] optionRects,
+        float min = 15f,
+        float incPerFrame = 3f,
+        float closeMulti = 0.66f
+    )
     {
         BeginGroup(menuRect);
         for (int i = 0; i < options.Length; i++)
@@ -464,7 +511,15 @@ public static class BuilderClass
         return selectedOption;
     }
 
-    public static void SelectionGridExpandWidth(Rect menuRect, string[] options, List<string> selectedList, Rect[] optionRects, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
+    public static void SelectionGridExpandWidth(
+        Rect menuRect,
+        string[] options,
+        List<string> selectedList,
+        Rect[] optionRects,
+        float min = 15f,
+        float incPerFrame = 3f,
+        float closeMulti = 0.66f
+    )
     {
         for (int i = 0; i < options.Length; i++)
         {
@@ -506,7 +561,7 @@ public static class BuilderClass
                 x = X,
                 y = Y,
                 width = startWidth,
-                height = optionHeight
+                height = optionHeight,
             };
         }
         return rects;
@@ -527,13 +582,21 @@ public static class BuilderClass
                 x = X,
                 y = Y,
                 width = optionWidth,
-                height = startHeight
+                height = startHeight,
             };
         }
         return rects;
     }
 
-    private static Rect AnimateHeight(Rect rect, bool selected, float max, out bool hovering, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
+    private static Rect AnimateHeight(
+        Rect rect,
+        bool selected,
+        float max,
+        out bool hovering,
+        float min = 15f,
+        float incPerFrame = 3f,
+        float closeMulti = 0.66f
+    )
     {
         Rect detectRect = rect;
         detectRect.height = max;
@@ -542,7 +605,15 @@ public static class BuilderClass
         return rect;
     }
 
-    private static Rect AnimateWidth(Rect rect, bool selected, float max, out bool hovering, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
+    private static Rect AnimateWidth(
+        Rect rect,
+        bool selected,
+        float max,
+        out bool hovering,
+        float min = 15f,
+        float incPerFrame = 3f,
+        float closeMulti = 0.66f
+    )
     {
         Rect detectRect = rect;
         detectRect.width = max;
@@ -551,7 +622,15 @@ public static class BuilderClass
         return rect;
     }
 
-    private static float Animate(float current, bool mouseHover, bool selected, float max, float min = 15f, float incPerFrame = 3f, float closeMulti = 0.66f)
+    private static float Animate(
+        float current,
+        bool mouseHover,
+        bool selected,
+        float max,
+        float min = 15f,
+        float incPerFrame = 3f,
+        float closeMulti = 0.66f
+    )
     {
         if (mouseHover || selected)
         {
@@ -568,7 +647,13 @@ public static class BuilderClass
     public static bool ExpandableMenu(string name, bool value, string description = null, float height = 20f)
     {
         BeginHorizontal();
-        value = Toggle(value, new GUIContent(value ? "-" : "+", value ? "Collapse" : "Expand"), EUISoundType.MenuDropdown, Width(17.5f), Height(height));
+        value = Toggle(
+            value,
+            new GUIContent(value ? "-" : "+", value ? "Collapse" : "Expand"),
+            EUISoundType.MenuDropdown,
+            Width(17.5f),
+            Height(height)
+        );
         value = Toggle(value, new GUIContent(name, description), EUISoundType.MenuDropdown, Height(height));
         EndHorizontal();
         return value;

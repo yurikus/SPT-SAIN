@@ -6,9 +6,8 @@ namespace SAIN.SAINComponent.Classes.EnemyClasses;
 
 public class EnemyVisionDistanceClass : EnemyBase
 {
-    public EnemyVisionDistanceClass(EnemyData enemyData) : base(enemyData, enemyData.Enemy.Bot)
-    {
-    }
+    public EnemyVisionDistanceClass(EnemyData enemyData)
+        : base(enemyData, enemyData.Enemy.Bot) { }
 
     public float Value
     {
@@ -25,9 +24,11 @@ public class EnemyVisionDistanceClass : EnemyBase
 
     private bool IsEnemyAlwaysInVisibleDistance()
     {
-        if (Enemy.Vision.Angles.AngleToEnemy < 30f &&
-            Enemy.KnownPlaces.EnemyDistanceFromLastKnown < 3 &&
-            BotManagerComponent.Instance.TimeVision.VisibilityRatio > 0.5f)
+        if (
+            Enemy.Vision.Angles.AngleToEnemy < 30f
+            && Enemy.KnownPlaces.EnemyDistanceFromLastKnown < 3
+            && BotManagerComponent.Instance.TimeVision.VisibilityRatio > 0.5f
+        )
         {
             return true;
         }
@@ -82,7 +83,10 @@ public class EnemyVisionDistanceClass : EnemyBase
         return result;
     }
 
-    private static float _sprintMod => SAINPlugin.LoadedPreset.GlobalSettings.Look.VisionDistance.MovementDistanceModifier;
+    private static float _sprintMod
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.Look.VisionDistance.MovementDistanceModifier; }
+    }
 
     private float CalcAngleMod()
     {

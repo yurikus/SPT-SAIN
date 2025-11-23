@@ -6,7 +6,10 @@ namespace SAIN.SAINComponent.Classes;
 
 public static class SAINNotLooking
 {
-    private static LookSettings Settings => SAINPlugin.LoadedPreset.GlobalSettings.Look;
+    private static LookSettings Settings
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.Look; }
+    }
 
     public static float GetSpreadIncrease(IPlayer person, BotOwner botOwner)
     {
@@ -51,9 +54,11 @@ public static class SAINNotLooking
             return false;
         }
 
-        if (!enemyInfo.HaveSeenPersonal
+        if (
+            !enemyInfo.HaveSeenPersonal
             || Time.time - enemyInfo.PersonalSeenTime <= Settings.NotLooking.NotLookingTimeLimit
-            || !enemyInfo.IsVisible)
+            || !enemyInfo.IsVisible
+        )
         {
             Vector3 lookDir = player.LookDirection.normalized;
             Vector3 playerPos = player.Position;

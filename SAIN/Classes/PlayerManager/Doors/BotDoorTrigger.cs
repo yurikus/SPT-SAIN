@@ -14,9 +14,7 @@ public class BotDoorTrigger : MonoBehaviour
         _doorHandler = GameWorldComponent.Instance.Doors;
     }
 
-    public void Update()
-    {
-    }
+    public void Update() { }
 
     public void initDoor(Door door)
     {
@@ -27,9 +25,7 @@ public class BotDoorTrigger : MonoBehaviour
 
     private Door _door;
 
-    public void OnDestroy()
-    {
-    }
+    public void OnDestroy() { }
 
     public SphereCollider SphereCollider { get; private set; }
 
@@ -76,7 +72,10 @@ public class BotDoorTrigger : MonoBehaviour
     private bool shallInvertDoorAngle(Door door, Vector3 colliderPosition)
     {
         var interactionParameters = door.GetInteractionParameters(colliderPosition);
-        if (interactionParameters.AnimationId == (door.DoorState is EDoorState.Locked ? (int)door.DoorKeyOpenInteraction : door.CalculateInteractionIndex(colliderPosition)))
+        if (
+            interactionParameters.AnimationId
+            == (door.DoorState is EDoorState.Locked ? (int)door.DoorKeyOpenInteraction : door.CalculateInteractionIndex(colliderPosition))
+        )
         {
             return false;
         }

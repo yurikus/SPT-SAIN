@@ -9,19 +9,11 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Decision;
 
-public class BotDecisionManager(SAINDecisionClass decisionClass)
-    : BotSubClass<SAINDecisionClass>(decisionClass),
-        IBotClass
+public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<SAINDecisionClass>(decisionClass), IBotClass
 {
     private const float DECISION_FREQUENCY = 1f / 10;
 
-    public event Action<
-        ECombatDecision,
-        ESquadDecision,
-        ESelfActionType,
-        Enemy,
-        BotComponent
-    > OnDecisionMade;
+    public event Action<ECombatDecision, ESquadDecision, ESelfActionType, Enemy, BotComponent> OnDecisionMade;
 
     public ToggleEvent HasDecisionToggle { get; } = new ToggleEvent();
 
@@ -34,9 +26,16 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
     public ESelfActionType CurrentSelfDecision { get; private set; }
     public ESelfActionType PreviousSelfDecision { get; private set; }
 
-    public bool HasDecision => HasDecisionToggle.Value;
+    public bool HasDecision
+    {
+        get { return HasDecisionToggle.Value; }
+    }
+
     public float ChangeDecisionTime { get; private set; }
-    public float TimeSinceChangeDecision => Time.time - ChangeDecisionTime;
+    public float TimeSinceChangeDecision
+    {
+        get { return Time.time - ChangeDecisionTime; }
+    }
 
     public override void Init()
     {
@@ -82,11 +81,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
             {
                 return false;
             }
-            if (
-                enemy.RealDistance < 35
-                && enemy.Path.PathLength < 30
-                && enemy.Status.VulnerableAction != EEnemyAction.None
-            )
+            if (enemy.RealDistance < 35 && enemy.Path.PathLength < 30 && enemy.Status.VulnerableAction != EEnemyAction.None)
             {
                 enemy.BotOwner.WeaponManager.Melee.ShallEndRun = false;
                 return true;
@@ -125,76 +120,51 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
         }
 
         // TODO: rework melee decisions
-        if (
-            Bot.Info.Profile.WildSpawnType
-            is WildSpawnType.bossTagilla
-                or WildSpawnType.bossTagillaAgro
-        )
+        if (Bot.Info.Profile.WildSpawnType is WildSpawnType.bossTagilla or WildSpawnType.bossTagillaAgro)
         {
             if (shallTagillaHammerAttack(enemy))
             {
-                SetDecisions(
-                    ECombatDecision.MeleeAttack,
-                    ESquadDecision.None,
-                    ESelfActionType.None,
-                    enemy
-                );
+                SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
                 return;
             }
             if (BotOwner.WeaponManager.IsMelee)
+            {
                 BotOwner.WeaponManager.Selector.ChangeToMain();
+            }
         }
 
         if (enemy != null && enemy.IsZombie)
         {
             bool hasShooterContact = false;
             foreach (var knownEnemy in Bot.EnemyController.KnownEnemies)
+            {
                 if (knownEnemy?.IsZombie != true)
+                {
                     hasShooterContact = true;
+                }
+            }
+
             if (!hasShooterContact)
             {
-                BaseClass.SelfActionDecisions.GetDecision(
-                    out ESelfActionType zombieDecision,
-                    enemy
-                );
+                BaseClass.SelfActionDecisions.GetDecision(out ESelfActionType zombieDecision, enemy);
                 BaseClass.SquadDecisions.GetDecision(out ESquadDecision zombieSqdDecision, enemy);
-                SetDecisions(
-                    ECombatDecision.FightZombies,
-                    zombieSqdDecision,
-                    zombieDecision,
-                    enemy
-                );
+                SetDecisions(ECombatDecision.FightZombies, zombieSqdDecision, zombieDecision, enemy);
                 return;
             }
         }
         if (Bot.Decision.DogFightDecision.DogFightActive)
         {
-            SetDecisions(
-                ECombatDecision.DogFight,
-                ESquadDecision.None,
-                ESelfActionType.None,
-                enemy
-            );
+            SetDecisions(ECombatDecision.DogFight, ESquadDecision.None, ESelfActionType.None, enemy);
             return;
         }
         if (BotOwner.WeaponManager.IsMelee)
         {
-            SetDecisions(
-                ECombatDecision.MeleeAttack,
-                ESquadDecision.None,
-                ESelfActionType.None,
-                enemy
-            );
+            SetDecisions(ECombatDecision.MeleeAttack, ESquadDecision.None, ESelfActionType.None, enemy);
             return;
         }
         if (ContinueMoveToCover())
         {
-            SetDecisions(
-                ECombatDecision.SeekCover,
-                ESquadDecision.None,
-                Bot.Decision.CurrentSelfDecision,
-                enemy
-            );
+            SetDecisions(ECombatDecision.SeekCover, ESquadDecision.None, Bot.Decision.CurrentSelfDecision, enemy);
             return;
         }
         if (BaseClass.SquadDecisions.GetDecision(out ESquadDecision squadDecision, enemy))
@@ -202,13 +172,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
             SetDecisions(ECombatDecision.None, squadDecision, ESelfActionType.None, enemy);
             return;
         }
-        if (
-            BaseClass.EnemyDecisions.GetDecision(
-                out ECombatDecision combatDecision,
-                enemy,
-                Bot.EnemyController.KnownEnemies
-            )
-        )
+        if (BaseClass.EnemyDecisions.GetDecision(out ECombatDecision combatDecision, enemy, Bot.EnemyController.KnownEnemies))
         {
             SetDecisions(combatDecision, ESquadDecision.None, ESelfActionType.None, enemy);
             return;
@@ -216,12 +180,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
         SetDecisions(ECombatDecision.None, ESquadDecision.None, ESelfActionType.None, enemy);
     }
 
-    private void SetDecisions(
-        ECombatDecision solo,
-        ESquadDecision squad,
-        ESelfActionType self,
-        Enemy enemy
-    )
+    private void SetDecisions(ECombatDecision solo, ESquadDecision squad, ESelfActionType self, Enemy enemy)
     {
 #if DEBUG
         if (SAINPlugin.DebugMode)
@@ -243,10 +202,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
 
         if (checkForNewDecision(solo, squad, self, enemy))
         {
-            bool hasDecision =
-                solo != ECombatDecision.None
-                || self != ESelfActionType.None
-                || squad != ESquadDecision.None;
+            bool hasDecision = solo != ECombatDecision.None || self != ESelfActionType.None || squad != ESquadDecision.None;
 
             if (hasDecision)
             {
@@ -289,13 +245,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
             ChangeDecisionTime = Time.time;
             HasDecisionToggle.CheckToggle(hasDecision, ChangeDecisionTime);
             CurrentDecision = decision;
-            OnDecisionMade?.Invoke(
-                decision.CombatDecision,
-                decision.SquadDecision,
-                decision.SelfAction,
-                decision.Enemy,
-                Bot
-            );
+            OnDecisionMade?.Invoke(decision.CombatDecision, decision.SquadDecision, decision.SelfAction, decision.Enemy, Bot);
         }
     }
 
@@ -362,15 +312,25 @@ public class BotDecisionManager(SAINDecisionClass decisionClass)
     {
         bool runningToCover = Bot.Decision.RunningToCover;
         if (!runningToCover)
+        {
             return false;
+        }
+
         if (!Bot.Mover.Moving)
+        {
             return false;
+        }
+
         if (Bot.Cover.HasCover)
+        {
             return false;
+        }
 
         float timeChangeDec = Bot.Decision.TimeSinceChangeDecision;
         if (timeChangeDec < 0.5f)
+        {
             return true;
+        }
 
         //if (timeChangeDec > 3 &&
         //    !Bot.BotStuck.BotHasChangedPosition)

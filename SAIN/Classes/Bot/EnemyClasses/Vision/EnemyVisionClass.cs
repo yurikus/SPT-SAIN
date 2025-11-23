@@ -8,15 +8,31 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
     private const float _repeatContactMinSeenTime = 12f;
     private const float _lostContactMinSeenTime = 12f;
 
-    public float EnemyVelocity => EnemyTransform.VelocityData.VelocityMagnitudeNormal;
+    public float EnemyVelocity
+    {
+        get { return EnemyTransform.VelocityData.VelocityMagnitudeNormal; }
+    }
+
     public bool FirstContactOccured { get; private set; }
     public bool ShallReportRepeatContact { get; set; }
     public bool ShallReportLostVisual { get; set; }
     public bool IsVisible { get; private set; }
-    public bool InLineOfSight => EnemyParts.LineOfSight;
-    public bool CanShoot => EnemyParts.CanShoot;
+    public bool InLineOfSight
+    {
+        get { return EnemyParts.LineOfSight; }
+    }
+
+    public bool CanShoot
+    {
+        get { return EnemyParts.CanShoot; }
+    }
+
     public float VisibleStartTime { get; private set; }
-    public float TimeSinceSeen => Seen ? Time.time - TimeLastSeen : -1;
+    public float TimeSinceSeen
+    {
+        get { return Seen ? Time.time - TimeLastSeen : -1; }
+    }
+
     public bool Seen { get; private set; }
     public float TimeFirstSeen { get; private set; }
     public float TimeLastSeen { get; private set; }
@@ -24,8 +40,7 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
     public float LastGainSightResult { get; set; } = 1f;
 
     public EnemyAnglesClass Angles { get; } = new();
-    public EnemyPartsClass EnemyParts { get; } =
-        new EnemyPartsClass(enemyData.EnemyPlayerComponent);
+    public EnemyPartsClass EnemyParts { get; } = new EnemyPartsClass(enemyData.EnemyPlayerComponent);
 
     public static float AIVisionRangeLimit(Enemy enemy)
     {
@@ -59,15 +74,9 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
     {
         return aiLimit switch
         {
-            AILimitSetting.Far => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[
-                AILimitSetting.Far
-            ],
-            AILimitSetting.VeryFar => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[
-                AILimitSetting.VeryFar
-            ],
-            AILimitSetting.Narnia => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[
-                AILimitSetting.Narnia
-            ],
+            AILimitSetting.Far => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[AILimitSetting.Far],
+            AILimitSetting.VeryFar => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[AILimitSetting.VeryFar],
+            AILimitSetting.Narnia => GlobalSettingsClass.Instance.General.AILimit.MaxVisionRanges[AILimitSetting.Narnia],
             _ => float.MaxValue,
         };
     }
@@ -98,6 +107,7 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
         else if (!EnemyParts.CanBeSeen)
         {
             if (EnemyInfo.IsVisible)
+            {
                 try
                 {
                     EnemyInfo.SetVisible(false);
@@ -105,6 +115,8 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
                 catch
                 { /* eft code */
                 }
+            }
+
             IsVisible = false;
         }
         else
@@ -138,13 +150,11 @@ public class EnemyVisionClass(EnemyData enemyData) : EnemyBase(enemyData, enemyD
         if (!IsVisible)
         {
             if (wasVisible)
+            {
                 Enemy.UpdateLastSeenPosition(EnemyTransform.Position, currentTime);
+            }
 
-            if (
-                Seen
-                && TimeSinceSeen > _lostContactMinSeenTime
-                && _nextReportLostVisualTime < currentTime
-            )
+            if (Seen && TimeSinceSeen > _lostContactMinSeenTime && _nextReportLostVisualTime < currentTime)
             {
                 _nextReportLostVisualTime = currentTime + 20f;
                 ShallReportLostVisual = true;

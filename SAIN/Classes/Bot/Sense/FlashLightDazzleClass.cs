@@ -10,9 +10,8 @@ public class FlashLightDazzleClass : BotBase
 {
     private TemporaryStatModifiers Modifiers = new(1f, 1f, 1f, 1f, 1f);
 
-    public FlashLightDazzleClass(BotComponent owner) : base(owner)
-    {
-    }
+    public FlashLightDazzleClass(BotComponent owner)
+        : base(owner) { }
 
     public void CheckIfDazzleApplied(Enemy enemy)
     {
@@ -28,13 +27,11 @@ public class FlashLightDazzleClass : BotBase
             if (flashlight != null)
             {
                 bool usingNVGs = BotOwner.NightVision.UsingNow;
-                if ((flashlight.WhiteLight || (usingNVGs && flashlight.IRLight)) &&
-                    EnemyWithFlashlight(enemy))
+                if ((flashlight.WhiteLight || (usingNVGs && flashlight.IRLight)) && EnemyWithFlashlight(enemy))
                 {
                     return;
                 }
-                else if ((flashlight.Laser || (usingNVGs && flashlight.IRLaser)) &&
-                    EnemyWithLaser(enemy))
+                else if ((flashlight.Laser || (usingNVGs && flashlight.IRLaser)) && EnemyWithLaser(enemy))
                 {
                     return;
                 }
@@ -46,12 +43,18 @@ public class FlashLightDazzleClass : BotBase
     private bool EnemyWithFlashlight(Enemy enemy)
     {
         float dist = enemy.RealDistance;
-        if (dist < 80f &&
-            FlashlightVisionCheck(enemy.EnemyPlayer))
+        if (dist < 80f && FlashlightVisionCheck(enemy.EnemyPlayer))
         {
             Vector3 botPos = BotOwner.MyHead.position;
             Vector3 weaponRoot = enemy.EnemyPlayer.WeaponRoot.position;
-            if (!Physics.Raycast(weaponRoot, (botPos - weaponRoot).normalized, (botPos - weaponRoot).magnitude, LayerMaskClass.HighPolyWithTerrainMask))
+            if (
+                !Physics.Raycast(
+                    weaponRoot,
+                    (botPos - weaponRoot).normalized,
+                    (botPos - weaponRoot).magnitude,
+                    LayerMaskClass.HighPolyWithTerrainMask
+                )
+            )
             {
                 float gainSight = 1.33f;
                 float dazzlemodifier = dist < MaxDazzleRange ? GetDazzleModifier(enemy) : 1f;
@@ -73,7 +76,14 @@ public class FlashLightDazzleClass : BotBase
         {
             Vector3 botPos = BotOwner.MyHead.position;
             Vector3 weaponRoot = enemy.EnemyPlayer.WeaponRoot.position;
-            if (!Physics.Raycast(weaponRoot, (botPos - weaponRoot).normalized, (botPos - weaponRoot).magnitude, LayerMaskClass.HighPolyWithTerrainMask))
+            if (
+                !Physics.Raycast(
+                    weaponRoot,
+                    (botPos - weaponRoot).normalized,
+                    (botPos - weaponRoot).magnitude,
+                    LayerMaskClass.HighPolyWithTerrainMask
+                )
+            )
             {
                 float gainSight = 1.33f;
                 float dazzlemodifier = dist < MaxDazzleRange ? GetDazzleModifier(enemy) : 1f;
@@ -84,8 +94,15 @@ public class FlashLightDazzleClass : BotBase
         return false;
     }
 
-    private static float MaxDazzleRange => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.MaxDazzleRange;
-    private static float Effectiveness => SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DazzleEffectiveness;
+    private static float MaxDazzleRange
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.MaxDazzleRange; }
+    }
+
+    private static float Effectiveness
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DazzleEffectiveness; }
+    }
 
     public void ApplyDazzle(float dazzleModif, float gainSightModif)
     {
@@ -129,8 +146,10 @@ public class FlashLightDazzleClass : BotBase
         float ratio = (num2 / num);
         float result = Mathf.InverseLerp(1f, 2f, ratio);
 
-        if (BotOwner.NightVision.UsingNow &&
-            (enemy.EnemyPlayerComponent.Flashlight.WhiteLight || enemy.EnemyPlayerComponent.Flashlight.Laser))
+        if (
+            BotOwner.NightVision.UsingNow
+            && (enemy.EnemyPlayerComponent.Flashlight.WhiteLight || enemy.EnemyPlayerComponent.Flashlight.Laser)
+        )
         {
             result *= 1.5f;
         }

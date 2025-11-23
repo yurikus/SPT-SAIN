@@ -5,10 +5,20 @@ namespace SAIN.Editor;
 
 public static class RectLayout
 {
-    public static Vector2 ScaledPivot => GetScaling();
+    public static Vector2 ScaledPivot
+    {
+        get { return GetScaling(); }
+    }
 
-    private static float ReferenceResX => 1920 * PresetHandler.EditorDefaults.ConfigScaling;
-    private static float ReferenceResY => 1080 * PresetHandler.EditorDefaults.ConfigScaling;
+    private static float ReferenceResX
+    {
+        get { return 1920 * PresetHandler.EditorDefaults.ConfigScaling; }
+    }
+
+    private static float ReferenceResY
+    {
+        get { return 1080 * PresetHandler.EditorDefaults.ConfigScaling; }
+    }
 
     private static Vector2 GetScaling()
     {

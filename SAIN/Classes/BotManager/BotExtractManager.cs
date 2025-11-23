@@ -34,16 +34,9 @@ public class BotExtractManager : BotManagerBase
         CheckRaidProgressTimer = currentTime + 5f;
     }
 
-    public void LogExtractionOfBot(
-        BotOwner bot,
-        Vector3 point,
-        string reason,
-        ExfiltrationPoint exfil
-    )
+    public void LogExtractionOfBot(BotOwner bot, Vector3 point, string reason, ExfiltrationPoint exfil)
     {
-        Logger.LogInfo(
-            $"{bot.name} Extracted because {reason} at {point} for extract {exfil.Settings.Name} at {System.DateTime.UtcNow}"
-        );
+        Logger.LogInfo($"{bot.name} Extracted because {reason} at {point} for extract {exfil.Settings.Name} at {System.DateTime.UtcNow}");
         BotExtractionInfos.Add(new ExtractionInfo(bot, reason, exfil));
         ExtractedBots.Add(bot.GetPlayer.ProfileId);
     }
@@ -181,17 +174,13 @@ public class BotExtractManager : BotManagerBase
             return false;
         }
 
-        bool exfilAssigned = bot.Squad.BotInGroup
-            ? TryAssignSquadExfil(bot)
-            : TryAssignExfilForBot(bot);
+        bool exfilAssigned = bot.Squad.BotInGroup ? TryAssignSquadExfil(bot) : TryAssignExfilForBot(bot);
         if (!exfilAssigned)
         {
 #if DEBUG
             if (SAINPlugin.DebugMode)
             {
-                Logger.LogInfo(
-                    $"{bot.name} could not find exfil. Bot spawn type: {bot.Info.Profile.WildSpawnType}"
-                );
+                Logger.LogInfo($"{bot.name} could not find exfil. Bot spawn type: {bot.Info.Profile.WildSpawnType}");
             }
 #endif
 
@@ -199,9 +188,7 @@ public class BotExtractManager : BotManagerBase
             return false;
         }
 
-        Logger.LogInfo(
-            $"{bot.name} has selected {bot.Memory.Extract.ExfilPoint.Settings.Name} for extraction"
-        );
+        Logger.LogInfo($"{bot.name} has selected {bot.Memory.Extract.ExfilPoint.Settings.Name} for extraction");
 
         return true;
     }
@@ -218,8 +205,7 @@ public class BotExtractManager : BotManagerBase
 
     private bool TryAssignExfilForBot(BotComponent bot)
     {
-        IDictionary<ExfiltrationPoint, Vector3> validExfils =
-            GameWorldComponent.Instance.ExtractFinder.GetValidExfilsForBot(bot);
+        IDictionary<ExfiltrationPoint, Vector3> validExfils = GameWorldComponent.Instance.ExtractFinder.GetValidExfilsForBot(bot);
         bot.Memory.Extract.ExfilPoint = SelectExfilForBot(bot, validExfils);
 
         return bot.Memory.Extract.ExfilPoint != null;
@@ -227,10 +213,7 @@ public class BotExtractManager : BotManagerBase
 
     public static float MinDistanceToExtract { get; private set; } = 10f;
 
-    private ExfiltrationPoint SelectExfilForBot(
-        BotComponent bot,
-        IDictionary<ExfiltrationPoint, Vector3> validExfils
-    )
+    private ExfiltrationPoint SelectExfilForBot(BotComponent bot, IDictionary<ExfiltrationPoint, Vector3> validExfils)
     {
         // Check each valid extract to ensure the bot can use it and that it isn't too close. If this method is called when a bot is near an extract, it might be because
         // it got stuck.
@@ -255,10 +238,7 @@ public class BotExtractManager : BotManagerBase
             }
 
             // Check if the navmesh path to the exfil is complete
-            if (
-                !NavMesh.CalculatePath(bot.Position, position, -1, path)
-                || path.status != NavMeshPathStatus.PathComplete
-            )
+            if (!NavMesh.CalculatePath(bot.Position, position, -1, path) || path.status != NavMeshPathStatus.PathComplete)
             {
                 continue;
             }
@@ -273,14 +253,15 @@ public class BotExtractManager : BotManagerBase
             if (SAINPlugin.DebugMode)
             {
                 StringBuilder sb = new();
-                sb.Append(
-                    $"Could not assign bot {bot.name} to any of {validExfils.Count} valid exfils: "
-                );
+                sb.Append($"Could not assign bot {bot.name} to any of {validExfils.Count} valid exfils: ");
                 bool first = true;
                 foreach (var kvp in validExfils)
                 {
                     if (!first)
+                    {
                         sb.Append(", ");
+                    }
+
                     sb.Append(kvp.Key.Settings.Name);
                     first = false;
                 }
@@ -374,10 +355,7 @@ public class BotExtractManager : BotManagerBase
                 {
                     foreach (var member in squad.Members)
                     {
-                        if (
-                            member.Value.Memory.Extract.ExfilPosition == null
-                            && member.Value.ProfileId != bot.ProfileId
-                        )
+                        if (member.Value.Memory.Extract.ExfilPosition == null && member.Value.ProfileId != bot.ProfileId)
                         {
                             Vector3 random = UnityEngine.Random.onUnitSphere * 2f;
                             random.y = 0f;
@@ -388,9 +366,7 @@ public class BotExtractManager : BotManagerBase
                             }
                             else
                             {
-                                member.Value.Memory.Extract.ExfilPosition = bot.Memory
-                                    .Extract
-                                    .ExfilPosition;
+                                member.Value.Memory.Extract.ExfilPosition = bot.Memory.Extract.ExfilPosition;
                             }
 
                             member.Value.Memory.Extract.ExfilPoint = bot.Memory.Extract.ExfilPoint;
@@ -405,8 +381,7 @@ public class BotExtractManager : BotManagerBase
             bot.Memory.Extract.ExfilPosition = squad.LeaderComponent?.Memory.Extract.ExfilPosition;
         }
 
-        return (bot.Memory.Extract.ExfilPosition != null)
-            && (bot.Memory.Extract.ExfilPoint != null);
+        return (bot.Memory.Extract.ExfilPosition != null) && (bot.Memory.Extract.ExfilPoint != null);
     }
 
     private float CheckRaidProgressTimer = 0f;
@@ -421,8 +396,7 @@ public class BotExtractManager : BotManagerBase
         if (Singleton<AbstractGame>.Instance.GameTimer.Started())
         {
             TimeRemaining = SPT.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
-            PercentageRemaining =
-                SPT.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRaidTimeRemainingFraction() * 100;
+            PercentageRemaining = SPT.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRaidTimeRemainingFraction() * 100;
         }
         else
         {

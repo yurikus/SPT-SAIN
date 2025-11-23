@@ -19,9 +19,7 @@ public class PlayerDictionary : Dictionary<string, PlayerComponent>
 
     public PlayerComponent GetPlayerComponent(string profileId)
     {
-        if (
-            !profileId.IsNullOrEmpty() && this.TryGetValue(profileId, out PlayerComponent component)
-        )
+        if (!profileId.IsNullOrEmpty() && this.TryGetValue(profileId, out PlayerComponent component))
         {
             return component;
         }
@@ -60,9 +58,7 @@ public class PlayerDictionary : Dictionary<string, PlayerComponent>
                 _ids.Add(kvp.Key);
                 if (component.Player != null)
                 {
-                    Logger.LogDebug(
-                        $"Removing {component.Player.Profile?.Nickname} from player dictionary"
-                    );
+                    Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
                 }
             }
         }

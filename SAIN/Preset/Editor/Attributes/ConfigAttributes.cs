@@ -1,5 +1,5 @@
-﻿using SAIN.Helpers;
-using System;
+﻿using System;
+using SAIN.Helpers;
 
 namespace SAIN.Attributes;
 
@@ -27,30 +27,26 @@ public abstract class StringAttribute : BaseAttribute
 
 public sealed class NameAttribute : StringAttribute
 {
-    public NameAttribute(string name) : base(name)
-    {
-    }
+    public NameAttribute(string name)
+        : base(name) { }
 }
 
 public sealed class DescriptionAttribute : StringAttribute
 {
-    public DescriptionAttribute(string description) : base(description)
-    {
-    }
+    public DescriptionAttribute(string description)
+        : base(description) { }
 }
 
 public sealed class CategoryAttribute : StringAttribute
 {
-    public CategoryAttribute(string category) : base(category)
-    {
-    }
+    public CategoryAttribute(string category)
+        : base(category) { }
 }
 
 public sealed class SectionAttribute : StringAttribute
 {
-    public SectionAttribute(string section) : base(section)
-    {
-    }
+    public SectionAttribute(string section)
+        : base(section) { }
 }
 
 public sealed class DefaultFloatAttribute : BaseAttribute
@@ -65,37 +61,32 @@ public sealed class DefaultFloatAttribute : BaseAttribute
 
 public class MinMaxAttribute : GUIValuesAttribute
 {
-    public MinMaxAttribute(float min, float max, float rounding = 100f) : base(min, max, rounding)
-    {
-    }
+    public MinMaxAttribute(float min, float max, float rounding = 100f)
+        : base(min, max, rounding) { }
 }
 
 public sealed class DifficultyModAttribute : MinMaxAttribute
 {
-    public DifficultyModAttribute() : base(0.01f, 10f, 100f)
-    {
-    }
+    public DifficultyModAttribute()
+        : base(0.01f, 10f, 100f) { }
 }
 
 public sealed class PercentageAttribute : GUIValuesAttribute
 {
-    public PercentageAttribute(float min = 0, float max = 100, float rounding = 1f) : base(min, max, rounding)
-    {
-    }
+    public PercentageAttribute(float min = 0, float max = 100, float rounding = 1f)
+        : base(min, max, rounding) { }
 }
 
 public sealed class Percentage0to1Attribute : GUIValuesAttribute
 {
-    public Percentage0to1Attribute(float min = 0f, float max = 1f, float rounding = 100f) : base(min, max, rounding)
-    {
-    }
+    public Percentage0to1Attribute(float min = 0f, float max = 1f, float rounding = 100f)
+        : base(min, max, rounding) { }
 }
 
 public sealed class Percentage01to99Attribute : GUIValuesAttribute
 {
-    public Percentage01to99Attribute() : base(0.01f, 0.99f, 100f)
-    {
-    }
+    public Percentage01to99Attribute()
+        : base(0.01f, 0.99f, 100f) { }
 }
 
 public abstract class GUIValuesAttribute : BaseAttribute
@@ -124,65 +115,56 @@ public abstract class GUIValuesAttribute : BaseAttribute
 
 public sealed class DefaultDictionaryAttribute : StringAttribute
 {
-    public DefaultDictionaryAttribute(string dictionaryName) : base(dictionaryName)
-    {
-    }
+    public DefaultDictionaryAttribute(string dictionaryName)
+        : base(dictionaryName) { }
 }
 
 public sealed class DefaultListAttribute : StringAttribute
 {
-    public DefaultListAttribute(string listName) : base(listName)
-    {
-    }
+    public DefaultListAttribute(string listName)
+        : base(listName) { }
 }
 
 public sealed class AdvancedAttribute : BoolAttribute
 {
-    public AdvancedAttribute() : base(true)
-    {
-    }
+    public AdvancedAttribute()
+        : base(true) { }
 }
 
 public sealed class DeveloperOptionAttribute : BoolAttribute
 {
-    public DeveloperOptionAttribute() : base(true)
-    {
-    }
+    public DeveloperOptionAttribute()
+        : base(true) { }
 }
 
 public sealed class SimpleValueAttribute : BoolAttribute
 {
-    public SimpleValueAttribute() : base(true)
-    {
-    }
+    public SimpleValueAttribute()
+        : base(true) { }
 }
 
 public sealed class DebugAttribute : BoolAttribute
 {
-    public DebugAttribute() : base(true)
-    {
-    }
+    public DebugAttribute()
+        : base(true) { }
 }
 
 public sealed class ExperimentalAttribute : BoolAttribute
 {
-    public ExperimentalAttribute() : base(true)
-    {
-    }
+    public ExperimentalAttribute()
+        : base(true) { }
 }
 
 public sealed class HiddenAttribute : BoolAttribute
 {
-    public HiddenAttribute() : base(true)
-    {
-    }
+    public HiddenAttribute()
+        : base(true) { }
 }
 
 public sealed class CopyValueAttribute : BoolAttribute
 {
-    public CopyValueAttribute() : base(true)
-    {
-    }
+    public CopyValueAttribute()
+        : base(true) { }
 }
 
 public abstract class BoolAttribute : BaseAttribute
@@ -196,9 +178,7 @@ public abstract class BoolAttribute : BaseAttribute
 }
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-public abstract class BaseAttribute : Attribute
-{
-}
+public abstract class BaseAttribute : Attribute { }
 
 public enum EListType
 {

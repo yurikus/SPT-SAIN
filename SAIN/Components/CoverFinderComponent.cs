@@ -38,18 +38,9 @@ public class CoverFinderComponent : BotComponentBase
 #if DEBUG
     public void Update()
     {
-        if (
-            SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder
-            && CoverPoints.Count > 0
-        )
+        if (SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder && CoverPoints.Count > 0)
         {
-            DebugGizmos.DrawLine(
-                CoverPoints.PickRandom().Position,
-                Bot.Transform.EyePosition,
-                Color.yellow,
-                0.05f,
-                0.1f
-            );
+            DebugGizmos.DrawLine(CoverPoints.PickRandom().Position, Bot.Transform.EyePosition, Color.yellow, 0.05f, 0.1f);
         }
     }
 #endif
@@ -79,7 +70,9 @@ public class CoverFinderComponent : BotComponentBase
     private void botEnabled(bool value)
     {
         if (!value)
+        {
             ToggleCoverFinder(false);
+        }
     }
 
     public void ToggleCoverFinder(bool value)
@@ -138,11 +131,7 @@ public class CoverFinderComponent : BotComponentBase
                         origin = Bot.NavMeshPosition + Vector3.up * 0.25f,
                         halfExtents = new Vector3(35, 5, 35),
                         mask = LayerMaskClass.HighPolyWithTerrainNoGrassMask,
-                        minColliderSize = new(
-                            0.25f,
-                            GlobalSettingsClass.Instance.General.Cover.CoverMinHeight,
-                            0.25f
-                        ),
+                        minColliderSize = new(0.25f, GlobalSettingsClass.Instance.General.Cover.CoverMinHeight, 0.25f),
                         maxColliderSize = new(30f, 30f, 30f),
                     };
                     CoverData.OverlapBoxAndFilter(queryParams);
@@ -215,7 +204,10 @@ public class CoverFinderComponent : BotComponentBase
                         CoverData.ValidCollidersList[i] = colliderData;
                     }
                     if (CoverPoints.Count >= max)
+                    {
                         break;
+                    }
+
                     yield return null;
                 }
                 sort(CoverPoints.Count, CoverPoints);
@@ -231,7 +223,10 @@ public class CoverFinderComponent : BotComponentBase
     private void sort(int coverCount, List<CoverPoint> points)
     {
         if (coverCount < 2)
+        {
             return;
+        }
+
         OrderPointsByPathDist(points);
     }
 
@@ -246,13 +241,17 @@ public class CoverFinderComponent : BotComponentBase
         {
             _debugLogTimer = Time.time + 1f;
             if (coverCount > 0)
+            {
                 Logger.LogInfo(
                     $"[{BotOwner.name}] - Found [{coverCount}] CoverPoints. Colliders checked: [{_totalChecked}] Collider Array Size = [{CoverData.ValidCollidersList.Count}]"
                 );
+            }
             else
+            {
                 Logger.LogWarning(
                     $"[{BotOwner.name}] - No Cover Found! Valid Colliders checked: [{_totalChecked}] Collider Array Size = [{CoverData.ValidCollidersList.Count}]"
                 );
+            }
         }
     }
 
@@ -290,19 +289,9 @@ public class CoverFinderComponent : BotComponentBase
 
     private static void updateSettings(SAINPresetClass preset)
     {
-        PerformanceMode = SAINPlugin
-            .LoadedPreset
-            .GlobalSettings
-            .General
-            .Performance
-            .PerformanceMode;
+        PerformanceMode = SAINPlugin.LoadedPreset.GlobalSettings.General.Performance.PerformanceMode;
         CoverMinHeight = SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.CoverMinHeight;
-        CoverMinEnemyDist = SAINPlugin
-            .LoadedPreset
-            .GlobalSettings
-            .General
-            .Cover
-            .CoverMinEnemyDistance;
+        CoverMinEnemyDist = SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.CoverMinEnemyDistance;
         CoverMinEnemyDistSqr = CoverMinEnemyDist * CoverMinEnemyDist;
         DebugCoverFinder = SAINPlugin.LoadedPreset.GlobalSettings.General.Cover.DebugCoverFinder;
     }

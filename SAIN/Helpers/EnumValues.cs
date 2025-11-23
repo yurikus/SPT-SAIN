@@ -1,7 +1,7 @@
-﻿using EFT;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using EFT;
 
 namespace SAIN.Helpers;
 
@@ -28,7 +28,10 @@ internal static class EnumValues
             return list;
         }
 
-        public static bool IsScav(WildSpawnType type) => Scavs.Contains(type);
+        public static bool IsScav(WildSpawnType type)
+        {
+            return Scavs.Contains(type);
+        }
 
         public static bool IsGoons(WildSpawnType type)
         {
@@ -41,23 +44,27 @@ internal static class EnumValues
             WildSpawnType.assaultGroup,
             WildSpawnType.crazyAssaultEvent,
             WildSpawnType.cursedAssault,
-            WildSpawnType.marksman
+            WildSpawnType.marksman,
         ];
 
-        public static WildSpawnType[] Goons =
-        [
-            WildSpawnType.bossKnight,
-            WildSpawnType.followerBigPipe,
-            WildSpawnType.followerBirdEye,
-        ];
+        public static WildSpawnType[] Goons = [WildSpawnType.bossKnight, WildSpawnType.followerBigPipe, WildSpawnType.followerBirdEye];
 
         public static List<WildSpawnType> Bosses;
         public static List<WildSpawnType> Followers;
     }
 
-    public static T Parse<T>(string value) => (T)Enum.Parse(typeof(T), value);
+    public static T Parse<T>(string value)
+    {
+        return (T)Enum.Parse(typeof(T), value);
+    }
 
-    public static readonly BotDifficulty[] Difficulties = [BotDifficulty.easy, BotDifficulty.normal, BotDifficulty.hard, BotDifficulty.impossible];
+    public static readonly BotDifficulty[] Difficulties =
+    [
+        BotDifficulty.easy,
+        BotDifficulty.normal,
+        BotDifficulty.hard,
+        BotDifficulty.impossible,
+    ];
     public static readonly WildSpawnType[] WildSpawnTypes = GetEnum<WildSpawnType>();
 
     public static readonly ECaliber[] AmmoCalibers = GetEnum<ECaliber>();
@@ -89,7 +96,8 @@ internal static class EnumValues
         return EWeaponClass.Default;
     }
 
-    public static T TryParse<T>(string _string) where T : struct, Enum
+    public static T TryParse<T>(string _string)
+        where T : struct, Enum
     {
         if (Enum.TryParse(_string, out T result))
         {

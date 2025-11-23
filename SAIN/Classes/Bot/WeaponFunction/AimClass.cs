@@ -52,13 +52,7 @@ public class AimClass : BotComponentClassBase, IBotClass
         base.ManualUpdate();
     }
 
-    public bool AimAtTarget(
-        Vector3 shootPoint,
-        Enemy enemy,
-        out bool AimComplete,
-        IBotAiming currentAiming,
-        BotComponent bot
-    )
+    public bool AimAtTarget(Vector3 shootPoint, Enemy enemy, out bool AimComplete, IBotAiming currentAiming, BotComponent bot)
     {
         BotOwner botOwner = bot.BotOwner;
         BotWeaponManager weaponManager = botOwner.WeaponManager;
@@ -112,10 +106,7 @@ public class AimClass : BotComponentClassBase, IBotClass
         Bot.Steering.LookToPoint(currentAiming.EndTargetPoint);
         AimComplete =
             currentAiming.IsReady
-            && (
-                botOwner.ShootData.Shooting
-                || Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.85f)
-            );
+            && (botOwner.ShootData.Shooting || Bot.Steering.IsLookingAtPoint(currentAiming.EndTargetPoint, out float dot, 0.85f));
         return true;
     }
 
@@ -150,10 +141,7 @@ public class AimClass : BotComponentClassBase, IBotClass
 
     public void LoseAimTarget()
     {
-        if (
-            BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass
-            && aimClass.AimStatus_0 != AimStatus.NoTarget
-        )
+        if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass && aimClass.AimStatus_0 != AimStatus.NoTarget)
         {
             aimClass.AimStatus_0 = AimStatus.NoTarget;
         }

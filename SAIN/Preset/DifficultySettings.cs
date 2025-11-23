@@ -1,5 +1,5 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -26,7 +26,9 @@ public class DifficultySettings : SAINSettingsBase<DifficultySettings>, ISAINSet
     public float HearingDistanceCoef = 1f;
 
     [Name("Aggression Multiplier")]
-    [Description("Higher is more difficult. Affects how long bots wait before entering search and how long they stand their ground to return fire when spotting an enemy.")]
+    [Description(
+        "Higher is more difficult. Affects how long bots wait before entering search and how long they stand their ground to return fire when spotting an enemy."
+    )]
     [DifficultyModAttribute]
     public float AggressionCoef = 1f;
 

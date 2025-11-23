@@ -22,38 +22,52 @@ public class WeaponInfo
     public EWeaponClass WeaponClass { get; private set; }
     public ECaliber AmmoCaliber { get; private set; }
     public float CalculatedAudibleRange { get; private set; }
-    public AISoundType AISoundType => HasSuppressor ? AISoundType.silencedGun : AISoundType.gun;
-    public SAINSoundType SoundType =>
-        HasSuppressor ? SAINSoundType.SuppressedShot : SAINSoundType.Shot;
-    public bool HasRedDot => RedDot != null;
-    public bool HasOptic => Optic != null;
+    public AISoundType AISoundType
+    {
+        get { return HasSuppressor ? AISoundType.silencedGun : AISoundType.gun; }
+    }
+
+    public SAINSoundType SoundType
+    {
+        get { return HasSuppressor ? SAINSoundType.SuppressedShot : SAINSoundType.Shot; }
+    }
+
+    public bool HasRedDot
+    {
+        get { return RedDot != null; }
+    }
+
+    public bool HasOptic
+    {
+        get { return Optic != null; }
+    }
+
     public bool HasSuppressor { get; private set; }
     public float BaseAudibleRange { get; private set; } = 150f;
     public float MuzzleLoudness { get; private set; }
-    public bool Subsonic => Weapon != null && BulletSpeed < SuperSonicSpeed;
+    public bool Subsonic
+    {
+        get { return Weapon != null && BulletSpeed < SuperSonicSpeed; }
+    }
+
     public Mod Suppressor { get; private set; }
     public Mod RedDot { get; private set; }
     public Mod Optic { get; private set; }
     public float BulletSpeed { get; private set; } = 600f;
     public float EngagementDistance { get; private set; } = 150f;
     public Weapon Weapon { get; private set; }
-    public float Durability =>
-        Weapon.Repairable.Durability / (float)Weapon.Repairable.TemplateDurability;
+    public float Durability
+    {
+        get { return Weapon.Repairable.Durability / (float)Weapon.Repairable.TemplateDurability; }
+    }
 
     private void updateSettings(SAINPresetClass preset)
     {
-        if (
-            preset.GlobalSettings.Shoot.EngagementDistance.TryGetValue(
-                WeaponClass,
-                out float distance
-            )
-        )
+        if (preset.GlobalSettings.Shoot.EngagementDistance.TryGetValue(WeaponClass, out float distance))
         {
             EngagementDistance = distance;
         }
-        if (
-            preset.GlobalSettings.Hearing.HearingDistances.TryGetValue(AmmoCaliber, out float range)
-        )
+        if (preset.GlobalSettings.Hearing.HearingDistances.TryGetValue(AmmoCaliber, out float range))
         {
             BaseAudibleRange = range;
         }
@@ -75,13 +89,7 @@ public class WeaponInfo
         MuzzleLoudness = Suppressor != null ? Suppressor.Template.Loudness : 0f;
         BulletSpeed = Weapon.CurrentAmmoTemplate.InitialSpeed * Weapon.SpeedFactor;
         CalculatedAudibleRange = BaseAudibleRange + MuzzleLoudness;
-        if (
-            Suppressor != null
-            || (
-                Player.HandsController is Player.FirearmController firearmController
-                && firearmController.IsSilenced
-            )
-        )
+        if (Suppressor != null || (Player.HandsController is Player.FirearmController firearmController && firearmController.IsSilenced))
         {
             CalculatedAudibleRange *= SuppressorModifier(BulletSpeed);
             HasSuppressor = true;
@@ -115,14 +123,18 @@ public class WeaponInfo
             foreach (Mod mod in mods)
             {
                 if (CheckItemType(mod.GetType()) == ModType)
+                {
                     return mod;
+                }
+
                 Slot[] Slots = mod.Slots;
                 foreach (Slot slot in Slots)
-                    if (
-                        slot.ContainedItem is Mod ContainedMod
-                        && CheckItemType(ContainedMod.GetType()) == ModType
-                    )
+                {
+                    if (slot.ContainedItem is Mod ContainedMod && CheckItemType(ContainedMod.GetType()) == ModType)
+                    {
                         return ContainedMod;
+                    }
+                }
             }
         }
         return null;
@@ -162,17 +174,11 @@ public class WeaponInfo
 
     private static bool CheckTemplateType(Type modType, string id)
     {
-        if (
-            TemplateIdToObjectMappingsClass.TypeTable.TryGetValue(id, out Type result)
-            && result == modType
-        )
+        if (TemplateIdToObjectMappingsClass.TypeTable.TryGetValue(id, out Type result) && result == modType)
         {
             return true;
         }
-        if (
-            TemplateIdToObjectMappingsClass.TemplateTypeTable.TryGetValue(id, out result)
-            && result == modType
-        )
+        if (TemplateIdToObjectMappingsClass.TemplateTypeTable.TryGetValue(id, out result) && result == modType)
         {
             return true;
         }
@@ -229,12 +235,7 @@ public class WeaponInfo
     private static readonly string OpticScopeTypeId = "55818ae44bdc2dde698b456c";
     private static readonly string SpecialScopeTypeId = "55818aeb4bdc2ddc698b456a";
 
-    private static readonly string[] OpticTypes =
-    {
-        AssaultScopeTypeId,
-        OpticScopeTypeId,
-        SpecialScopeTypeId,
-    };
+    private static readonly string[] OpticTypes = { AssaultScopeTypeId, OpticScopeTypeId, SpecialScopeTypeId };
     private static readonly string[] RedDotTypes = { CollimatorTypeId, CompactCollimatorTypeId };
 }
 

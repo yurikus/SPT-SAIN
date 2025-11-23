@@ -16,10 +16,7 @@ public static class MathHelpers
             }
             else if (type == typeof(int))
             {
-                return Mathf.Clamp(
-                    Mathf.RoundToInt((float)value),
-                    Mathf.RoundToInt(min),
-                    Mathf.RoundToInt(max));
+                return Mathf.Clamp(Mathf.RoundToInt((float)value), Mathf.RoundToInt(min), Mathf.RoundToInt(max));
             }
             else
             {

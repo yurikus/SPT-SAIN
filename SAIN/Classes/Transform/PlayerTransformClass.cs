@@ -15,13 +15,25 @@ public class PlayerTransformClass
     public PlayerVelocityData VelocityData { get; private set; } = new();
     public PlayerWeaponData WeaponData { get; private set; } = new();
 
-    public Vector3 WeaponRoot => WeaponData.WeaponRoot;
+    public Vector3 WeaponRoot
+    {
+        get { return WeaponData.WeaponRoot; }
+    }
 
-    public Vector3 Right() => AngledLookDirection(0f, 90f, 0f);
+    public Vector3 Right()
+    {
+        return AngledLookDirection(0f, 90f, 0f);
+    }
 
-    public Vector3 Left() => AngledLookDirection(0f, -90f, 0f);
+    public Vector3 Left()
+    {
+        return AngledLookDirection(0f, -90f, 0f);
+    }
 
-    public Vector3 AngledLookDirection(float x, float y, float z) => Quaternion.Euler(x, y, z) * LookDirection;
+    public Vector3 AngledLookDirection(float x, float y, float z)
+    {
+        return Quaternion.Euler(x, y, z) * LookDirection;
+    }
 
     public void ManualUpdate(Player player, bool isAI)
     {

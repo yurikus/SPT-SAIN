@@ -43,9 +43,14 @@ internal class CombatSoloLayer(BotOwner bot, int priority) : SAINLayer(bot, prio
             case ECombatDecision.Retreat:
                 string label;
                 if (_lastSelfDecision != ESelfActionType.None)
+                {
                     label = $"{_lastDecision} + {_lastSelfDecision}";
+                }
                 else
+                {
                     label = $"{_lastDecision}";
+                }
+
                 return new Action(typeof(SeekCoverAction), label);
 
             case ECombatDecision.ShootDistantEnemy:
@@ -78,16 +83,13 @@ internal class CombatSoloLayer(BotOwner bot, int priority) : SAINLayer(bot, prio
         }
 
         // this is dumb im sorry
-        if (!_doSurgeryAction
-            && _currentSelfDecision == ESelfActionType.Surgery
-            && Bot.Cover.CoverInUse != null)
+        if (!_doSurgeryAction && _currentSelfDecision == ESelfActionType.Surgery && Bot.Cover.CoverInUse != null)
         {
             _doSurgeryAction = true;
             return true;
         }
 
-        if (_lastSelfDecision == ESelfActionType.Surgery &&
-            _currentSelfDecision != ESelfActionType.Surgery)
+        if (_lastSelfDecision == ESelfActionType.Surgery && _currentSelfDecision != ESelfActionType.Surgery)
         {
             return true;
         }
@@ -98,6 +100,13 @@ internal class CombatSoloLayer(BotOwner bot, int priority) : SAINLayer(bot, prio
 
     private ECombatDecision _lastDecision = ECombatDecision.None;
     private ESelfActionType _lastSelfDecision = ESelfActionType.None;
-    public ECombatDecision _currentDecision => Bot.Decision.CurrentCombatDecision;
-    public ESelfActionType _currentSelfDecision => Bot.Decision.CurrentSelfDecision;
+    public ECombatDecision _currentDecision
+    {
+        get { return Bot.Decision.CurrentCombatDecision; }
+    }
+
+    public ESelfActionType _currentSelfDecision
+    {
+        get { return Bot.Decision.CurrentSelfDecision; }
+    }
 }

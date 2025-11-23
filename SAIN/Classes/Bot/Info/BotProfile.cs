@@ -7,7 +7,8 @@ namespace SAIN.SAINComponent.Classes.Info;
 
 public class BotProfile : BotBase
 {
-    public BotProfile(BotComponent sain) : base(sain)
+    public BotProfile(BotComponent sain)
+        : base(sain)
     {
         Name = sain.BotOwner.name;
 
@@ -28,7 +29,10 @@ public class BotProfile : BotBase
 
     public float DifficultyModifier { get; private set; }
     public float DifficultyModifierSqrt { get; private set; }
-    public float PowerLevel => BotOwner.AIData.PowerOfEquipment;
+    public float PowerLevel
+    {
+        get { return BotOwner.AIData.PowerOfEquipment; }
+    }
 
     public readonly string Name;
     public readonly string NickName;

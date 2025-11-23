@@ -104,13 +104,9 @@ internal class DoSurgeryAction(BotOwner botOwner) : BotAction(botOwner, "Surgery
     {
         stringBuilder.AppendLine($"Health Status {Bot.Memory.Health.HealthStatus}");
         stringBuilder.AppendLine($"Surgery Started? {Bot.Medical.Surgery.SurgeryStarted}");
-        stringBuilder.AppendLine(
-            $"Time Since Surgery Started {Time.time - Bot.Medical.Surgery.SurgeryStartTime}"
-        );
+        stringBuilder.AppendLine($"Time Since Surgery Started {Time.time - Bot.Medical.Surgery.SurgeryStartTime}");
         stringBuilder.AppendLine($"Area Clear? {Bot.Medical.Surgery.AreaClearForSurgery}");
-        stringBuilder.AppendLine(
-            $"ShallStartUse Surgery? {BotOwner.Medecine.SurgicalKit.ShallStartUse()}"
-        );
+        stringBuilder.AppendLine($"ShallStartUse Surgery? {BotOwner.Medecine.SurgicalKit.ShallStartUse()}");
         stringBuilder.AppendLine($"IsBleeding? {BotOwner.Medecine.FirstAid.IsBleeding}");
     }
 }

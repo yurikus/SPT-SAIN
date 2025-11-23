@@ -1,6 +1,6 @@
-﻿using SAIN.Attributes;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 using SAIN.Components.RotationController;
-using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -15,6 +15,7 @@ public class SteeringSettings : SAINSettingsBase<SteeringSettings>, ISAINSetting
 
     [Hidden]
     public float characterHeight = 1.5f;
+
     [Hidden]
     public float startHeight = 0.25f;
 
@@ -55,25 +56,28 @@ public class SteeringSettings : SAINSettingsBase<SteeringSettings>, ISAINSetting
     public float MIN_STEERING_PITCH = -65f;
 
     [Name("Last Seen to Last Known Position Distance Threshold")]
-    [Description("If the last known position of an enemy (something heard or reported by their squad) is within X distance (meters) to the place they last saw an enemy, focus on the place they were last seen.")]
+    [Description(
+        "If the last known position of an enemy (something heard or reported by their squad) is within X distance (meters) to the place they last saw an enemy, focus on the place they were last seen."
+    )]
     [Advanced]
     [MinMax(0f, 50f, 1000f)]
     public float STEER_LASTSEEN_TO_LASTKNOWN_DISTANCE = 2.5f;
 
     [Name("Smooth Turn Settings")]
     [Hidden]
-    public Dictionary<EBotLookMode, TurnSettings> SMOOTHING_BY_STATE = new() {
-        { EBotLookMode.RandomLook, new TurnSettings(0.040f, 120f ) },
+    public Dictionary<EBotLookMode, TurnSettings> SMOOTHING_BY_STATE = new()
+    {
+        { EBotLookMode.RandomLook, new TurnSettings(0.040f, 120f) },
         { EBotLookMode.Peace, new TurnSettings(0.050f, 240) },
         { EBotLookMode.Combat, new TurnSettings(0.07f, 300f) },
         { EBotLookMode.CombatSprint, new TurnSettings(0.075f, 300f) },
         { EBotLookMode.CombatVisibleEnemy, new TurnSettings(0.090f, 360f) },
-        { EBotLookMode.Aiming, new TurnSettings(0.10f, 360f ) },
+        { EBotLookMode.Aiming, new TurnSettings(0.10f, 360f) },
     };
 
     [MinMax(1f, 3f, 1000f)]
     [Advanced]
-    public float ConvergenceBoost = 1.1f;   // Multiplier when far from target
+    public float ConvergenceBoost = 1.1f; // Multiplier when far from target
 
     [Advanced]
     [MinMax(16, 2048, 1f)]

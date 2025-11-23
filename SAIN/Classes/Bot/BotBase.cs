@@ -1,10 +1,10 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent;
@@ -15,11 +15,25 @@ namespace SAIN.SAINComponent;
 public abstract class BotBase(BotComponent bot) : IBotClass
 {
     public BotComponent Bot { get; } = bot;
-    public PlayerComponent PlayerComponent => Bot.PlayerComponent;
-    public BotOwner BotOwner => Bot.BotOwner;
-    public Player Player => Bot.Player;
+    public PlayerComponent PlayerComponent
+    {
+        get { return Bot.PlayerComponent; }
+    }
 
-    protected static GlobalSettingsClass GlobalSettings => GlobalSettingsClass.Instance;
+    public BotOwner BotOwner
+    {
+        get { return Bot.BotOwner; }
+    }
+
+    public Player Player
+    {
+        get { return Bot.Player; }
+    }
+
+    protected static GlobalSettingsClass GlobalSettings
+    {
+        get { return GlobalSettingsClass.Instance; }
+    }
 
     public virtual void Init()
     {
@@ -42,13 +56,9 @@ public abstract class BotBase(BotComponent bot) : IBotClass
     /// <summary>
     /// Set Last Tick Time
     /// </summary>
-    public virtual void ManualUpdate()
-    {
-    }
+    public virtual void ManualUpdate() { }
 
-    protected virtual void UpdatePresetSettings(SAINPresetClass preset)
-    {
-    }
+    protected virtual void UpdatePresetSettings(SAINPresetClass preset) { }
 
     public virtual void Dispose()
     {
@@ -66,7 +76,8 @@ public abstract class BotBase(BotComponent bot) : IBotClass
 /// </summary>
 public abstract class BotComponentClassBase : BotBase
 {
-    protected BotComponentClassBase(BotComponent bot) : base(bot)
+    protected BotComponentClassBase(BotComponent bot)
+        : base(bot)
     {
         bot.AddBotClass(this);
     }
@@ -111,7 +122,8 @@ public abstract class BotComponentClassBase : BotBase
     protected readonly List<IBotClass> SubClasses = [];
 }
 
-public abstract class BotSubClass<T>(T sainClass) : BotBase(sainClass.Bot) where T : IBotClass
+public abstract class BotSubClass<T>(T sainClass) : BotBase(sainClass.Bot)
+    where T : IBotClass
 {
     protected T BaseClass { get; } = sainClass;
 }

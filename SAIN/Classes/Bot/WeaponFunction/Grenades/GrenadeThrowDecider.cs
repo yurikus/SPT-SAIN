@@ -76,8 +76,7 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
         var grenades = BotOwner.WeaponManager.Grenades;
         if (!grenades.HaveGrenade)
         {
-            _nextPosibleAttempt =
-                Time.time + UnityEngine.Random.Range(_throwGrenadeFreq, _throwGrenadeFreqMax);
+            _nextPosibleAttempt = Time.time + UnityEngine.Random.Range(_throwGrenadeFreq, _throwGrenadeFreqMax);
             sayNeedNades();
             reason = "noNades";
             return false;
@@ -85,8 +84,7 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
         //if (tryThrowGrenade() || (findThrowTarget(enemy) && tryThrowGrenade())) {
         if (findThrowTarget(enemy) && tryThrowGrenade())
         {
-            _nextPosibleAttempt =
-                Time.time + UnityEngine.Random.Range(_throwGrenadeFreq, _throwGrenadeFreqMax);
+            _nextPosibleAttempt = Time.time + UnityEngine.Random.Range(_throwGrenadeFreq, _throwGrenadeFreqMax);
             reason = "startThrow";
             return true;
         }
@@ -220,26 +218,14 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
         {
             return false;
         }
-        if (
-            tryThrowToPos(
-                blindCornerPos,
-                "BlindCornerToEnemy",
-                Mathf.Sqrt(sqrMag),
-                AIGreandeAng.ang5
-            )
-        )
+        if (tryThrowToPos(blindCornerPos, "BlindCornerToEnemy", Mathf.Sqrt(sqrMag), AIGreandeAng.ang5))
         {
             return true;
         }
         return false;
     }
 
-    private bool tryThrowToPos(
-        Vector3 pos,
-        string posString,
-        float distance,
-        params AIGreandeAng[] possibleAngles
-    )
+    private bool tryThrowToPos(Vector3 pos, string posString, float distance, params AIGreandeAng[] possibleAngles)
     {
         pos += Vector3.up * _checkThrowPos_HeightOffset;
         var weaponRoot = Bot.Transform.WeaponData.WeaponRoot;
@@ -255,13 +241,7 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
             //Logger.LogDebug($"{posString} Can Throw to pos + dir");
             return true;
         }
-        if (
-            canThrowAGrenade(
-                weaponRoot,
-                randomize(pos, throwDir, dispersion) + Vector3.up * 0.5f,
-                possibleAngles
-            )
-        )
+        if (canThrowAGrenade(weaponRoot, randomize(pos, throwDir, dispersion) + Vector3.up * 0.5f, possibleAngles))
         {
             //Logger.LogDebug($"{posString} Can Throw to pos + vector3.up * 0.5f");
             return true;
@@ -343,25 +323,11 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
         }
 
         AIGreandeAng angle = possibleAngles.PickRandom();
-        AIGreanageThrowData throwData = GrenadeThrowChecker.CanThrowGrenade2(
-            from,
-            trg,
-            _maxPower * 0.9f,
-            angle,
-            -1f,
-            _minThrowDistPercent
-        );
+        AIGreanageThrowData throwData = GrenadeThrowChecker.CanThrowGrenade2(from, trg, _maxPower * 0.9f, angle, -1f, _minThrowDistPercent);
 
         if (throwData.CanThrow)
         {
-            if (
-                Physics.Raycast(
-                    from,
-                    throwData.Direction,
-                    1.5f,
-                    LayerMaskClass.HighPolyWithTerrainMask
-                )
-            )
+            if (Physics.Raycast(from, throwData.Direction, 1.5f, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 Logger.LogDebug($"blocked by object, cant throw");
                 return false;
@@ -383,16 +349,17 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
     {
         var members = Bot.Squad.Members;
         if (members == null || members.Count <= 1)
+        {
             return true;
+        }
 
         foreach (var member in members.Values)
-            if (
-                member != null
-                && (member.Position - trg).sqrMagnitude < _minFriendlyDistToThrow_SQR
-            )
+        {
+            if (member != null && (member.Position - trg).sqrMagnitude < _minFriendlyDistToThrow_SQR)
             {
                 return false;
             }
+        }
 
         return true;
     }
@@ -408,7 +375,11 @@ public class GrenadeThrowDecider : BotSubClass<BotGrenadeManager>, IBotDecisionC
 
     private float _nextSayNeedGrenadeTime;
     private float _minThrowDistPercent;
-    private float _maxPower => BotOwner.WeaponManager.Grenades.MaxPower;
+    private float _maxPower
+    {
+        get { return BotOwner.WeaponManager.Grenades.MaxPower; }
+    }
+
     private float _nextPosibleAttempt;
 
     private static AIGreandeAng[] _indoorAngles =

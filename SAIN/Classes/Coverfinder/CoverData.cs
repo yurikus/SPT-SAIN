@@ -13,5 +13,8 @@ public class CoverData
     public CoverStatus PathLengthStatus { get; set; }
     public CoverStatus StraightLengthStatus { get; set; }
     public DirectionData DirectionData { get; set; } = new();
-    public float TimeSinceUpdated => Time.time - TimeLastUpdated;
+    public float TimeSinceUpdated
+    {
+        get { return Time.time - TimeLastUpdated; }
+    }
 }

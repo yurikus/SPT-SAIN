@@ -19,13 +19,7 @@ public class SAINVaultClass : BotComponentClassBase
 
     public static void DebugCheckObstacles(Player player)
     {
-        SpherecastCheck(
-            player,
-            player.WeaponRoot.position,
-            player.LookDirection,
-            out SAINVaultPoint notUsed,
-            5f
-        );
+        SpherecastCheck(player, player.WeaponRoot.position, player.LookDirection, out SAINVaultPoint notUsed, 5f);
     }
 
     public static void DebugVaultPointCount()
@@ -99,13 +93,7 @@ public class SAINVaultClass : BotComponentClassBase
         return foundPoint;
     }
 
-    public static bool SpherecastCheck(
-        Player player,
-        Vector3 start,
-        Vector3 end,
-        out SAINVaultPoint result,
-        float distance = 0
-    )
+    public static bool SpherecastCheck(Player player, Vector3 start, Vector3 end, out SAINVaultPoint result, float distance = 0)
     {
         // Raise up the corner positions to get a clear line of sight to the next corner to test
         start.y += 0.33f;
@@ -118,16 +106,7 @@ public class SAINVaultClass : BotComponentClassBase
             distance = direction.magnitude;
         }
 
-        if (
-            Physics.SphereCast(
-                start,
-                0.1f,
-                direction,
-                out RaycastHit hit,
-                direction.magnitude,
-                LayerMaskClass.PlayerStaticCollisionsMask
-            )
-        )
+        if (Physics.SphereCast(start, 0.1f, direction, out RaycastHit hit, direction.magnitude, LayerMaskClass.PlayerStaticCollisionsMask))
         {
             if (CheckObstacleForVault(hit, player.VaultingParameters.VaultingHeight))
             {
@@ -156,17 +135,15 @@ public class SAINVaultClass : BotComponentClassBase
         // Debug Info
         Color debugSphereColor = heightGood ? Color.green : Color.red;
         float debugSphereSize = heightGood ? 1f : 0.5f;
-        DebugGizmos.DrawSphere(
-            hit.collider.transform.position,
-            debugSphereSize,
-            debugSphereColor,
-            60f
-        );
+        DebugGizmos.DrawSphere(hit.collider.transform.position, debugSphereSize, debugSphereColor, 60f);
 
         return heightGood;
     }
 
-    public float VaultMaxHeight => Player.VaultingParameters.VaultingHeight;
+    public float VaultMaxHeight
+    {
+        get { return Player.VaultingParameters.VaultingHeight; }
+    }
 
     public bool TryVaulting()
     {
@@ -195,11 +172,7 @@ public class SAINVaultClass : BotComponentClassBase
 
     public bool CanVault()
     {
-        if (
-            Player == null
-            || Player.VaultingComponent == null
-            || Player.VaultingGameplayRestrictions == null
-        )
+        if (Player == null || Player.VaultingComponent == null || Player.VaultingGameplayRestrictions == null)
         {
 #if DEBUG
             if (SAINPlugin.DebugMode)

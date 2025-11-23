@@ -45,20 +45,25 @@ public class BotBusyHandsDetector : BotComponentClassBase
     {
         if (Player.HandsController is ItemHandsController itemHandsController)
         {
-            _isInInteraction =
-                itemHandsController.CurrentHandsOperation.State == EOperationState.Executing;
+            _isInInteraction = itemHandsController.CurrentHandsOperation.State == EOperationState.Executing;
             _isInInteractionStrictCheck = itemHandsController.IsInInteractionStrictCheck();
             bool inInteraction = _isInInteraction || _isInInteractionStrictCheck;
             if (inInteraction)
             {
                 if (_timeStartInteraction <= 0f)
+                {
                     _timeStartInteraction = Time.time;
+                }
+
                 return;
             }
             if (!inInteraction)
             {
                 if (_timeStartInteraction > 0f)
+                {
                     _timeStartInteraction = -1f;
+                }
+
                 return;
             }
         }
@@ -93,10 +98,7 @@ public class BotBusyHandsDetector : BotComponentClassBase
                 reason = "firstAid";
                 return timeSinceStart > TIME_TO_RESET_HEAL_FIRSTAID;
             }
-            if (
-                item is MedicalItemClass medsItemClass
-                && medsItemClass.HealthEffectsComponent.AffectsAny(EDamageEffectType.DestroyedPart)
-            )
+            if (item is MedicalItemClass medsItemClass && medsItemClass.HealthEffectsComponent.AffectsAny(EDamageEffectType.DestroyedPart))
             {
                 reason = "surgery";
                 return timeSinceStart > TIME_TO_RESET_HEAL_SURGERY;

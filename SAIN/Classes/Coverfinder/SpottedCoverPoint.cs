@@ -13,8 +13,14 @@ public class SpottedCoverPoint(CoverPoint coverPoint)
 
     public CoverPoint CoverPoint { get; private set; } = coverPoint;
     public float TimeCreated { get; private set; } = Time.time;
-    public float TimeSinceCreated => Time.time - TimeCreated;
+    public float TimeSinceCreated
+    {
+        get { return Time.time - TimeCreated; }
+    }
 
     private readonly float ExpireTime = SPOTTED_PERIOD;
-    public bool IsValidAgain => TimeSinceCreated > ExpireTime;
+    public bool IsValidAgain
+    {
+        get { return TimeSinceCreated > ExpireTime; }
+    }
 }

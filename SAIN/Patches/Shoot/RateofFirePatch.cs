@@ -1,9 +1,9 @@
-﻿using EFT;
+﻿using System.Reflection;
+using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using SAIN.Components;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using UnityEngine;
 using static SAIN.Helpers.Shoot;
 
@@ -46,7 +46,11 @@ public class BotShootPatch : ModulePatch
         if (!__instance.Shooting && __instance.NextFingerDownCan < Time.time)
         {
             bool fullAuto = bot.Info.WeaponInfo.SelectedFireMode == Weapon.EFireMode.fullauto;
-            if (fullAuto) __instance.NextFingerUpTime = Time.time + FullAutoBurstLength(bot, bot.DistanceToAimTarget);
+            if (fullAuto)
+            {
+                __instance.NextFingerUpTime = Time.time + FullAutoBurstLength(bot, bot.DistanceToAimTarget);
+            }
+
             __instance.NextFingerDownCan = Time.time + bot.Info.WeaponInfo.Firerate.CalcFirerateInterval();
             __instance.Shooting = true;
             __instance.TimeFingerDown = Time.time;

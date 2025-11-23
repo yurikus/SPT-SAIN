@@ -1,8 +1,8 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Models.Structs;
 using SAIN.SAINComponent;
-using System.Collections.Generic;
 
 namespace SAIN.Components;
 
@@ -12,7 +12,8 @@ public class BodyPartsClass : PlayerComponentBase
 
     public SAINBodyPart[] PartsArray { get; private set; }
 
-    public BodyPartsClass(PlayerComponent component) : base(component)
+    public BodyPartsClass(PlayerComponent component)
+        : base(component)
     {
         createParts(component.Player);
         PartsArray = [.. Parts.Values];
@@ -138,7 +139,8 @@ public class BodyPartsClass : PlayerComponentBase
 
     private static class PartToBoneTypes
     {
-        private static readonly EBodyPartColliderType[] _headParts = [
+        private static readonly EBodyPartColliderType[] _headParts =
+        [
             //EBodyPartColliderType.ParietalHead,
             EBodyPartColliderType.BackHead,
             EBodyPartColliderType.Jaw,
@@ -147,14 +149,16 @@ public class BodyPartsClass : PlayerComponentBase
             EBodyPartColliderType.NeckBack,
         ];
 
-        private static readonly EBodyPartColliderType[] _upperBodyParts = [
+        private static readonly EBodyPartColliderType[] _upperBodyParts =
+        [
             EBodyPartColliderType.SpineTop,
             EBodyPartColliderType.RibcageUp,
             EBodyPartColliderType.RightSideChestUp,
             EBodyPartColliderType.LeftSideChestUp,
         ];
 
-        private static readonly EBodyPartColliderType[] _lowerBodyParts = [
+        private static readonly EBodyPartColliderType[] _lowerBodyParts =
+        [
             EBodyPartColliderType.SpineDown,
             EBodyPartColliderType.RibcageLow,
             EBodyPartColliderType.RightSideChestDown,
@@ -162,35 +166,35 @@ public class BodyPartsClass : PlayerComponentBase
             EBodyPartColliderType.Pelvis,
         ];
 
-        private static readonly EBodyPartColliderType[] _leftArmParts = [
+        private static readonly EBodyPartColliderType[] _leftArmParts =
+        [
             EBodyPartColliderType.LeftUpperArm,
             EBodyPartColliderType.LeftForearm,
         ];
 
-        private static readonly EBodyPartColliderType[] _rightArmParts = [
+        private static readonly EBodyPartColliderType[] _rightArmParts =
+        [
             EBodyPartColliderType.RightUpperArm,
             EBodyPartColliderType.RightForearm,
         ];
 
-        private static readonly EBodyPartColliderType[] _leftLegParts = [
-            EBodyPartColliderType.LeftCalf,
-            EBodyPartColliderType.LeftThigh,
-        ];
+        private static readonly EBodyPartColliderType[] _leftLegParts = [EBodyPartColliderType.LeftCalf, EBodyPartColliderType.LeftThigh];
 
-        private static readonly EBodyPartColliderType[] _rightLegParts = [
+        private static readonly EBodyPartColliderType[] _rightLegParts =
+        [
             EBodyPartColliderType.RightCalf,
             EBodyPartColliderType.RightThigh,
         ];
 
         public static readonly Dictionary<EBodyPart, EBodyPartColliderType[]> PartsToCollidersTypes = new()
         {
-            {EBodyPart.Head,  _headParts },
-            {EBodyPart.Chest,  _upperBodyParts },
-            {EBodyPart.Stomach,  _lowerBodyParts },
-            {EBodyPart.LeftArm,  _leftArmParts },
-            {EBodyPart.LeftLeg,  _leftLegParts },
-            {EBodyPart.RightArm,  _rightArmParts },
-            {EBodyPart.RightLeg,  _rightLegParts },
+            { EBodyPart.Head, _headParts },
+            { EBodyPart.Chest, _upperBodyParts },
+            { EBodyPart.Stomach, _lowerBodyParts },
+            { EBodyPart.LeftArm, _leftArmParts },
+            { EBodyPart.LeftLeg, _leftLegParts },
+            { EBodyPart.RightArm, _rightArmParts },
+            { EBodyPart.RightLeg, _rightLegParts },
         };
     }
 }

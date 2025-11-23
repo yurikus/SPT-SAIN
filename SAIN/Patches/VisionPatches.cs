@@ -78,38 +78,24 @@ public class UpdateLightEnablePatch : ModulePatch
                 if (gameworld == null)
                 {
 #if DEBUG
-                    Logger.LogError(
-                        $"GameWorldComponent is null, cannot check if bot has flashlight on!"
-                    );
+                    Logger.LogError($"GameWorldComponent is null, cannot check if bot has flashlight on!");
 #endif
                     return false;
                 }
-                PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(
-                    __instance.BotOwner_0.ProfileId
-                );
+                PlayerComponent playerComponent = gameworld.PlayerTracker.GetPlayerComponent(__instance.BotOwner_0.ProfileId);
                 if (playerComponent == null)
                 {
 #if DEBUG
-                    Logger.LogError(
-                        $"Player Component is null, cannot check if bot has flashlight on!"
-                    );
+                    Logger.LogError($"Player Component is null, cannot check if bot has flashlight on!");
 #endif
                     return false;
                 }
                 if (
                     playerComponent.Flashlight.WhiteLight
-                    || (
-                        __instance.BotOwner_0.NightVision.UsingNow
-                        && playerComponent.Flashlight.IRLight
-                    )
+                    || (__instance.BotOwner_0.NightVision.UsingNow && playerComponent.Flashlight.IRLight)
                 )
                 {
-                    float min = __instance
-                        .BotOwner_0
-                        .Settings
-                        .FileSettings
-                        .Look
-                        .VISIBLE_DISNACE_WITH_LIGHT;
+                    float min = __instance.BotOwner_0.Settings.FileSettings.Look.VISIBLE_DISNACE_WITH_LIGHT;
                     __result = Mathf.Clamp(curLightDist, min, float.MaxValue);
                 }
             }
@@ -211,10 +197,7 @@ public class SetPartPriorityPatch : ModulePatch
             return false;
         }
 
-        if (
-            !isAI
-            && SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent botComponent)
-        )
+        if (!isAI && SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent botComponent))
         {
             Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
             if (enemy != null)
@@ -250,7 +233,10 @@ public class DisableLookUpdatePatch : ModulePatch
     public static bool Patch(LookSensor __instance)
     {
         if (SAINEnableClass.IsBotExcluded(__instance.BotOwner))
+        {
             return true;
+        }
+
         __instance.method_2();
         return false;
     }
@@ -303,15 +289,7 @@ public class BotLightTurnOnPatch : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotLight __instance)
     {
-        if (
-            __instance.IsInDarkPlace_1
-            && !SAINPlugin
-                .LoadedPreset
-                .GlobalSettings
-                .General
-                .Flashlight
-                .AllowLightOnForDarkBuildings
-        )
+        if (__instance.IsInDarkPlace_1 && !SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.AllowLightOnForDarkBuildings)
         {
             __instance.IsInDarkPlace_1 = false;
         }
@@ -469,17 +447,13 @@ public class CheckFlashlightPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(
-            typeof(Player.FirearmController),
-            nameof(Player.FirearmController.SetLightsState)
-        );
+        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.SetLightsState));
     }
 
     [PatchPostfix]
     public static void PatchPostfix(Player ____player)
     {
-        PlayerComponent playerComponent =
-            GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(____player?.ProfileId);
+        PlayerComponent playerComponent = GameWorldComponent.Instance?.PlayerTracker.GetPlayerComponent(____player?.ProfileId);
         if (playerComponent != null)
         {
             BotManagerComponent.Instance.BotHearing.PlayAISound(

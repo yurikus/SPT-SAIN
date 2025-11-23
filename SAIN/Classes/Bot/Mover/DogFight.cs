@@ -25,7 +25,9 @@ public class DogFight : BotBase
     public void ResetDogFightStatus()
     {
         if (Status != EDogFightStatus.None)
+        {
             Status = EDogFightStatus.None;
+        }
     }
 
     public void DogFightMove(bool aggressive, Enemy Enemy)
@@ -117,9 +119,15 @@ public class DogFight : BotBase
     public bool BackUpFromEnemy(Enemy Enemy)
     {
         if (Enemy == null)
+        {
             return false;
+        }
+
         if (!Bot.Transform.NavData.IsOnNavMesh)
+        {
             return false;
+        }
+
         if (findStrafePoint(out Vector3 backupPoint, Enemy))
         {
             return true;
@@ -142,25 +150,18 @@ public class DogFight : BotBase
                 || !Enemy.Bot.BotOwner.WeaponManager.HaveBullets
                 || Enemy.Bot.BotOwner.Medecine?.Using == true
                 || (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold)
-                || (
-                    !Enemy.Seen
-                    && Enemy.LastKnownPosition != null
-                    && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold
-                )
+                || (!Enemy.Seen && Enemy.LastKnownPosition != null && Enemy.TimeSinceLastKnownUpdated < _enemyTimeSinceSeenThreshold)
             )
         )
         {
-            return Enemy.VisiblePathPoint
-                ?? Enemy.LastKnownPosition
-                ?? Enemy.EnemyTransform.Position;
+            return Enemy.VisiblePathPoint ?? Enemy.LastKnownPosition ?? Enemy.EnemyTransform.Position;
         }
         return null;
     }
 
     private bool canMoveToEnemy(Enemy Enemy)
     {
-        return Enemy.LastKnownPosition != null
-            && Enemy.Path.PathToEnemy.status != NavMeshPathStatus.PathInvalid;
+        return Enemy.LastKnownPosition != null && Enemy.Path.PathToEnemy.status != NavMeshPathStatus.PathInvalid;
     }
 
     private float _enemyTimeSinceSeenThreshold = 1f;
@@ -201,10 +202,7 @@ public class DogFight : BotBase
 
     private bool findStrafePoint2(out Vector3 MovePoint, Enemy Enemy)
     {
-        if (
-            Enemy.Seen
-            && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold * Random.Range(0.66f, 1.33f)
-        )
+        if (Enemy.Seen && Enemy.TimeSinceSeen < _enemyTimeSinceSeenThreshold * Random.Range(0.66f, 1.33f))
         {
             Vector3? LastKnown = Enemy.LastKnownPosition;
             if (LastKnown != null)

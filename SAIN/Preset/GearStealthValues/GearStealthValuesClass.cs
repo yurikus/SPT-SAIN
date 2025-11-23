@@ -1,6 +1,6 @@
-﻿using SAIN.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SAIN.Helpers;
 
 namespace SAIN.Preset.GearStealthValues;
 
@@ -42,7 +42,9 @@ public class GearStealthValuesClass
             foreach (var item in list)
             {
                 if (item.EquipmentType != type)
+                {
                     continue;
+                }
 
                 Logger.LogDebug($"Adding {item.Name}");
                 addItem(item.Name, item.EquipmentType, item.ItemID, item.StealthValue, itemList);
@@ -58,7 +60,12 @@ public class GearStealthValuesClass
         }
 
         JsonUtility.CreateFolder("Presets", preset.Name, "ItemStealthValues");
-        JsonUtility.SaveObjectToJson(EnumValues.GetEnum<EEquipmentType>(), "Possible Item Types For Stealth Modifiers", "Presets", preset.Name);
+        JsonUtility.SaveObjectToJson(
+            EnumValues.GetEnum<EEquipmentType>(),
+            "Possible Item Types For Stealth Modifiers",
+            "Presets",
+            preset.Name
+        );
 
         foreach (var list in stealthValues.ItemStealthValues.Values)
         {
@@ -94,17 +101,26 @@ public class GearStealthValuesClass
         return list;
     }
 
-    private void addItem(string name, EEquipmentType type, string id, float stealthValue, List<ItemStealthValue> list, bool addAsDefault = false)
+    private void addItem(
+        string name,
+        EEquipmentType type,
+        string id,
+        float stealthValue,
+        List<ItemStealthValue> list,
+        bool addAsDefault = false
+    )
     {
         if (!doesItemExist(name, list))
         {
-            list.Add(new ItemStealthValue
-            {
-                Name = name,
-                EquipmentType = type,
-                ItemID = id,
-                StealthValue = stealthValue,
-            });
+            list.Add(
+                new ItemStealthValue
+                {
+                    Name = name,
+                    EquipmentType = type,
+                    ItemID = id,
+                    StealthValue = stealthValue,
+                }
+            );
         }
         if (addAsDefault)
         {

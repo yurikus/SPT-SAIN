@@ -1,5 +1,5 @@
-﻿using SAIN.SAINComponent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.SAINComponent;
 
 namespace SAIN.Components.PlayerComponentSpace;
 
@@ -9,7 +9,8 @@ public class OtherPlayersData : PlayerComponentBase
     public HashSet<OtherPlayerData> DataHashSet { get; } = [];
     public List<OtherPlayerData> DataList { get; } = [];
 
-    public OtherPlayersData(PlayerComponent playerComponent) : base(playerComponent)
+    public OtherPlayersData(PlayerComponent playerComponent)
+        : base(playerComponent)
     {
         var playerTracker = GameWorldComponent.Instance?.PlayerTracker;
         if (playerTracker == null)
@@ -24,7 +25,9 @@ public class OtherPlayersData : PlayerComponentBase
         playerTracker.OnPlayerRemoved += PlayerRemoved;
         // Add any already existing player.
         foreach (PlayerComponent player in playerTracker.AlivePlayerArray)
+        {
             PlayerAdded(player);
+        }
     }
 
     public override void Dispose()

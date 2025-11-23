@@ -49,7 +49,9 @@ public struct PlayerNavData
 
             navData.Status = CalcStatus(offset);
             if (navData.Status == EPlayerNavMeshDistance.OnNavMesh)
+            {
                 navData.TimeLastOnNavMesh = time;
+            }
             //if (DebugSettings.Instance.Gizmos.DrawNavMeshSamplingGizmos)
             //{
             DrawDebugGizmos(navData, playerPosition, delay);
@@ -59,11 +61,7 @@ public struct PlayerNavData
         return navData;
     }
 
-    private static void DrawDebugGizmos(
-        PlayerNavData navData,
-        Vector3 playerPosition,
-        float expireTime
-    )
+    private static void DrawDebugGizmos(PlayerNavData navData, Vector3 playerPosition, float expireTime)
     {
         Color color;
         if (navData.IsOnNavMesh)

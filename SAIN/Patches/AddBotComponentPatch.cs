@@ -1,11 +1,11 @@
-﻿using EFT;
+﻿using System;
+using System.Reflection;
+using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Components.BotController;
 using SAIN.Components.PlayerComponentSpace;
 using SPT.Reflection.Patching;
-using System;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.Patches.Components;
@@ -56,7 +56,9 @@ internal class AddGameWorldPatch : ModulePatch
     public static void PatchPostfix(GameObject gameObject, GameWorld gameWorld)
     {
         if (gameWorld is HideoutGameWorld)
+        {
             return;
+        }
 
         try
         {

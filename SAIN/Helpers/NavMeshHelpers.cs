@@ -64,7 +64,9 @@ public static class NavMeshHelpers
             {
                 for (int z = 0; z <= lengthCount; z++)
                 {
-                    testPoints.Add(new Vector3(origin.x + (widthSpacing * x), origin.y + (heightSpacing * y), origin.z + (lengthSpacing * z)));
+                    testPoints.Add(
+                        new Vector3(origin.x + (widthSpacing * x), origin.y + (heightSpacing * y), origin.z + (lengthSpacing * z))
+                    );
                 }
             }
         }

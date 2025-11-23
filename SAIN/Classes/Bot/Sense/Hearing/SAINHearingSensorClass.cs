@@ -51,8 +51,7 @@ public class SAINHearingSensorClass : BotComponentClassBase
     public void ReactToBulletFlyBy(AISoundData sound, float FlyByDistance)
     {
         Vector3 EstimatedPosition;
-        bool underFire =
-            FlyByDistance <= SAINPlugin.LoadedPreset.GlobalSettings.Mind.MaxUnderFireDistance;
+        bool underFire = FlyByDistance <= SAINPlugin.LoadedPreset.GlobalSettings.Mind.MaxUnderFireDistance;
         if (!SoundInput.IgnoreHearing || underFire)
         {
             EstimatedPosition = Dispersion.CalcRandomizedPosition(sound, 1f);
@@ -91,25 +90,14 @@ public class SAINHearingSensorClass : BotComponentClassBase
         return true;
     }
 
-    private void ReactToBulletFlyBy(
-        AISoundData sound,
-        float ProjectionPointDistance,
-        Vector3 EstimatedPosition,
-        bool UnderFire
-    )
+    private void ReactToBulletFlyBy(AISoundData sound, float ProjectionPointDistance, Vector3 EstimatedPosition, bool UnderFire)
     {
         Enemy enemy = sound.Enemy;
         if (UnderFire)
         {
-            BotOwner?.HearingSensor?.OnEnemySounHearded?.Invoke(
-                EstimatedPosition,
-                sound.PlayerDistance,
-                sound.SoundType.Convert()
-            );
+            BotOwner?.HearingSensor?.OnEnemySounHearded?.Invoke(EstimatedPosition, sound.PlayerDistance, sound.SoundType.Convert());
             Bot.Memory.SetUnderFire(enemy, EstimatedPosition);
-            enemy.SetEnemyAsSniper(
-                enemy.RealDistance > Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE
-            );
+            enemy.SetEnemyAsSniper(enemy.RealDistance > Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE);
         }
         Bot.Suppression.CheckAddSuppression(enemy, ProjectionPointDistance);
         enemy.Status.RegisterEnemyFlyBy();

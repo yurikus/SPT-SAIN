@@ -5,7 +5,9 @@ namespace SAIN.Preset.GlobalSettings;
 public class VanillaBotSettings : SAINSettingsBase<VanillaBotSettings>, ISAINSettings
 {
     [Name("Vanilla Scavs")]
-    [Description("REQUIRES RESTART OF GAME. Non Player-Scavs will have vanilla ai behavior. Disabling sain for player scavs is not currently possible.")]
+    [Description(
+        "REQUIRES RESTART OF GAME. Non Player-Scavs will have vanilla ai behavior. Disabling sain for player scavs is not currently possible."
+    )]
     public bool VanillaScavs = false;
 
     [Name("Vanilla Bosses")]
@@ -17,7 +19,9 @@ public class VanillaBotSettings : SAINSettingsBase<VanillaBotSettings>, ISAINSet
     public bool VanillaFollowers = false;
 
     [Name("Vanilla Goons")]
-    [Description("REQUIRES RESTART OF GAME. Goons will have vanilla behavior. This disables custom personality edits specially made for the goons and I will be very sad.")]
+    [Description(
+        "REQUIRES RESTART OF GAME. Goons will have vanilla behavior. This disables custom personality edits specially made for the goons and I will be very sad."
+    )]
     public bool VanillaGoons = false;
 
     [Name("Vanilla Bloodhounds")]

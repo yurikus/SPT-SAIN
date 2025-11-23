@@ -18,15 +18,30 @@ public struct SoundStruct
 
     public readonly EnemyPlace Place;
 
-    public float TimeSinceHeard => Place.TimeSincePositionUpdated;
+    public float TimeSinceHeard
+    {
+        get { return Place.TimeSincePositionUpdated; }
+    }
 
-    public Vector3 Position => Place.Position;
+    public Vector3 Position
+    {
+        get { return Place.Position; }
+    }
 
-    public bool ShallLook => clearForLook && TimeSinceHeard < TIME_TO_LOOK;
+    public bool ShallLook
+    {
+        get { return clearForLook && TimeSinceHeard < TIME_TO_LOOK; }
+    }
 
-    private bool clearForLook => Place != null && Enemy != null && Enemy.WasValid;
+    private bool clearForLook
+    {
+        get { return Place != null && Enemy != null && Enemy.WasValid; }
+    }
 
-    public bool ShallClear => !clearForLook || TimeSinceHeard >= TIME_TO_CLEAR;
+    public bool ShallClear
+    {
+        get { return !clearForLook || TimeSinceHeard >= TIME_TO_CLEAR; }
+    }
 }
 
 public class HeardSoundSteeringClass : BotSubClass<SAINSteeringClass>, IBotClass

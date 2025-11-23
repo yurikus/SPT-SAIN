@@ -25,21 +25,41 @@ public class SAINNoBushESP : MonoBehaviour
     {
         if (NoBushMask == 0)
         {
-            NoBushMask =
-                LayerMaskClass.HighPolyWithTerrainMaskAI
-                | (1 << LayerMask.NameToLayer(PropertyNames.PlayerSpirit));
+            NoBushMask = LayerMaskClass.HighPolyWithTerrainMaskAI | (1 << LayerMask.NameToLayer(PropertyNames.PlayerSpirit));
         }
         BotOwner = botOwner;
         SAIN = sain;
     }
 
-    private static NoBushESPSettings Settings =>
-        SAINPlugin.LoadedPreset.GlobalSettings.Look.NoBushESP;
-    private static bool UserToggle => Settings.NoBushESPToggle;
-    private static bool EnhancedChecks => Settings.NoBushESPEnhanced;
-    private static float EnhancedRatio => Settings.NoBushESPEnhancedRatio;
-    private static float Frequency => Settings.NoBushESPFrequency;
-    private static bool DebugMode => Settings.NoBushESPDebugMode;
+    private static NoBushESPSettings Settings
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.Look.NoBushESP; }
+    }
+
+    private static bool UserToggle
+    {
+        get { return Settings.NoBushESPToggle; }
+    }
+
+    private static bool EnhancedChecks
+    {
+        get { return Settings.NoBushESPEnhanced; }
+    }
+
+    private static float EnhancedRatio
+    {
+        get { return Settings.NoBushESPEnhancedRatio; }
+    }
+
+    private static float Frequency
+    {
+        get { return Settings.NoBushESPFrequency; }
+    }
+
+    private static bool DebugMode
+    {
+        get { return Settings.NoBushESPDebugMode; }
+    }
 
     public void Update()
     {
@@ -60,7 +80,10 @@ public class SAINNoBushESP : MonoBehaviour
     public bool NoBushESPActive { get; private set; } = false;
 
     private float NoBushTimer = 0f;
-    private Vector3 HeadPosition => BotOwner.LookSensor.HeadPoint;
+    private Vector3 HeadPosition
+    {
+        get { return BotOwner.LookSensor.HeadPoint; }
+    }
 
     public bool NoBushESPCheck()
     {
@@ -116,15 +139,7 @@ public class SAINNoBushESP : MonoBehaviour
     private static bool RayCast(Vector3 end, Vector3 start)
     {
         Vector3 direction = end - start;
-        if (
-            Physics.Raycast(
-                start,
-                direction.normalized,
-                out var hit,
-                direction.magnitude,
-                NoBushMask
-            )
-        )
+        if (Physics.Raycast(start, direction.normalized, out var hit, direction.magnitude, NoBushMask))
         {
             GameObject hitObject = hit.transform?.parent?.gameObject;
             if (hitObject != null)
@@ -162,10 +177,7 @@ public class SAINNoBushESP : MonoBehaviour
                 enemy.SetCanShoot(false);
                 enemy.SetVisible(false);
 
-                if (
-                    BotOwner.AimingManager.CurrentAiming is BotAimingClass aimData
-                    && aimData.AimStatus_0 != AimStatus.NoTarget
-                )
+                if (BotOwner.AimingManager.CurrentAiming is BotAimingClass aimData && aimData.AimStatus_0 != AimStatus.NoTarget)
                 {
                     aimData.AimStatus_0 = AimStatus.NoTarget;
                 }

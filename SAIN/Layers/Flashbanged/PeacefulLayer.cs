@@ -7,9 +7,8 @@ internal class FlashBangedLayer : SAINLayer
 {
     public static readonly string Name = BuildLayerName("FlashBanged");
 
-    public FlashBangedLayer(BotOwner bot, int priority) : base(bot, priority, Name, ESAINLayer.Peace)
-    {
-    }
+    public FlashBangedLayer(BotOwner bot, int priority)
+        : base(bot, priority, Name, ESAINLayer.Peace) { }
 
     public override Action GetNextAction()
     {

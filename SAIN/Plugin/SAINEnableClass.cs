@@ -23,20 +23,32 @@ public static class SAINEnableClass
     public static bool IsSAINDisabledForBot(BotOwner botOwner)
     {
         if (botOwner == null)
+        {
             return true;
+        }
+
         Player player = botOwner.GetPlayer;
         if (player == null)
+        {
             return true;
+        }
 
         string id = player.ProfileId;
         if (ExcludedBots.Contains(id))
+        {
             return true;
+        }
+
         if (EnabledBots.Contains(id))
+        {
             return false;
+        }
 
         ProfileInfoSettingsClass settings = botOwner.Profile?.Info?.Settings;
         if (settings == null)
+        {
             return true;
+        }
 
         player.OnIPlayerDeadOrUnspawn += ClearBot;
 
@@ -61,21 +73,32 @@ public static class SAINEnableClass
     public static bool IsSAINDisabledForBot(IPlayer iPlayer)
     {
         if (iPlayer == null || !iPlayer.IsAI)
+        {
             return true;
+        }
 
         BotOwner botOwner = iPlayer.AIData?.BotOwner;
         if (botOwner == null)
+        {
             return true;
+        }
 
         string id = iPlayer.ProfileId;
         if (ExcludedBots.Contains(id))
+        {
             return true;
+        }
+
         if (EnabledBots.Contains(id))
+        {
             return false;
+        }
 
         ProfileInfoSettingsClass settings = iPlayer.Profile?.Info?.Settings;
         if (settings == null)
+        {
             return true;
+        }
 
         botOwner.GetPlayer.OnIPlayerDeadOrUnspawn += ClearBot;
 
@@ -120,15 +143,21 @@ public static class SAINEnableClass
     {
         var settings = botOwner.Profile?.Info?.Settings;
         if (settings == null)
+        {
             return true;
+        }
 
         WildSpawnType type = settings.Role;
 
         if (BotSpawnController.StrictExclusionList.Contains(type))
+        {
             return true;
+        }
 
         if (IsAlwaysEnabled(type, botOwner))
+        {
             return false;
+        }
 
         return ShallExludeByWildSpawnType(type, botOwner);
     }
@@ -144,15 +173,12 @@ public static class SAINEnableClass
 
     private static bool IsAlwaysEnabled(WildSpawnType wildSpawnType, BotOwner botOwner)
     {
-        return wildSpawnType.IsPmcBot()
-            || BotManagerComponent.Instance?.Bots?.ContainsKey(botOwner.ProfileId) == true;
+        return wildSpawnType.IsPmcBot() || BotManagerComponent.Instance?.Bots?.ContainsKey(botOwner.ProfileId) == true;
     }
 
     private static bool ExcludeBoss(WildSpawnType wildSpawnType)
     {
-        return SAINEnabled.VanillaBosses
-            && !WildSpawn.IsGoons(wildSpawnType)
-            && wildSpawnType.IsBoss();
+        return SAINEnabled.VanillaBosses && !WildSpawn.IsGoons(wildSpawnType) && wildSpawnType.IsBoss();
     }
 
     private static bool ExcludeGoons(WildSpawnType wildSpawnType)
@@ -162,16 +188,12 @@ public static class SAINEnableClass
 
     private static bool ExcludeFollower(WildSpawnType wildSpawnType)
     {
-        return SAINEnabled.VanillaFollowers
-            && !WildSpawn.IsGoons(wildSpawnType)
-            && wildSpawnType.IsFollower();
+        return SAINEnabled.VanillaFollowers && !WildSpawn.IsGoons(wildSpawnType) && wildSpawnType.IsFollower();
     }
 
     private static bool ExcludeScav(WildSpawnType wildSpawnType, BotOwner botOwner)
     {
-        return SAINEnabled.VanillaScavs
-            && WildSpawn.IsScav(wildSpawnType)
-            && !IsPlayerScav(botOwner.Profile);
+        return SAINEnabled.VanillaScavs && WildSpawn.IsScav(wildSpawnType) && !IsPlayerScav(botOwner.Profile);
     }
 
     private static bool ExcludeOthers(WildSpawnType wildSpawnType)
@@ -192,10 +214,7 @@ public static class SAINEnableClass
         //}
         if (SAINEnabled.VanillaBloodHounds)
         {
-            if (
-                wildSpawnType == WildSpawnType.arenaFighter
-                || wildSpawnType == WildSpawnType.arenaFighterEvent
-            )
+            if (wildSpawnType == WildSpawnType.arenaFighter || wildSpawnType == WildSpawnType.arenaFighterEvent)
             {
                 return true;
             }
@@ -211,8 +230,7 @@ public static class SAINEnableClass
             return true;
         }
         // Check for player Scavs created by SPT
-        return profile.Info.Settings.Role == WildSpawnType.assault
-            && !string.IsNullOrEmpty(profile.Info.MainProfileNickname);
+        return profile.Info.Settings.Role == WildSpawnType.assault && !string.IsNullOrEmpty(profile.Info.MainProfileNickname);
     }
 
     /// <summary>
@@ -230,16 +248,21 @@ public static class SAINEnableClass
     {
         sain = null;
         if (profileId.IsNullOrEmpty())
+        {
             return false;
+        }
+
         if (!EnabledBots.Contains(profileId))
+        {
             return false;
+        }
+
         return BotManagerComponent.Instance != null
-            && BotManagerComponent.Instance.BotSpawnController.BotDictionary.TryGetValue(
-                profileId,
-                out sain
-            );
+            && BotManagerComponent.Instance.BotSpawnController.BotDictionary.TryGetValue(profileId, out sain);
     }
 
-    private static VanillaBotSettings SAINEnabled =>
-        SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots;
+    private static VanillaBotSettings SAINEnabled
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots; }
+    }
 }

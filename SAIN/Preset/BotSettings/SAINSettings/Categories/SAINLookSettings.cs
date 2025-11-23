@@ -13,14 +13,12 @@ public class SAINLookSettings : SAINSettingsBase<SAINLookSettings>, ISAINSetting
     [Advanced]
     public bool FULL_SECTOR_VIEW = false;
 
-    [NameAndDescription("Vision Speed Distance Clamp",
-        "Lower Bot Vision Speed by distance up to a maximum of this value")]
+    [NameAndDescription("Vision Speed Distance Clamp", "Lower Bot Vision Speed by distance up to a maximum of this value")]
     [MinMax(50, 500f)]
     [Advanced]
     public float MAX_DIST_CLAMP_TO_SEEN_SPEED = 500f;
 
-    [NameAndDescription("NightVision Visible Angle",
-        "The Maximum Angle of a bot's cone of vision with NightVision Enabled")]
+    [NameAndDescription("NightVision Visible Angle", "The Maximum Angle of a bot's cone of vision with NightVision Enabled")]
     [MinMax(25, 180)]
     [Advanced]
     public float VISIBLE_ANG_NIGHTVISION = 90f;
@@ -28,42 +26,36 @@ public class SAINLookSettings : SAINSettingsBase<SAINLookSettings>, ISAINSetting
     //[Hidden]
     //public float LOOK_THROUGH_PERIOD_BY_HIT = 0f;
 
-    [NameAndDescription("FlashLight Visible Angle",
-        "The Maximum Angle of a bot's cone of vision with Flashlight Enabled")]
+    [NameAndDescription("FlashLight Visible Angle", "The Maximum Angle of a bot's cone of vision with Flashlight Enabled")]
     [MinMax(10, 180)]
     [Advanced]
     public float VISIBLE_ANG_LIGHT = 35f;
 
-    [NameAndDescription("White Light Visible Distance",
-        "How far a bot can see enemies with a White Light Enabled")]
+    [NameAndDescription("White Light Visible Distance", "How far a bot can see enemies with a White Light Enabled")]
     [MinMax(10, 100f)]
     [Advanced]
     public float VISIBLE_DISNACE_WITH_LIGHT = 65f;
 
-    [NameAndDescription("IR Light Visible Distance",
-        "How far a bot can see enemies with an IR Light Enabled, if they are using NVGs")]
+    [NameAndDescription("IR Light Visible Distance", "How far a bot can see enemies with an IR Light Enabled, if they are using NVGs")]
     [MinMax(10, 100f)]
     [Advanced]
     public float VISIBLE_DISNACE_WITH_IR_LIGHT = 65f;
 
-    [NameAndDescription("Lose Vision Ability Time",
-        "How Long after losing vision a bot will still be able to sense an enemy")]
+    [NameAndDescription("Lose Vision Ability Time", "How Long after losing vision a bot will still be able to sense an enemy")]
     [MinMax(0.01f, 3f, 100f)]
     [Advanced]
     [JsonIgnore]
     [Hidden]
     public float GOAL_TO_FULL_DISSAPEAR = 0.33f;
 
-    [NameAndDescription("Lose Vision Ability Foliage Time",
-        "How Long after losing vision a bot will still be able to sense an enemy")]
+    [NameAndDescription("Lose Vision Ability Foliage Time", "How Long after losing vision a bot will still be able to sense an enemy")]
     [MinMax(0.01f, 3f, 100f)]
     [Advanced]
     [JsonIgnore]
     [Hidden]
     public float GOAL_TO_FULL_DISSAPEAR_GREEN = 0.33f;
 
-    [NameAndDescription("Lose Shoot Ability Time",
-        "How Long after losing vision a bot will still be able to shoot an enemy")]
+    [NameAndDescription("Lose Shoot Ability Time", "How Long after losing vision a bot will still be able to shoot an enemy")]
     [MinMax(0.01f, 3f, 100f)]
     [Advanced]
     [JsonIgnore]

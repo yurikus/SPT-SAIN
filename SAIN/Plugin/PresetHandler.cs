@@ -1,7 +1,7 @@
-﻿using SAIN.Editor;
-using SAIN.Preset;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SAIN.Editor;
+using SAIN.Preset;
 using static SAIN.Helpers.JsonUtility;
 
 namespace SAIN.Plugin;
@@ -83,7 +83,9 @@ internal class PresetHandler
 
     public static void loadDefault()
     {
-        LoadedPreset = SAINDifficultyClass.GetDefaultPreset(EditorDefaults.SelectedDefaultPreset) ?? SAINDifficultyClass.GetDefaultPreset(SAINDifficulty.hard);
+        LoadedPreset =
+            SAINDifficultyClass.GetDefaultPreset(EditorDefaults.SelectedDefaultPreset)
+            ?? SAINDifficultyClass.GetDefaultPreset(SAINDifficulty.hard);
         LoadedPreset.Init();
         LoadedPreset.UpdateDefaults();
     }
@@ -106,7 +108,9 @@ internal class PresetHandler
             LoadedPreset.Init();
 
             if (defaultPreset != null)
+            {
                 LoadedPreset.UpdateDefaults(defaultPreset);
+            }
         }
         catch (Exception ex)
         {

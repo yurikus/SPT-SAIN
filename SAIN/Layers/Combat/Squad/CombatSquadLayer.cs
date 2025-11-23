@@ -50,9 +50,11 @@ internal class CombatSquadLayer(BotOwner botOwner, int priority) : SAINLayer(bot
             if (bot != null && bot.BotActive)
             {
                 SAINDecisionClass decisions = bot.Decision;
-                if (decisions.CurrentSelfDecision == ESelfActionType.None &&
-                    decisions.CurrentCombatDecision != ECombatDecision.DogFight &&
-                    decisions.CurrentSquadDecision != ESquadDecision.None)
+                if (
+                    decisions.CurrentSelfDecision == ESelfActionType.None
+                    && decisions.CurrentCombatDecision != ECombatDecision.DogFight
+                    && decisions.CurrentSquadDecision != ESquadDecision.None
+                )
                 {
                     CheckActiveChanged(true);
                     return true;

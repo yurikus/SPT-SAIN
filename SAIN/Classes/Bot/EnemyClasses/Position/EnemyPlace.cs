@@ -108,13 +108,7 @@ public class EnemyPlace : IDisposable
     private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE = 150;
     private const float ENEMY_DIST_TO_PLACE_FOR_LEAVE_AI = 125f;
 
-    public EnemyPlace(
-        PlaceData placeData,
-        Vector3 position,
-        bool isDanger,
-        EEnemyPlaceType placeType,
-        SAINSoundType? soundType
-    )
+    public EnemyPlace(PlaceData placeData, Vector3 position, bool isDanger, EEnemyPlaceType placeType, SAINSoundType? soundType)
     {
         PlaceData = placeData;
         Visible = placeData.OwnerEnemy.InLineOfSight;
@@ -183,21 +177,25 @@ public class EnemyPlace : IDisposable
     private void checkNewValue(Vector3 value, Vector3 oldValue)
     {
         if ((value - oldValue).sqrMagnitude > ENEMY_DIST_RECHECK_MIN_SQRMAG)
+        {
             updateDistancesNow(value);
+        }
     }
 
     private const float ENEMY_DIST_RECHECK_MIN_SQRMAG = 0.25f;
 
-    public float TimeSincePositionUpdated => Time.time - _timeLastUpdated;
+    public float TimeSincePositionUpdated
+    {
+        get { return Time.time - _timeLastUpdated; }
+    }
+
     public float DistanceToBot { get; private set; }
     public float DistanceToEnemyRealPosition { get; private set; }
 
     private void updateDistancesNow(Vector3 position)
     {
         DistanceToBot = (position - PlaceData.Owner.Position).magnitude;
-        DistanceToEnemyRealPosition = (
-            position - PlaceData.OwnerEnemy.EnemyTransform.Position
-        ).magnitude;
+        DistanceToEnemyRealPosition = (position - PlaceData.OwnerEnemy.EnemyTransform.Position).magnitude;
     }
 
     public float Distance(Vector3 point)

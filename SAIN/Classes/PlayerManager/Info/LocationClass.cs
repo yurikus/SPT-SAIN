@@ -5,17 +5,18 @@ namespace SAIN.Components;
 
 public class LocationClass : GameWorldBase, IGameWorldClass
 {
-    public bool WinterActive => Season == ESeason.Winter;
+    public bool WinterActive
+    {
+        get { return Season == ESeason.Winter; }
+    }
+
     public ESeason Season { get; private set; }
     public ELocation Location { get; private set; }
 
-    public LocationClass(GameWorldComponent component) : base(component)
-    {
-    }
+    public LocationClass(GameWorldComponent component)
+        : base(component) { }
 
-    public void Init()
-    {
-    }
+    public void Init() { }
 
     public void ManualUpdate(float currentTime, float deltaTime)
     {
@@ -23,9 +24,7 @@ public class LocationClass : GameWorldBase, IGameWorldClass
         findWeather(currentTime, deltaTime);
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     private void findWeather(float currentTime, float deltaTime)
     {

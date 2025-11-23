@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -8,7 +7,9 @@ namespace SAIN.Helpers;
 
 internal class ComponentHelpers
 {
-    public static T AddOrDestroyComponent<T, K>(T component, K condition) where T : Component where K : Component
+    public static T AddOrDestroyComponent<T, K>(T component, K condition)
+        where T : Component
+        where K : Component
     {
         if (component == null && condition != null)
         {
@@ -21,7 +22,8 @@ internal class ComponentHelpers
         return component;
     }
 
-    public static void DestroyComponent<T>(T component) where T : Component
+    public static void DestroyComponent<T>(T component)
+        where T : Component
     {
         if (component == null)
         {
@@ -85,6 +87,7 @@ internal class ComponentHelpers
         Logger.LogError($"{message} Error");
         Logger.LogError(ex);
     }
+
     private static void LogDebug(string message)
     {
 #if DEBUG
@@ -99,7 +102,9 @@ internal class ComponentHelpers
 
     private static readonly Dictionary<Type, MethodInfo> DisposeMethods = new();
 
-    public static T GetOrAddComponent<T, K>(K original) where T : Component where K : Component
+    public static T GetOrAddComponent<T, K>(K original)
+        where T : Component
+        where K : Component
     {
         return original.GetComponent<T>() ?? original.gameObject.AddComponent<T>();
     }

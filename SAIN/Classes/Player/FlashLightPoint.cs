@@ -14,5 +14,8 @@ public struct FlashLightPoint
     private readonly float ExpireTime;
     public readonly Vector3 Point;
     public readonly float TimeCreated;
-    public bool ShallExpire => Time.time - TimeCreated > ExpireTime;
+    public bool ShallExpire
+    {
+        get { return Time.time - TimeCreated > ExpireTime; }
+    }
 }

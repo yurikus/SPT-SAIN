@@ -16,19 +16,18 @@ public interface ISainJob
     public void Stop();
 }
 
-public abstract class SainJobTemplate(
-    string InName,
-    MonoBehaviour InOwner,
-    bool InLooping = true,
-    float InLoopInterval = 1.0f / 30.0f
-) : ISainJob
+public abstract class SainJobTemplate(string InName, MonoBehaviour InOwner, bool InLooping = true, float InLoopInterval = 1.0f / 30.0f)
+    : ISainJob
 {
     protected readonly string Name = InName;
     protected readonly bool Looping = InLooping;
     protected readonly float LoopInterval = InLoopInterval;
     protected readonly MonoBehaviour Owner = InOwner;
 
-    public bool Active => Coroutine != null;
+    public bool Active
+    {
+        get { return Coroutine != null; }
+    }
 
     protected Coroutine Coroutine;
 
@@ -102,16 +101,40 @@ public abstract class SainJobTemplate(
         }
     }
 
-    protected static GameWorld GameWorld => Singleton<GameWorld>.Instance;
-    protected static IBotGame BotGame => Singleton<IBotGame>.Instance;
-    protected static GameWorldComponent SAINGameWorld => GameWorldComponent.Instance;
-    protected static BotManagerComponent SAINBotController => BotManagerComponent.Instance;
-    protected static Dictionary<string, PlayerComponent> AlivePlayers =>
-        GameWorldComponent.Instance?.PlayerTracker?.AlivePlayersDictionary;
-    protected static List<IPlayer> DeadPlayers =>
-        GameWorldComponent.Instance?.PlayerTracker?.DeadPlayers;
-    protected static Dictionary<string, BotComponent> AliveBots =>
-        BotSpawnController.Instance?.BotDictionary;
+    protected static GameWorld GameWorld
+    {
+        get { return Singleton<GameWorld>.Instance; }
+    }
+
+    protected static IBotGame BotGame
+    {
+        get { return Singleton<IBotGame>.Instance; }
+    }
+
+    protected static GameWorldComponent SAINGameWorld
+    {
+        get { return GameWorldComponent.Instance; }
+    }
+
+    protected static BotManagerComponent SAINBotController
+    {
+        get { return BotManagerComponent.Instance; }
+    }
+
+    protected static Dictionary<string, PlayerComponent> AlivePlayers
+    {
+        get { return GameWorldComponent.Instance?.PlayerTracker?.AlivePlayersDictionary; }
+    }
+
+    protected static List<IPlayer> DeadPlayers
+    {
+        get { return GameWorldComponent.Instance?.PlayerTracker?.DeadPlayers; }
+    }
+
+    protected static Dictionary<string, BotComponent> AliveBots
+    {
+        get { return BotSpawnController.Instance?.BotDictionary; }
+    }
 
     protected static bool GameActive
     {
@@ -119,10 +142,7 @@ public abstract class SainJobTemplate(
         {
             return GameStatus switch
             {
-                GameStatus.Running
-                or GameStatus.Runned
-                or GameStatus.Starting
-                or GameStatus.Started => true,
+                GameStatus.Running or GameStatus.Runned or GameStatus.Starting or GameStatus.Started => true,
                 _ => false,
             };
         }

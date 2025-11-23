@@ -16,7 +16,7 @@ public class SmoothDampVector(float capDistance = -1)
             Mathf.SmoothDamp(Current.x, targetDir.x, ref Velocity.x, smoothing * xCoef, maxSpeed, deltaTime),
             Mathf.SmoothDamp(Current.y, targetDir.y, ref Velocity.y, smoothing * yCoef, maxSpeed, deltaTime),
             Mathf.SmoothDamp(Current.z, targetDir.z, ref Velocity.z, smoothing * zCoef, maxSpeed, deltaTime)
-            );
+        );
     }
 
     public Vector3 Current = Vector3.forward;
@@ -41,11 +41,7 @@ public class SmoothDampVectorDirectionNormal
         float pitchRad = currentPitch * Mathf.Deg2Rad;
         float cosPitch = Mathf.Cos(pitchRad);
 
-        Current = new Vector3(
-            Mathf.Cos(yawRad) * cosPitch,
-            Mathf.Sin(pitchRad),
-            Mathf.Sin(yawRad) * cosPitch
-        );
+        Current = new Vector3(Mathf.Cos(yawRad) * cosPitch, Mathf.Sin(pitchRad), Mathf.Sin(yawRad) * cosPitch);
     }
 
     public Vector3 Current = Vector3.forward;

@@ -22,10 +22,15 @@ public class SearchPathFinder : BotSubClass<SAINSearchClass>
 {
     public EnemyPlace TargetPlace { get; private set; }
     public BotPeekPlan? PeekPoints { get; private set; }
-    public bool SearchedTargetPosition => TargetPlace == null || TargetPlace.HasArrivedPersonal || TargetPlace.HasArrivedSquad;
+    public bool SearchedTargetPosition
+    {
+        get { return TargetPlace == null || TargetPlace.HasArrivedPersonal || TargetPlace.HasArrivedSquad; }
+    }
+
     public bool FinishedPeeking { get; set; }
 
-    public SearchPathFinder(SAINSearchClass searchClass) : base(searchClass)
+    public SearchPathFinder(SAINSearchClass searchClass)
+        : base(searchClass)
     {
         CanEverTick = false;
     }
@@ -125,8 +130,10 @@ public class SearchPathFinder : BotSubClass<SAINSearchClass>
             return false;
         }
 
-        if ((destination - lastKnownPlace.Position).sqrMagnitude > 0.5f &&
-            Physics.SphereCast(destination + Vector3.up, 0.1f, lastKnownPlace.Position - destination, out RaycastHit hit, 1f))
+        if (
+            (destination - lastKnownPlace.Position).sqrMagnitude > 0.5f
+            && Physics.SphereCast(destination + Vector3.up, 0.1f, lastKnownPlace.Position - destination, out RaycastHit hit, 1f)
+        )
         {
             failReason = "path not complete";
             return false;

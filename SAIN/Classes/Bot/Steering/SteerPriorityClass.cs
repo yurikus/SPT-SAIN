@@ -27,7 +27,9 @@ public class SteerPriorityClass(SAINSteeringClass steering) : BotSubClass<SAINSt
         CurrentSteerPriority = FindSteerPriority(lookRandom, ignoreRunningPath, enemy);
 
         if (CurrentSteerPriority != lastPriority)
+        {
             LastSteerPriority = lastPriority;
+        }
 
         return CurrentSteerPriority;
     }
@@ -68,14 +70,19 @@ public class SteerPriorityClass(SAINSteeringClass steering) : BotSubClass<SAINSt
         //    return ESteerPriority.RunningPath;
 
         if (LookToAimTarget(enemy))
+        {
             return ESteerPriority.Aiming;
+        }
 
-        if (Bot.ManualShoot.Reason != EShootReason.None
-            && Bot.ManualShoot.ShootPosition != Vector3.zero)
+        if (Bot.ManualShoot.Reason != EShootReason.None && Bot.ManualShoot.ShootPosition != Vector3.zero)
+        {
             return ESteerPriority.ManualShooting;
+        }
 
         if (EnemyVisible(enemy))
+        {
             return ESteerPriority.EnemyVisible;
+        }
 
         return ESteerPriority.None;
     }
@@ -89,7 +96,9 @@ public class SteerPriorityClass(SAINSteeringClass steering) : BotSubClass<SAINSt
 
         //if (BotOwner.Memory.IsUnderFire && !Bot.Memory.LastUnderFireEnemy.IsCurrentEnemy)
         if (BotOwner.Memory.IsUnderFire)
+        {
             return ESteerPriority.UnderFire;
+        }
 
         return ESteerPriority.None;
     }
@@ -99,13 +108,19 @@ public class SteerPriorityClass(SAINSteeringClass steering) : BotSubClass<SAINSt
         EnemyPlace lastKnownPlace = Bot.GoalEnemy?.KnownPlaces?.LastKnownPlace;
 
         if (HeardThreat())
+        {
             return ESteerPriority.HeardThreat;
+        }
 
         if (lastKnownPlace != null && lastKnownPlace.TimeSincePositionUpdated < Steer_TimeSinceLocationKnown_Threshold)
+        {
             return ESteerPriority.EnemyLastKnown;
+        }
 
         if (lastKnownPlace != null && lastKnownPlace.TimeSincePositionUpdated < Steer_TimeSinceSeen_Long)
+        {
             return ESteerPriority.EnemyLastKnownLong;
+        }
 
         return ESteerPriority.None;
     }
@@ -137,9 +152,7 @@ public class SteerPriorityClass(SAINSteeringClass steering) : BotSubClass<SAINSt
         }
 
         Enemy enemy = Bot.Medical.HitByEnemy.EnemyWhoLastShotMe;
-        if (enemy != null &&
-            enemy.CheckValid() &&
-            !enemy.IsCurrentEnemy)
+        if (enemy != null && enemy.CheckValid() && !enemy.IsCurrentEnemy)
         {
             EnemyWhoLastShotMe = enemy;
             return true;
@@ -167,8 +180,7 @@ public class SteerPriorityClass(SAINSteeringClass steering) : BotSubClass<SAINSt
                 return true;
             }
 
-            if (enemy.Seen &&
-                enemy.TimeSinceSeen < 0.5f)
+            if (enemy.Seen && enemy.TimeSinceSeen < 0.5f)
             {
                 return true;
             }

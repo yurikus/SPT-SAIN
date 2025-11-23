@@ -83,9 +83,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         SetSprint(CurrentSprintStatus == EBotSprintStatus.Running, $"{CurrentSprintStatus}");
 
         bool slowAtCorners =
-            Bot.GoalEnemy != null
-            && Bot.GoalEnemy.Events.OnSearch.Value
-            && Bot.Info.PersonalitySettings.Search.SlowAtCorners;
+            Bot.GoalEnemy != null && Bot.GoalEnemy.Events.OnSearch.Value && Bot.Info.PersonalitySettings.Search.SlowAtCorners;
         Vector3 startSlowDestination = slowAtCorners ? currentCorner.Position : Destination;
         float startSlowDist = slowAtCorners ? 2f : 0.85f;
         float stopSprintDist = slowAtCorners ? 2f : 1.1f;
@@ -152,10 +150,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             Stop(false, "canceled");
             return false;
         }
-        if (
-            (Destination - botPosition).sqrMagnitude
-            < DestinationReachDistance * DestinationReachDistance
-        )
+        if ((Destination - botPosition).sqrMagnitude < DestinationReachDistance * DestinationReachDistance)
         {
             Stop(true, "arrived");
             return false;
@@ -201,14 +196,17 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         {
             return Status switch
             {
-                EBotMoveStatus.Moving or EBotMoveStatus.DoorInteraction or EBotMoveStatus.Paused =>
-                    true,
+                EBotMoveStatus.Moving or EBotMoveStatus.DoorInteraction or EBotMoveStatus.Paused => true,
                 _ => false,
             };
         }
     }
 
-    public bool Running => Moving && WantToSprint;
+    public bool Running
+    {
+        get { return Moving && WantToSprint; }
+    }
+
     public int CurrentIndex { get; private set; }
     public CornerMoveData CurrentCornerMoveData { get; private set; }
 
@@ -235,9 +233,20 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
     public bool PausedRequested { get; private set; }
     public bool CancelRequested { get; private set; }
 
-    public bool OnLastCorner => CurrentIndex == PathCorners.Count - 1;
-    public float CurrentCornerDistanceSqr => CurrentCornerMoveData.SqrMagnitude;
-    public float CurrentCornerDistance => CurrentCornerMoveData.Magnitude;
+    public bool OnLastCorner
+    {
+        get { return CurrentIndex == PathCorners.Count - 1; }
+    }
+
+    public float CurrentCornerDistanceSqr
+    {
+        get { return CurrentCornerMoveData.SqrMagnitude; }
+    }
+
+    public float CurrentCornerDistance
+    {
+        get { return CurrentCornerMoveData.Magnitude; }
+    }
 
     public NavMeshPathStatus PathStatus { get; set; }
 
@@ -327,7 +336,10 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
     public void Pause(float duration)
     {
         if (CancelRequested)
+        {
             return;
+        }
+
         if (duration > 0f)
         {
             duration = Mathf.Max(duration, 0.25f);
@@ -419,23 +431,13 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             Bot.Mover.SetTargetPose(1f);
             Bot.Mover.SetTargetMoveSpeed(1f);
             Bot.AimDownSightsController.SetADS(false);
-            if (
-                Bot.DoorOpener.Interacting
-                || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data)
-            )
+            if (Bot.DoorOpener.Interacting || Bot.DoorOpener.TryInteractWithDoor(type, Time.time, data))
             {
                 //DoorDataStruct doorData = Bot.DoorOpener.GetActiveDoor();
                 //Logger.LogDebug($"[{Bot.name}]:[{Id}]: Reverse Path");
-                Vector3 position =
-                    CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
+                Vector3 position = CurrentIndex == 0 ? StartPosition : PathCorners[CurrentIndex - 1].Position;
                 Vector3 dirNormal = (position - Bot.Position).normalized;
-                Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(
-                    position,
-                    position,
-                    Bot.PlayerComponent,
-                    0.33f,
-                    1.33f
-                );
+                Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(position, position, Bot.PlayerComponent, 0.33f, 1.33f);
                 return true;
             }
         }
@@ -508,15 +510,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             _lastCheckedMoveData = currentMoveData;
             if (_timeNotMoving > 0f)
             {
-                if (
-                    CheckObjectInWay(
-                        BotPosition(),
-                        CurrentCornerMoveData.CornerDirectionFromBot,
-                        1f,
-                        0.2f,
-                        1f
-                    )
-                )
+                if (CheckObjectInWay(BotPosition(), CurrentCornerMoveData.CornerDirectionFromBot, 1f, 0.2f, 1f))
                 {
                     //Logger.LogDebug($"[{Bot.name}]:[{Id}]: recalc from object in way: " +
                     //    $"{currentMoveData.CornerDirectionFromBot}:" +
@@ -538,16 +532,11 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
                     PathRecalcRequested = true;
                     return true;
                 }
-                else if (
-                    timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYJUMP_TIME
-                )
+                else if (timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYJUMP_TIME)
                 {
                     Bot.Mover.TryJump();
                 }
-                else if (
-                    canTryVault
-                    && timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYVAULT_TIME
-                )
+                else if (canTryVault && timeSinceNoMove > GlobalSettingsClass.Instance.Move.BOT_NOMOVE_TRYVAULT_TIME)
                 {
                     Bot.Mover.TryVault();
                 }
@@ -576,13 +565,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         )
         {
 #if DEBUG
-            DebugGizmos.DrawLine(
-                botPosition + (Vector3.up * height),
-                hit.point,
-                Color.green,
-                0.1f,
-                3
-            );
+            DebugGizmos.DrawLine(botPosition + (Vector3.up * height), hit.point, Color.green, 0.1f, 3);
 #endif
             return true;
         }
@@ -685,10 +668,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             Vector3 cornerDir = CurrentCornerMoveData.CornerDirectionFromBotNormal;
             cornerDir.y = 0;
 
-            if (
-                Vector3.Angle(lookDir.normalized, cornerDir.normalized)
-                > SPRINT_CORNER_DIR_ANGLE_MAX
-            )
+            if (Vector3.Angle(lookDir.normalized, cornerDir.normalized) > SPRINT_CORNER_DIR_ANGLE_MAX)
             {
                 return EBotSprintStatus.Turning;
             }
@@ -744,7 +724,10 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         public static void PrepareBot(BotComponent bot, bool sprinting)
         {
             if (bot == null || bot.BotOwner == null)
+            {
                 return;
+            }
+
             StopVanillaMover(bot.BotOwner.Mover);
             bot.BotOwner.WeaponManager?.Stationary?.StartMove();
             if (sprinting)
@@ -791,20 +774,8 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         {
             Vector3 debugOffset = Vector3.up * 0.25f;
             DebugGizmos.DrawSphere(destination, 0.2f, Color.white, 0.02f);
-            DebugGizmos.DrawLine(
-                destination,
-                destination + debugOffset,
-                Color.white,
-                0.075f,
-                0.02f
-            );
-            DebugGizmos.DrawLine(
-                destination + debugOffset,
-                BotPos + debugOffset,
-                Color.white,
-                0.075f,
-                0.02f
-            );
+            DebugGizmos.DrawLine(destination, destination + debugOffset, Color.white, 0.075f, 0.02f);
+            DebugGizmos.DrawLine(destination + debugOffset, BotPos + debugOffset, Color.white, 0.075f, 0.02f);
         }
 
         private static float FindStartSprintStamina(ESprintUrgency urgency)
@@ -829,10 +800,14 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
             };
         }
 
-        public static bool ShallPauseSprintStamina(float stamina, ESprintUrgency urgency) =>
-            stamina <= FindEndSprintStamina(urgency);
+        public static bool ShallPauseSprintStamina(float stamina, ESprintUrgency urgency)
+        {
+            return stamina <= FindEndSprintStamina(urgency);
+        }
 
-        public static bool ShallStartSprintStamina(float stamina, ESprintUrgency urgency) =>
-            stamina >= FindStartSprintStamina(urgency);
+        public static bool ShallStartSprintStamina(float stamina, ESprintUrgency urgency)
+        {
+            return stamina >= FindStartSprintStamina(urgency);
+        }
     }
 }

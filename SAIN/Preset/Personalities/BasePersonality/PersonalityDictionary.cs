@@ -39,10 +39,7 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
 
     private static readonly NickNames _nicknames;
 
-    public EPersonality GetPersonality(
-        SAINBotInfoClass infoClass,
-        out PersonalitySettingsClass settings
-    )
+    public EPersonality GetPersonality(SAINBotInfoClass infoClass, out PersonalitySettingsClass settings)
     {
         if (checkForcePersonality(out EPersonality result))
         {
@@ -74,9 +71,13 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
         }
 
         if (infoClass.Profile.IsPMC && EFTMath.RandomBool(33))
+        {
             result = EPersonality.Chad;
+        }
         else
+        {
             result = EPersonality.Normal;
+        }
 
         settings = this[result];
         return result;
@@ -126,12 +127,7 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
 
     private EPersonality setBossPersonality(WildSpawnType wildSpawnType)
     {
-        if (
-            GlobalSettingsClass.Instance.Mind.PERS_BOSSES.TryGetValue(
-                wildSpawnType,
-                out EPersonality bossPersonality
-            )
-        )
+        if (GlobalSettingsClass.Instance.Mind.PERS_BOSSES.TryGetValue(wildSpawnType, out EPersonality bossPersonality))
         {
             return bossPersonality;
         }
@@ -166,8 +162,7 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
 
     private bool checkRandomAssignment(PersonalitySettingsClass settings)
     {
-        return settings.Assignment.CanBeRandomlyAssigned
-            && EFTMath.RandomBool(settings.Assignment.RandomlyAssignedChance);
+        return settings.Assignment.CanBeRandomlyAssigned && EFTMath.RandomBool(settings.Assignment.RandomlyAssignedChance);
     }
 
     private bool meetsRequirements(SAINBotInfoClass infoClass, PersonalitySettingsClass settings)
@@ -185,8 +180,7 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
         var assignment = settings.Assignment;
         powerLevel = Mathf.Clamp(powerLevel, 0, 1000);
         float modifier0to1 =
-            (powerLevel - assignment.PowerLevelScaleStart)
-            / (assignment.PowerLevelScaleEnd - assignment.PowerLevelScaleStart);
+            (powerLevel - assignment.PowerLevelScaleStart) / (assignment.PowerLevelScaleEnd - assignment.PowerLevelScaleStart);
         if (assignment.InverseScale)
         {
             modifier0to1 = 1f - modifier0to1;

@@ -13,10 +13,15 @@ public class EnemyKnownPlaces
     public EnemyPlace LastHeardPlace { get; private set; }
     public EnemyPlace LastSquadSeenPlace { get; private set; }
     public EnemyPlace LastSquadHeardPlace { get; private set; }
-    public float TimeSinceLastKnownUpdated =>
-        LastKnownPlace == null ? float.MaxValue : Time.time - TimeLastKnownUpdated;
+    public float TimeSinceLastKnownUpdated
+    {
+        get { return LastKnownPlace == null ? float.MaxValue : Time.time - TimeLastKnownUpdated; }
+    }
 
-    public Vector3? LastKnownPosition => LastKnownPlace?.Position;
+    public Vector3? LastKnownPosition
+    {
+        get { return LastKnownPlace?.Position; }
+    }
 
     public float EnemyDistanceFromLastKnown
     {
@@ -77,11 +82,7 @@ public class EnemyKnownPlaces
         _nextCheckSearchTime = currentTime + 0.25f;
 
         bool allSearched = true;
-        if (
-            LastKnownPlace != null
-            && !LastKnownPlace.HasArrivedPersonal
-            && !LastKnownPlace.HasArrivedSquad
-        )
+        if (LastKnownPlace != null && !LastKnownPlace.HasArrivedPersonal && !LastKnownPlace.HasArrivedSquad)
         {
             allSearched = false;
         }
@@ -188,12 +189,7 @@ public class EnemyKnownPlaces
     {
         if (
             _nextTalkClearTime < Time.time
-            && Enemy.Bot.Talk.GroupSay(
-                EFTMath.RandomBool(75) ? EPhraseTrigger.Clear : EPhraseTrigger.LostVisual,
-                null,
-                true,
-                75
-            )
+            && Enemy.Bot.Talk.GroupSay(EFTMath.RandomBool(75) ? EPhraseTrigger.Clear : EPhraseTrigger.LostVisual, null, true, 75)
         )
         {
             _nextTalkClearTime = Time.time + 10f;
@@ -232,20 +228,12 @@ public class EnemyKnownPlaces
 
         stringBuilder.AppendLine(
             $"Arrived? [{place.HasArrivedPersonal}]"
-                + (
-                    place.HasArrivedPersonal
-                        ? $"Time Since Arrived: [{Time.time - place._timeArrivedPers}]"
-                        : string.Empty
-                )
+                + (place.HasArrivedPersonal ? $"Time Since Arrived: [{Time.time - place._timeArrivedPers}]" : string.Empty)
         );
 
         stringBuilder.AppendLine(
             $"Seen? [{place.HasSeenPersonal}]"
-                + (
-                    place.HasSeenPersonal
-                        ? $"Time Since Seen: [{Time.time - place._timeSeenPers}]"
-                        : string.Empty
-                )
+                + (place.HasSeenPersonal ? $"Time Since Seen: [{Time.time - place._timeSeenPers}]" : string.Empty)
         );
     }
 
@@ -253,10 +241,7 @@ public class EnemyKnownPlaces
     {
         if (LastSeenPlace == null)
         {
-            LastSeenPlace = new EnemyPlace(_placeData, position, true, EEnemyPlaceType.Vision, null)
-            {
-                HasSeenPersonal = true,
-            };
+            LastSeenPlace = new EnemyPlace(_placeData, position, true, EEnemyPlaceType.Vision, null) { HasSeenPersonal = true };
             AllEnemyPlaces.Add(LastSeenPlace);
         }
         else
@@ -275,13 +260,7 @@ public class EnemyKnownPlaces
         }
         if (LastSquadSeenPlace == null)
         {
-            LastSquadSeenPlace = new EnemyPlace(
-                _placeData,
-                memberPlace.Position,
-                true,
-                EEnemyPlaceType.Vision,
-                null
-            )
+            LastSquadSeenPlace = new EnemyPlace(_placeData, memberPlace.Position, true, EEnemyPlaceType.Vision, null)
             {
                 HasSeenSquad = true,
             };

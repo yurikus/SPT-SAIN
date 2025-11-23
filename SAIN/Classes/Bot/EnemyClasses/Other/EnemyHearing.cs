@@ -11,7 +11,11 @@ public class EnemyHearing(EnemyData enemyData) : EnemyBase(enemyData, enemyData.
 {
     public bool Heard { get; private set; }
     public bool EnemyHeardFromPeace { get; set; }
-    public float TimeSinceHeard => Heard ? Time.time - _timeLastHeard : float.MaxValue;
+    public float TimeSinceHeard
+    {
+        get { return Heard ? Time.time - _timeLastHeard : float.MaxValue; }
+    }
+
     public BotSound LastSoundHeard { get; set; }
     public Vector3? LastHeardPosition { get; private set; }
 
@@ -69,10 +73,14 @@ public class EnemyHearing(EnemyData enemyData) : EnemyBase(enemyData, enemyData.
         EnemyPlace place = UpdateHeardPosition(report, currentTime);
 
         if (!Bot.HasEnemy)
+        {
             EnemyHeardFromPeace = true;
+        }
 
         if (place != null)
+        {
             Enemy.Events.EnemyHeard(report.soundType, report.isDanger, place);
+        }
 
         if (wasGunfire || !report.shallReportToSquad)
         {
@@ -124,9 +132,7 @@ public class EnemyHearing(EnemyData enemyData) : EnemyBase(enemyData, enemyData.
     public EnemyPlace UpdateHeardPosition(SAINHearingReport report, float currentTime)
     {
         EnemyPlace place = Enemy.KnownPlaces.UpdatePersonalHeardPosition(report, currentTime);
-        if (report.shallReportToSquad &&
-            place != null &&
-            _nextReportHeardTime < currentTime)
+        if (report.shallReportToSquad && place != null && _nextReportHeardTime < currentTime)
         {
             _nextReportHeardTime = currentTime + REPORT_HEARD_FREQUENCY;
             Bot.Squad?.SquadInfo?.ReportEnemyPosition(Enemy, place, false, currentTime);

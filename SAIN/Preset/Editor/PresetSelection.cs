@@ -1,10 +1,10 @@
-﻿using EFT.UI;
-using SAIN.Plugin;
-using SAIN.Preset;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using EFT.UI;
+using SAIN.Plugin;
+using SAIN.Preset;
 using UnityEngine;
 using static SAIN.Editor.SAINLayout;
 using JsonUtility = SAIN.Helpers.JsonUtility;
@@ -56,8 +56,9 @@ public static class PresetSelection
             sainPresetV = selectedPreset.SAINVersion;
         }
         GUIContent content = new(
-                    $"Warning: The selected preset version is: [{sainPresetV}], " +
-                    $"but current SAIN preset version is: [{AssemblyInfoClass.SAINPresetVersion}] (SAIN version [{AssemblyInfoClass.SAINVersion}]), default bot config values may be set incorrectly due to updates to SAIN. THIS DOESN'T MEAN YOUR GAME IS BROKEN, just be aware bots might not act as intended.");
+            $"Warning: The selected preset version is: [{sainPresetV}], "
+                + $"but current SAIN preset version is: [{AssemblyInfoClass.SAINPresetVersion}] (SAIN version [{AssemblyInfoClass.SAINVersion}]), default bot config values may be set incorrectly due to updates to SAIN. THIS DOESN'T MEAN YOUR GAME IS BROKEN, just be aware bots might not act as intended."
+        );
 
         Rect rect = GUILayoutUtility.GetRect(content, GetStyle(Style.alert), Height(PRESET_ALERT_HEIGHT));
         if (selectedPreset.IsCustom && sainPresetV != AssemblyInfoClass.SAINPresetVersion)
@@ -74,7 +75,15 @@ public static class PresetSelection
     {
         BeginVertical();
         Box("Presets", "Select an Installed preset for SAIN Settings", Height(PRESET_LABEL_HEIGHT), Width(PRESET_BASE_OPTION_WIDTH));
-        if (Button("Refresh", "Refresh installed Presets", EUISoundType.ButtonClick, Height(PRESET_LABEL_HEIGHT), Width(PRESET_BASE_OPTION_WIDTH)))
+        if (
+            Button(
+                "Refresh",
+                "Refresh installed Presets",
+                EUISoundType.ButtonClick,
+                Height(PRESET_LABEL_HEIGHT),
+                Width(PRESET_BASE_OPTION_WIDTH)
+            )
+        )
         {
             PresetHandler.LoadCustomPresetOptions();
         }
@@ -83,7 +92,9 @@ public static class PresetSelection
             _makeNewPresetMenuToggle,
             new GUIContent("Create New Preset"),
             EUISoundType.ButtonClick,
-            Height(PRESET_LABEL_HEIGHT), Width(PRESET_BASE_OPTION_WIDTH));
+            Height(PRESET_LABEL_HEIGHT),
+            Width(PRESET_BASE_OPTION_WIDTH)
+        );
 
         EndVertical();
     }
@@ -100,13 +111,16 @@ public static class PresetSelection
             {
                 bool selected = SAINPlugin.EditorDefaults.SelectedDefaultPreset == sainDifficulty;
 
-                if (Toggle(
-                    selected,
-                    $"{preset.Name}",
-                    preset.Description,
-                    EUISoundType.MenuCheckBox,
-                    Height(PRESET_OPTION_HEIGHT), Width(PRESET_OPTION_WIDTH)
-                    ))
+                if (
+                    Toggle(
+                        selected,
+                        $"{preset.Name}",
+                        preset.Description,
+                        EUISoundType.MenuCheckBox,
+                        Height(PRESET_OPTION_HEIGHT),
+                        Width(PRESET_OPTION_WIDTH)
+                    )
+                )
                 {
                     if (!selected)
                     {
@@ -129,16 +143,19 @@ public static class PresetSelection
             var preset = PresetHandler.CustomPresetOptions[i];
             if (preset.IsCustom == true)
             {
-                bool selected = SAINPlugin.EditorDefaults.SelectedDefaultPreset == SAINDifficulty.none
-                    && selectedPreset.Name == preset.Name;
+                bool selected =
+                    SAINPlugin.EditorDefaults.SelectedDefaultPreset == SAINDifficulty.none && selectedPreset.Name == preset.Name;
 
-                if (Toggle(
-                    selected,
-                    $"{preset.Name}",
-                    preset.Description,
-                    EUISoundType.MenuCheckBox,
-                    Height(PRESET_OPTION_HEIGHT), Width(PRESET_OPTION_WIDTH)
-                    ))
+                if (
+                    Toggle(
+                        selected,
+                        $"{preset.Name}",
+                        preset.Description,
+                        EUISoundType.MenuCheckBox,
+                        Height(PRESET_OPTION_HEIGHT),
+                        Width(PRESET_OPTION_WIDTH)
+                    )
+                )
                 {
                     if (!selected)
                     {
@@ -160,7 +177,15 @@ public static class PresetSelection
             BeginHorizontal();
             Space(25);
             SAINPresetDefinition info = SAINPlugin.LoadedPreset.Info;
-            if (info.CanEditName && Button("Save Info", "Update the selected presets name, description, and creator.", EFT.UI.EUISoundType.InsuranceInsured, Height(30f)))
+            if (
+                info.CanEditName
+                && Button(
+                    "Save Info",
+                    "Update the selected presets name, description, and creator.",
+                    EFT.UI.EUISoundType.InsuranceInsured,
+                    Height(30f)
+                )
+            )
             {
                 string oldName = info.Name;
                 var newInfo = info.Clone();

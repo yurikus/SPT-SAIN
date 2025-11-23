@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using SAIN.BotController.Classes;
 using SAIN.Components;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Info;
@@ -13,8 +13,8 @@ public class BotSquadContainer : BotComponentClassBase
     public float CHECK_VISIBLE_MEMBERS_INTERVAL = 1f;
     public float CHECK_VISIBLE_MEMBERS_DISTANCE = 75f;
 
-
-    public BotSquadContainer(BotComponent bot) : base(bot)
+    public BotSquadContainer(BotComponent bot)
+        : base(bot)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         getSquad();
@@ -39,13 +39,25 @@ public class BotSquadContainer : BotComponentClassBase
 
     private float _updateMemberTime = 0f;
 
-    public bool IAmLeader => SquadInfo.LeaderId == Bot.ProfileId;
+    public bool IAmLeader
+    {
+        get { return SquadInfo.LeaderId == Bot.ProfileId; }
+    }
 
-    public BotComponent LeaderComponent => SquadInfo?.LeaderComponent;
+    public BotComponent LeaderComponent
+    {
+        get { return SquadInfo?.LeaderComponent; }
+    }
 
-    public bool BotInGroup => BotOwner.BotsGroup.MembersCount > 1 || HumanFriendClose;
+    public bool BotInGroup
+    {
+        get { return BotOwner.BotsGroup.MembersCount > 1 || HumanFriendClose; }
+    }
 
-    public Dictionary<string, BotComponent> Members => SquadInfo?.Members;
+    public Dictionary<string, BotComponent> Members
+    {
+        get { return SquadInfo?.Members; }
+    }
 
     public bool HumanFriendClose
     {
@@ -60,7 +72,6 @@ public class BotSquadContainer : BotComponentClassBase
         }
     }
 
-
     private bool _humanFriendclose;
 
     private float _nextCheckhumantime;
@@ -69,10 +80,12 @@ public class BotSquadContainer : BotComponentClassBase
     {
         foreach (var playerComponent in GameWorldComponent.Instance.PlayerTracker.AlivePlayersDictionary.Values)
         {
-            if (playerComponent != null &&
-                !playerComponent.IsAI &&
-                Bot?.EnemyController?.IsPlayerAnEnemy(playerComponent.ProfileId) == false &&
-                playerComponent.GetDistanceToPlayer(Bot.ProfileId) < distToCheck)
+            if (
+                playerComponent != null
+                && !playerComponent.IsAI
+                && Bot?.EnemyController?.IsPlayerAnEnemy(playerComponent.ProfileId) == false
+                && playerComponent.GetDistanceToPlayer(Bot.ProfileId) < distToCheck
+            )
             {
                 return true;
             }
@@ -82,9 +95,7 @@ public class BotSquadContainer : BotComponentClassBase
 
     public override void ManualUpdate()
     {
-        if (BotOwner.BotsGroup.MembersCount > 1 &&
-            SquadInfo != null &&
-            _updateMemberTime < Time.time)
+        if (BotOwner.BotsGroup.MembersCount > 1 && SquadInfo != null && _updateMemberTime < Time.time)
         {
             _updateMemberTime = Time.time + CHECK_VISIBLE_MEMBERS_INTERVAL;
 

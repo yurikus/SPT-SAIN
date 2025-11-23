@@ -9,9 +9,7 @@ public class GeneralSettings : SAINSettingsBase<GeneralSettings>, ISAINSettings
     public bool BotsUseGrenades = true;
 
     [Name("Bots Use Grenades Vs Other Bots")]
-    [Description(
-        "Bots are not as careful with grenades as players, this will prevent accidental deaths fighting other bots."
-    )]
+    [Description("Bots are not as careful with grenades as players, this will prevent accidental deaths fighting other bots.")]
     public bool BotVsBotGrenade = true;
 
     [Name("Bot Inertia")]

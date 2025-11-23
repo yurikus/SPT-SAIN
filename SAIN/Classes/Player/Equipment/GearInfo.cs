@@ -1,7 +1,7 @@
-﻿using EFT.InventoryLogic;
-using SAIN.Components.PlayerComponentSpace.Classes.Equipment;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using EFT.InventoryLogic;
+using SAIN.Components.PlayerComponentSpace.Classes.Equipment;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Info;
@@ -10,7 +10,10 @@ public class GearInfo
 {
     public bool HasEarPiece { get; private set; }
 
-    public bool HasHelmet => HelmetArmorClass > 0;
+    public bool HasHelmet
+    {
+        get { return HelmetArmorClass > 0; }
+    }
 
     public bool HasHeavyHelmet { get; private set; }
 
@@ -18,13 +21,19 @@ public class GearInfo
 
     public bool HasFaceShield { get; private set; }
 
-    public bool HasArmor => BodyArmorClass != 0;
+    public bool HasArmor
+    {
+        get { return BodyArmorClass != 0; }
+    }
 
     public int BodyArmorClass { get; private set; }
 
     protected SAINEquipmentClass Equipment { get; private set; }
 
-    protected InventoryEquipment _equipment => Equipment.EquipmentClass;
+    protected InventoryEquipment _equipment
+    {
+        get { return Equipment.EquipmentClass; }
+    }
 
     public GearInfo(SAINEquipmentClass equipment)
     {
@@ -121,7 +130,10 @@ public class GearInfo
 
     private int findMaxAC(Item item)
     {
-        if (item == null) return 0;
+        if (item == null)
+        {
+            return 0;
+        }
 
         item.GetItemComponentsInChildrenNonAlloc(_armorList, true);
 

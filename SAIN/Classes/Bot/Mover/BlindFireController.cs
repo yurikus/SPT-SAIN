@@ -10,39 +10,39 @@ namespace SAIN.SAINComponent.Classes.Mover;
 
 public class BlindFireController : BotBase, IBotClass
 {
-    public BlindFireController(BotComponent sain) : base(sain)
-    {
-
-    }
+    public BlindFireController(BotComponent sain)
+        : base(sain) { }
 
     private bool CheckAllowBlindFire()
     {
-        if (!Bot.SAINLayersActive ||
-            !BotOwner.WeaponManager.IsReady ||
-            !BotOwner.WeaponManager.HaveBullets ||
-            Bot.Mover.Moving ||
-            Bot.Cover.CoverInUse == null)
+        if (
+            !Bot.SAINLayersActive
+            || !BotOwner.WeaponManager.IsReady
+            || !BotOwner.WeaponManager.HaveBullets
+            || Bot.Mover.Moving
+            || Bot.Cover.CoverInUse == null
+        )
         {
             return false;
         }
 
         Enemy enemy = Bot.GoalEnemy;
-        if (enemy == null ||
-            !enemy.Seen ||
-            enemy.TimeSinceSeen > 30f)
+        if (enemy == null || !enemy.Seen || enemy.TimeSinceSeen > 30f)
         {
             return false;
         }
 
         if (enemy.IsVisible && enemy.CanShoot)
         {
-            if (_blindFire != 0) return true; // dont stop blindfiring suddenly
+            if (_blindFire != 0)
+            {
+                return true; // dont stop blindfiring suddenly
+            }
+
             return false;
         }
 
-        if (GlobalSettingsClass.Instance.General.AILimit.LimitAIvsAIGlobal
-            && enemy.IsAI
-            && Bot.CurrentAILimit != AILimitSetting.None)
+        if (GlobalSettingsClass.Instance.General.AILimit.LimitAIvsAIGlobal && enemy.IsAI && Bot.CurrentAILimit != AILimitSetting.None)
         {
             return false;
         }
@@ -116,7 +116,12 @@ public class BlindFireController : BotBase, IBotClass
         {
             _nextUpdateAimTargetTime = Time.time + 1.5f;
             Vector3 start = Bot.Position;
-            Vector3 blindFireDirection = Vector.Rotate(targetPos - start, Vector.RandomRange(3), Vector.RandomRange(3), Vector.RandomRange(3));
+            Vector3 blindFireDirection = Vector.Rotate(
+                targetPos - start,
+                Vector.RandomRange(3),
+                Vector.RandomRange(3),
+                Vector.RandomRange(3)
+            );
             BlindFireTargetPos = blindFireDirection + start;
         }
         TryShoot(Bot.GoalEnemy);
@@ -153,12 +158,17 @@ public class BlindFireController : BotBase, IBotClass
 
     private Vector3 BlindFireTargetPos;
 
-    public bool BlindFireActive => ActiveBlindFireSetting != 0;
+    public bool BlindFireActive
+    {
+        get { return ActiveBlindFireSetting != 0; }
+    }
 
-    public int ActiveBlindFireSetting => Player.MovementContext.BlindFire;
+    public int ActiveBlindFireSetting
+    {
+        get { return Player.MovementContext.BlindFire; }
+    }
 
     private float _changeBlindFireTime = 0f;
-
 
     private int checkBlindFire(Vector3 targetPos)
     {

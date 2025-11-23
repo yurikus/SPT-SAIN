@@ -1,5 +1,5 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -69,7 +69,9 @@ public class TalkSettings : SAINSettingsBase<TalkSettings>, ISAINSettings
     public float FriendlyResponseMaxRandomDelay = 0.75f;
 
     [Name("Vanilla Bot Talking")]
-    [Description("Disable all SAIN based handling of bot talking. No more squad chatter, no more quiet bots, completely disables SAIN's handling of bot voices")]
+    [Description(
+        "Disable all SAIN based handling of bot talking. No more squad chatter, no more quiet bots, completely disables SAIN's handling of bot voices"
+    )]
     public bool DisableBotTalkPatching = false;
 
     public override void Init(List<ISAINSettings> list)

@@ -1,10 +1,10 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Components;
 using SAIN.Components.BotController;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Text;
 
 namespace SAIN.Layers;
 
@@ -54,7 +54,13 @@ public abstract class SAINLayer(BotOwner botOwner, int priority, string layerNam
 
     private bool _wasActive = false;
 
-    private void BotDecisionMade(ECombatDecision combatDecision, ESquadDecision squadDecision, ESelfActionType selfDecision, Enemy targetEnemy, BotComponent bot)
+    private void BotDecisionMade(
+        ECombatDecision combatDecision,
+        ESquadDecision squadDecision,
+        ESelfActionType selfDecision,
+        Enemy targetEnemy,
+        BotComponent bot
+    )
     {
         if (_wasActive)
         {
@@ -82,9 +88,15 @@ public abstract class SAINLayer(BotOwner botOwner, int priority, string layerNam
         }
     }
 
-    public override string GetName() => LayerName;
+    public override string GetName()
+    {
+        return LayerName;
+    }
 
-    public static BotManagerComponent BotController => BotManagerComponent.Instance;
+    public static BotManagerComponent BotController
+    {
+        get { return BotManagerComponent.Instance; }
+    }
 
     public BotComponent Bot { get; private set; }
 

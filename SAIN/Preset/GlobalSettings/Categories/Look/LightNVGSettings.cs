@@ -11,7 +11,9 @@ public class LightNVGSettings : SAINSettingsBase<LightNVGSettings>, ISAINSetting
     public float LightOnRatio = 0.33f;
 
     [Name("Flashlight Disable Visibility Ratio")]
-    [Description("If a bot has a flashlight enabled to see at night, and visibility is higher than or equal to this ratio, bots will want to turn off their flashlight.")]
+    [Description(
+        "If a bot has a flashlight enabled to see at night, and visibility is higher than or equal to this ratio, bots will want to turn off their flashlight."
+    )]
     [Advanced]
     [MinMax(0.01f, 0.99f, 100f)]
     public float LightOffRatio = 0.66f;
@@ -23,7 +25,9 @@ public class LightNVGSettings : SAINSettingsBase<LightNVGSettings>, ISAINSetting
     public float NightVisionOnRatio = 0.33f;
 
     [Name("Nightvision Disable Visibility Ratio")]
-    [Description("If a bot has night vision goggles enabled to see at night, and visibility is higher than or equal to this ratio, bots will want to turn off their NVGs.")]
+    [Description(
+        "If a bot has night vision goggles enabled to see at night, and visibility is higher than or equal to this ratio, bots will want to turn off their NVGs."
+    )]
     [Advanced]
     [MinMax(0.01f, 0.99f, 100f)]
     public float NightVisionOffRatio = 0.66f;

@@ -10,10 +10,14 @@ internal static class CursorSettings
 
     public static bool DisplayingWindow
     {
-        get => _displayingWindow;
+        get { return _displayingWindow; }
         set
         {
-            if (_displayingWindow == value) return;
+            if (_displayingWindow == value)
+            {
+                return;
+            }
+
             _displayingWindow = value;
 
             if (_displayingWindow)
@@ -21,7 +25,9 @@ internal static class CursorSettings
                 // Do through reflection for unity 4 compat
                 if (_curLockState != null)
                 {
-                    _previousCursorLockState = _obsoleteCursor ? Convert.ToInt32((bool)_curLockState.GetValue(null, null)) : (int)_curLockState.GetValue(null, null);
+                    _previousCursorLockState = _obsoleteCursor
+                        ? Convert.ToInt32((bool)_curLockState.GetValue(null, null))
+                        : (int)_curLockState.GetValue(null, null);
                     _previousCursorVisible = (bool)_curVisible.GetValue(null, null);
                 }
             }
@@ -59,9 +65,13 @@ internal static class CursorSettings
             //Cursor.lockState = CursorLockMode.None;
             //Cursor.visible = true;
             if (_obsoleteCursor)
+            {
                 _curLockState.SetValue(null, Convert.ToBoolean(lockState), null);
+            }
             else
+            {
                 _curLockState.SetValue(null, lockState, null);
+            }
 
             _curVisible.SetValue(null, cursorVisible, null);
         }

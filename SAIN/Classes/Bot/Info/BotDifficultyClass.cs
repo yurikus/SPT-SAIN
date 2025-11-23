@@ -48,16 +48,9 @@ public class BotDifficultyClass : BotBase
         var personalitySettings = Bot.Info.PersonalitySettingsClass.Difficulty;
 
         HearingDistanceModifier =
-            1f
-            * globalSettings.HearingDistanceCoef
-            * botSettings.HearingDistanceCoef
-            * personalitySettings.HearingDistanceCoef;
+            1f * globalSettings.HearingDistanceCoef * botSettings.HearingDistanceCoef * personalitySettings.HearingDistanceCoef;
 
-        AggressionModifier =
-            1f
-            * globalSettings.AggressionCoef
-            * botSettings.AggressionCoef
-            * personalitySettings.AggressionCoef;
+        AggressionModifier = 1f * globalSettings.AggressionCoef * botSettings.AggressionCoef * personalitySettings.AggressionCoef;
 
         var locationSettings = preset.GlobalSettings.Location.Current();
         if (locationSettings == null)

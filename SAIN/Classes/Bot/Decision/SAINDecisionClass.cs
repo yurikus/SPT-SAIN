@@ -1,23 +1,53 @@
-﻿
-using SAIN.Components;
+﻿using SAIN.Components;
 
 namespace SAIN.SAINComponent.Classes.Decision;
 
 public class SAINDecisionClass : BotComponentClassBase
 {
-    public bool HasDecision => DecisionManager.HasDecision;
+    public bool HasDecision
+    {
+        get { return DecisionManager.HasDecision; }
+    }
 
-    public ECombatDecision CurrentCombatDecision => DecisionManager.CurrentCombatDecision;
-    public ECombatDecision PreviousCombatDecision => DecisionManager.PreviousCombatDecision;
+    public ECombatDecision CurrentCombatDecision
+    {
+        get { return DecisionManager.CurrentCombatDecision; }
+    }
 
-    public ESquadDecision CurrentSquadDecision => DecisionManager.CurrentSquadDecision;
-    public ESquadDecision PreviousSquadDecision => DecisionManager.PreviousSquadDecision;
+    public ECombatDecision PreviousCombatDecision
+    {
+        get { return DecisionManager.PreviousCombatDecision; }
+    }
 
-    public ESelfActionType CurrentSelfDecision => DecisionManager.CurrentSelfDecision;
-    public ESelfActionType PreviousSelfDecision => DecisionManager.PreviousSelfDecision;
+    public ESquadDecision CurrentSquadDecision
+    {
+        get { return DecisionManager.CurrentSquadDecision; }
+    }
 
-    public float ChangeDecisionTime => DecisionManager.ChangeDecisionTime;
-    public float TimeSinceChangeDecision => DecisionManager.TimeSinceChangeDecision;
+    public ESquadDecision PreviousSquadDecision
+    {
+        get { return DecisionManager.PreviousSquadDecision; }
+    }
+
+    public ESelfActionType CurrentSelfDecision
+    {
+        get { return DecisionManager.CurrentSelfDecision; }
+    }
+
+    public ESelfActionType PreviousSelfDecision
+    {
+        get { return DecisionManager.PreviousSelfDecision; }
+    }
+
+    public float ChangeDecisionTime
+    {
+        get { return DecisionManager.ChangeDecisionTime; }
+    }
+
+    public float TimeSinceChangeDecision
+    {
+        get { return DecisionManager.TimeSinceChangeDecision; }
+    }
 
     public bool RunningToCover
     {
@@ -37,10 +67,15 @@ public class SAINDecisionClass : BotComponentClassBase
         }
     }
 
-    public bool IsSearching =>
-        CurrentCombatDecision == ECombatDecision.Search ||
-        CurrentSquadDecision == ESquadDecision.Search ||
-        CurrentSquadDecision == ESquadDecision.GroupSearch;
+    public bool IsSearching
+    {
+        get
+        {
+            return CurrentCombatDecision == ECombatDecision.Search
+                || CurrentSquadDecision == ESquadDecision.Search
+                || CurrentSquadDecision == ESquadDecision.GroupSearch;
+        }
+    }
 
     public BotDecisionManager DecisionManager { get; }
     public DogFightDecisionClass DogFightDecision { get; }
@@ -48,7 +83,8 @@ public class SAINDecisionClass : BotComponentClassBase
     public EnemyDecisionClass EnemyDecisions { get; }
     public SquadDecisionClass SquadDecisions { get; }
 
-    public SAINDecisionClass(BotComponent bot) : base(bot)
+    public SAINDecisionClass(BotComponent bot)
+        : base(bot)
     {
         TickRequirement = ESAINTickState.OnlyBotActive;
         DecisionManager = new BotDecisionManager(this);
@@ -88,5 +124,8 @@ public class SAINDecisionClass : BotComponentClassBase
         base.Dispose();
     }
 
-    public void ResetDecisions(bool active) => DecisionManager.ResetDecisions(active);
+    public void ResetDecisions(bool active)
+    {
+        DecisionManager.ResetDecisions(active);
+    }
 }

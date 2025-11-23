@@ -11,9 +11,8 @@ public class EnemyAim : EnemyBase
     private const float CALC_SCATTER_FREQ = 0.025f;
     private const float CALC_SCATTER_FREQ_AI = 0.1f;
 
-    public EnemyAim(EnemyData enemyData) : base(enemyData, enemyData.Enemy.Bot)
-    {
-    }
+    public EnemyAim(EnemyData enemyData)
+        : base(enemyData, enemyData.Enemy.Bot) { }
 
     public float AimAndScatterMultiplier
     {
@@ -31,9 +30,15 @@ public class EnemyAim : EnemyBase
     private float _modifier = 1;
     private float _getModTime;
 
-    private float InjuryFactor => Bot.Info.WeaponInfo.Recoil.ArmInjuryModifier;
+    private float InjuryFactor
+    {
+        get { return Bot.Info.WeaponInfo.Recoil.ArmInjuryModifier; }
+    }
 
-    private static AimSettings AimSettings => SAINPlugin.LoadedPreset.GlobalSettings.Aiming;
+    private static AimSettings AimSettings
+    {
+        get { return SAINPlugin.LoadedPreset.GlobalSettings.Aiming; }
+    }
 
     private float OpticFactor
     {
@@ -71,8 +76,7 @@ public class EnemyAim : EnemyBase
                 }
             }
 
-            if (!weapon.HasRedDot &&
-                !weapon.HasOptic)
+            if (!weapon.HasRedDot && !weapon.HasOptic)
             {
                 float min = AimSettings.IronSightScaleDistanceStart;
                 if (enemyDistance < min)
@@ -97,7 +101,10 @@ public class EnemyAim : EnemyBase
         }
     }
 
-    private float PoseLevel => EnemyPlayer.PoseLevel;
+    private float PoseLevel
+    {
+        get { return EnemyPlayer.PoseLevel; }
+    }
 
     private float PoseFactor
     {
@@ -137,7 +144,11 @@ public class EnemyAim : EnemyBase
             {
                 return AimSettings.EnemySprintingScatterMulti;
             }
-            return Mathf.Lerp(AimSettings.EnemyVelocityMaxDebuff, AimSettings.EnemyVelocityMaxBuff, 1f - Enemy.EnemyTransform.VelocityData.VelocityMagnitudeNormal);
+            return Mathf.Lerp(
+                AimSettings.EnemyVelocityMaxDebuff,
+                AimSettings.EnemyVelocityMaxBuff,
+                1f - Enemy.EnemyTransform.VelocityData.VelocityMagnitudeNormal
+            );
         }
     }
 

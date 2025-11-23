@@ -24,16 +24,8 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
     public FlashlightRaycastJob(MonoBehaviour gameWorld)
         : base("Flashlight Detection Job", gameWorld, true, 0.1f)
     {
-        GenerateRandomYawPitchRotationsNonAlloc(
-            _rotationsList_Wide,
-            Wide_FlashlightBeamPointCount,
-            Wide_FlashLightBeamAngle
-        );
-        GenerateRandomYawPitchRotationsNonAlloc(
-            _rotationsList_Tight,
-            Tight_FlashlightBeamPointCount,
-            Tight_FlashLightBeamAngle
-        );
+        GenerateRandomYawPitchRotationsNonAlloc(_rotationsList_Wide, Wide_FlashlightBeamPointCount, Wide_FlashLightBeamAngle);
+        GenerateRandomYawPitchRotationsNonAlloc(_rotationsList_Tight, Tight_FlashlightBeamPointCount, Tight_FlashLightBeamAngle);
     }
 
     protected readonly List<RaycastJob> RaycastJobs = [];
@@ -66,10 +58,7 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
     private void CreateFlashlightJobs()
     {
         List<RandomDir> Directions = _directionsList;
-        HashSet<PlayerComponent> players = GameWorldComponent
-            .Instance
-            .PlayerTracker
-            .AlivePlayerArray;
+        HashSet<PlayerComponent> players = GameWorldComponent.Instance.PlayerTracker.AlivePlayerArray;
         foreach (var player in players)
         {
             if (player != null && player.IsActive && player.Flashlight.DeviceActive)
@@ -81,18 +70,8 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
                 }
                 if (player.Flashlight.WhiteLight || player.Flashlight.IRLight)
                 {
-                    CreateFlashlightBeam(
-                        Directions,
-                        _rotationsList_Wide,
-                        WeaponPointDir,
-                        Wide_FlashlightTraceDistance
-                    );
-                    CreateFlashlightBeam(
-                        Directions,
-                        _rotationsList_Tight,
-                        WeaponPointDir,
-                        Tight_FlashlightTraceDistance
-                    );
+                    CreateFlashlightBeam(Directions, _rotationsList_Wide, WeaponPointDir, Wide_FlashlightTraceDistance);
+                    CreateFlashlightBeam(Directions, _rotationsList_Tight, WeaponPointDir, Tight_FlashlightTraceDistance);
                 }
                 if (Directions.Count > 0)
                 {
@@ -157,9 +136,7 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
                         FlashLightClass EnemyLight = Enemy.EnemyPlayerComponent.Flashlight;
                         if (
                             EnemyLight.DeviceActive
-                            && Bot.PlayerComponent.Flashlight.LightDetection.CheckIsBeamVisible(
-                                EnemyLight
-                            )
+                            && Bot.PlayerComponent.Flashlight.LightDetection.CheckIsBeamVisible(EnemyLight)
                             && Enemy.RealDistance <= 125f
                         )
                         {
@@ -210,7 +187,9 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
     private void ScheduleJobs(int Total)
     {
         for (int i = 0; i < Total; i++)
+        {
             RaycastJobs[i].Schedule();
+        }
     }
 
     /// <summary>
@@ -220,11 +199,7 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
     /// <param name="maxYaw">Max yaw in degrees (horizontal rotation around Y).</param>
     /// <param name="maxPitch">Max pitch in degrees (vertical rotation around right axis).</param>
     /// <returns>List of Quaternion rotations.</returns>
-    public static void GenerateRandomYawPitchRotationsNonAlloc(
-        List<Quaternion> nonAllocList,
-        int count,
-        float coneAngle
-    )
+    public static void GenerateRandomYawPitchRotationsNonAlloc(List<Quaternion> nonAllocList, int count, float coneAngle)
     {
         for (int i = 0; i < count; i++)
         {
@@ -249,11 +224,7 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
         }
     }
 
-    protected static RandomDir[] GenerateRandomDirections(
-        int Count,
-        float LengthMin,
-        float LengthMax
-    )
+    protected static RandomDir[] GenerateRandomDirections(int Count, float LengthMin, float LengthMax)
     {
         RandomDir[] Result = new RandomDir[Count];
         for (int i = 0; i < Count; i++)
@@ -283,7 +254,10 @@ public class FlashlightRaycastJob : SainJobTemplate, IDisposable
     public void Dispose()
     {
         foreach (RaycastJob Job in RaycastJobs)
+        {
             Job.Dispose();
+        }
+
         RaycastJobs.Clear();
     }
 }

@@ -44,37 +44,18 @@ public class BotHearingClass : BotManagerBase
                 EPhraseTrigger.OnBeingHurt or EPhraseTrigger.OnAgony => 70,
                 _ => (float)(mask == ETagStatus.Unaware ? 40 : 70),
             };
-            playerComponent.PlayAISound(
-                SAINSoundType.Conversation,
-                player.Position,
-                Range,
-                1,
-                phrase,
-                mask
-            );
+            playerComponent.PlayAISound(SAINSoundType.Conversation, player.Position, Range, 1, phrase, mask);
             PlayerTalk?.Invoke(phrase, mask, player);
         }
     }
 
-    public void PlayAISound(
-        string profileId,
-        SAINSoundType soundType,
-        Vector3 position,
-        float range,
-        float volume
-    )
+    public void PlayAISound(string profileId, SAINSoundType soundType, Vector3 position, float range, float volume)
     {
         PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(profileId);
         PlayAISound(playerComponent, soundType, position, range, volume, true);
     }
 
-    public void PlayAISound(
-        IPlayer Player,
-        SAINSoundType soundType,
-        Vector3 position,
-        float range,
-        float volume
-    )
+    public void PlayAISound(IPlayer Player, SAINSoundType soundType, Vector3 position, float range, float volume)
     {
         PlayerComponent playerComponent = SAINGameWorld.PlayerTracker.GetPlayerComponent(Player);
         PlayAISound(playerComponent, soundType, position, range, volume, true);
@@ -110,9 +91,7 @@ public class BotHearingClass : BotManagerBase
         //{
         //    Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
         //}
-        BotController.StartCoroutine(
-            WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume)
-        );
+        BotController.StartCoroutine(WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume));
     }
 
     private IEnumerator WaitDelayThenPlayDefaultBotEvent(

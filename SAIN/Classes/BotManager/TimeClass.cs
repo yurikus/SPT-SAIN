@@ -1,7 +1,7 @@
-﻿using SAIN.Helpers;
+﻿using System;
+using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
-using System;
 using UnityEngine;
 
 namespace SAIN.Components.BotController;
@@ -18,9 +18,8 @@ public class TimeClass : BotManagerBase
     public float TimeGainSightModifier { get; private set; } = 1f;
     public ETimeOfDay TimeOfDay { get; private set; }
 
-    public TimeClass(BotManagerComponent botController) : base(botController)
-    {
-    }
+    public TimeClass(BotManagerComponent botController)
+        : base(botController) { }
 
     public void Update(float currentTime, float deltaTime)
     {
@@ -70,7 +69,9 @@ public class TimeClass : BotManagerBase
     {
         var nightSettings = SAINPlugin.LoadedPreset.GlobalSettings.Look.Time;
         float max = 1f;
-        float min = GameWorldComponent.Instance.Location.WinterActive ? nightSettings.NightTimeVisionModifierSnow : nightSettings.NightTimeVisionModifier;
+        float min = GameWorldComponent.Instance.Location.WinterActive
+            ? nightSettings.NightTimeVisionModifierSnow
+            : nightSettings.NightTimeVisionModifier;
         float difference;
         float current;
         switch (timeOfDay)
@@ -101,13 +102,11 @@ public class TimeClass : BotManagerBase
     private static ETimeOfDay getTimeEnum(float time)
     {
         var nightSettings = SAINPlugin.LoadedPreset.GlobalSettings.Look.Time;
-        if (time <= nightSettings.HourDuskStart &&
-            time >= nightSettings.HourDawnEnd)
+        if (time <= nightSettings.HourDuskStart && time >= nightSettings.HourDawnEnd)
         {
             return ETimeOfDay.Day;
         }
-        if (time >= nightSettings.HourDuskEnd ||
-            time <= nightSettings.HourDawnStart)
+        if (time >= nightSettings.HourDuskEnd || time <= nightSettings.HourDawnStart)
         {
             return ETimeOfDay.Night;
         }

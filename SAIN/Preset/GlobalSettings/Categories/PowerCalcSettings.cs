@@ -1,10 +1,10 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using EFT.InventoryLogic;
 using Newtonsoft.Json;
 using SAIN.Attributes;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.SAINComponent.Classes.Info;
-using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -95,8 +95,10 @@ public class PowerCalcSettings : SAINSettingsBase<PowerCalcSettings>, ISAINSetti
     public float ARMOR_CLASS_COEF = 30f;
 
     [Name("Body Armor Class Power - Realism Mod")]
-    [Description("If Realism Mod is loaded, use this AC Power value. " +
-        "For each AC level, add X to a bot's power level. So if they have level 4 armor, add this value 4 times.")]
+    [Description(
+        "If Realism Mod is loaded, use this AC Power value. "
+            + "For each AC level, add X to a bot's power level. So if they have level 4 armor, add this value 4 times."
+    )]
     [Category("Armor Power Value")]
     [MinMax(-100, 100, 10)]
     public float ARMOR_CLASS_COEF_REALISM = 20f;
@@ -335,11 +337,7 @@ public class PowerCalcSettings : SAINSettingsBase<PowerCalcSettings>, ISAINSetti
     private static readonly List<ArmorComponent> armorComponents = new();
 
     [JsonIgnore]
-    private static readonly List<WildSpawnType> _PMCS = new()
-    {
-        WildSpawnType.pmcUSEC,
-        WildSpawnType.pmcBEAR
-    };
+    private static readonly List<WildSpawnType> _PMCS = new() { WildSpawnType.pmcUSEC, WildSpawnType.pmcBEAR };
 
     [JsonIgnore]
     private static readonly List<WildSpawnType> _SCAVS = new()
@@ -348,6 +346,6 @@ public class PowerCalcSettings : SAINSettingsBase<PowerCalcSettings>, ISAINSetti
         WildSpawnType.cursedAssault,
         WildSpawnType.assaultGroup,
         WildSpawnType.crazyAssaultEvent,
-        WildSpawnType.marksman
+        WildSpawnType.marksman,
     };
 }

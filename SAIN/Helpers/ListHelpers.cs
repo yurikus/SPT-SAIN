@@ -5,11 +5,7 @@ namespace SAIN.Helpers;
 
 internal static class ListHelpers
 {
-    public static void FilterByPredicateNonAlloc<T>(
-        this List<T> input,
-        List<T> output,
-        Predicate<T> predicate
-    )
+    public static void FilterByPredicateNonAlloc<T>(this List<T> input, List<T> output, Predicate<T> predicate)
     {
         output.Clear();
         for (int i = 0; i < input.Count; i++)

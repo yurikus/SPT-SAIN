@@ -1,5 +1,5 @@
-﻿using EFT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using EFT;
 
 namespace SAIN.Preset.Personalities;
 
@@ -8,28 +8,44 @@ public static class PersonalityDefaultsClass
     public static void InitDefaults(PersonalityDictionary Personalities, SAINPresetClass preset)
     {
         if (!Personalities.ContainsKey(EPersonality.Wreckless))
+        {
             initWreckless(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.SnappingTurtle))
+        {
             initSnappingTurtle(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.GigaChad))
+        {
             initGigaChad(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.Chad))
+        {
             initChad(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.Rat))
+        {
             initRat(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.Timmy))
+        {
             initTimmy(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.Coward))
+        {
             initCoward(Personalities, preset);
+        }
 
         if (!Personalities.ContainsKey(EPersonality.Normal))
+        {
             initNormal(Personalities, preset);
+        }
     }
 
     private static void initGigaChad(PersonalityDictionary Personalities, SAINPresetClass Preset)

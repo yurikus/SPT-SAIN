@@ -1,8 +1,8 @@
-﻿using EFT.UI;
+﻿using System.Collections.Generic;
+using System.Text;
+using EFT.UI;
 using SAIN.Attributes;
 using SAIN.Plugin;
-using System.Collections.Generic;
-using System.Text;
 using static SAIN.Editor.SAINLayout;
 
 namespace SAIN.Editor.GUISections;
@@ -22,17 +22,9 @@ public static class BotSettingsEditor
         Label("Search", Width(125f), Height(height));
 
         var container = SettingsContainers.GetContainer(settings.GetType(), name);
-        container.SearchPattern = TextField(
-            container.SearchPattern,
-            null,
-            Width(250),
-            Height(height));
+        container.SearchPattern = TextField(container.SearchPattern, null, Width(250), Height(height));
 
-        if (Button(
-            "Clear",
-            EUISoundType.MenuContextMenu,
-            Width(80),
-            Height(height)))
+        if (Button("Clear", EUISoundType.MenuContextMenu, Width(80), Height(height)))
         {
             container.SearchPattern = string.Empty;
         }
@@ -44,18 +36,16 @@ public static class BotSettingsEditor
             BuilderClass.Alert(
                 "Click Save to export changes, and send changes to bots if in-game",
                 "YOU HAVE UNSAVED CHANGES!",
-                height, ColorNames.DarkRed);
+                height,
+                ColorNames.DarkRed
+            );
         }
         else
         {
             BuilderClass.Alert(null, null, height, null);
         }
 
-        Saved = Button(
-            "Save and Export",
-            ConfigEditingTracker.GetUnsavedValuesString(),
-            EUISoundType.InsuranceInsured,
-            Height(height));
+        Saved = Button("Save and Export", ConfigEditingTracker.GetUnsavedValuesString(), EUISoundType.InsuranceInsured, Height(height));
 
         EndHorizontal();
 
@@ -70,9 +60,7 @@ public static class BotSettingsEditor
     {
         BeginHorizontal();
         container.Open = BuilderClass.ExpandableMenu(container.Name, container.Open, null, height);
-        if (Button("Clear", "Clear Selected Options in this Menu",
-            EFT.UI.EUISoundType.MenuDropdownSelect,
-            Width(100), Height(height)))
+        if (Button("Clear", "Clear Selected Options in this Menu", EFT.UI.EUISoundType.MenuDropdownSelect, Width(100), Height(height)))
         {
             container.SelectedCategories.Clear();
             foreach (var category in container.Categories)
@@ -105,7 +93,11 @@ public static class BotSettingsEditor
             if (string.IsNullOrEmpty(search))
             {
                 categoryClass.Open = BuilderClass.ExpandableMenu(
-                    attributes.Name, categoryClass.Open, attributes.Description, EntryConfig.EntryHeight);
+                    attributes.Name,
+                    categoryClass.Open,
+                    attributes.Description,
+                    EntryConfig.EntryHeight
+                );
                 open = categoryClass.Open;
             }
             else

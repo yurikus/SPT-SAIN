@@ -1,9 +1,9 @@
-﻿using Comfort.Common;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Comfort.Common;
 using EFT;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,7 +11,8 @@ namespace SAIN.SAINComponent.Classes.Debug;
 
 public class SAINBotUnstuckClass : BotComponentClassBase
 {
-    public SAINBotUnstuckClass(BotComponent sain) : base(sain)
+    public SAINBotUnstuckClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyBotActive;
     }
@@ -52,23 +53,32 @@ public class SAINBotUnstuckClass : BotComponentClassBase
         Player.Teleport(position + Vector3.up * 0.25f);
 #if DEBUG
         if (SAINPlugin.DebugMode)
-            Logger.LogDebug($"{BotOwner.name} has teleported because they were stuck after vaulting, and no human players are visible to them, and no human players are close.");
+        {
+            Logger.LogDebug(
+                $"{BotOwner.name} has teleported because they were stuck after vaulting, and no human players are visible to them, and no human players are close."
+            );
+        }
 #endif
         BotOwner.Mover?.Stop();
         BotOwner.Mover?.RecalcWay();
     }
 
-    private bool IsHumanVisible() => Bot.EnemyController.HumanEnemyInLineofSight;
+    private bool IsHumanVisible()
+    {
+        return Bot.EnemyController.HumanEnemyInLineofSight;
+    }
 
     private bool IsHumanClose()
     {
         bool closeHuman = false;
         foreach (var player in Singleton<GameWorld>.Instance.AllAlivePlayersList)
         {
-            if (player != null
+            if (
+                player != null
                 && !player.IsAI
                 && player.HealthController.IsAlive
-                && (player.Position - Bot.Position).sqrMagnitude < 50f * 50f)
+                && (player.Position - Bot.Position).sqrMagnitude < 50f * 50f
+            )
             {
                 closeHuman = true;
                 break;
@@ -78,7 +88,6 @@ public class SAINBotUnstuckClass : BotComponentClassBase
     }
 
     private bool _botStuckAfterVault;
-
 
     private bool TryVault()
     {
@@ -97,17 +106,11 @@ public class SAINBotUnstuckClass : BotComponentClassBase
     private float _nextVaultCheckTime;
     private bool DontUnstuckMe;
 
-    private static readonly List<WildSpawnType> DontUnstuckTheseTypes = new()
-    {
-        WildSpawnType.marksman,
-        WildSpawnType.shooterBTR,
-    };
+    private static readonly List<WildSpawnType> DontUnstuckTheseTypes = new() { WildSpawnType.marksman, WildSpawnType.shooterBTR };
 
     private void checkResetPathFromVault()
     {
-        if (_botVaulted
-            && !_botStuckAfterVault
-            && _botVaultedTime + 1f < Time.time)
+        if (_botVaulted && !_botStuckAfterVault && _botVaultedTime + 1f < Time.time)
         {
             _botVaulted = false;
             Bot.Mover.RecalcPath();
@@ -123,8 +126,7 @@ public class SAINBotUnstuckClass : BotComponentClassBase
         {
             return;
         }
-        if (_nextVaultCheckTime < Time.time
-            && (BotOwner?.Mover?.IsMoving == true || Bot.Mover.Moving))
+        if (_nextVaultCheckTime < Time.time && (BotOwner?.Mover?.IsMoving == true || Bot.Mover.Moving))
         {
             float timeAdd;
             Vector3 lookDir = Player.LookDirection.normalized;
@@ -354,19 +356,25 @@ public class SAINBotUnstuckClass : BotComponentClassBase
 
     private static NavMeshPath _pathToPlayer;
     private readonly List<Player> _humanPlayers = [];
-    public float TimeSinceStuck => Time.time - TimeStuck;
+    public float TimeSinceStuck
+    {
+        get { return Time.time - TimeStuck; }
+    }
+
     public float TimeStuck { get; }
 
     private float _checkPositionTimer = 0f;
 
     private Vector3 _lastPos = Vector3.zero;
 
-    public float TimeSpentNotMoving => Time.time - TimeStartedChangingPosition;
+    public float TimeSpentNotMoving
+    {
+        get { return Time.time - TimeStartedChangingPosition; }
+    }
 
     public float TimeStartedChangingPosition { get; private set; }
 
     public bool BotIsStuck { get; private set; }
 
     public bool BotHasChangedPosition { get; private set; }
-
 }

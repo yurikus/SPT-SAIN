@@ -3,12 +3,7 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.Mover;
 
-public struct BotPathCorner(
-    Vector3 startPosition,
-    Vector3 navCornerPosition,
-    EBotCornerType type,
-    int index
-)
+public struct BotPathCorner(Vector3 startPosition, Vector3 navCornerPosition, EBotCornerType type, int index)
 {
     public readonly float GetPercentageOfCornerComplete(float currentSqrMagnitude)
     {

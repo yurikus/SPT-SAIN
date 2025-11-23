@@ -32,7 +32,10 @@ public class GrenadeTrackerClass
     }
 
     private readonly BotComponent _bot;
-    private BotOwner BotOwner => _bot.BotOwner;
+    private BotOwner BotOwner
+    {
+        get { return _bot.BotOwner; }
+    }
 
     public float GrenadeDistance { get; private set; }
 
@@ -116,11 +119,18 @@ public class GrenadeTrackerClass
     private bool _updated;
 
     private float TimeSpotted { get; set; }
-    public float TimeSinceSpotted => Spotted ? Time.time - TimeSpotted : 0f;
+    public float TimeSinceSpotted
+    {
+        get { return Spotted ? Time.time - TimeSpotted : 0f; }
+    }
+
     public Grenade Grenade { get; private set; }
     public Vector3 DangerPoint { get; set; }
     private bool Spotted { get; set; }
-    public bool CanReact => Spotted && TimeSinceSpotted > _reactionTime;
+    public bool CanReact
+    {
+        get { return Spotted && TimeSinceSpotted > _reactionTime; }
+    }
 
     private readonly float _reactionTime;
     private float _nextCheckRaycastTime;

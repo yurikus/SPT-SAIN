@@ -6,7 +6,10 @@ namespace SAIN.Components.PlayerComponentSpace.Classes;
 
 public class SAINAIData : PlayerComponentBase
 {
-    public bool IsAI => PlayerComponent.IsAI;
+    public bool IsAI
+    {
+        get { return PlayerComponent.IsAI; }
+    }
 
     public AIGearModifierClass AIGearModifier { get; private set; }
 
@@ -14,7 +17,8 @@ public class SAINAIData : PlayerComponentBase
 
     public PlayerAISoundPlayer AISoundPlayer { get; private set; }
 
-    public SAINAIData(GearInfo gearInfo, PlayerComponent component) : base(component)
+    public SAINAIData(GearInfo gearInfo, PlayerComponent component)
+        : base(component)
     {
         PlayerLocation = new PlayerLocationClass(this);
         AIGearModifier = new AIGearModifierClass(this);

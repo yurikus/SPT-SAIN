@@ -8,7 +8,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction;
 
 public class ManualShootClass : BotComponentClassBase
 {
-    public ManualShootClass(BotComponent bot) : base(bot)
+    public ManualShootClass(BotComponent bot)
+        : base(bot)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -51,7 +52,14 @@ public class ManualShootClass : BotComponentClassBase
 
     private void CheckReset()
     {
-        if (Reason != EShootReason.None && (ManualShootEnemy?.EnemyPlayer?.HealthController?.IsAlive != true || !BotOwner.WeaponManager.HaveBullets || _timeStartManualShoot + 2f < Time.time))
+        if (
+            Reason != EShootReason.None
+            && (
+                ManualShootEnemy?.EnemyPlayer?.HealthController?.IsAlive != true
+                || !BotOwner.WeaponManager.HaveBullets
+                || _timeStartManualShoot + 2f < Time.time
+            )
+        )
         {
             Reset();
         }
@@ -59,10 +67,17 @@ public class ManualShootClass : BotComponentClassBase
 
     public bool TryShoot(Enemy Enemy, Vector3 targetPos, bool checkFF = true, EShootReason reason = EShootReason.None)
     {
-        if (Enemy != null &&
-            CanShoot(checkFF) &&
-            Bot.Steering.AngleToPointFromLookDir(targetPos) <= 10 &&
-            Bot.FriendlyFire.UpdateFriendlyFireStatus(targetPos, Bot.Transform.WeaponData.FirePort, Bot.Transform.WeaponData.PointDirection, Bot))
+        if (
+            Enemy != null
+            && CanShoot(checkFF)
+            && Bot.Steering.AngleToPointFromLookDir(targetPos) <= 10
+            && Bot.FriendlyFire.UpdateFriendlyFireStatus(
+                targetPos,
+                Bot.Transform.WeaponData.FirePort,
+                Bot.Transform.WeaponData.PointDirection,
+                Bot
+            )
+        )
         {
             if (!Shooting)
             {
@@ -85,7 +100,10 @@ public class ManualShootClass : BotComponentClassBase
         return false;
     }
 
-    public bool Shooting => BotOwner.ShootData.Shooting;
+    public bool Shooting
+    {
+        get { return BotOwner.ShootData.Shooting; }
+    }
 
     public bool CanShoot(bool checkFF = true)
     {

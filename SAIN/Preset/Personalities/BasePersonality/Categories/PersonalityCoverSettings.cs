@@ -9,10 +9,7 @@ public class PersonalityCoverSettings : SAINSettingsBase<PersonalityCoverSetting
     [JsonConstructor]
     public PersonalityCoverSettings() { }
 
-    public PersonalityCoverSettings(bool createDefaults)
-    {
-
-    }
+    public PersonalityCoverSettings(bool createDefaults) { }
 
     [Advanced]
     public bool CanShiftCoverPosition = true;

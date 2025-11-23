@@ -1,5 +1,5 @@
-﻿using SAIN.Preset.GlobalSettings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.Preset.Personalities;
 

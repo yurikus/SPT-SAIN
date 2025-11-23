@@ -30,11 +30,19 @@ public class EnemyPartsClass
         {
             part.Update(currentTime);
             if (!CanShoot && part.CanShoot)
+            {
                 CanShoot = true;
+            }
+
             if (!LineOfSight && part.LineOfSight)
+            {
                 LineOfSight = true;
+            }
+
             if (!CanBeSeen && part.CanBeSeen)
+            {
                 CanBeSeen = true;
+            }
         }
     }
 
@@ -43,14 +51,7 @@ public class EnemyPartsClass
         var parts = enemyPlayer.BodyParts.Parts;
         foreach (var bodyPart in parts)
         {
-            Parts.Add(
-                bodyPart.Key,
-                new EnemyPartDataClass(
-                    bodyPart.Key,
-                    bodyPart.Value.Transform,
-                    bodyPart.Value.Colliders
-                )
-            );
+            Parts.Add(bodyPart.Key, new EnemyPartDataClass(bodyPart.Key, bodyPart.Value.Transform, bodyPart.Value.Colliders));
         }
     }
 }

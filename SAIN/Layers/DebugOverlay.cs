@@ -24,10 +24,7 @@ public static class DebugOverlay
                 stringBuilder.AppendLine(
                     $"Name: [{bot.PlayerComponent.Name}] Nickname: [{bot.Player.Profile.Nickname}] Personality: [{info.Personality}] Type: [{info.Profile.WildSpawnType}] PowerLevel: [{info.Profile.PowerLevel}]"
                 );
-                stringBuilder.AppendLine(
-                    $"In Combat [{bot.IsInCombat}] Layers Active [{bot.SAINLayersActive}]",
-                    Color.white
-                );
+                stringBuilder.AppendLine($"In Combat [{bot.IsInCombat}] Layers Active [{bot.SAINLayersActive}]", Color.white);
                 var enemy = bot.GoalEnemy;
                 if (enemy != null)
                 {
@@ -66,23 +63,11 @@ public static class DebugOverlay
                     Color.yellow
                 );
                 stringBuilder.AppendLine(decisionInfo(bot));
-                stringBuilder.AppendLabeledValue(
-                    "DogFight Status",
-                    $"{bot.Mover.DogFight.Status}",
-                    Color.white,
-                    Color.yellow
-                );
-                string poseInfo =
-                    $"Pose [{bot.Mover.Pose.PoseValue.LastSmoothedValue}:{bot.Mover.Pose.PoseValue.TargetValue}]";
-                string speedInfo =
-                    $"Speed [{bot.Mover.Pose.SpeedValue.LastSmoothedValue} : {bot.Mover.Pose.SpeedValue.TargetValue}]";
+                stringBuilder.AppendLabeledValue("DogFight Status", $"{bot.Mover.DogFight.Status}", Color.white, Color.yellow);
+                string poseInfo = $"Pose [{bot.Mover.Pose.PoseValue.LastSmoothedValue}:{bot.Mover.Pose.PoseValue.TargetValue}]";
+                string speedInfo = $"Speed [{bot.Mover.Pose.SpeedValue.LastSmoothedValue} : {bot.Mover.Pose.SpeedValue.TargetValue}]";
                 stringBuilder.AppendLine($"[{poseInfo}] [{speedInfo}]", Color.white);
-                stringBuilder.AppendLabeledValue(
-                    "NavMeshStatus",
-                    $"{bot.Transform.NavData.Status}",
-                    Color.white,
-                    Color.yellow
-                );
+                stringBuilder.AppendLabeledValue("NavMeshStatus", $"{bot.Transform.NavData.Status}", Color.white, Color.yellow);
                 stringBuilder.AppendLabeledValue(
                     "TimeSinceOnNavMesh",
                     $"{Time.time - bot.Transform.NavData.TimeLastOnNavMesh}",
@@ -113,9 +98,7 @@ public static class DebugOverlay
                     var members = bot.Squad.SquadInfo?.Members;
                     if (members != null && members.Count > 1)
                     {
-                        stringBuilder.AppendLine(
-                            $"Squad Personality: [{bot.Squad.SquadInfo.SquadPersonality}]"
-                        );
+                        stringBuilder.AppendLine($"Squad Personality: [{bot.Squad.SquadInfo.SquadPersonality}]");
                     }
                 }
             }
@@ -128,9 +111,7 @@ public static class DebugOverlay
                 stringBuilder.AppendLine(
                     $"Squad Decisn [{bot.Decision.CurrentSquadDecision}] : Last [{bot.Decision.PreviousSquadDecision}]"
                 );
-                stringBuilder.AppendLine(
-                    $"Self Decisn [{bot.Decision.CurrentSelfDecision}] : Last [{bot.Decision.PreviousSelfDecision}]"
-                );
+                stringBuilder.AppendLine($"Self Decisn [{bot.Decision.CurrentSelfDecision}] : Last [{bot.Decision.PreviousSelfDecision}]");
                 stringBuilder.AppendLine($"DecisionReasons");
                 var decisions = bot.Decision.EnemyDecisions.DecisionReasons;
                 stringBuilder.Append(decisions);
@@ -154,10 +135,7 @@ public static class DebugOverlay
             {
                 if (bot.BotOwner.AimingManager.CurrentAiming is BotAimingClass aimClass)
                 {
-                    stringBuilder.AppendLine(
-                        $"AimData: Status [{bot.Aim.AimStatus}] "
-                            + $"Last Aim Time: [{bot.Aim.LastAimTime}]"
-                    );
+                    stringBuilder.AppendLine($"AimData: Status [{bot.Aim.AimStatus}] " + $"Last Aim Time: [{bot.Aim.LastAimTime}]");
                     stringBuilder.AppendLine(
                         $"AimOffsetMagnitude [{((bot.BotOwner.AimingManager.CurrentAiming.RealTargetPoint - bot.BotOwner.AimingManager.CurrentAiming.EndTargetPoint).magnitude).Round100()}] "
                             + $"Friendly Fire Status [{bot.FriendlyFire.FriendlyFireStatus}] "
@@ -182,6 +160,7 @@ public static class DebugOverlay
                 if (shallSearch != null)
                 {
                     if (shallSearch == true)
+                    {
                         stringBuilder.AppendLabeledValue(
                             "Searching",
                             $"Current State: {bot.Search.CurrentState} "
@@ -191,6 +170,7 @@ public static class DebugOverlay
                             Color.yellow,
                             true
                         );
+                    }
 
                     var reasons = enemyDecisions.DebugSearchReasons;
                     var wantReasons = reasons.WantSearchReasons;
@@ -205,6 +185,7 @@ public static class DebugOverlay
                     );
 
                     if (reasons.NotSearchReason != SearchReasonsStruct.ENotSearchReason.None)
+                    {
                         stringBuilder.AppendLabeledValue(
                             "Not Search Reason",
                             $"{reasons.NotSearchReason}",
@@ -212,8 +193,10 @@ public static class DebugOverlay
                             Color.yellow,
                             true
                         );
+                    }
 
                     if (!reasons.PathCalcFailReason.IsNullOrEmpty())
+                    {
                         stringBuilder.AppendLabeledValue(
                             "CalcPath Fail Reason",
                             $"{reasons.PathCalcFailReason}",
@@ -221,6 +204,7 @@ public static class DebugOverlay
                             Color.yellow,
                             true
                         );
+                    }
                 }
             }
         }
@@ -234,33 +218,21 @@ public static class DebugOverlay
     {
         var moveData = bot.Mover.ActivePath;
         if (moveData == null)
+        {
             return;
-        stringBuilder.AppendLabeledValue(
-            "Move Status",
-            $"{moveData.Status}",
-            Color.white,
-            Color.yellow
-        );
+        }
+
+        stringBuilder.AppendLabeledValue("Move Status", $"{moveData.Status}", Color.white, Color.yellow);
         stringBuilder.AppendLabeledValue("Moving", $"{moveData.Moving}", Color.white, Color.yellow);
         //stringBuilder.AppendLabeledValue("Crawling", $"{moveData.Crawling}", Color.white, Color.yellow);
-        stringBuilder.AppendLabeledValue(
-            "Running",
-            $"{moveData.Running}",
-            Color.white,
-            Color.yellow
-        );
+        stringBuilder.AppendLabeledValue("Running", $"{moveData.Running}", Color.white, Color.yellow);
         stringBuilder.AppendLabeledValue(
             "Want To Sprint : Reason",
             $"{moveData.WantToSprint} : {moveData.SprintReason}",
             Color.white,
             Color.yellow
         );
-        stringBuilder.AppendLabeledValue(
-            "Sprint Status",
-            $"{moveData.CurrentSprintStatus}",
-            Color.white,
-            Color.yellow
-        );
+        stringBuilder.AppendLabeledValue("Sprint Status", $"{moveData.CurrentSprintStatus}", Color.white, Color.yellow);
         //stringBuilder.AppendLabeledValue("Move CornerCount", $"{moveData.PathCorners.Count}", Color.white, Color.yellow);
         //stringBuilder.AppendLabeledValue("Move CurrentIndex", $"{moveData.CurrentIndex}", Color.white, Color.yellow);
         //stringBuilder.AppendLabeledValue("Move Corner Distance", $"{moveData.CurrentCornerDistanceSqr.Sqrt()}", Color.white, Color.yellow);
@@ -272,9 +244,15 @@ public static class DebugOverlay
         var debug = SAINPlugin.DebugSettings.Overlay;
         Enemy mainPlayer = null;
         if (debug.OverLay_AlwaysShowMainPlayerInfo)
+        {
             foreach (var enemy in bot.EnemyController.Enemies.Values)
+            {
                 if (enemy?.EnemyPlayer.IsYourPlayer == true)
+                {
                     mainPlayer = enemy;
+                }
+            }
+        }
 
         Enemy closestHuman = null;
         if (debug.OverLay_AlwaysShowClosestHumanInfo)
@@ -283,9 +261,15 @@ public static class DebugOverlay
             foreach (var enemy in bot.EnemyController.Enemies.Values)
             {
                 if (enemy == null)
+                {
                     continue;
+                }
+
                 if (enemy.IsAI)
+                {
                     continue;
+                }
+
                 if (enemy.RealDistance < closest)
                 {
                     closest = enemy.RealDistance;
@@ -308,13 +292,11 @@ public static class DebugOverlay
 
             case ESAINLayer.AvoidThreat:
             case ESAINLayer.Combat:
-                decisionInfo =
-                    $"MainDcsn: [{sain.Decision.CurrentCombatDecision}] : Layer [{sain.ActiveLayer}]";
+                decisionInfo = $"MainDcsn: [{sain.Decision.CurrentCombatDecision}] : Layer [{sain.ActiveLayer}]";
                 break;
 
             case ESAINLayer.Squad:
-                decisionInfo =
-                    $"SqdDcsn: [{sain.Decision.CurrentSquadDecision}] : Layer [{sain.ActiveLayer}]";
+                decisionInfo = $"SqdDcsn: [{sain.Decision.CurrentSquadDecision}] : Layer [{sain.ActiveLayer}]";
                 break;
 
             case ESAINLayer.Extract:
@@ -328,8 +310,10 @@ public static class DebugOverlay
         return decisionInfo;
     }
 
-    private static bool _expandedEnemyInfo =>
-        SAINPlugin.DebugSettings.Overlay.Overlay_EnemyInfo_Expanded;
+    private static bool _expandedEnemyInfo
+    {
+        get { return SAINPlugin.DebugSettings.Overlay.Overlay_EnemyInfo_Expanded; }
+    }
 
     private static void CreateEnemyInfo(StringBuilder stringBuilder, Enemy enemy)
     {
@@ -385,20 +369,8 @@ public static class DebugOverlay
             Color.yellow,
             true
         );
-        stringBuilder.AppendLabeledValue(
-            "Can Shoot",
-            $"{enemy.CanShoot}",
-            Color.white,
-            Color.yellow,
-            true
-        );
-        stringBuilder.AppendLabeledValue(
-            "In Line of Sight",
-            $"{enemy.InLineOfSight}",
-            Color.white,
-            Color.yellow,
-            true
-        );
+        stringBuilder.AppendLabeledValue("Can Shoot", $"{enemy.CanShoot}", Color.white, Color.yellow, true);
+        stringBuilder.AppendLabeledValue("In Line of Sight", $"{enemy.InLineOfSight}", Color.white, Color.yellow, true);
         if (_expandedEnemyInfo)
         {
             var parts = enemy.Vision.EnemyParts.Parts.Values;
@@ -410,11 +382,19 @@ public static class DebugOverlay
             {
                 partCount++;
                 if (part.LineOfSight)
+                {
                     losCount++;
+                }
+
                 if (part.CanBeSeen)
+                {
                     visCount++;
+                }
+
                 if (part.CanShoot)
+                {
                     shootCount++;
+                }
             }
             stringBuilder.AppendLabeledValue(
                 "Body Part Vision",
@@ -473,13 +453,7 @@ public static class DebugOverlay
                 Color.yellow,
                 true
             );
-            stringBuilder.AppendLabeledValue(
-                "Bot Distance",
-                $"{place.DistanceToBot.Round100()}",
-                Color.white,
-                Color.yellow,
-                true
-            );
+            stringBuilder.AppendLabeledValue("Bot Distance", $"{place.DistanceToBot.Round100()}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue(
                 "Searched",
                 $"Personal: {place.HasArrivedPersonal} / Squad: {place.HasArrivedSquad}",

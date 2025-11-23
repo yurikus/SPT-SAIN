@@ -1,5 +1,5 @@
-﻿using EFT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using EFT;
 
 namespace SAIN.Preset.GlobalSettings.Categories;
 

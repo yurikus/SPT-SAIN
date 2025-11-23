@@ -14,9 +14,20 @@ public class BotManagerComponent : MonoBehaviour
 {
     public static BotManagerComponent Instance { get; private set; }
 
-    public Dictionary<string, BotComponent> Bots => BotSpawnController.Bots;
-    public GameWorld GameWorld => SAINGameWorld.GameWorld;
-    public IBotGame BotGame => Singleton<IBotGame>.Instance;
+    public Dictionary<string, BotComponent> Bots
+    {
+        get { return BotSpawnController.Bots; }
+    }
+
+    public GameWorld GameWorld
+    {
+        get { return SAINGameWorld.GameWorld; }
+    }
+
+    public IBotGame BotGame
+    {
+        get { return Singleton<IBotGame>.Instance; }
+    }
 
     public BotEventHandler BotEventHandler
     {
@@ -61,9 +72,7 @@ public class BotManagerComponent : MonoBehaviour
 
     public void PlayerEnviromentChanged(string profileID, IndoorTrigger trigger)
     {
-        SAINGameWorld
-            .PlayerTracker.GetPlayerComponent(profileID)
-            ?.AIData.PlayerLocation.UpdateEnvironment(trigger);
+        SAINGameWorld.PlayerTracker.GetPlayerComponent(profileID)?.AIData.PlayerLocation.UpdateEnvironment(trigger);
     }
 
     public void Activate(GameWorldComponent gameWorldComp)

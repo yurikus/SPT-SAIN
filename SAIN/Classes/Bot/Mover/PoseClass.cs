@@ -70,10 +70,7 @@ public class PoseClass : BotBase
         {
             return false;
         }
-        if (
-            !Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE
-            || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE
-        )
+        if (!Bot.Info.FileSettings.Move.AUTOCROUCH_TOGGLE || !GlobalSettingsClass.Instance.Move.AUTOCROUCH_TOGGLE)
         {
             return false;
         }
@@ -99,7 +96,11 @@ public class PoseClass : BotBase
         return num != null && SetTargetPose(num.Value);
     }
 
-    public bool ObjectInFront => ObjectTargetPoseCover != null;
+    public bool ObjectInFront
+    {
+        get { return ObjectTargetPoseCover != null; }
+    }
+
     public float? ObjectTargetPoseCover { get; private set; }
 
     private void FindObjectsInFront(Enemy enemy)
@@ -169,11 +170,7 @@ public class PoseClass : BotBase
         return 1f;
     }
 
-    private float FindCrouchHeightColliderSphereCast(
-        Vector3 target,
-        float rayLength = 3f,
-        bool flatDir = true
-    )
+    private float FindCrouchHeightColliderSphereCast(Vector3 target, float rayLength = 3f, bool flatDir = true)
     {
         LayerMask Mask = LayerMaskClass.HighPolyWithTerrainMask;
         Vector3 start = Bot.Transform.Position + Vector3.up * 0.75f;

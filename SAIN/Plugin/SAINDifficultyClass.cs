@@ -12,15 +12,11 @@ internal static class SAINDifficultyClass
     private const string PresetNameNormal = "Less Difficult";
     private const string PresetNameHard = "Default";
     private const string PresetNameHarderPMCs = "Default with Harder PMCs";
-    private const string DefaultPresetDescription =
-        "Bots are difficult but fair, the way SAIN was meant to played.";
+    private const string DefaultPresetDescription = "Bots are difficult but fair, the way SAIN was meant to played.";
     private const string PresetNameVeryHard = "I Like Pain";
     private const string PresetNameImpossible = "Death Wish";
 
-    public static readonly Dictionary<
-        SAINDifficulty,
-        SAINPresetDefinition
-    > DefaultPresetDefinitions = new();
+    public static readonly Dictionary<SAINDifficulty, SAINPresetDefinition> DefaultPresetDefinitions = new();
 
     static SAINDifficultyClass()
     {
@@ -44,11 +40,7 @@ internal static class SAINDifficultyClass
 
         DefaultPresetDefinitions.Add(
             SAINDifficulty.hard,
-            SAINPresetDefinition.CreateDefaultDefinition(
-                PresetNameHard,
-                SAINDifficulty.hard,
-                DefaultPresetDescription
-            )
+            SAINPresetDefinition.CreateDefaultDefinition(PresetNameHard, SAINDifficulty.hard, DefaultPresetDescription)
         );
 
         DefaultPresetDefinitions.Add(
@@ -130,9 +122,7 @@ internal static class SAINDifficultyClass
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
-            bot.Value.DifficultyModifier = Mathf
-                .Clamp(bot.Value.DifficultyModifier * 0.5f, 0.01f, 2f)
-                .Round100();
+            bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 0.5f, 0.01f, 2f).Round100();
             foreach (var setting in bot.Value.Settings)
             {
                 setting.Value.Core.VisibleAngle = 120f;
@@ -188,10 +178,7 @@ internal static class SAINDifficultyClass
                 var impossible = pmcSettings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 0.75f;
             }
-            if (
-                botsetting.Key == WildSpawnType.assault
-                || botsetting.Key == WildSpawnType.assaultGroup
-            )
+            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
             {
                 var settings = botsetting.Value.Settings;
 
@@ -227,9 +214,7 @@ internal static class SAINDifficultyClass
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
-            bot.Value.DifficultyModifier = Mathf
-                .Clamp(bot.Value.DifficultyModifier * 0.85f, 0.01f, 2f)
-                .Round100();
+            bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 0.85f, 0.01f, 2f).Round100();
             foreach (var setting in bot.Value.Settings)
             {
                 setting.Value.Core.VisibleAngle = 150f;
@@ -282,10 +267,7 @@ internal static class SAINDifficultyClass
                 var impossible = pmcSettings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 0.9f;
             }
-            if (
-                botsetting.Key == WildSpawnType.assault
-                || botsetting.Key == WildSpawnType.assaultGroup
-            )
+            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
             {
                 var settings = botsetting.Value.Settings;
 
@@ -721,9 +703,7 @@ internal static class SAINDifficultyClass
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
-            bot.Value.DifficultyModifier = Mathf
-                .Clamp(bot.Value.DifficultyModifier * 1.33f, 0.01f, 2f)
-                .Round100();
+            bot.Value.DifficultyModifier = Mathf.Clamp(bot.Value.DifficultyModifier * 1.33f, 0.01f, 2f).Round100();
             foreach (var setting in bot.Value.Settings)
             {
                 setting.Value.Core.VisibleAngle = 170f;
@@ -772,10 +752,7 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 1.0f;
             }
-            if (
-                botsetting.Key == WildSpawnType.assault
-                || botsetting.Key == WildSpawnType.assaultGroup
-            )
+            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
             {
                 var settings = botsetting.Value.Settings;
 
@@ -864,10 +841,7 @@ internal static class SAINDifficultyClass
                 var impossible = settings[BotDifficulty.impossible];
                 impossible.Move.STRAFE_SPEED = 1.0f;
             }
-            if (
-                botsetting.Key == WildSpawnType.assault
-                || botsetting.Key == WildSpawnType.assaultGroup
-            )
+            if (botsetting.Key == WildSpawnType.assault || botsetting.Key == WildSpawnType.assaultGroup)
             {
                 var settings = botsetting.Value.Settings;
 

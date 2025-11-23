@@ -10,7 +10,11 @@ public class BodyPartStatus
         _hitReaction = hitReactionClass;
     }
 
-    private IHealthController _healthController => _hitReaction.HealthController;
+    private IHealthController _healthController
+    {
+        get { return _hitReaction.HealthController; }
+    }
+
     private readonly EBodyPart _bodyPart;
     private readonly SAINBotHitReaction _hitReaction;
 
@@ -35,8 +39,18 @@ public class BodyPartStatus
         }
     }
 
-    public float PartHealth => _healthController.GetBodyPartHealth(_bodyPart, false).Current;
-    public float PartHealthNormalized => _healthController.GetBodyPartHealth(_bodyPart, false).Normalized;
-    public bool PartDestoyed => _healthController.IsBodyPartDestroyed(_bodyPart);
+    public float PartHealth
+    {
+        get { return _healthController.GetBodyPartHealth(_bodyPart, false).Current; }
+    }
 
+    public float PartHealthNormalized
+    {
+        get { return _healthController.GetBodyPartHealth(_bodyPart, false).Normalized; }
+    }
+
+    public bool PartDestoyed
+    {
+        get { return _healthController.IsBodyPartDestroyed(_bodyPart); }
+    }
 }

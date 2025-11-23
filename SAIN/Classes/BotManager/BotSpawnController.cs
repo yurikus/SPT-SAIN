@@ -60,9 +60,7 @@ public class BotSpawnController : BotManagerBase
         get
         {
             var status = GameStatus;
-            return status == GameStatus.Stopping
-                || status == GameStatus.Stopped
-                || status == GameStatus.SoftStopping;
+            return status == GameStatus.Stopping || status == GameStatus.Stopped || status == GameStatus.SoftStopping;
         }
     }
 
@@ -185,10 +183,7 @@ public class BotSpawnController : BotManagerBase
 
     public BotComponent GetSAIN(string profileId)
     {
-        if (
-            !profileId.IsNullOrEmpty()
-            && BotDictionary.TryGetValue(profileId, out BotComponent component)
-        )
+        if (!profileId.IsNullOrEmpty() && BotDictionary.TryGetValue(profileId, out BotComponent component))
         {
             return component;
         }

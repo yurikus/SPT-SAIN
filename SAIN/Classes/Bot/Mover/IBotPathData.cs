@@ -43,7 +43,6 @@ public interface IBotPathData : IDisposable
     public void RequestStartSprint(ESprintUrgency urgency, string reason);
     public void RequestEndSprint(ESprintUrgency urgency, string reason);
 
-
     public string SprintReason { get; }
 
     public bool Crawling { get; }

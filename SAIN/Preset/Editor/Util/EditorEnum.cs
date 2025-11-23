@@ -1,5 +1,4 @@
-﻿
-namespace SAIN.Editor;
+﻿namespace SAIN.Editor;
 
 public enum ColorNames
 {

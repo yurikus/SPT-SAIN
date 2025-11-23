@@ -38,15 +38,29 @@ public class EnemyPlaceRaycastJob : BotManagerBase
         public void Dispose()
         {
             if (PlacePositions.IsCreated)
+            {
                 PlacePositions.Dispose();
+            }
+
             if (BotPositions.IsCreated)
+            {
                 BotPositions.Dispose();
+            }
+
             if (EnemyPositions.IsCreated)
+            {
                 EnemyPositions.Dispose();
+            }
+
             if (PlaceDistancesToBot.IsCreated)
+            {
                 PlaceDistancesToBot.Dispose();
+            }
+
             if (PlaceDistancesToEnemy.IsCreated)
+            {
                 PlaceDistancesToEnemy.Dispose();
+            }
         }
     }
 
@@ -95,13 +109,24 @@ public class EnemyPlaceRaycastJob : BotManagerBase
                         if (enemy?.EnemyKnown == true)
                         {
                             if (enemy.KnownPlaces.LastHeardPlace != null)
+                            {
                                 PlacesToCheck.Add(enemy.KnownPlaces.LastHeardPlace);
+                            }
+
                             if (enemy.KnownPlaces.LastSeenPlace != null)
+                            {
                                 PlacesToCheck.Add(enemy.KnownPlaces.LastSeenPlace);
+                            }
+
                             if (enemy.KnownPlaces.LastSquadHeardPlace != null)
+                            {
                                 PlacesToCheck.Add(enemy.KnownPlaces.LastSquadHeardPlace);
+                            }
+
                             if (enemy.KnownPlaces.LastSquadSeenPlace != null)
+                            {
                                 PlacesToCheck.Add(enemy.KnownPlaces.LastSquadSeenPlace);
+                            }
                         }
                     }
                 }
@@ -143,12 +168,7 @@ public class EnemyPlaceRaycastJob : BotManagerBase
                 EnemyPlace Place = PlacesToCheck[i];
                 Vector3 HeadPosition = Place.PlaceData.Owner.Transform.EyePosition;
                 Vector3 PlacePosition = Place.Position + Vector3.up;
-                _commands[i] = new RaycastCommand(
-                    HeadPosition,
-                    PlacePosition - HeadPosition,
-                    new QueryParameters { layerMask = Mask },
-                    1f
-                );
+                _commands[i] = new RaycastCommand(HeadPosition, PlacePosition - HeadPosition, new QueryParameters { layerMask = Mask }, 1f);
             }
 
             RaycastJobHandle = RaycastCommand.ScheduleBatch(_commands, _hits, 32);
@@ -157,12 +177,18 @@ public class EnemyPlaceRaycastJob : BotManagerBase
 
             var handle = RaycastJobHandle;
             if (!handle.IsCompleted)
+            {
                 handle.Complete();
+            }
+
             RaycastJobHandle = handle;
 
             handle = EnemyPlaceJobHandle;
             if (!handle.IsCompleted)
+            {
                 handle.Complete();
+            }
+
             EnemyPlaceJobHandle = handle;
 
             for (int i = 0; i < Count; i++)
@@ -171,11 +197,7 @@ public class EnemyPlaceRaycastJob : BotManagerBase
                 if (Place != null)
                 {
                     RaycastHit Hit = _hits[i];
-                    Place.SetDistances(
-                        EnemyPlaceJob.PlaceDistancesToBot[i],
-                        EnemyPlaceJob.PlaceDistancesToEnemy[i],
-                        Place.PlaceData.Owner
-                    );
+                    Place.SetDistances(EnemyPlaceJob.PlaceDistancesToBot[i], EnemyPlaceJob.PlaceDistancesToEnemy[i], Place.PlaceData.Owner);
                     Place.SetVisibilityOfPlace(Hit.collider == null, Place.PlaceData.Owner);
                 }
             }
@@ -190,14 +212,25 @@ public class EnemyPlaceRaycastJob : BotManagerBase
     public void Dispose()
     {
         if (!RaycastJobHandle.IsCompleted)
+        {
             RaycastJobHandle.Complete();
+        }
+
         if (!EnemyPlaceJobHandle.IsCompleted)
+        {
             EnemyPlaceJobHandle.Complete();
+        }
+
         EnemyPlaceJob.Dispose();
         if (_commands.IsCreated)
+        {
             _commands.Dispose();
+        }
+
         if (_hits.IsCreated)
+        {
             _hits.Dispose();
+        }
     }
 
     private NativeArray<RaycastHit> _hits;

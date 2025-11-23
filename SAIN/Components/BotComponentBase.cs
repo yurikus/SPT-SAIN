@@ -17,8 +17,15 @@ public abstract class BotComponentBase : MonoBehaviour, IDisposable
     public Player Player { get; private set; }
     public PlayerTransformClass Transform { get; private set; }
 
-    public Vector3 Position => Transform.Position;
-    public Vector3 LookDirection => Transform.LookDirection;
+    public Vector3 Position
+    {
+        get { return Transform.Position; }
+    }
+
+    public Vector3 LookDirection
+    {
+        get { return Transform.LookDirection; }
+    }
 
     public virtual bool Init(PlayerComponent playerComponent, BotOwner botOwner)
     {

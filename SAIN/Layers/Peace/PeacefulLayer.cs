@@ -10,9 +10,8 @@ internal class PeacefulLayer : SAINLayer
 {
     public static readonly string Name = BuildLayerName("Peaceful");
 
-    public PeacefulLayer(BotOwner bot, int priority) : base(bot, priority, Name, ESAINLayer.Peace)
-    {
-    }
+    public PeacefulLayer(BotOwner bot, int priority)
+        : base(bot, priority, Name, ESAINLayer.Peace) { }
 
     public override Action GetNextAction()
     {
@@ -28,19 +27,14 @@ internal class PeacefulLayer : SAINLayer
 
     private bool allowedToExtract()
     {
-        return
-            Bot.Info.FileSettings.Mind.EnableExtracts &&
-            GlobalSettingsClass.Instance.General.Extract.SAIN_EXTRACT_TOGGLE &&
-            Components.BotController.BotExtractManager.IsBotAllowedToExfil(Bot);
+        return Bot.Info.FileSettings.Mind.EnableExtracts
+            && GlobalSettingsClass.Instance.General.Extract.SAIN_EXTRACT_TOGGLE
+            && Components.BotController.BotExtractManager.IsBotAllowedToExfil(Bot);
     }
 
     private bool hasExtractReason()
     {
-        return
-            ExtractFromTime() ||
-            ExtractFromInjury() ||
-            ExtractFromLoot() ||
-            ExtractFromExternal();
+        return ExtractFromTime() || ExtractFromInjury() || ExtractFromLoot() || ExtractFromExternal();
     }
 
     private bool hasExtractLocation()

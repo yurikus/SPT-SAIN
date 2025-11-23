@@ -1,10 +1,10 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using EFT.UI;
 using SAIN.Helpers;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings.Categories;
-using System.Collections.Generic;
 using UnityEngine;
 using static SAIN.Editor.SAINLayout;
 
@@ -17,9 +17,7 @@ public static class ModifyLists
         wasEdited = false;
         if (dictionary != null)
         {
-            foreach (var item in EnumValues.GetEnum<ELocation>())
-            {
-            }
+            foreach (var item in EnumValues.GetEnum<ELocation>()) { }
         }
     }
 
@@ -33,7 +31,10 @@ public static class ModifyLists
             {
                 AddOrRemove(botType.WildSpawnType, list, out bool newEdit, botType.Name, botType.Description, options);
                 if (newEdit)
+                {
                     wasEdited = true;
+                }
+
                 i = ListSpacing(i, optionsPerLine);
             }
             EndListEdit();
@@ -42,10 +43,7 @@ public static class ModifyLists
 
     public static void AddOrRemoveConfigOptions(SettingsContainer container, out bool wasEdited, string search = null)
     {
-        var dimensions = new GUILayoutOption[]
-        {
-            Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(500f),
-        };
+        var dimensions = new GUILayoutOption[] { Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(500f) };
 
         wasEdited = false;
         foreach (var category in container.Categories)
@@ -55,9 +53,16 @@ public static class ModifyLists
             // Display the value of the category. And make it a openable dropdown menu
             if (string.IsNullOrEmpty(search))
             {
-                category.Open = BuilderClass.ExpandableMenu(categoryName, category.Open, categoryDesciption, PresetHandler.EditorDefaults.ConfigEntryHeight);
+                category.Open = BuilderClass.ExpandableMenu(
+                    categoryName,
+                    category.Open,
+                    categoryDesciption,
+                    PresetHandler.EditorDefaults.ConfigEntryHeight
+                );
                 if (!category.Open)
+                {
                     continue;
+                }
             }
             else
             {
@@ -70,17 +75,23 @@ public static class ModifyLists
             {
                 // Check if the user is searching
                 if (!string.IsNullOrEmpty(search) && !fieldAtt.Name.ToLower().Contains(search))
+                {
                     continue;
+                }
 
                 // Add or remove this field from the list
                 AddOrRemove(fieldAtt, category.SelectedList, out newEdit, fieldAtt.Name, fieldAtt.Description, dimensions);
                 if (newEdit)
+                {
                     wasEdited = true;
+                }
             }
 
             AddOrRemove(category, container.SelectedCategories, category.SelectedList.Count > 0, out newEdit);
             if (newEdit)
+            {
                 wasEdited = true;
+            }
         }
     }
 
@@ -90,28 +101,37 @@ public static class ModifyLists
         if (value)
         {
             if (!list.Contains(item))
+            {
                 list.Add(item);
+            }
         }
         else
         {
             if (list.Contains(item))
+            {
                 list.Remove(item);
+            }
         }
     }
 
-    public static void AddOrRemove(List<BotDifficulty> list, out bool wasEdited, int optionsPerLine = 4, float width = 1200f, float height = 20f)
+    public static void AddOrRemove(
+        List<BotDifficulty> list,
+        out bool wasEdited,
+        int optionsPerLine = 4,
+        float width = 1200f,
+        float height = 20f
+    )
     {
         wasEdited = false;
         float optionWidth = (width / optionsPerLine).Round10();
-        var dimensions = new GUILayoutOption[]
-        {
-            Height(height), Width(optionWidth),
-        };
+        var dimensions = new GUILayoutOption[] { Height(height), Width(optionWidth) };
         foreach (var dificulty in EnumValues.Difficulties)
         {
             AddOrRemove(dificulty, list, out bool newEdit, null, null, dimensions);
             if (newEdit)
+            {
                 wasEdited = true;
+            }
         }
     }
 
@@ -125,7 +145,10 @@ public static class ModifyLists
             BotType bot = botList[b];
             AddOrRemove(bot, list, out bool newEdit, bot.Name, bot.Description, options);
             if (newEdit)
+            {
                 wasEdited = true;
+            }
+
             i = ListSpacing(i, optionsPerLine);
         }
         EndListEdit();
@@ -141,7 +164,10 @@ public static class ModifyLists
             EBrain brain = botList[b];
             AddOrRemove(brain, list, out bool newEdit, null, null, options);
             if (newEdit)
+            {
                 wasEdited = true;
+            }
+
             i = ListSpacing(i, optionsPerLine);
         }
         EndListEdit();
@@ -158,7 +184,14 @@ public static class ModifyLists
         }
     }
 
-    private static void AddOrRemove<T>(T value, List<T> list, out bool wasEdited, string name = null, string description = null, params GUILayoutOption[] options)
+    private static void AddOrRemove<T>(
+        T value,
+        List<T> list,
+        out bool wasEdited,
+        string name = null,
+        string description = null,
+        params GUILayoutOption[] options
+    )
     {
         wasEdited = false;
         if (list != null)
@@ -168,11 +201,14 @@ public static class ModifyLists
                 new GUIContent(name ?? value.ToString(), description),
                 GetStyle(Style.selectionList),
                 EUISoundType.MenuCheckBox,
-                options);
+                options
+            );
 
             AddOrRemove(value, list, toggleValue, out bool newEdit);
             if (newEdit)
+            {
                 wasEdited = true;
+            }
         }
     }
 
@@ -182,10 +218,7 @@ public static class ModifyLists
         BeginHorizontal();
         Space(5);
         float width = (gridWidth / optionsPerLine).Round10();
-        dimensions =
-        [
-            Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(width),
-        ];
+        dimensions = [Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(width)];
         return 0;
     }
 

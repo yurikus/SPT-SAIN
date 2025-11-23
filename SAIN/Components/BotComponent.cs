@@ -23,7 +23,10 @@ namespace SAIN.Components;
 
 public class BotComponent : BotComponentBase, ISPlayer
 {
-    public Vector3 NavMeshPosition => Transform.NavData.Position;
+    public Vector3 NavMeshPosition
+    {
+        get { return Transform.NavData.Position; }
+    }
 
     public float GetDistanceToPlayer(string ProfileId)
     {
@@ -69,9 +72,15 @@ public class BotComponent : BotComponentBase, ISPlayer
         }
     }
 
-    public IBotAction CurrentAction => BotActivation.CurrentAction;
+    public IBotAction CurrentAction
+    {
+        get { return BotActivation.CurrentAction; }
+    }
 
-    public bool IsInCombat => BotActivation.BotInCombat;
+    public bool IsInCombat
+    {
+        get { return BotActivation.BotInCombat; }
+    }
 
     private bool _activated;
 
@@ -79,12 +88,30 @@ public class BotComponent : BotComponentBase, ISPlayer
 
     public bool IsCheater { get; private set; }
 
-    public bool BotActive => BotActivation.BotActive;
-    public bool BotInStandBy => BotActivation.BotInStandBy;
-    public AILimitSetting CurrentAILimit => AILimit.CurrentAILimit;
+    public bool BotActive
+    {
+        get { return BotActivation.BotActive; }
+    }
 
-    public bool HasEnemy => Enemy.IsEnemyActive(EnemyController.GoalEnemy);
-    public Enemy GoalEnemy => HasEnemy ? EnemyController.GoalEnemy : null;
+    public bool BotInStandBy
+    {
+        get { return BotActivation.BotInStandBy; }
+    }
+
+    public AILimitSetting CurrentAILimit
+    {
+        get { return AILimit.CurrentAILimit; }
+    }
+
+    public bool HasEnemy
+    {
+        get { return Enemy.IsEnemyActive(EnemyController.GoalEnemy); }
+    }
+
+    public Enemy GoalEnemy
+    {
+        get { return HasEnemy ? EnemyController.GoalEnemy : null; }
+    }
 
     public BotGlobalEventsClass GlobalEvents { get; private set; }
     public BotBusyHandsDetector BusyHandsDetector { get; private set; }
@@ -121,9 +148,20 @@ public class BotComponent : BotComponentBase, ISPlayer
     public SAINSteeringClass Steering { get; private set; }
     public AimClass Aim { get; private set; }
 
-    public bool IsDead => Player?.HealthController?.IsAlive != true;
-    public bool GameEnding => BotActivation.GameEnding;
-    public bool SAINLayersActive => BotActivation.SAINLayersActive;
+    public bool IsDead
+    {
+        get { return Player?.HealthController?.IsAlive != true; }
+    }
+
+    public bool GameEnding
+    {
+        get { return BotActivation.GameEnding; }
+    }
+
+    public bool SAINLayersActive
+    {
+        get { return BotActivation.SAINLayersActive; }
+    }
 
     public float DistanceToAimTarget
     {
@@ -360,9 +398,7 @@ public class BotComponent : BotComponentBase, ISPlayer
             }
             catch (Exception ex)
             {
-                Logger.LogError(
-                    $"Error setting MaxShootDist during init, but continuing with initialization...: {ex}"
-                );
+                Logger.LogError($"Error setting MaxShootDist during init, but continuing with initialization...: {ex}");
             }
 
             try
@@ -372,10 +408,7 @@ public class BotComponent : BotComponentBase, ISPlayer
                     settings.RandomCheaters
                     && (
                         EFTMath.RandomBool(settings.RandomCheaterChance)
-                        || Player.Profile.Nickname.Contains(
-                            "solarint",
-                            StringComparison.OrdinalIgnoreCase
-                        )
+                        || Player.Profile.Nickname.Contains("solarint", StringComparison.OrdinalIgnoreCase)
                     )
                 )
                 {
@@ -413,11 +446,7 @@ public class BotComponent : BotComponentBase, ISPlayer
 
         if (Info.Profile.IsPlayerScav)
         {
-            return IsAssignedBrainAllowed(
-                assignedBrainName,
-                AIBrains.AllowedPlayerScavBrains,
-                "PlayerScav"
-            );
+            return IsAssignedBrainAllowed(assignedBrainName, AIBrains.AllowedPlayerScavBrains, "PlayerScav");
         }
 
         if (Info.Profile.IsScav)
@@ -428,11 +457,7 @@ public class BotComponent : BotComponentBase, ISPlayer
         return true;
     }
 
-    private bool IsAssignedBrainAllowed(
-        string assignedBrainName,
-        IReadOnlyCollection<string> allowedBrainNames,
-        string botCategory
-    )
+    private bool IsAssignedBrainAllowed(string assignedBrainName, IReadOnlyCollection<string> allowedBrainNames, string botCategory)
     {
         if (allowedBrainNames.Contains(assignedBrainName))
         {
@@ -506,9 +531,14 @@ public class BotComponent : BotComponentBase, ISPlayer
         }
 
         if (NoBushESP != null)
+        {
             Destroy(NoBushESP);
+        }
+
         if (BotOwner != null)
+        {
             BotOwner.OnBotStateChange -= ResetBot;
+        }
 
         Destroy(this);
     }

@@ -1,5 +1,5 @@
-﻿using EFT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using EFT;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -13,8 +13,15 @@ public class OtherPlayerData(string id, PlayerComponent Component)
     public PlayerDistanceData DistanceData { get; } = new PlayerDistanceData(Component);
     public OtherPlayerLoSData LoSData { get; } = new OtherPlayerLoSData(Component.Player);
 
-    public bool IsInHearingRadius_Footsteps => DistanceData.Distance <= 100.0f;
-    public bool IsInHearingRadius_GunFire => DistanceData.Distance <= 500.0f;
+    public bool IsInHearingRadius_Footsteps
+    {
+        get { return DistanceData.Distance <= 100.0f; }
+    }
+
+    public bool IsInHearingRadius_GunFire
+    {
+        get { return DistanceData.Distance <= 500.0f; }
+    }
 
     public void Dispose()
     {
@@ -57,7 +64,7 @@ public class OtherPlayerLoSData
                 BodyPartColliderType = _bodyPartColliders[i].BodyPartColliderType,
                 PartType = _bodyPartColliders[i].BodyPartType,
                 TimeLastLineofSightSuccess = -1f,
-                TimeLastCanShootSuccess = -1f
+                TimeLastCanShootSuccess = -1f,
             };
         }
 
@@ -76,11 +83,7 @@ public class OtherPlayerLoSData
         int count = RaycastArray.Length;
         for (int i = 0; i < count; i++)
         {
-            commands[i] = new RaycastCommand(
-                origin,
-                 BodyPartColliders[i].Center - origin,
-                queryParams,
-                1f);
+            commands[i] = new RaycastCommand(origin, BodyPartColliders[i].Center - origin, queryParams, 1f);
             hits[i] = default;
         }
         RaycastCommands = commands;
@@ -144,7 +147,6 @@ public class OtherPlayerLoSData
             RaycastHits.Dispose();
         }
     }
-
 
     private static List<BodyPartCollider> _bodyPartColliders = [];
     private static List<EBodyPartColliderType> _bodyPartColliderTypes = [];

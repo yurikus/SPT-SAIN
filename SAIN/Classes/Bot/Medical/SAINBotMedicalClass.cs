@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using EFT.InventoryLogic;
 using SAIN.Components;
-using System.Collections.Generic;
 using UnityEngine;
 using FractureEffect = GInterface342;
 using HeavyBleedEffect = GInterface340;
@@ -12,7 +12,8 @@ namespace SAIN.SAINComponent.Classes;
 
 public class SAINBotMedicalClass : BotComponentClassBase
 {
-    public SAINBotMedicalClass(BotComponent sain) : base(sain)
+    public SAINBotMedicalClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         Surgery = new BotSurgery(sain);
@@ -138,20 +139,29 @@ public class SAINBotMedicalClass : BotComponentClassBase
         {
             if (med.TryGetItemComponent(out HealthEffectsComponent healthComponent))
             {
-                if (!foundHeavyBleed && !Meds.ContainsKey(EDamageEffectType.HeavyBleeding) &&
-                    healthComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding))
+                if (
+                    !foundHeavyBleed
+                    && !Meds.ContainsKey(EDamageEffectType.HeavyBleeding)
+                    && healthComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding)
+                )
                 {
                     Meds.Add(EDamageEffectType.HeavyBleeding, med);
                     //Logger.LogInfo($"[{botOwner.name}] Found Heavy Bleed Med: {med.Name}");
                 }
-                if (!foundLightBleed && !Meds.ContainsKey(EDamageEffectType.LightBleeding) &&
-                    healthComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding))
+                if (
+                    !foundLightBleed
+                    && !Meds.ContainsKey(EDamageEffectType.LightBleeding)
+                    && healthComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding)
+                )
                 {
                     Meds.Add(EDamageEffectType.LightBleeding, med);
                     //Logger.LogInfo($"[{botOwner.name}] Found Light Bleed Med: {med.Name}");
                 }
-                if (!foundPainKiller && !Meds.ContainsKey(EDamageEffectType.Pain) &&
-                    healthComponent.DamageEffects.ContainsKey(EDamageEffectType.Pain))
+                if (
+                    !foundPainKiller
+                    && !Meds.ContainsKey(EDamageEffectType.Pain)
+                    && healthComponent.DamageEffects.ContainsKey(EDamageEffectType.Pain)
+                )
                 {
                     Meds.Add(EDamageEffectType.Pain, med);
                     //Logger.LogInfo($"[{botOwner.name}] Found PainKiller Med: {med.Name}");
@@ -203,8 +213,16 @@ public class SAINBotMedicalClass : BotComponentClassBase
 
     public override void Dispose()
     {
-        if (BotOwner != null && BotOwner.Medecine?.FirstAid != null) BotOwner.Medecine.FirstAid.OnEndApply -= FindHealingItems;
-        if (Player != null) Player.BeingHitAction -= GetHit;
+        if (BotOwner != null && BotOwner.Medecine?.FirstAid != null)
+        {
+            BotOwner.Medecine.FirstAid.OnEndApply -= FindHealingItems;
+        }
+
+        if (Player != null)
+        {
+            Player.BeingHitAction -= GetHit;
+        }
+
         Surgery?.Dispose();
         HitReaction?.Dispose();
         HitByEnemy?.Dispose();
@@ -220,5 +238,8 @@ public class SAINBotMedicalClass : BotComponentClassBase
     }
 
     public float TimeLastShot { get; private set; }
-    public float TimeSinceShot => Time.time - TimeLastShot;
+    public float TimeSinceShot
+    {
+        get { return Time.time - TimeLastShot; }
+    }
 }

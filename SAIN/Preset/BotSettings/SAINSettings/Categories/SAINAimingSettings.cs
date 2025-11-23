@@ -22,13 +22,17 @@ public class SAINAimingSettings : SAINSettingsBase<SAINAimingSettings>, ISAINSet
 
     [Category("Time to Aim")]
     [Name("Distance Aim Time Multiplier")]
-    [Description("Multiplies the time a bot takes to aim based on distance. So higher values will cause bots to take longer to aim depending on distance.")]
+    [Description(
+        "Multiplies the time a bot takes to aim based on distance. So higher values will cause bots to take longer to aim depending on distance."
+    )]
     [MinMax(0.1f, 5f, 100f)]
     public float DistanceAimTimeMultiplier = 1f;
 
     [Category("Time to Aim")]
     [Name("Angle Aim Time Multiplier")]
-    [Description("Multiplies the time a bot takes to aim based on the angle they have to turn to line up a shot. So higher values will cause bots to take longer to aim depending on the angle to turn.")]
+    [Description(
+        "Multiplies the time a bot takes to aim based on the angle they have to turn to line up a shot. So higher values will cause bots to take longer to aim depending on the angle to turn."
+    )]
     [MinMax(0.1f, 5f, 100f)]
     public float AngleAimTimeMultiplier = 1f;
 
@@ -39,13 +43,16 @@ public class SAINAimingSettings : SAINSettingsBase<SAINAimingSettings>, ISAINSet
 
     [Category("Time to Aim")]
     [Name("Faster CQB Reactions Max Distance")]
-    [Description("Max distance a bot can react faster for Faster CQB Reactions. Scales with distance." +
-        "Example: If Max distance is set to 20 meters, and an enemy is 10 meters away. they will react 2x as fast as usual, " +
-        "or if an enemy is 15 meters away, they will react 1.5x as fast as usual. " +
-        "If the enemy is at 20 meters or further, nothing will happen.")]
+    [Description(
+        "Max distance a bot can react faster for Faster CQB Reactions. Scales with distance."
+            + "Example: If Max distance is set to 20 meters, and an enemy is 10 meters away. they will react 2x as fast as usual, "
+            + "or if an enemy is 15 meters away, they will react 1.5x as fast as usual. "
+            + "If the enemy is at 20 meters or further, nothing will happen."
+    )]
     [NameAndDescription(
         "Faster CQB Reactions Max Distance",
-        "Max distance a bot can react faster for Faster CQB Reactions. Scales with distance.")]
+        "Max distance a bot can react faster for Faster CQB Reactions. Scales with distance."
+    )]
     [MinMax(5f, 100f)]
     public float FasterCQBReactionsDistance = 30f;
 
@@ -62,7 +69,9 @@ public class SAINAimingSettings : SAINSettingsBase<SAINAimingSettings>, ISAINSet
 
     [Category("Time to Aim")]
     [Name("Max Aiming Upgrade By Time")]
-    [Description("VANILLA EFT CONFIG VALUE : Lower = Better. How much to cap this bots aim improvement based on time. 0.25 means they will be able to multiply their aim offset by 0.25x when aiming. Making their shots more accurate")]
+    [Description(
+        "VANILLA EFT CONFIG VALUE : Lower = Better. How much to cap this bots aim improvement based on time. 0.25 means they will be able to multiply their aim offset by 0.25x when aiming. Making their shots more accurate"
+    )]
     [MinMax(0.01f, 0.99f, 100f)]
     [Advanced]
     [CopyValue]
@@ -111,7 +120,8 @@ public class SAINAimingSettings : SAINSettingsBase<SAINAimingSettings>, ISAINSet
     [Category("Time to Aim")]
     [NameAndDescription(
         "VANILLA EFT CONFIG VALUE : Hit Reaction Recovery Time",
-        "How much time it takes to recover a bot's aim when they get hit by a bullet")]
+        "How much time it takes to recover a bot's aim when they get hit by a bullet"
+    )]
     [MinMax(0.1f, 0.99f, 100f)]
     [Advanced]
     public float BASE_HIT_AFFECTION_DELAY_SEC = 0.65f;

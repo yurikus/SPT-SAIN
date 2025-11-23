@@ -95,5 +95,5 @@ public enum Layer
     PrtStalk,
     PartisanMine,
     PartMineAll,
-    HoldOrCoverT
+    HoldOrCoverT,
 }

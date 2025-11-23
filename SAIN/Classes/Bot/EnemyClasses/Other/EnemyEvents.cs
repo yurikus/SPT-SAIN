@@ -42,7 +42,9 @@ public class EnemyEvents
     public void Dispose(Player enemyPlayer)
     {
         if (enemyPlayer != null)
+        {
             enemyPlayer.BeingHitAction -= enemyHit;
+        }
     }
 
     public void EnemyLocationsSearched()

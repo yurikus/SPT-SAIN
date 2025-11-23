@@ -21,12 +21,18 @@ public class PredictivePositionSmoother
     /// <summary>
     /// Current smoothed position
     /// </summary>
-    public Vector3 Position => _smoothedPosition;
+    public Vector3 Position
+    {
+        get { return _smoothedPosition; }
+    }
 
     /// <summary>
     /// Estimated target velocity
     /// </summary>
-    public Vector3 Velocity => _targetVelocity;
+    public Vector3 Velocity
+    {
+        get { return _targetVelocity; }
+    }
 
     /// <summary>
     /// Initialize or reset the smoother with a starting position
@@ -98,7 +104,9 @@ public class PredictivePositionSmoother
         var velocityMagnitude = _targetVelocity.magnitude;
 
         if (!(distanceToTarget < 0.001f) || !(velocityMagnitude < 0.01f))
+        {
             return _smoothedPosition;
+        }
 
         _smoothedPosition = targetPosition;
         _currentVelocity = Vector3.zero;
@@ -148,11 +156,7 @@ public class SmoothingDebugger : MonoBehaviour
     private void FixedUpdate()
     {
         var targetPosition = player.PlayerBones.Head.Original.position;
-        var smoothedPos = _positionSmoother.Update(
-            targetPosition,
-            player.Velocity,
-            Time.fixedDeltaTime
-        );
+        var smoothedPos = _positionSmoother.Update(targetPosition, player.Velocity, Time.fixedDeltaTime);
 
         _naiveSmoothedPosition = Vector3.SmoothDamp(
             _naiveSmoothedPosition,
@@ -167,24 +171,14 @@ public class SmoothingDebugger : MonoBehaviour
         UpdatePositions(smoothedPos, targetPosition, _sphere2, _line2);
     }
 
-    private void UpdatePositions(
-        Vector3 smoothedPosition,
-        Vector3 targetPosition,
-        GameObject sphere,
-        LineRenderer line
-    )
+    private void UpdatePositions(Vector3 smoothedPosition, Vector3 targetPosition, GameObject sphere, LineRenderer line)
     {
         sphere.transform.position = smoothedPosition;
         line.SetPosition(0, targetPosition);
         line.SetPosition(1, smoothedPosition);
     }
 
-    private LineRenderer CreateLine(
-        GameObject sphere,
-        Color startColor,
-        Color endColor,
-        float width
-    )
+    private LineRenderer CreateLine(GameObject sphere, Color startColor, Color endColor, float width)
     {
         var line = sphere.AddComponent<LineRenderer>();
 

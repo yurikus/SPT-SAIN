@@ -1,9 +1,9 @@
-﻿using SAIN.Components.PlayerComponentSpace;
-using SAIN.Helpers;
-using SAIN.Types.Jobs;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using SAIN.Components.PlayerComponentSpace;
+using SAIN.Helpers;
+using SAIN.Types.Jobs;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,7 +12,8 @@ namespace SAIN.Components;
 
 public class RandomVisiblePointGeneratorJob : SainJobTemplate, IDisposable
 {
-    public RandomVisiblePointGeneratorJob(MonoBehaviour botcontroller) : base("Random Visible Point Generator", botcontroller, true)
+    public RandomVisiblePointGeneratorJob(MonoBehaviour botcontroller)
+        : base("Random Visible Point Generator", botcontroller, true)
     {
         //Start();
     }
@@ -30,7 +31,15 @@ public class RandomVisiblePointGeneratorJob : SainJobTemplate, IDisposable
             {
                 //RaycastJobs.Add(new RaycastJob(ShortRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
                 //RaycastJobs.Add(new RaycastJob(MidRangeRandomDirections, player.Transform.HeadPosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
-                RaycastJobs.Add(new RaycastJob(LongRandomDirections, player.Transform.EyePosition, LayerMaskClass.HighPolyWithTerrainMask, player.Player, null));
+                RaycastJobs.Add(
+                    new RaycastJob(
+                        LongRandomDirections,
+                        player.Transform.EyePosition,
+                        LayerMaskClass.HighPolyWithTerrainMask,
+                        player.Player,
+                        null
+                    )
+                );
             }
         }
         int Total = RaycastJobs.Count;
@@ -68,7 +77,13 @@ public class RandomVisiblePointGeneratorJob : SainJobTemplate, IDisposable
                                     if (Player.Player.IsYourPlayer)
                                     {
                                         DebugGizmos.DrawSphere(NavHit.position, 0.1f, RandomColor, 0.05f);
-                                        DebugGizmos.DrawLine(NavHit.position, NavHit.position + Vector3.up * 1.5f, RandomColor, 0.025f, 0.05f);
+                                        DebugGizmos.DrawLine(
+                                            NavHit.position,
+                                            NavHit.position + Vector3.up * 1.5f,
+                                            RandomColor,
+                                            0.025f,
+                                            0.05f
+                                        );
                                     }
                                 }
                             }
@@ -84,7 +99,9 @@ public class RandomVisiblePointGeneratorJob : SainJobTemplate, IDisposable
     private void ScheduleJobs(int Total)
     {
         for (int i = 0; i < Total; i++)
+        {
             RaycastJobs[i].Schedule();
+        }
     }
 
     protected static RandomDir[] GenerateRandomDirections(int Count, float LengthMin, float LengthMax)
@@ -108,7 +125,10 @@ public class RandomVisiblePointGeneratorJob : SainJobTemplate, IDisposable
             for (int i = 0; i < Total; i++)
             {
                 if (!RaycastJobs[i].IsCompleted)
+                {
                     continue;
+                }
+
                 JobsComplete = true;
             }
             yield return null;

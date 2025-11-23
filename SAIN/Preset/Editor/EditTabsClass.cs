@@ -12,35 +12,34 @@ internal class EditTabsClass
         TabClasses = new Dictionary<EEditorTab, TabClass>
         {
             {
-                EEditorTab.Home, new TabClass
-                {
-                    Name = "Home",
-                    ToolTip = "Select preset and modify global SAIN settings.",
-                }
+                EEditorTab.Home,
+                new TabClass { Name = "Home", ToolTip = "Select preset and modify global SAIN settings." }
             },
             {
-                EEditorTab.BotSettings, new TabClass
+                EEditorTab.BotSettings,
+                new TabClass
                 {
                     Name = "Bot Settings",
-                    ToolTip = "Modify Settings that are unique to particular bot types for individual difficulties. Difficulty is determined on spawn by EFT, and is changed by selecting the Difficulty value when starting a raid. As Online is a mix of all difficulties.",
+                    ToolTip =
+                        "Modify Settings that are unique to particular bot types for individual difficulties. Difficulty is determined on spawn by EFT, and is changed by selecting the Difficulty value when starting a raid. As Online is a mix of all difficulties.",
                 }
             },
             {
-                EEditorTab.Personalities, new TabClass
+                EEditorTab.Personalities,
+                new TabClass
                 {
                     Name = "Personalities",
-                    ToolTip = "Modify Individual Personality settings for how they are assigned to bots, and what each personality does for a bot's behavior.",
+                    ToolTip =
+                        "Modify Individual Personality settings for how they are assigned to bots, and what each personality does for a bot's behavior.",
                 }
             },
             {
-                EEditorTab.EquipmentStealth, new TabClass
-                {
-                    Name = "Equipment Stealth",
-                    ToolTip = "Modify the stealth value that certain pieces of equipment provide.",
-                }
+                EEditorTab.EquipmentStealth,
+                new TabClass { Name = "Equipment Stealth", ToolTip = "Modify the stealth value that certain pieces of equipment provide." }
             },
             {
-                EEditorTab.Advanced, new TabClass
+                EEditorTab.Advanced,
+                new TabClass
                 {
                     Name = "Advanced Options",
                     ToolTip = "Edit at your own risk. Enable additional advanced config options here",
@@ -70,7 +69,16 @@ internal class EditTabsClass
             TabRects = BuilderClass.HorizontalGridRects(TabMenuRect, Tabs.Length, minHeight);
         }
 
-        string openTabString = BuilderClass.SelectionGridExpandHeight(TabMenuRect, Tabs, TabClasses[SelectedTab].Name, TabRects, minHeight, speed, closeSpeedMulti, TabTooltips);
+        string openTabString = BuilderClass.SelectionGridExpandHeight(
+            TabMenuRect,
+            Tabs,
+            TabClasses[SelectedTab].Name,
+            TabRects,
+            minHeight,
+            speed,
+            closeSpeedMulti,
+            TabTooltips
+        );
 
         foreach (var tab in TabClasses)
         {
@@ -121,5 +129,5 @@ public enum EEditorTab
     BotSettings,
     Personalities,
     EquipmentStealth,
-    Advanced
+    Advanced,
 }

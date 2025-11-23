@@ -1,5 +1,5 @@
-﻿using EFT;
-using System;
+﻿using System;
+using EFT;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -16,9 +16,7 @@ public interface IBotRaycastJobSingleTarget
     public IPlayer Target { get; }
 }
 
-public interface IDisposableJobFor : IJobFor, IDisposable
-{
-}
+public interface IDisposableJobFor : IJobFor, IDisposable { }
 
 public interface IRaycastJob : IDisposable
 {

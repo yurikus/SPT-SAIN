@@ -5,7 +5,8 @@ namespace SAIN.SAINComponent.Classes;
 
 public class CurrentTargetClass : BotComponentClassBase
 {
-    public CurrentTargetClass(BotComponent bot) : base(bot)
+    public CurrentTargetClass(BotComponent bot)
+        : base(bot)
     {
         TickRequirement = ESAINTickState.OnlyBotActive;
     }
@@ -25,8 +26,7 @@ public class CurrentTargetClass : BotComponentClassBase
             var Target = goalTarget?.Position;
             if (Target != null)
             {
-                if ((Target.Value - Bot.Position).sqrMagnitude < 1f ||
-                    goalTarget.CreatedTime > 120f)
+                if ((Target.Value - Bot.Position).sqrMagnitude < 1f || goalTarget.CreatedTime > 120f)
                 {
                     goalTarget.Clear();
                     //BotOwner.CalcGoal();

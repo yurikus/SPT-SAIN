@@ -1,21 +1,25 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
 public class AILimitSettings : SAINSettingsBase<AILimitSettings>, ISAINSettings
 {
     [Name("Limit SAIN Function in AI vs AI - Global Toggle")]
-    [Description("Disables certains functions when ai are fighting other ai, and they aren't close to a human player. Turn off if you are spectating ai in free-cam.")]
+    [Description(
+        "Disables certains functions when ai are fighting other ai, and they aren't close to a human player. Turn off if you are spectating ai in free-cam."
+    )]
     public bool LimitAIvsAIGlobal = true;
 
     [Description("How often (in seconds) to check distances to all human players.")]
     [MinMax(1f, 5f, 10f)]
     public float AILimitUpdateFrequency = 3f;
 
-    [Description("Defines the ranges that different tiers of AI limit are set. " +
-        "If a bot is further than this number (in meters) from the closest Human Player, " +
-        "they will be assigned this AI Limit setting.")]
+    [Description(
+        "Defines the ranges that different tiers of AI limit are set. "
+            + "If a bot is further than this number (in meters) from the closest Human Player, "
+            + "they will be assigned this AI Limit setting."
+    )]
     [MinMax(150f, 600f, 1f)]
     public Dictionary<AILimitSetting, float> AILimitRanges = new()
     {
@@ -47,5 +51,4 @@ public class AILimitSettings : SAINSettingsBase<AILimitSettings>, ISAINSettings
         { AILimitSetting.VeryFar, 60f },
         { AILimitSetting.Narnia, 25f },
     };
-
 }

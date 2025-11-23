@@ -18,7 +18,10 @@ public class SAINSearchClass : BotComponentClassBase
     public ESearchMove CurrentState { get; private set; }
     public ESearchMove LastState { get; private set; }
 
-    public BotPeekPlan? PeekPoints => PathFinder.PeekPoints;
+    public BotPeekPlan? PeekPoints
+    {
+        get { return PathFinder.PeekPoints; }
+    }
 
     public SearchDeciderClass SearchDecider { get; private set; }
     public SearchPathFinder PathFinder { get; private set; }
@@ -91,18 +94,11 @@ public class SAINSearchClass : BotComponentClassBase
     private bool MoveToEnemy(Enemy enemy, bool shallSprint)
     {
         if (Time.time - _timeLastMoved < 1f)
+        {
             return true;
+        }
 
-        if (
-            shallSprint
-            && Bot.Mover.RunToPointByWay(
-                enemy.Path.PathToEnemy,
-                false,
-                1f,
-                Mover.ESprintUrgency.Middle,
-                true
-            )
-        )
+        if (shallSprint && Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, false, 1f, Mover.ESprintUrgency.Middle, true))
         {
             _timeLastMoved = Time.time;
             return true;
@@ -157,16 +153,7 @@ public class SAINSearchClass : BotComponentClassBase
         {
             shallSprint = false;
         }
-        if (
-            shallSprint
-            && Bot.Mover.RunToPointByWay(
-                enemy.Path.PathToEnemy,
-                true,
-                -1,
-                Mover.ESprintUrgency.Middle,
-                true
-            )
-        )
+        if (shallSprint && Bot.Mover.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, Mover.ESprintUrgency.Middle, true))
         {
             LastState = CurrentState;
             CurrentState = ESearchMove.DirectMove;
@@ -283,11 +270,7 @@ public class SAINSearchClass : BotComponentClassBase
             return;
         }
         // we are outside...
-        if (
-            _searchSettings.Sneaky
-            && Bot.Cover.CoverPoints.Count > 2
-            && Time.time - BotOwner.Memory.UnderFireTime > 30f
-        )
+        if (_searchSettings.Sneaky && Bot.Cover.CoverPoints.Count > 2 && Time.time - BotOwner.Memory.UnderFireTime > 30f)
         {
             speed = 0.25f;
             pose = 0.6f;
@@ -368,8 +351,15 @@ public class SAINSearchClass : BotComponentClassBase
         return (point - Bot.Position).magnitude;
     }
 
-    private bool _Running => Bot.Mover.Running;
+    private bool _Running
+    {
+        get { return Bot.Mover.Running; }
+    }
+
     private float _waitAtPointTimer = -1;
     private float _advanceTime;
-    private PersonalitySearchSettings _searchSettings => Bot.Info.PersonalitySettings.Search;
+    private PersonalitySearchSettings _searchSettings
+    {
+        get { return Bot.Info.PersonalitySettings.Search; }
+    }
 }

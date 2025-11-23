@@ -17,11 +17,7 @@ public class EnemyPartDataClass
 
     private readonly Dictionary<EBodyPartColliderType, BodyPartCollider> _colliderDictionary = [];
 
-    public EnemyPartDataClass(
-        EBodyPart bodyPart,
-        BifacialTransform transform,
-        List<BodyPartCollider> colliders
-    )
+    public EnemyPartDataClass(EBodyPart bodyPart, BifacialTransform transform, List<BodyPartCollider> colliders)
     {
         BodyPart = bodyPart;
         Transform = transform;
@@ -62,16 +58,12 @@ public class EnemyPartDataClass
             return;
         }
         if (TimeSeen <= 0f)
+        {
             TimeSeen = Time.time;
+        }
     }
 
-    public void SetLineOfSight(
-        Vector3 castPoint,
-        EBodyPartColliderType colliderType,
-        RaycastHit raycastHit,
-        ERaycastCheck type,
-        float time
-    )
+    public void SetLineOfSight(Vector3 castPoint, EBodyPartColliderType colliderType, RaycastHit raycastHit, ERaycastCheck type, float time)
     {
         RaycastResults[type].Update(castPoint, _colliderDictionary[colliderType], raycastHit, time);
     }

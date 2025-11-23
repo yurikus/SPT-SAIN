@@ -1,11 +1,11 @@
-﻿using BepInEx;
-using BepInEx.Bootstrap;
-using BepInEx.Configuration;
-using BepInEx.Logging;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
+using BepInEx.Bootstrap;
+using BepInEx.Configuration;
+using BepInEx.Logging;
 using UnityEngine;
 
 namespace DrakiaXYZ.VersionChecker;
@@ -14,7 +14,10 @@ namespace DrakiaXYZ.VersionChecker;
 public class VersionChecker : Attribute
 {
     private int version;
-    public VersionChecker() : this(0) { }
+
+    public VersionChecker()
+        : this(0) { }
+
     public VersionChecker(int version)
     {
         this.version = version;
@@ -24,16 +27,20 @@ public class VersionChecker : Attribute
     {
         get
         {
-            return Assembly.GetExecutingAssembly()
-                .GetCustomAttributes(typeof(VersionChecker), false)
-                ?.Cast<VersionChecker>()?.FirstOrDefault()?.version ?? 0;
+            return Assembly
+                    .GetExecutingAssembly()
+                    .GetCustomAttributes(typeof(VersionChecker), false)
+                    ?.Cast<VersionChecker>()
+                    ?.FirstOrDefault()
+                    ?.version
+                ?? 0;
         }
     }
 
     // Make sure the version of EFT being run is the correct version, throw an exception and output log message if it isn't
     /// <summary>
     /// Check the currently running program's version against the plugin assembly VersionChecker attribute, and
-    /// return false if they do not match. 
+    /// return false if they do not match.
     /// Optionally add a fake setting to the F12 menu if Config is passed in
     /// </summary>
     /// <param value="Logger">The ManualLogSource to output an error to</param>
@@ -46,7 +53,8 @@ public class VersionChecker : Attribute
         int buildVersion = BuildVersion;
         if (currentVersion != buildVersion)
         {
-            string errorMessage = $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} was built for Tarkov {buildVersion}, but you are running {currentVersion}. Please download the correct plugin version.";
+            string errorMessage =
+                $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} was built for Tarkov {buildVersion}, but you are running {currentVersion}. Please download the correct plugin version.";
             Logger.LogError(errorMessage);
             Chainloader.DependencyErrors.Add(errorMessage);
 
@@ -54,16 +62,23 @@ public class VersionChecker : Attribute
             {
                 // TypeofThis results in a bogus config entry in the BepInEx config file for the plugin, but it shouldn't hurt anything
                 // We leave the "section" parameter empty so there's no section header drawn
-                Config.Bind("", "TarkovVersion", "", new ConfigDescription(
-                    errorMessage, null, new ConfigurationManagerAttributes
-                    {
-                        CustomDrawer = ErrorLabelDrawer,
-                        ReadOnly = true,
-                        HideDefaultButton = true,
-                        HideSettingName = true,
-                        Category = null
-                    }
-                ));
+                Config.Bind(
+                    "",
+                    "TarkovVersion",
+                    "",
+                    new ConfigDescription(
+                        errorMessage,
+                        null,
+                        new ConfigurationManagerAttributes
+                        {
+                            CustomDrawer = ErrorLabelDrawer,
+                            ReadOnly = true,
+                            HideDefaultButton = true,
+                            HideSettingName = true,
+                            Category = null,
+                        }
+                    )
+                );
             }
 
             return false;

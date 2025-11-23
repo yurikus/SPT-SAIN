@@ -21,7 +21,10 @@ namespace SAIN.Components.PlayerComponentSpace;
 
 public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
 {
-    public Vector3 NavMeshPosition => Transform.NavData.Position;
+    public Vector3 NavMeshPosition
+    {
+        get { return Transform.NavData.Position; }
+    }
 
     private const int MaxCachedSounds = 4;
 
@@ -37,9 +40,20 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
     public SAINEquipmentClass Equipment { get; private set; }
     public PlayerTransformClass Transform { get; } = new PlayerTransformClass();
 
-    public bool IsActive => ActivationClass.PlayerActive;
-    public Vector3 Position => Transform.Position;
-    public Vector3 LookDirection => Transform.LookDirection;
+    public bool IsActive
+    {
+        get { return ActivationClass.PlayerActive; }
+    }
+
+    public Vector3 Position
+    {
+        get { return Transform.Position; }
+    }
+
+    public Vector3 LookDirection
+    {
+        get { return Transform.LookDirection; }
+    }
 
     public void InitializeBotOwner(BotOwner botOwner)
     {
@@ -92,9 +106,7 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
             {
                 Weapon LastWeapon = _currentWeapon;
 #if DEBUG
-                Logger.LogDebug(
-                    $"[{Player?.Profile.Nickname}] Equipped Weapon [{value?.ShortName}] Last Weapon [{LastWeapon?.ShortName}]"
-                );
+                Logger.LogDebug($"[{Player?.Profile.Nickname}] Equipped Weapon [{value?.ShortName}] Last Weapon [{LastWeapon?.ShortName}]");
 #endif
                 _currentWeapon = value;
                 OnWeaponEquipped?.Invoke(value, LastWeapon);
@@ -113,9 +125,7 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
             {
                 Item LastItem = _currentItem;
 #if DEBUG
-                Logger.LogDebug(
-                    $"[{Player?.Profile.Nickname}] Equipped Item [{value?.ShortName}] Last Item [{LastItem?.ShortName}]"
-                );
+                Logger.LogDebug($"[{Player?.Profile.Nickname}] Equipped Item [{value?.ShortName}] Last Item [{LastItem?.ShortName}]");
 #endif
                 _currentItem = value;
                 OnItemEquipped?.Invoke(value, LastItem);
@@ -208,18 +218,12 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
             {
                 return;
             }
-            AISoundCachedEvents.Add(
-                new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus)
-            );
-            AISoundCachedEvents.Sort(
-                (a, b) => b.BaseRangeWithVolume.CompareTo(a.BaseRangeWithVolume)
-            );
+            AISoundCachedEvents.Add(new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus));
+            AISoundCachedEvents.Sort((a, b) => b.BaseRangeWithVolume.CompareTo(a.BaseRangeWithVolume));
             AISoundCachedEvents.RemoveAt(AISoundCachedEvents.Count - 1);
             return;
         }
-        AISoundCachedEvents.Add(
-            new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus)
-        );
+        AISoundCachedEvents.Add(new(InSoundType, InPosition, this, InRange, InVolume, SoundSpeed, Phrase, TagStatus));
     }
 
     public float GetDistanceToPlayer(string ProfileId)
@@ -244,13 +248,7 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         {
             bool isAI = BotOwner != null;
             Transform.ManualUpdate(Player, isAI);
-            if (
-                !isAI
-                || (
-                    BotOwner.BotState == EBotState.Active
-                    && BotOwner.StandBy.StandByType == BotStandByType.active
-                )
-            )
+            if (!isAI || (BotOwner.BotState == EBotState.Active && BotOwner.StandBy.StandByType == BotStandByType.active))
             {
 #if DEBUG
                 drawTransformGizmos();
@@ -293,12 +291,7 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
             if (WeaponInfo != null)
             {
                 OnShoot?.Invoke(WeaponInfo, Force);
-                PlayAISound(
-                    WeaponInfo.SoundType,
-                    Transform.WeaponData.FirePort,
-                    WeaponInfo.CalculatedAudibleRange,
-                    1
-                );
+                PlayAISound(WeaponInfo.SoundType, Transform.WeaponData.FirePort, WeaponInfo.CalculatedAudibleRange, 1);
             }
         }
     }
@@ -427,22 +420,12 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         if (_hitLabel != null)
         {
             _hitLabel.StringBuilder.Clear();
-            if (
-                Physics.Raycast(
-                    Transform.EyePosition,
-                    Transform.LookDirection,
-                    out var hit,
-                    100f,
-                    LayerMaskClass.DoorLayer
-                )
-            )
+            if (Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out var hit, 100f, LayerMaskClass.DoorLayer))
             {
                 _hitLabel.Enabled = true;
                 _hitLabel.WorldPos = hit.point;
                 _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine(
-                    $"{LayerMask.LayerToName(hit.collider.gameObject.layer)}"
-                );
+                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
                 _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
                 Door door = hit.collider.gameObject.GetComponent<Door>();
                 if (door != null)
@@ -455,22 +438,12 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
                     _hitLabel.StringBuilder.AppendLine($"Found Link: [{link.Id}]");
                 }
             }
-            if (
-                Physics.Raycast(
-                    Transform.EyePosition,
-                    Transform.LookDirection,
-                    out hit,
-                    100f,
-                    LayerMaskClass.PlayerStaticDoorMask
-                )
-            )
+            if (Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out hit, 100f, LayerMaskClass.PlayerStaticDoorMask))
             {
                 _hitLabel.Enabled = true;
                 _hitLabel.WorldPos = hit.point;
                 _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine(
-                    $"{LayerMask.LayerToName(hit.collider.gameObject.layer)}"
-                );
+                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
                 _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
                 Door door = hit.collider.gameObject.GetComponent<Door>();
                 if (door != null)
@@ -483,22 +456,12 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
                     _hitLabel.StringBuilder.AppendLine($"Found Link: [{link.Id}]");
                 }
             }
-            if (
-                Physics.Raycast(
-                    Transform.EyePosition,
-                    Transform.LookDirection,
-                    out hit,
-                    100f,
-                    LayerMaskClass.InteractiveMask
-                )
-            )
+            if (Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out hit, 100f, LayerMaskClass.InteractiveMask))
             {
                 _hitLabel.Enabled = true;
                 _hitLabel.WorldPos = hit.point;
                 _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine(
-                    $"{LayerMask.LayerToName(hit.collider.gameObject.layer)}"
-                );
+                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
                 _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
                 Door door = hit.collider.gameObject.GetComponent<Door>();
                 if (door != null)
@@ -512,21 +475,13 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
                 }
             }
             else if (
-                Physics.Raycast(
-                    Transform.EyePosition,
-                    Transform.LookDirection,
-                    out hit,
-                    100f,
-                    LayerMaskClass.HighPolyWithTerrainMaskAI
-                )
+                Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out hit, 100f, LayerMaskClass.HighPolyWithTerrainMaskAI)
             )
             {
                 _hitLabel.Enabled = true;
                 _hitLabel.WorldPos = hit.point;
                 _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine(
-                    $"{LayerMask.LayerToName(hit.collider.gameObject.layer)}"
-                );
+                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
                 _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
                 var ballistic = hit.collider.gameObject.GetComponent<BallisticCollider>();
                 if (ballistic != null)
@@ -538,9 +493,7 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
                 var components = hit.collider.gameObject.GetComponentsInChildren(typeof(Component));
                 foreach (var component in components)
                 {
-                    _hitLabel.StringBuilder.AppendLine(
-                        $"Found [{component.name}] : Type [{component.GetType()}]"
-                    );
+                    _hitLabel.StringBuilder.AppendLine($"Found [{component.name}] : Type [{component.GetType()}]");
                 }
             }
             else
@@ -569,53 +522,25 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
                 continue;
             }
             float distance = Mathf.Sqrt(sqrMag);
-            if (
-                !Physics.Raycast(
-                    origin,
-                    direction,
-                    distance,
-                    LayerMaskClass.HighPolyWithTerrainMask
-                )
-            )
+            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 visibleNodes.Add(vert);
                 continue;
             }
             direction.y += 0.5f;
-            if (
-                !Physics.Raycast(
-                    origin,
-                    direction,
-                    distance,
-                    LayerMaskClass.HighPolyWithTerrainMask
-                )
-            )
+            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 visibleNodes.Add(vert);
                 continue;
             }
             direction.y += 0.5f;
-            if (
-                !Physics.Raycast(
-                    origin,
-                    direction,
-                    distance,
-                    LayerMaskClass.HighPolyWithTerrainMask
-                )
-            )
+            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 visibleNodes.Add(vert);
                 continue;
             }
             direction.y += 0.5f;
-            if (
-                !Physics.Raycast(
-                    origin,
-                    direction,
-                    distance,
-                    LayerMaskClass.HighPolyWithTerrainMask
-                )
-            )
+            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 visibleNodes.Add(vert);
                 continue;
@@ -703,62 +628,16 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         if (SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
         {
             DebugGizmos.DrawSphere(Transform.EyePosition, 0.1f, Color.white, 0.1f, "Eye");
-            DebugGizmos.Ray(
-                Transform.EyePosition,
-                Transform.LookDirection,
-                Color.white,
-                1f,
-                0.025f,
-                0.1f
-            );
+            DebugGizmos.Ray(Transform.EyePosition, Transform.LookDirection, Color.white, 1f, 0.025f, 0.1f);
 
-            DebugGizmos.DrawSphere(
-                Transform.WeaponData.WeaponRoot,
-                0.075f,
-                Color.magenta,
-                0.1f,
-                "WeaponRoot"
-            );
-            DebugGizmos.Ray(
-                Transform.WeaponData.WeaponRoot,
-                Transform.LookDirection,
-                Color.magenta,
-                1f,
-                0.025f,
-                0.1f
-            );
+            DebugGizmos.DrawSphere(Transform.WeaponData.WeaponRoot, 0.075f, Color.magenta, 0.1f, "WeaponRoot");
+            DebugGizmos.Ray(Transform.WeaponData.WeaponRoot, Transform.LookDirection, Color.magenta, 1f, 0.025f, 0.1f);
 
-            DebugGizmos.DrawSphere(
-                Transform.HeadData.HeadPosition,
-                0.075f,
-                Color.yellow,
-                0.1f,
-                "Head"
-            );
-            DebugGizmos.Ray(
-                Transform.HeadData.HeadPosition,
-                Transform.HeadData.HeadLookDirection,
-                Color.yellow,
-                1f,
-                0.025f,
-                0.1f
-            );
+            DebugGizmos.DrawSphere(Transform.HeadData.HeadPosition, 0.075f, Color.yellow, 0.1f, "Head");
+            DebugGizmos.Ray(Transform.HeadData.HeadPosition, Transform.HeadData.HeadLookDirection, Color.yellow, 1f, 0.025f, 0.1f);
 
-            DebugGizmos.DrawSphere(
-                Transform.WeaponData.FirePort,
-                0.075f,
-                Color.green,
-                0.1f,
-                "FirePort"
-            );
-            DebugGizmos.Ray(
-                Transform.WeaponData.FirePort,
-                Transform.WeaponData.PointDirection,
-                Color.green,
-                1f,
-                0.05f,
-                0.1f
-            );
+            DebugGizmos.DrawSphere(Transform.WeaponData.FirePort, 0.075f, Color.green, 0.1f, "FirePort");
+            DebugGizmos.Ray(Transform.WeaponData.FirePort, Transform.WeaponData.PointDirection, Color.green, 1f, 0.05f, 0.1f);
 
             DebugGizmos.DrawSphere(Transform.BodyPosition, 0.1f, Color.blue, 0.1f, "Body");
         }

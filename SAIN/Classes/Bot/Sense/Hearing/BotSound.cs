@@ -79,7 +79,10 @@ public class SoundRangeData
 
 public class SoundRangeModifiers
 {
-    public float PreClampedMod => EnvironmentModifier * ConditionModifier * OcclusionModifier;
+    public float PreClampedMod
+    {
+        get { return EnvironmentModifier * ConditionModifier * OcclusionModifier; }
+    }
 
     public SoundRangeModifiers(float defaults = 1f)
     {

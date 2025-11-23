@@ -2,6 +2,4 @@
 
 namespace SAIN.Preset.BotSettings.SAINSettings.Categories;
 
-public class SAINHearingSettings : SAINSettingsBase<SAINHearingSettings>, ISAINSettings
-{
-}
+public class SAINHearingSettings : SAINSettingsBase<SAINHearingSettings>, ISAINSettings { }

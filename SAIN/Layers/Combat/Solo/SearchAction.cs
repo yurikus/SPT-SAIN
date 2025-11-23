@@ -11,13 +11,20 @@ namespace SAIN.Layers.Combat.Solo;
 
 internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
 {
-    private Enemy _searchTarget => Search?.SearchTarget;
+    private Enemy _searchTarget
+    {
+        get { return Search?.SearchTarget; }
+    }
+
     private bool _subscribed;
     private float _nextCheckWeaponTime;
     private bool _haveTalked = false;
     private bool _sprintEnabled = false;
     private float _sprintTimer = 0f;
-    private SAINSearchClass Search => Bot.Search;
+    private SAINSearchClass Search
+    {
+        get { return Bot.Search; }
+    }
 
     public override void Start()
     {
@@ -72,10 +79,7 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
                 _sprintEnabled = false;
             }
 
-            if (
-                !isBeingStealthy
-                && !Bot.Suppression.TrySuppressAnyEnemy(_searchTarget, KnownEnemies)
-            )
+            if (!isBeingStealthy && !Bot.Suppression.TrySuppressAnyEnemy(_searchTarget, KnownEnemies))
             {
                 checkWeapon();
                 Bot.Steering.LookToLastKnownEnemyPosition(_searchTarget);
@@ -107,7 +111,9 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
         }
         clearSearchTarget();
         if (enemy != null)
+        {
             setSearchTarget(enemy);
+        }
     }
 
     private void clearSearchTarget()
@@ -118,14 +124,7 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
     private void setTargetEnemy()
     {
         Enemy searchTarget = _searchTarget;
-        if (
-            searchTarget != null
-            && (
-                !searchTarget.EnemyKnown
-                || !Enemy.IsEnemyActive(searchTarget)
-                || !searchTarget.CheckValid()
-            )
-        )
+        if (searchTarget != null && (!searchTarget.EnemyKnown || !Enemy.IsEnemyActive(searchTarget) || !searchTarget.CheckValid()))
         {
             clearSearchTarget();
         }
@@ -133,7 +132,10 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
         {
             var activeEnemy = Bot.GoalEnemy;
             if (activeEnemy == null)
+            {
                 return;
+            }
+
             setSearchTarget(activeEnemy);
         }
     }
@@ -170,9 +172,13 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
             if (_searchTarget.TimeSinceLastKnownUpdated > 30f)
             {
                 if (EFTMath.RandomBool())
+                {
                     Bot.Player.HandsController.FirearmsAnimator.CheckAmmo();
+                }
                 else
+                {
                     Bot.Player.HandsController.FirearmsAnimator.CheckChamber();
+                }
             }
         }
     }
@@ -199,10 +205,7 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
             return;
         }
 
-        if (
-            _searchTarget.IsSniper
-            && Bot.Info.PersonalitySettings.General.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH
-        )
+        if (_searchTarget.IsSniper && Bot.Info.PersonalitySettings.General.ENEMYSNIPER_ALWAYS_SPRINT_SEARCH)
         {
             _sprintEnabled = true;
             return;
@@ -213,10 +216,7 @@ internal class SearchAction(BotOwner bot) : BotAction(bot, "Search"), IBotAction
         if (_sprintTimer < Time.time && chance > 0)
         {
             float myPower = Bot.Info.Profile.PowerLevel;
-            if (
-                _searchTarget?.EnemyPlayer != null
-                && _searchTarget.EnemyPlayer.AIData.PowerOfEquipment < myPower * 0.5f
-            )
+            if (_searchTarget?.EnemyPlayer != null && _searchTarget.EnemyPlayer.AIData.PowerOfEquipment < myPower * 0.5f)
             {
                 chance = 100f;
             }

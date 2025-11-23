@@ -76,12 +76,7 @@ public class SAINMemoryClass : BotComponentClassBase
 
     private void resetUnderFire()
     {
-        if (
-            BotOwner.Memory.IsUnderFire
-            && (
-                LastUnderFireSource == null || LastUnderFireSource.HealthController.IsAlive == false
-            )
-        )
+        if (BotOwner.Memory.IsUnderFire && (LastUnderFireSource == null || LastUnderFireSource.HealthController.IsAlive == false))
         {
             //Reset the UnderFireTime
             BotOwner.Memory.Float_4 = Time.time;

@@ -1,10 +1,10 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using EFT.Console.Core;
 using EFT.UI;
 using SAIN.Editor.Util;
 using SAIN.Plugin;
 using SAIN.Preset;
-using System;
 using UnityEngine;
 using static SAIN.Editor.RectLayout;
 using static SAIN.Editor.SAINLayout;
@@ -25,7 +25,10 @@ public static class SAINEditor
         CursorSettings.InitCursor();
     }
 
-    public static bool AdvancedBotConfigs => PresetHandler.EditorDefaults.AdvancedBotConfigs;
+    public static bool AdvancedBotConfigs
+    {
+        get { return PresetHandler.EditorDefaults.AdvancedBotConfigs; }
+    }
 
     [ConsoleCommand("Toggle SAIN GUI Editor")]
     private static void ToggleGUI()
@@ -76,7 +79,10 @@ public static class SAINEditor
 
     public static void LateUpdate()
     {
-        if (DisplayingWindow) CursorSettings.SetUnlockCursor(0, true);
+        if (DisplayingWindow)
+        {
+            CursorSettings.SetUnlockCursor(0, true);
+        }
     }
 
     public static void OnGUI()
@@ -124,13 +130,20 @@ public static class SAINEditor
     private static void CreateDragBar()
     {
         GUI.DrawTexture(DragRect, DragBackgroundTexture, ScaleMode.StretchToFill, true, 0);
-        GUI.Box(DragRect, $"SAIN {AssemblyInfoClass.SAINVersion} GUI Editor | Preset: {SAINPlugin.LoadedPreset.Info.Name}", GetStyle(Style.dragBar));
+        GUI.Box(
+            DragRect,
+            $"SAIN {AssemblyInfoClass.SAINVersion} GUI Editor | Preset: {SAINPlugin.LoadedPreset.Info.Name}",
+            GetStyle(Style.dragBar)
+        );
         GUI.DragWindow(DragRect);
     }
 
     public static string ExceptionString = string.Empty;
 
-    private static readonly GUIContent SaveContent = new("Save All Changes", $"Export All Changes to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}");
+    private static readonly GUIContent SaveContent = new(
+        "Save All Changes",
+        $"Export All Changes to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}"
+    );
 
     private static void CreateTopBarOptions()
     {
@@ -193,11 +206,14 @@ public static class SAINEditor
 
     public static bool DisplayingWindow
     {
-        get => CursorSettings.DisplayingWindow;
+        get { return CursorSettings.DisplayingWindow; }
         set { CursorSettings.DisplayingWindow = value; }
     }
 
     public static Rect OpenTabRect = new(0, 0, MainWindow.width, 1000f);
 
-    private static Texture2D DragBackgroundTexture => TexturesClass.GetTexture(EGraynessLevel.Mid);
+    private static Texture2D DragBackgroundTexture
+    {
+        get { return TexturesClass.GetTexture(EGraynessLevel.Mid); }
+    }
 }

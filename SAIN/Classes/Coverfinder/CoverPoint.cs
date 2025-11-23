@@ -40,7 +40,10 @@ public class CoverPointClass
     public bool IsInUse { get; set; }
     public Vector3 ProtectionDirection { get; private set; }
     public float TimeLastUpdated { get; private set; }
-    public float TimeSinceUpdated => Time.time - TimeLastUpdated;
+    public float TimeSinceUpdated
+    {
+        get { return Time.time - TimeLastUpdated; }
+    }
 
     public Vector3 CoverPosition
     {
@@ -106,7 +109,9 @@ public class CoverPointBotDataClass
             if (hits.Spotted)
             {
                 if (Time.time - hits.TimeSpotted > SpottedCoverPoint.SPOTTED_PERIOD)
+                {
                     ResetGetHit();
+                }
 
                 return hits.Spotted;
             }
@@ -115,7 +120,9 @@ public class CoverPointBotDataClass
             hits.Spotted = CheckSpotted();
 
             if (hits.Spotted)
+            {
                 hits.TimeSpotted = Time.time;
+            }
 
             return hits.Spotted;
         }
@@ -153,9 +160,21 @@ public class CoverPointBotDataClass
 
     private CoverStatus _pathLengthStatus;
 
-    public NavMeshPath PathToPoint => PathData.Path;
-    public float CoverHeight => CoverPoint.Height;
-    public Collider Collider => CoverPoint.Collider;
+    public NavMeshPath PathToPoint
+    {
+        get { return PathData.Path; }
+    }
+
+    public float CoverHeight
+    {
+        get { return CoverPoint.Height; }
+    }
+
+    public Collider Collider
+    {
+        get { return CoverPoint.Collider; }
+    }
+
     public float LastHitInCoverTime { get; private set; }
 
     public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart partHit, Enemy currentEnemy)
@@ -186,7 +205,9 @@ public class CoverPointBotDataClass
 
             // Did I get shot in the legs and can't see them?
             if (islegs && !thirdParty.IsVisible)
+            {
                 hits.Legs += hitCount;
+            }
 
             // Did the player who shot me shoot me from a direction that this cover doesn't protect from?
             //if (Vector3.Dot(thirdParty.EnemyDirectionNormal, CoverData.ProtectionDirection) < 0.25f)
@@ -198,7 +219,9 @@ public class CoverPointBotDataClass
         if (!currentEnemy.IsVisible)
         {
             if (islegs)
+            {
                 hits.Legs += hitCount;
+            }
 
             hits.CantSee += hitCount;
         }
@@ -223,13 +246,19 @@ public class CoverPointBotDataClass
     private static CoverStatus CheckStatus(float distance)
     {
         if (distance <= DIST_COVER_INCOVER)
+        {
             return CoverStatus.InCover;
+        }
 
         if (distance <= DIST_COVER_CLOSE)
+        {
             return CoverStatus.CloseToCover;
+        }
 
         if (distance <= DIST_COVER_MID)
+        {
             return CoverStatus.MidRangeToCover;
+        }
 
         return CoverStatus.FarFromCover;
     }
@@ -239,22 +268,34 @@ public class CoverPointBotDataClass
         var hits = _hitsInCover;
         int total = hits.Total;
         if (total == 0)
+        {
             return false;
+        }
 
         if (total >= SPOTTED_HITINCOVER_COUNT_TOTAL)
+        {
             return true;
+        }
 
         if (hits.CantSee >= SPOTTED_HITINCOVER_COUNT_CANTSEE)
+        {
             return true;
+        }
 
         if (hits.Unknown >= SPOTTED_HITINCOVER_COUNT_UNKNOWN)
+        {
             return true;
+        }
 
         if (hits.ThirdParty >= SPOTTED_HITINCOVER_COUNT_THIRDPARTY)
+        {
             return true;
+        }
 
         if (hits.Legs >= SPOTTED_HITINCOVER_COUNT_LEGS)
+        {
             return true;
+        }
 
         return false;
     }
@@ -323,7 +364,10 @@ public class CoverPoint
         }
     }
 
-    public DirectionData DirectionData => CoverData.DirectionData;
+    public DirectionData DirectionData
+    {
+        get { return CoverData.DirectionData; }
+    }
 
     public float DistanceToBot { get; set; }
 
@@ -346,7 +390,9 @@ public class CoverPoint
             if (hits.Spotted)
             {
                 if (Time.time - hits.TimeSpotted > SpottedCoverPoint.SPOTTED_PERIOD)
+                {
                     ResetGetHit();
+                }
 
                 return hits.Spotted;
             }
@@ -355,7 +401,9 @@ public class CoverPoint
             hits.Spotted = checkSpotted();
 
             if (hits.Spotted)
+            {
                 hits.TimeSpotted = Time.time;
+            }
 
             return hits.Spotted;
         }
@@ -374,10 +422,7 @@ public class CoverPoint
     {
         _nextGetDistTime = Time.time + 0.25f;
         DistanceToBot = distance;
-        if (
-            CoverData.StraightLengthStatus == CoverStatus.InCover
-            && distance <= DIST_COVER_INCOVER_STAY
-        )
+        if (CoverData.StraightLengthStatus == CoverStatus.InCover && distance <= DIST_COVER_INCOVER_STAY)
         {
             CoverData.StraightLengthStatus = CoverStatus.InCover;
             return CoverStatus.InCover;
@@ -401,10 +446,7 @@ public class CoverPoint
         get
         {
             float pathLength = PathData.PathLength;
-            if (
-                CoverData.PathLengthStatus == CoverStatus.InCover
-                && pathLength <= DIST_COVER_INCOVER_STAY
-            )
+            if (CoverData.PathLengthStatus == CoverStatus.InCover && pathLength <= DIST_COVER_INCOVER_STAY)
             {
                 CoverData.PathLengthStatus = CoverStatus.InCover;
                 return CoverStatus.InCover;
@@ -414,11 +456,22 @@ public class CoverPoint
         }
     }
 
-    public NavMeshPath PathToPoint => PathData.Path;
-    public float CoverHeight => HardData.Height;
+    public NavMeshPath PathToPoint
+    {
+        get { return PathData.Path; }
+    }
+
+    public float CoverHeight
+    {
+        get { return HardData.Height; }
+    }
+
     public Collider Collider { get; }
     public float LastHitInCoverTime { get; private set; }
-    public bool IsCurrent => Bot.Cover.CoverInUse == this;
+    public bool IsCurrent
+    {
+        get { return Bot.Cover.CoverInUse == this; }
+    }
 
     public bool ShallUpdate(string targetProfileId)
     {
@@ -440,13 +493,15 @@ public class CoverPoint
     }
 
     private string _lastCheckedProfileId;
-    public int RoundedPathLength => PathData.RoundedPathLength;
-    public bool BotInThisCover =>
-        IsCurrent
-        && (
-            StraightDistanceStatus == CoverStatus.InCover
-            || PathDistanceStatus == CoverStatus.InCover
-        );
+    public int RoundedPathLength
+    {
+        get { return PathData.RoundedPathLength; }
+    }
+
+    public bool BotInThisCover
+    {
+        get { return IsCurrent && (StraightDistanceStatus == CoverStatus.InCover || PathDistanceStatus == CoverStatus.InCover); }
+    }
 
     public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart partHit, Enemy currentEnemy)
     {
@@ -476,11 +531,15 @@ public class CoverPoint
 
             // Did I get shot in the legs and can't see them?
             if (islegs && thirdParty.IsVisible == false)
+            {
                 hits.Legs += hitCount;
+            }
 
             // Did the player who shot me shoot me from a direction that this cover doesn't protect from?
             if (Vector3.Dot(thirdParty.EnemyDirectionNormal, CoverData.ProtectionDirection) < 0.25f)
+            {
                 hits.ThirdParty += hitCount;
+            }
 
             return;
         }
@@ -488,7 +547,9 @@ public class CoverPoint
         if (!currentEnemy.IsVisible)
         {
             if (islegs)
+            {
                 hits.Legs += hitCount;
+            }
 
             hits.CantSee += hitCount;
         }
@@ -533,13 +594,19 @@ public class CoverPoint
     private CoverStatus checkStatus(float distance)
     {
         if (distance <= DIST_COVER_INCOVER)
+        {
             return CoverStatus.InCover;
+        }
 
         if (distance <= DIST_COVER_CLOSE)
+        {
             return CoverStatus.CloseToCover;
+        }
 
         if (distance <= DIST_COVER_MID)
+        {
             return CoverStatus.MidRangeToCover;
+        }
 
         return CoverStatus.FarFromCover;
     }
@@ -549,22 +616,34 @@ public class CoverPoint
         var hits = _hitsInCover;
         int total = hits.Total;
         if (total == 0)
+        {
             return false;
+        }
 
         if (total >= SPOTTED_HITINCOVER_COUNT_TOTAL)
+        {
             return true;
+        }
 
         if (hits.CantSee >= SPOTTED_HITINCOVER_COUNT_CANTSEE)
+        {
             return true;
+        }
 
         if (hits.Unknown >= SPOTTED_HITINCOVER_COUNT_UNKNOWN)
+        {
             return true;
+        }
 
         if (hits.ThirdParty >= SPOTTED_HITINCOVER_COUNT_THIRDPARTY)
+        {
             return true;
+        }
 
         if (hits.Legs >= SPOTTED_HITINCOVER_COUNT_LEGS)
+        {
             return true;
+        }
 
         return false;
     }

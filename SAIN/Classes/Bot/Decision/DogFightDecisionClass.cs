@@ -6,7 +6,10 @@ namespace SAIN.SAINComponent.Classes.Decision;
 
 public class DogFightDecisionClass : BotBase
 {
-    public bool DogFightActive => _lastDogFightTarget != null;
+    public bool DogFightActive
+    {
+        get { return _lastDogFightTarget != null; }
+    }
 
     public DogFightDecisionClass(BotComponent bot)
         : base(bot)
@@ -60,7 +63,10 @@ public class DogFightDecisionClass : BotBase
         }
 
         if (!KnownEnemies.Contains(_lastDogFightTarget))
+        {
             _lastDogFightTarget = null;
+        }
+
         if (_lastDogFightTarget != null)
         {
             if (ShallDogfightEnemy(_lastDogFightTarget))
@@ -97,14 +103,10 @@ public class DogFightDecisionClass : BotBase
     {
         return enemy.EnemyKnown
             && enemy.LastKnownPosition != null
-            && enemy.Path.PathLength
-                <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START
+            && enemy.Path.PathLength <= Bot.Info.PersonalitySettings.General.DOGFIGHT_PATH_DIST_START
             && (
-                (
-                    enemy.Seen
-                    && enemy.TimeSinceSeen
-                        < Bot.Info.PersonalitySettings.General.DOGFIGHT_TIMESINCESEEN_START
-                ) || enemy.Status.ShotMeRecently
+                (enemy.Seen && enemy.TimeSinceSeen < Bot.Info.PersonalitySettings.General.DOGFIGHT_TIMESINCESEEN_START)
+                || enemy.Status.ShotMeRecently
             );
     }
 

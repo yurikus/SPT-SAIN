@@ -12,9 +12,16 @@ internal class FollowSearchParty(BotOwner bot) : BotAction(bot, nameof(FollowSea
     {
         if (_enemy == null || !Enemy.IsEnemyActive(_enemy) || !_enemy.CheckValid())
         {
-            if (_enemy != null) Bot.Search.ToggleSearch(false, _enemy);
+            if (_enemy != null)
+            {
+                Bot.Search.ToggleSearch(false, _enemy);
+            }
+
             _enemy = Bot.GoalEnemy;
-            if (_enemy != null) Bot.Search.ToggleSearch(true, _enemy);
+            if (_enemy != null)
+            {
+                Bot.Search.ToggleSearch(true, _enemy);
+            }
         }
 
         if (_nextUpdatePosTime < Time.time)
@@ -64,8 +71,10 @@ internal class FollowSearchParty(BotOwner bot) : BotAction(bot, nameof(FollowSea
             return;
         }
 
-        if (moveDistance > 20f * 20f &&
-            Bot.Mover.RunToPoint(movePosition.Value, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.Middle, true))
+        if (
+            moveDistance > 20f * 20f
+            && Bot.Mover.RunToPoint(movePosition.Value, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.Middle, true)
+        )
         {
             nextUpdateTime = 2f;
             return;

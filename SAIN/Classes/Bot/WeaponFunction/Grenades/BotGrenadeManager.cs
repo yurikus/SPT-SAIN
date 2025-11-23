@@ -6,12 +6,16 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction;
 public class BotGrenadeManager : BotComponentClassBase
 {
     public ThrowWeapItemClass MyGrenade { get; set; }
-    public Vector3? GrenadeDangerPoint => GrenadeReactionClass.GrenadeDangerPoint;
+    public Vector3? GrenadeDangerPoint
+    {
+        get { return GrenadeReactionClass.GrenadeDangerPoint; }
+    }
 
     public GrenadeThrowDecider GrenadeThrowDecider { get; }
     public GrenadeReactionClass GrenadeReactionClass { get; }
 
-    public BotGrenadeManager(BotComponent sain) : base(sain)
+    public BotGrenadeManager(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         GrenadeThrowDecider = new GrenadeThrowDecider(this);

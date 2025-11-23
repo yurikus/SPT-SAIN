@@ -90,15 +90,20 @@ public class BotBackpackDropClass : BotComponentClassBase
 
     public EBackpackStatus BackpackStatus { get; private set; }
 
-    private Item CurrentBackpack =>
-        Bot.PlayerComponent.Equipment.GearInfo.GetItem(EquipmentSlot.Backpack);
+    private Item CurrentBackpack
+    {
+        get { return Bot.PlayerComponent.Equipment.GearInfo.GetItem(EquipmentSlot.Backpack); }
+    }
 
     public bool RetreiveBackpack()
     {
         return false;
     }
 
-    public bool BackpackDropped => BackpackDropPosition != null;
+    public bool BackpackDropped
+    {
+        get { return BackpackDropPosition != null; }
+    }
 
     public Item DroppedBackpack { get; private set; }
 

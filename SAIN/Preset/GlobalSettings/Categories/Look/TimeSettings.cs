@@ -6,23 +6,29 @@ public class TimeSettings : SAINSettingsBase<TimeSettings>, ISAINSettings
 {
     [Name("Vision Distance Multiplier")]
     [Category("Night-time Vision Effects")]
-    [Description("By how much to lower visible distance at nighttime. " +
-        "at the default value of 0.2, bots will see 0.2 times as far, or 20% of " +
-        "their base vision distance at night-time.")]
+    [Description(
+        "By how much to lower visible distance at nighttime. "
+            + "at the default value of 0.2, bots will see 0.2 times as far, or 20% of "
+            + "their base vision distance at night-time."
+    )]
     [MinMax(0.01f, 1f, 1000f)]
     public float NightTimeVisionModifier = 0.2f;
 
     [Name("Snow Vision Distance Multiplier")]
     [Category("Night-time Vision Effects")]
-    [Description("By how much to lower visible distance at nighttime in the snow. " +
-        "at the default value of 0.2, bots will see 0.2 times as far, or 20% of " +
-        "their base vision distance at night-time.")]
+    [Description(
+        "By how much to lower visible distance at nighttime in the snow. "
+            + "at the default value of 0.2, bots will see 0.2 times as far, or 20% of "
+            + "their base vision distance at night-time."
+    )]
     [MinMax(0.01f, 1f, 1000f)]
     public float NightTimeVisionModifierSnow = 0.35f;
 
     [Name("Vision Speed Max Multiplier")]
     [Category("Night-time Vision Effects")]
-    [Description("Bot Vision Speed will be reduced up to X times longer to spot enemies, depending on visibility and time of day. Higher = Worse Vision.")]
+    [Description(
+        "Bot Vision Speed will be reduced up to X times longer to spot enemies, depending on visibility and time of day. Higher = Worse Vision."
+    )]
     [MinMax(1f, 10f, 1000f)]
     public float TIME_GAIN_SIGHT_SCALE_MAX = 3f;
 
@@ -42,7 +48,9 @@ public class TimeSettings : SAINSettingsBase<TimeSettings>, ISAINSettings
 
     [Name("Minimum Fog Effect")]
     [Category("Weather Vision Effects - Fog")]
-    [Description("Fog will scale between X and 1 depending on fog intensity. Reducing vision distance by X amount. 0.4 = up to 40% vision distance from fog alone.")]
+    [Description(
+        "Fog will scale between X and 1 depending on fog intensity. Reducing vision distance by X amount. 0.4 = up to 40% vision distance from fog alone."
+    )]
     [MinMax(0.01f, 1f, 1000f)]
     [Advanced]
     public float VISION_WEATHER_FOG_MAXCOEF = 0.4f;
@@ -119,7 +127,9 @@ public class TimeSettings : SAINSettingsBase<TimeSettings>, ISAINSettings
 
     [Name("Cloudy Threshold")]
     [Category("Weather Vision Effects - Clouds")]
-    [Description("Cloudiness scales 0 to 1. If cloudiness is below X value, it is considered cloudy, if above, it is considered overcast or heavily clouded.")]
+    [Description(
+        "Cloudiness scales 0 to 1. If cloudiness is below X value, it is considered cloudy, if above, it is considered overcast or heavily clouded."
+    )]
     [MinMax(0.01f, 1f, 1000f)]
     [Advanced]
     public float VISION_WEATHER_CLOUDY_THRESH = 0.7f;

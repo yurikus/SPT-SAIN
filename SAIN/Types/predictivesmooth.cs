@@ -20,12 +20,7 @@ public struct BotTurnData(Vector3 lookDir)
     );
 }
 
-public struct SmoothTurnConfig(
-    float smoothingFactor,
-    float turnSpeedCap,
-    float convergenceBoost,
-    float minPitch
-)
+public struct SmoothTurnConfig(float smoothingFactor, float turnSpeedCap, float convergenceBoost, float minPitch)
 {
     public float SmoothingFactor = smoothingFactor;
     public float MaxAngularVelocity = turnSpeedCap;
@@ -41,7 +36,9 @@ public static class PredictiveLookSmoothing
     public static BotTurnData UpdateSmoothedDirection(BotTurnData turnData, float deltaTime)
     {
         if (deltaTime <= 0f)
+        {
             return turnData;
+        }
 
         // Calculate target angular velocity
         turnData = UpdateTargetVelocity(turnData, deltaTime);
@@ -66,38 +63,29 @@ public static class PredictiveLookSmoothing
     private static BotTurnData UpdateTargetVelocity(BotTurnData turnData, float deltaTime)
     {
         if (turnData.NewTargetLookDirection == Vector3.zero)
+        {
             turnData.NewTargetLookDirection = Vector3.forward; // Default to forward if no direction is set
+        }
 
         turnData.NewTargetLookDirection.Normalize();
 
         // Calculate angular velocity using cross product and dot product
-        var cross = Vector3.Cross(
-            turnData.LastTargetLookDirection,
-            turnData.NewTargetLookDirection
-        );
+        var cross = Vector3.Cross(turnData.LastTargetLookDirection, turnData.NewTargetLookDirection);
         var dot = Vector3.Dot(turnData.LastTargetLookDirection, turnData.NewTargetLookDirection);
 
         // Calculate angular velocity in degrees per second
         var angularChange = Mathf.Atan2(cross.magnitude, dot) * Mathf.Rad2Deg;
-        var angularVelocityVector =
-            cross.magnitude > 0.001f
-                ? cross.normalized * (angularChange / deltaTime)
-                : Vector3.zero;
+        var angularVelocityVector = cross.magnitude > 0.001f ? cross.normalized * (angularChange / deltaTime) : Vector3.zero;
 
         // Smooth the velocity estimate to reduce noise
         var velocitySmoothingFactor = Mathf.Clamp01(deltaTime * 10f);
-        turnData.TargetVelocity = Vector3.Lerp(
-            turnData.TargetVelocity,
-            angularVelocityVector,
-            velocitySmoothingFactor
-        );
+        turnData.TargetVelocity = Vector3.Lerp(turnData.TargetVelocity, angularVelocityVector, velocitySmoothingFactor);
         turnData.TargetVelocityMagnitude = turnData.TargetVelocity.magnitude;
 
         // Clamp to maximum angular velocity
         if (turnData.TargetVelocityMagnitude > turnData.Config.MaxAngularVelocity)
         {
-            turnData.TargetVelocity =
-                turnData.TargetVelocity.normalized * turnData.Config.MaxAngularVelocity;
+            turnData.TargetVelocity = turnData.TargetVelocity.normalized * turnData.Config.MaxAngularVelocity;
         }
 
         turnData.LastTargetLookDirection = turnData.NewTargetLookDirection;
@@ -135,12 +123,7 @@ public static class PredictiveLookSmoothing
         //return Mathf.Clamp01(adaptiveFactor * (deltaTime * 60f)); // Normalize for 60 FPS baseline
     }
 
-    private static Vector3 SmoothTowardsTarget(
-        Vector3 current,
-        Vector3 target,
-        float smoothingFactor,
-        SmoothTurnConfig config
-    )
+    private static Vector3 SmoothTowardsTarget(Vector3 current, Vector3 target, float smoothingFactor, SmoothTurnConfig config)
     {
         // Use Quaternion.Slerp for smooth angular interpolation
         var currentRotation = Quaternion.LookRotation(current, Vector3.up);
@@ -155,7 +138,9 @@ public static class PredictiveLookSmoothing
         // Convert to -180 to 180 range for easier clamping
         var pitch = eulerAngles.x;
         if (pitch > 180f)
+        {
             pitch -= 360f;
+        }
 
         // Clamp pitch within limits
         pitch = Mathf.Max(pitch, config.MinPitch);

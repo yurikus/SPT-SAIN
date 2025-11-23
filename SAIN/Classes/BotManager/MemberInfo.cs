@@ -7,6 +7,7 @@ namespace SAIN.BotController.Classes;
 public class MemberInfo
 {
     private readonly Squad _squad;
+
     public MemberInfo(BotComponent sain, Squad squad)
     {
         _squad = squad;
@@ -58,7 +59,10 @@ public class MemberInfo
     public readonly string ProfileId;
     public readonly string Nickname;
 
-    public bool HasEnemy => Bot?.HasEnemy == true;
+    public bool HasEnemy
+    {
+        get { return Bot?.HasEnemy == true; }
+    }
 
     public ETagStatus HealthStatus;
 

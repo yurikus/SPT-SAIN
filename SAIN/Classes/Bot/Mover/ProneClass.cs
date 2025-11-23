@@ -23,10 +23,7 @@ public class ProneClass : BotBase
 
     public bool ShallProne(bool withShoot, float mindist = 25f)
     {
-        if (
-            !Bot.Info.FileSettings.Move.PRONE_TOGGLE
-            || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE
-        )
+        if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
         {
             return false;
         }
@@ -55,10 +52,7 @@ public class ProneClass : BotBase
         {
             return false;
         }
-        if (
-            !Bot.Info.FileSettings.Move.PRONE_TOGGLE
-            || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE
-        )
+        if (!Bot.Info.FileSettings.Move.PRONE_TOGGLE || !GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
         {
             return false;
         }
@@ -122,11 +116,6 @@ public class ProneClass : BotBase
         float num = Vector3.Angle(from, vector2);
         float lay_DOWN_ANG_SHOOT = HelpersGClass.LAY_DOWN_ANG_SHOOT;
         return num <= Mathf.Abs(lay_DOWN_ANG_SHOOT)
-            && Vector.CanShootToTarget(
-                new ShootPointClass(target, 1f),
-                vector,
-                BotOwner.LookSensor.Mask,
-                true
-            );
+            && Vector.CanShootToTarget(new ShootPointClass(target, 1f), vector, BotOwner.LookSensor.Mask, true);
     }
 }

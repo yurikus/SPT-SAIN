@@ -1,11 +1,11 @@
-﻿using EFT;
+﻿using System.Reflection;
+using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
 using SPT.Reflection.Patching;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.Patches.Generic.Fixes;
@@ -20,11 +20,6 @@ internal class RunToEnemyUpdatePatch : ModulePatch
     [PatchPrefix]
     public static bool Patch(BotMeleeWeaponData __instance)
     {
-        if (__instance.BotOwner_0.AIData.UseZombieSimpleAnimator)
-        {
-            return true;
-        }
-
         if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot) && bot.SAINLayersActive)
         {
             Enemy enemy = bot.GoalEnemy;
@@ -77,11 +72,18 @@ internal class RunToEnemyUpdatePatch : ModulePatch
                     float num;
                     if (__instance.UseZigZag)
                     {
-                        num = ((goalEnemy.Distance > __instance.FAR_DIST) ? __instance.FarRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.MidRecalcZZ : __instance.CloseRecalcZZ));
+                        num = (
+                            (goalEnemy.Distance > __instance.FAR_DIST)
+                                ? __instance.FarRecalc
+                                : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.MidRecalcZZ : __instance.CloseRecalcZZ)
+                        );
                     }
                     else
                     {
-                        num = (goalEnemy.Distance > __instance.FAR_DIST) ? __instance.FarRecalc : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.MidRecalc : __instance.CloseRecalc);
+                        num =
+                            (goalEnemy.Distance > __instance.FAR_DIST)
+                                ? __instance.FarRecalc
+                                : ((goalEnemy.Distance > __instance.MID_DIST) ? __instance.MidRecalc : __instance.CloseRecalc);
                     }
                     __instance.RunPathCheck = Time.time + num;
                     if (!__instance.CanRunToEnemyToHit(goalEnemy, out Vector3[] way))
@@ -132,7 +134,9 @@ internal class EnableVaultPatch : ModulePatch
     public static void Patch(Player __instance, ref bool aiControlled)
     {
         if (__instance.UsedSimplifiedSkeleton)
+        {
             return;
+        }
 
         aiControlled = false;
     }
@@ -149,12 +153,23 @@ internal class DisableGrenadesPatch : ModulePatch
     public static bool Patch(BotGrenadeToPortal __instance)
     {
         var settings = GlobalSettingsClass.Instance.General;
-        if (!settings.BotsUseGrenades) return false;
+        if (!settings.BotsUseGrenades)
+        {
+            return false;
+        }
+
         if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot))
         {
             var goalEnemy = bot.EnemyController.GoalEnemy;
-            if (goalEnemy == null) return false;
-            if (!settings.BotVsBotGrenade && goalEnemy.IsAI) return false;
+            if (goalEnemy == null)
+            {
+                return false;
+            }
+
+            if (!settings.BotVsBotGrenade && goalEnemy.IsAI)
+            {
+                return false;
+            }
         }
         return true;
     }

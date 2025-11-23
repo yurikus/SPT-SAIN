@@ -1,4 +1,5 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
 using SAIN.Models.Enums;
@@ -6,7 +7,6 @@ using SAIN.Preset.GlobalSettings;
 using SAIN.Preset.GlobalSettings.Categories;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Info;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction;
@@ -20,10 +20,18 @@ public class SAINBotSuppressClass : BotComponentClassBase
     public ESuppressionState CurrentState { get; private set; }
     public ESuppressionState LastState { get; private set; }
     public float SuppressionNumber { get; private set; }
-    public bool IsSuppressed => CurrentState >= ESuppressionState.Medium;
-    public bool IsHeavySuppressed => CurrentState >= ESuppressionState.Heavy;
+    public bool IsSuppressed
+    {
+        get { return CurrentState >= ESuppressionState.Medium; }
+    }
 
-    public SAINBotSuppressClass(BotComponent sain) : base(sain)
+    public bool IsHeavySuppressed
+    {
+        get { return CurrentState >= ESuppressionState.Heavy; }
+    }
+
+    public SAINBotSuppressClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -90,28 +98,54 @@ public class SAINBotSuppressClass : BotComponentClassBase
 
     private Enemy EnemyBeingSuppressed;
 
-    public bool TrySuppressAnyEnemy(Enemy priorityEnemy, EnemyList knownEnemies, float minimumAmmoRatio = 0.33f, int minimumBullets = 2, bool withBehaviorChecks = true)
+    public bool TrySuppressAnyEnemy(
+        Enemy priorityEnemy,
+        EnemyList knownEnemies,
+        float minimumAmmoRatio = 0.33f,
+        int minimumBullets = 2,
+        bool withBehaviorChecks = true
+    )
     {
         if (!GlobalSettingsClass.Instance.Mind.TARGET_SUPPRESS_TOGGLE)
         {
-            if (SuppressingTarget) ResetSuppressing();
+            if (SuppressingTarget)
+            {
+                ResetSuppressing();
+            }
+
             return false;
         }
         if (!Bot.Info.PersonalitySettings.General.TARGET_SUPPRESS_TOGGLE)
         {
-            if (SuppressingTarget) ResetSuppressing();
+            if (SuppressingTarget)
+            {
+                ResetSuppressing();
+            }
+
             return false;
         }
         if (Bot.Decision.CurrentSelfDecision == ESelfActionType.Reload)
         {
-            if (SuppressingTarget) ResetSuppressing();
+            if (SuppressingTarget)
+            {
+                ResetSuppressing();
+            }
+
             return false;
         }
-        if (Bot.Mover.Running &&
-            (Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running ||
-            Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning))
+        if (
+            Bot.Mover.Running
+            && (
+                Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Running
+                || Bot.Mover.ActivePath.CurrentSprintStatus == Mover.EBotSprintStatus.Turning
+            )
+        )
         {
-            if (SuppressingTarget) ResetSuppressing();
+            if (SuppressingTarget)
+            {
+                ResetSuppressing();
+            }
+
             return false;
         }
 
@@ -196,9 +230,20 @@ public class SAINBotSuppressClass : BotComponentClassBase
         return (float)currentAmmoCount / weaponManager.Reload.MaxBulletCount;
     }
 
-    public float TimeSinceSeenToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceSeenToSuppress;
-    public float TimeSinceShotAtToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceShotToSuppress;
-    public float TimeSinceShotToSuppress => Bot.Info.PersonalitySettings.General.TimeSinceShotToSuppress;
+    public float TimeSinceSeenToSuppress
+    {
+        get { return Bot.Info.PersonalitySettings.General.TimeSinceSeenToSuppress; }
+    }
+
+    public float TimeSinceShotAtToSuppress
+    {
+        get { return Bot.Info.PersonalitySettings.General.TimeSinceShotToSuppress; }
+    }
+
+    public float TimeSinceShotToSuppress
+    {
+        get { return Bot.Info.PersonalitySettings.General.TimeSinceShotToSuppress; }
+    }
 
     public bool TrySuppressEnemy(Enemy Enemy, bool withBehaviorChecks = true)
     {
@@ -237,8 +282,7 @@ public class SAINBotSuppressClass : BotComponentClassBase
 
     public bool SuppressPosition(Vector3 position, Enemy Enemy)
     {
-        if (Enemy == null ||
-            !Bot.ManualShoot.TryShoot(Enemy, position, true, EShootReason.Suppress))
+        if (Enemy == null || !Bot.ManualShoot.TryShoot(Enemy, position, true, EShootReason.Suppress))
         {
             ResetSuppressing();
             return false;
@@ -333,10 +377,9 @@ public class SAINBotSuppressClass : BotComponentClassBase
             return Mathf.Clamp01(mindSettings.SuppressionResistance);
         }
 
-        return Mathf.Lerp(
-            Mathf.Clamp01(mindSettings.SuppressionResistance),
-            Mathf.Clamp01(persSettings.SuppressionResistance),
-            0.5f).Round100();
+        return Mathf
+            .Lerp(Mathf.Clamp01(mindSettings.SuppressionResistance), Mathf.Clamp01(persSettings.SuppressionResistance), 0.5f)
+            .Round100();
     }
 
     private float getSuppNum(Enemy enemy)
@@ -405,8 +448,7 @@ public class SAINBotSuppressClass : BotComponentClassBase
 
     private void decaySuppression()
     {
-        if (SuppressionNumber > 0 &&
-            _decayTime < Time.time)
+        if (SuppressionNumber > 0 && _decayTime < Time.time)
         {
             _decayTime = Time.time + _settings.SUP_DECAY_FREQ;
             clampAndUpdateSuppression(-_settings.SUP_DECAY_AMOUNT);
@@ -456,7 +498,8 @@ public class SAINBotSuppressClass : BotComponentClassBase
             (config.ScatteringCoef * multiplier).Round100(),
             (config.ScatteringCoef * multiplier).Round100(),
             config.VisibleDistCoef,
-            config.HearingDistCoef);
+            config.HearingDistCoef
+        );
     }
 
     private static float calcResistance(float value, float resistance)
@@ -478,7 +521,11 @@ public class SAINBotSuppressClass : BotComponentClassBase
         }
     }
 
-    private MindSettings _settings => GlobalSettings.Mind;
+    private MindSettings _settings
+    {
+        get { return GlobalSettings.Mind; }
+    }
+
     private float _decayTime;
     private float _tickTime;
     private TemporaryStatModifiers _temporaryStatModifiers;

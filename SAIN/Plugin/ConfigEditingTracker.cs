@@ -1,7 +1,7 @@
-﻿using SAIN.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SAIN.Attributes;
 
 namespace SAIN.Plugin;
 
@@ -87,7 +87,10 @@ internal static class ConfigEditingTracker
     private static string _unsavedValues = string.Empty;
     private static readonly StringBuilder _stringBuilder = new();
 
-    public static bool UnsavedChanges => EditedConfigValues.Count > 0;
+    public static bool UnsavedChanges
+    {
+        get { return EditedConfigValues.Count > 0; }
+    }
 
     public static readonly Dictionary<string, object> EditedConfigValues = new();
 }

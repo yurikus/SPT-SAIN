@@ -12,11 +12,7 @@ public struct PlayerDirectionData
 
     public DirectionData MainData;
 
-    public static PlayerDirectionData GetUpdatedDirectionData(
-        PlayerDirectionData data,
-        PlayerComponent Owner,
-        PlayerComponent OtherPlayer
-    )
+    public static PlayerDirectionData GetUpdatedDirectionData(PlayerDirectionData data, PlayerComponent Owner, PlayerComponent OtherPlayer)
     {
         var Transform = Owner.Transform;
         data.OwnerPosition = Transform.Position;
@@ -80,11 +76,7 @@ public struct DirectionData
     public void UpdateDotProduct(Vector3 DirectionNormal, Vector3 LookDirection)
     {
         HorizontalAngle = EnemyAnglesClass.CalcHorizontalAngle(DirectionNormal, LookDirection);
-        VerticalAngle = EnemyAnglesClass.CalcVerticalAngle(
-            DirectionNormal,
-            LookDirection,
-            out float yDiff
-        );
+        VerticalAngle = EnemyAnglesClass.CalcVerticalAngle(DirectionNormal, LookDirection, out float yDiff);
         YDifference = yDiff;
         Dot = Vector3.Dot(LookDirection, DirectionNormal);
     }
@@ -121,27 +113,42 @@ public class PlayerDistanceData
     /// <summary>
     /// The Other Player's Position
     /// </summary>
-    public Vector3 Position => Data.MainData.Position;
+    public Vector3 Position
+    {
+        get { return Data.MainData.Position; }
+    }
 
     /// <summary>
     /// Direction from the owner's position to the other player's position.
     /// </summary>
-    public Vector3 Direction => Data.MainData.Direction;
+    public Vector3 Direction
+    {
+        get { return Data.MainData.Direction; }
+    }
 
     /// <summary>
     /// Normalized Direction from the owner's position to the other player's position.
     /// </summary>
-    public Vector3 DirectionNormal => Data.MainData.DirectionNormalized;
+    public Vector3 DirectionNormal
+    {
+        get { return Data.MainData.DirectionNormalized; }
+    }
 
     /// <summary>
     /// Dot Product from the owner's look direction to the direction of this player.
     /// </summary>
-    public float DotProduct => Data.MainData.Dot;
+    public float DotProduct
+    {
+        get { return Data.MainData.Dot; }
+    }
 
     /// <summary>
     /// Distance, in Meters, from The Owner to the Other Player.
     /// </summary>
-    public float Distance => Data.MainData.Distance;
+    public float Distance
+    {
+        get { return Data.MainData.Distance; }
+    }
 
     /// <summary>
     /// Position, Direction, Dot, ect of each body part of the other player

@@ -11,6 +11,7 @@ public class SainBotCoverData()
     private const int PRELLOCATED_SIZE = 500;
     private readonly Collider[] _preAllocatedColliderArray = new Collider[PRELLOCATED_SIZE];
     private readonly HashSet<Collider> validCollidersHashSet = [];
+
     //private readonly HashSet<Collider> _preAllocColliderHashSet = [];
 
     /// <returns>Number of valid colliders found in query</returns>
@@ -18,7 +19,13 @@ public class SainBotCoverData()
     {
         ClearColliderArray(_preAllocatedColliderArray);
 
-        int hits = Physics.OverlapBoxNonAlloc(parameters.origin, parameters.halfExtents, _preAllocatedColliderArray, Quaternion.identity, parameters.mask);
+        int hits = Physics.OverlapBoxNonAlloc(
+            parameters.origin,
+            parameters.halfExtents,
+            _preAllocatedColliderArray,
+            Quaternion.identity,
+            parameters.mask
+        );
         int validColliderCount = Filter(hits, _preAllocatedColliderArray, parameters.minColliderSize, parameters.maxColliderSize);
 
         foreach (Collider collider in _preAllocatedColliderArray)
@@ -62,7 +69,9 @@ public class SainBotCoverData()
     public static void ClearCollidersOverDistance(List<SainBotColliderData> list, HashSet<Collider> hashSet, float maxDistance, int min)
     {
         if (list.Count <= min)
+        {
             return;
+        }
 
         float distSqr = maxDistance * maxDistance;
         for (int i = list.Count - 1; i >= 0; i--)
@@ -84,7 +93,9 @@ public class SainBotCoverData()
     private static void ClearColliderArray(Collider[] array)
     {
         for (int i = 0; i < array.Length; i++)
+        {
             array[i] = null;
+        }
     }
 
     private static int Filter(int hits, Collider[] array, Vector3 minSize, Vector3 maxSize)
@@ -94,7 +105,9 @@ public class SainBotCoverData()
         {
             Collider collider = array[i];
             if (collider == null)
+            {
                 continue;
+            }
 
             Vector3 boundsSize = collider.bounds.size;
             if (boundsSize.x > maxSize.x || boundsSize.y > maxSize.y || boundsSize.z > maxSize.z)
@@ -147,7 +160,7 @@ public class SainBotCoverData()
         "sign",
         "sign17_lod",
         "ograda1",
-        "ladder_metal"
+        "ladder_metal",
     ];
 
     public struct BotColliderQueryParams

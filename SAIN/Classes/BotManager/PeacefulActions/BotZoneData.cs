@@ -13,7 +13,6 @@ public class BotZoneData
         Name = botZone.NameZone;
     }
 
-
     public void AddBot(BotComponent bot)
     {
         bot.GlobalEvents.OnEnterPeace += botEnterPeace;

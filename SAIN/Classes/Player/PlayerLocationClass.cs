@@ -7,9 +7,8 @@ public class PlayerLocationClass : AIDataBase
     public float BunkerDepth { get; private set; }
     public bool InBunker { get; private set; }
 
-    public PlayerLocationClass(SAINAIData aiData) : base(aiData)
-    {
-    }
+    public PlayerLocationClass(SAINAIData aiData)
+        : base(aiData) { }
 
     public void UpdateEnvironment(IndoorTrigger trigger)
     {

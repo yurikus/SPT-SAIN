@@ -64,18 +64,7 @@ public class BotBrains
         EBrain.FollowerKolontaySecurity,
     ];
 
-    public static readonly EBrain[] Goons =
-    [
-        EBrain.Knight,
-        EBrain.BigPipe,
-        EBrain.BirdEye,
-    ];
+    public static readonly EBrain[] Goons = [EBrain.Knight, EBrain.BigPipe, EBrain.BirdEye];
 
-    public static readonly EBrain[] Special =
-    [
-        EBrain.BossTest,
-        EBrain.Obdolbs,
-        EBrain.Gifter,
-        EBrain.CursAssault,
-    ];
+    public static readonly EBrain[] Special = [EBrain.BossTest, EBrain.Obdolbs, EBrain.Gifter, EBrain.CursAssault];
 }

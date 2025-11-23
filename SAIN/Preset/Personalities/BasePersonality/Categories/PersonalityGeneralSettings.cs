@@ -3,9 +3,7 @@ using SAIN.Preset.GlobalSettings;
 
 namespace SAIN.Preset.Personalities;
 
-public class PersonalityGeneralSettings
-    : SAINSettingsBase<PersonalityGeneralSettings>,
-        ISAINSettings
+public class PersonalityGeneralSettings : SAINSettingsBase<PersonalityGeneralSettings>, ISAINSettings
 {
     [Name("Aggression Multiplier")]
     [Description("Linearly increases or decreases search time and hold ground time.")]
@@ -99,24 +97,18 @@ public class PersonalityGeneralSettings
     public float TimeSinceShotToSuppress = 12f;
 
     [Category("Enemy Sniper Reaction")]
-    [Description(
-        "If a bot thinks it is under fire from a sniper, they will always want to sprint to cover."
-    )]
+    [Description("If a bot thinks it is under fire from a sniper, they will always want to sprint to cover.")]
     [Name("Always Sprint")]
     public bool ENEMYSNIPER_ALWAYS_SPRINT_COVER = true;
 
     [Category("Enemy Sniper Reaction")]
-    [Description(
-        "If a bot thinks it is under fire from a sniper, they will always sprint while seeking that sniper."
-    )]
+    [Description("If a bot thinks it is under fire from a sniper, they will always sprint while seeking that sniper.")]
     [Name("Always Sprint")]
     public bool ENEMYSNIPER_ALWAYS_SPRINT_SEARCH = true;
 
     [Category("Enemy Sniper Reaction")]
     [Name("Distance Under Fire")]
-    [Description(
-        "If an enemy is further than this distance, in meters. They will be considered a sniper if shooting at a bot."
-    )]
+    [Description("If an enemy is further than this distance, in meters. They will be considered a sniper if shooting at a bot.")]
     [MinMax(30f, 250f, 1f)]
     public float ENEMYSNIPER_DISTANCE = 85f;
 

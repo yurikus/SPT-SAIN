@@ -1,8 +1,8 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using EFT;
 using EFT.HealthSystem;
 using SAIN.Components;
 using SAIN.Models.Enums;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
@@ -10,12 +10,17 @@ namespace SAIN.SAINComponent.Classes;
 public class SAINBotHitReaction : BotBase
 {
     public EHitReaction HitReaction { get; private set; }
-    public IHealthController HealthController => Player.HealthController;
+    public IHealthController HealthController
+    {
+        get { return Player.HealthController; }
+    }
+
     public BodyPartHitEffectClass BodyHitEffect { get; private set; }
 
     public AimHitEffectClass AimHitEffect { get; private set; }
 
-    public SAINBotHitReaction(BotComponent bot) : base(bot)
+    public SAINBotHitReaction(BotComponent bot)
+        : base(bot)
     {
         BodyHitEffect = new BodyPartHitEffectClass(bot);
         AimHitEffect = new AimHitEffectClass(bot);
@@ -34,7 +39,6 @@ public class SAINBotHitReaction : BotBase
         BodyParts.Add(part, new BodyPartStatus(part, this));
     }
 
-
     public override void ManualUpdate()
     {
         BodyHitEffect.ManualUpdate();
@@ -44,7 +48,10 @@ public class SAINBotHitReaction : BotBase
     public EInjurySeverity LeftArmInjury { get; private set; }
     public EInjurySeverity RightArmInjury { get; private set; }
 
-    public bool ArmsInjured => BodyHitEffect.LeftArmInjury != EInjurySeverity.None || BodyHitEffect.RightArmInjury != EInjurySeverity.None;
+    public bool ArmsInjured
+    {
+        get { return BodyHitEffect.LeftArmInjury != EInjurySeverity.None || BodyHitEffect.RightArmInjury != EInjurySeverity.None; }
+    }
 
     public override void Dispose()
     {

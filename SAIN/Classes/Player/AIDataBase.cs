@@ -10,6 +10,13 @@ public abstract class AIDataBase
     }
 
     protected readonly SAINAIData AIData;
-    protected GearInfo GearInfo => AIData.PlayerComponent.Equipment.GearInfo;
-    protected bool IsAI => AIData.IsAI;
+    protected GearInfo GearInfo
+    {
+        get { return AIData.PlayerComponent.Equipment.GearInfo; }
+    }
+
+    protected bool IsAI
+    {
+        get { return AIData.IsAI; }
+    }
 }

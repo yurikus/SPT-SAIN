@@ -38,10 +38,7 @@ public class RandomLookClass : BotSubClass<SAINSteeringClass>
         }
         isRandomLook = false;
 
-        if (
-            EFTMath.RandomBool()
-            && BaseClass.FindLastKnownTarget(Bot.GoalEnemy, out Vector3 EnemyPosition)
-        )
+        if (EFTMath.RandomBool() && BaseClass.FindLastKnownTarget(Bot.GoalEnemy, out Vector3 EnemyPosition))
         {
             return EnemyPosition;
         }
@@ -59,12 +56,7 @@ public class RandomLookClass : BotSubClass<SAINSteeringClass>
             }
             for (int i = 0; i < Mathf.Min(enemyCount, 4); i++)
             {
-                if (
-                    BaseClass.FindLastKnownTarget(
-                        KnownEnemies[Random.Range(0, enemyCount - 1)],
-                        out EnemyPosition
-                    )
-                )
+                if (BaseClass.FindLastKnownTarget(KnownEnemies[Random.Range(0, enemyCount - 1)], out EnemyPosition))
                 {
                     return EnemyPosition;
                 }

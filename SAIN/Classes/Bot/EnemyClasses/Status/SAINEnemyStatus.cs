@@ -22,16 +22,12 @@ public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyDa
             {
                 _nextCheckEnemyLookTime = currentTime + 0.25f;
                 EnemyLookAtMe =
-                    Vector3.Dot(
-                        (Bot.Position - EnemyTransform.WeaponRoot).normalized,
-                        EnemyTransform.LookDirection
-                    ) >= DOT_THRESHOLD_LOOK_AT_ME;
+                    Vector3.Dot((Bot.Position - EnemyTransform.WeaponRoot).normalized, EnemyTransform.LookDirection)
+                    >= DOT_THRESHOLD_LOOK_AT_ME;
                 PointingWeaponAtMe =
                     Enemy.IsShooter()
-                    && Vector3.Dot(
-                        (Bot.Position - EnemyTransform.WeaponData.FirePort).normalized,
-                        EnemyTransform.WeaponData.PointDirection
-                    ) < DOT_THRESHOLD_POINTWEAPON_AT_ME;
+                    && Vector3.Dot((Bot.Position - EnemyTransform.WeaponData.FirePort).normalized, EnemyTransform.WeaponData.PointDirection)
+                        < DOT_THRESHOLD_POINTWEAPON_AT_ME;
             }
             UpdateVulnerableState();
             updateHealthStatus();
@@ -143,9 +139,10 @@ public class SAINEnemyStatus(EnemyData enemyData) : EnemyBase(enemyData, enemyDa
         LastShotPosition = null;
     }
 
-    public bool PositionalFlareEnabled =>
-        Enemy.EnemyKnown
-        && Enemy.KnownPlaces.EnemyDistanceFromLastKnown < _maxDistFromPosFlareEnabled;
+    public bool PositionalFlareEnabled
+    {
+        get { return Enemy.EnemyKnown && Enemy.KnownPlaces.EnemyDistanceFromLastKnown < _maxDistFromPosFlareEnabled; }
+    }
 
     public bool HeardRecently
     {

@@ -93,8 +93,10 @@ public class EnemyList(string name) : List<Enemy>
     {
         switch (this.Count)
         {
-            case 0: return null;
-            case 1: break;
+            case 0:
+                return null;
+            case 1:
+                break;
             default:
                 sortByLastUpdated();
                 break;
@@ -128,7 +130,9 @@ public class EnemyList(string name) : List<Enemy>
     public void RemoveEnemy(Enemy enemy)
     {
         if (enemy == null)
+        {
             return;
+        }
 
         this.Remove(enemy);
 

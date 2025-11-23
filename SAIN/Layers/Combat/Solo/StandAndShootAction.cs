@@ -8,9 +8,7 @@ using UnityEngine.AI;
 
 namespace SAIN.Layers.Combat.Solo;
 
-public class StandAndShootAction(BotOwner bot)
-    : BotAction(bot, nameof(StandAndShootAction)),
-        IBotAction
+public class StandAndShootAction(BotOwner bot) : BotAction(bot, nameof(StandAndShootAction)), IBotAction
 {
     public override void Update(CustomLayer.ActionData data)
     {
@@ -48,11 +46,7 @@ public class StandAndShootAction(BotOwner bot)
         return false;
     }
 
-    private static bool FindSwingMovePosition(
-        PlayerNavData navData,
-        Enemy enemy,
-        out Vector3 movePosition
-    )
+    private static bool FindSwingMovePosition(PlayerNavData navData, Enemy enemy, out Vector3 movePosition)
     {
         movePosition = Vector3.zero;
         if (enemy != null && navData.IsOnNavMesh && enemy.RealDistance < 50)

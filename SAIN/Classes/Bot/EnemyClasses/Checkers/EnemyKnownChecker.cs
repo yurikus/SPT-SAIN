@@ -6,6 +6,7 @@ namespace SAIN.Components.BotComponentSpace.Classes.EnemyClasses;
 public class EnemyKnownChecker(EnemyData enemyData)
 {
     private readonly Enemy Enemy = enemyData.Enemy;
+
     public void Init(BotComponent bot)
     {
         bot.BotActivation.BotActiveToggle.OnToggle += BotStateChanged;
@@ -64,10 +65,14 @@ public class EnemyKnownChecker(EnemyData enemyData)
         }
 
         if (timeSinceUpdate <= forgetEnemyTime)
+        {
             return true;
+        }
 
         if (searching && BotIsSearchingForMe())
+        {
             return true;
+        }
 
         //if (Enemy.EnemyKnown)
         //    Logger.LogDebug($"enemy forgotten. timesinceupdate: {timeSinceUpdate} forgetenemytime: {Bot.Info.ForgetEnemyTime}");

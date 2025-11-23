@@ -1,5 +1,5 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -56,7 +56,9 @@ public class SquadTalkSettings : SAINSettingsBase<SquadTalkSettings>, ISAINSetti
     public float _reportEnemyKilledChance = 60f;
 
     [Name("Callout Enemy Killed Squadleader Confirm Chance")]
-    [Description("When a member calls out that they killed an enemy, this is the chance the squad leader will acknowledge and confirm the kill with a compliment.")]
+    [Description(
+        "When a member calls out that they killed an enemy, this is the chance the squad leader will acknowledge and confirm the kill with a compliment."
+    )]
     [Percentage]
     public float _reportEnemyKilledSquadLeadChance = 60f;
 

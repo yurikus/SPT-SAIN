@@ -7,7 +7,8 @@ public class BotHitByEnemyClass : BotBase
 {
     public Enemy EnemyWhoLastShotMe { get; private set; }
 
-    public BotHitByEnemyClass(BotComponent bot) : base(bot)
+    public BotHitByEnemyClass(BotComponent bot)
+        : base(bot)
     {
         CanEverTick = false;
     }
@@ -37,7 +38,9 @@ public class BotHitByEnemyClass : BotBase
     private void clearEnemy(string profileId, Enemy enemy)
     {
         if (enemy == EnemyWhoLastShotMe)
+        {
             EnemyWhoLastShotMe = null;
+        }
     }
 
     public override void Dispose()

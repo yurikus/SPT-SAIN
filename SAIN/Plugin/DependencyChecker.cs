@@ -1,8 +1,8 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using System;
 using UnityEngine;
 
 namespace SAIN.Plugin;
@@ -41,7 +41,8 @@ internal class DependencyChecker
                     dependencyVersion = $" v{dependency.MinimumVersion}";
                 }
 
-                string errorMessage = $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} depends on {dependencyName}{dependencyVersion}, but it was not loaded.";
+                string errorMessage =
+                    $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} depends on {dependencyName}{dependencyVersion}, but it was not loaded.";
                 Logger.LogError(errorMessage);
                 Chainloader.DependencyErrors.Add(errorMessage);
 
@@ -49,16 +50,23 @@ internal class DependencyChecker
                 {
                     // This results in a bogus config entry in the BepInEx config file for the plugin, but it shouldn't hurt anything
                     // We leave the "section" parameter empty so there's no section header drawn
-                    Config.Bind("", "MissingDeps", "", new ConfigDescription(
-                        errorMessage, null, new ConfigurationManagerAttributes
-                        {
-                            CustomDrawer = ErrorLabelDrawer,
-                            ReadOnly = true,
-                            HideDefaultButton = true,
-                            HideSettingName = true,
-                            Category = null
-                        }
-                    ));
+                    Config.Bind(
+                        "",
+                        "MissingDeps",
+                        "",
+                        new ConfigDescription(
+                            errorMessage,
+                            null,
+                            new ConfigurationManagerAttributes
+                            {
+                                CustomDrawer = ErrorLabelDrawer,
+                                ReadOnly = true,
+                                HideDefaultButton = true,
+                                HideSettingName = true,
+                                Category = null,
+                            }
+                        )
+                    );
                 }
 
                 return false;

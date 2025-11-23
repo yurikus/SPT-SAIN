@@ -40,8 +40,7 @@ public class BotSurgery : BotBase
 
     public bool CheckCanStartUsingKit()
     {
-        return BotOwner?.Medecine?.FirstAid?.IsBleeding == false
-            && BotOwner?.Medecine?.SurgicalKit?.ShallStartUse() == true;
+        return BotOwner?.Medecine?.FirstAid?.IsBleeding == false && BotOwner?.Medecine?.SurgicalKit?.ShallStartUse() == true;
     }
 
     private bool CheckEnemies()
@@ -99,11 +98,7 @@ public class BotSurgery : BotBase
 
     private bool checkThisEnemy(Enemy enemy, float minPathDist, float minTimeSinceLastKnown)
     {
-        if (
-            enemy?.EnemyPlayer?.HealthController.IsAlive == true
-            && (enemy.Seen || enemy.Heard)
-            && enemy.TimeSinceLastKnownUpdated < 360f
-        )
+        if (enemy?.EnemyPlayer?.HealthController.IsAlive == true && (enemy.Seen || enemy.Heard) && enemy.TimeSinceLastKnownUpdated < 360f)
         {
             if (enemy.IsVisible)
             {

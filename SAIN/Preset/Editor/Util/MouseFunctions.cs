@@ -9,9 +9,7 @@ public static class MouseFunctions
         checkMouseEvents();
     }
 
-    public static void OnGUI()
-    {
-    }
+    public static void OnGUI() { }
 
     public static bool CheckMouseDrag()
     {
@@ -46,7 +44,10 @@ public static class MouseFunctions
         }
     }
 
-    public static bool MouseIsMoving => _mouseMoveTime > Time.time;
+    public static bool MouseIsMoving
+    {
+        get { return _mouseMoveTime > Time.time; }
+    }
 
     private static float _mouseMoveTime;
 
@@ -66,14 +67,14 @@ public static class MouseFunctions
         {
             return true;
         }
-        Rect rect2 = new(0f, 0f, widthDistance * 2, heightDistance * 2)
-        {
-            center = MousePos
-        };
+        Rect rect2 = new(0f, 0f, widthDistance * 2, heightDistance * 2) { center = MousePos };
         return rect2.Overlaps(rect);
     }
 
-    private static Vector2 MousePos => Event.current.mousePosition;
+    private static Vector2 MousePos
+    {
+        get { return Event.current.mousePosition; }
+    }
 }
 
 public static class MouseDragClass
@@ -120,7 +121,7 @@ public static class MouseDragClass
         lineArea = area;
         lineArea.width = frameWidth; //Left
         GUI.DrawTexture(lineArea, texture);
-        lineArea.x = area.xMax - frameWidth;//Right
+        lineArea.x = area.xMax - frameWidth; //Right
         GUI.DrawTexture(lineArea, texture);
     }
 }

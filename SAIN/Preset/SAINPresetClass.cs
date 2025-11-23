@@ -1,10 +1,10 @@
-﻿using SAIN.Plugin;
+﻿using System;
+using SAIN.Plugin;
 using SAIN.Preset.BotSettings;
 using SAIN.Preset.BotSettings.SAINSettings;
 using SAIN.Preset.GearStealthValues;
 using SAIN.Preset.GlobalSettings;
 using SAIN.Preset.Personalities;
-using System;
 using static SAIN.Helpers.JsonUtility;
 
 namespace SAIN.Preset;
@@ -243,20 +243,11 @@ public class SAINPresetClass
         string[] result;
         if (subFolder == null)
         {
-            result =
-            [
-                presets,
-                presetName
-            ];
+            result = [presets, presetName];
         }
         else
         {
-            result =
-            [
-                presets,
-                presetName,
-                subFolder
-            ];
+            result = [presets, presetName, subFolder];
         }
         return result;
     }

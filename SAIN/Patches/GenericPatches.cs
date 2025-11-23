@@ -33,12 +33,7 @@ namespace SAIN.Patches.Generic
         {
             public static void SetItemEquiped(IPlayer Player, Item Item)
             {
-                if (
-                    GameWorldComponent.TryGetPlayerComponent(
-                        Player,
-                        out PlayerComponent PlayerComponent
-                    )
-                )
+                if (GameWorldComponent.TryGetPlayerComponent(Player, out PlayerComponent PlayerComponent))
                 {
                     PlayerComponent.SetItemEquippedInHands(Item);
                 }
@@ -107,22 +102,14 @@ namespace SAIN.Patches.Generic
         {
             protected override MethodBase GetTargetMethod()
             {
-                System.Type[] Params =
-                [
-                    typeof(ThrowWeapItemClass),
-                    typeof(Callback<IHandsThrowController>),
-                ];
+                System.Type[] Params = [typeof(ThrowWeapItemClass), typeof(Callback<IHandsThrowController>)];
                 return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
             }
 
             [PatchPrefix]
             public static void PatchPrefix(Player __instance, ThrowWeapItemClass throwWeap)
             {
-                float range = SAINPlugin
-                    .LoadedPreset
-                    .GlobalSettings
-                    .Hearing
-                    .BaseSoundRange_GrenadePinDraw;
+                float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_GrenadePinDraw;
                 BotManagerComponent.Instance?.BotHearing.PlayAISound(
                     __instance.ProfileId,
                     SAINSoundType.GrenadeDraw,
@@ -151,11 +138,7 @@ namespace SAIN.Patches.Generic
             [PatchPrefix]
             public static void PatchPrefix(Player __instance, FoodDrinkItemClass foodDrink)
             {
-                float range = SAINPlugin
-                    .LoadedPreset
-                    .GlobalSettings
-                    .Hearing
-                    .BaseSoundRange_EatDrink;
+                float range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_EatDrink;
                 BotManagerComponent.Instance?.BotHearing.PlayAISound(
                     __instance.ProfileId,
                     SAINSoundType.Food,
@@ -186,10 +169,7 @@ namespace SAIN.Patches.Generic
             {
                 SAINSoundType soundType;
                 float range;
-                if (
-                    meds != null
-                    && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart])
-                )
+                if (meds != null && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart]))
                 {
                     soundType = SAINSoundType.Surgery;
                     range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Surgery;
@@ -199,13 +179,7 @@ namespace SAIN.Patches.Generic
                     soundType = SAINSoundType.Heal;
                     range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
                 }
-                BotManagerComponent.Instance?.BotHearing.PlayAISound(
-                    __instance.ProfileId,
-                    soundType,
-                    __instance.Position,
-                    range,
-                    1f
-                );
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
                 Helpers.SetItemEquiped(__instance, meds);
             }
         }
@@ -229,10 +203,7 @@ namespace SAIN.Patches.Generic
             {
                 SAINSoundType soundType;
                 float range;
-                if (
-                    meds != null
-                    && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart])
-                )
+                if (meds != null && meds.HealthEffectsComponent.AffectsAny([EDamageEffectType.DestroyedPart]))
                 {
                     soundType = SAINSoundType.Surgery;
                     range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Surgery;
@@ -242,13 +213,7 @@ namespace SAIN.Patches.Generic
                     soundType = SAINSoundType.Heal;
                     range = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Healing;
                 }
-                BotManagerComponent.Instance?.BotHearing.PlayAISound(
-                    __instance.ProfileId,
-                    soundType,
-                    __instance.Position,
-                    range,
-                    1f
-                );
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(__instance.ProfileId, soundType, __instance.Position, range, 1f);
                 Helpers.SetItemEquiped(__instance, meds);
             }
         }
@@ -258,11 +223,7 @@ namespace SAIN.Patches.Generic
             protected override MethodBase GetTargetMethod()
             {
                 System.Type[] Params = [typeof(Item), typeof(Callback<IOnHandsUseCallback>)];
-                return AccessTools.Method(
-                    typeof(Player),
-                    nameof(Player.SetInHandsForQuickUse),
-                    Params
-                );
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHandsForQuickUse), Params);
             }
 
             [PatchPrefix]
@@ -276,16 +237,8 @@ namespace SAIN.Patches.Generic
         {
             protected override MethodBase GetTargetMethod()
             {
-                System.Type[] Params =
-                [
-                    typeof(ThrowWeapItemClass),
-                    typeof(Callback<QuickGrenadeUseCallbackType>),
-                ];
-                return AccessTools.Method(
-                    typeof(Player),
-                    nameof(Player.SetInHandsForQuickUse),
-                    Params
-                );
+                System.Type[] Params = [typeof(ThrowWeapItemClass), typeof(Callback<QuickGrenadeUseCallbackType>)];
+                return AccessTools.Method(typeof(Player), nameof(Player.SetInHandsForQuickUse), Params);
             }
 
             [PatchPrefix]
@@ -372,10 +325,7 @@ namespace SAIN.Patches.Generic
         [PatchPostfix]
         public static void Patch(GClass591 __instance, IndoorTrigger trigger)
         {
-            BotManagerComponent.Instance?.PlayerEnviromentChanged(
-                __instance?.Player?.ProfileId,
-                trigger
-            );
+            BotManagerComponent.Instance?.PlayerEnviromentChanged(__instance?.Player?.ProfileId, trigger);
         }
     }
 
@@ -390,7 +340,10 @@ namespace SAIN.Patches.Generic
         public static bool PatchPrefix(BotsGroup __instance, BotOwner owner)
         {
             if (SAINEnableClass.IsBotInCombat(owner))
+            {
                 return false;
+            }
+
             return true;
         }
     }
@@ -438,10 +391,7 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(
-                typeof(BotWeaponSelector),
-                nameof(BotWeaponSelector.TryChangeToSlot)
-            );
+            return AccessTools.Method(typeof(BotWeaponSelector), nameof(BotWeaponSelector.TryChangeToSlot));
         }
 
         [PatchPrefix]
@@ -498,13 +448,7 @@ namespace SAIN.Patches.Generic
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(
-            BotsController __instance,
-            Grenade grenade,
-            Vector3 position,
-            Vector3 force,
-            float mass
-        )
+        public static bool PatchPrefix(BotsController __instance, Grenade grenade, Vector3 position, Vector3 force, float mass)
         {
             Vector3 danger = Vector.DangerPoint(position, force, mass);
             foreach (BotOwner bot in __instance.Bots.BotOwners)
@@ -547,9 +491,15 @@ namespace SAIN.Patches.Generic
         public static bool Patch(BotReceiver __instance, IPlayer player)
         {
             if (!SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
+            {
                 return true;
+            }
+
             if (player?.IsAI == true)
+            {
                 return false;
+            }
+
             return true;
         }
     }
@@ -558,21 +508,17 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(
-                typeof(BotRequestController),
-                nameof(BotRequestController.TryActivateThrowGrenadeRequestToPlace)
-            );
+            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.TryActivateThrowGrenadeRequestToPlace));
         }
 
         [PatchPrefix]
-        public static bool Patch(
-            BotRequestController __instance,
-            Player targetToThrow,
-            ref bool __result
-        )
+        public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
         {
             if (!SAINEnableClass.IsBotInCombat(__instance.Owner))
+            {
                 return true;
+            }
+
             __result = false;
             return false;
         }
@@ -582,21 +528,17 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(
-                typeof(BotRequestController),
-                nameof(BotRequestController.TryActivateThrowGrenadeRequest)
-            );
+            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.TryActivateThrowGrenadeRequest));
         }
 
         [PatchPrefix]
-        public static bool Patch(
-            BotRequestController __instance,
-            Player targetToThrow,
-            ref bool __result
-        )
+        public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
         {
             if (!SAINEnableClass.IsBotInCombat(__instance.Owner))
+            {
                 return true;
+            }
+
             __result = false;
             return false;
         }
@@ -606,21 +548,17 @@ namespace SAIN.Patches.Generic
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(
-                typeof(AIDataRequestController),
-                nameof(AIDataRequestController.TryAdd)
-            );
+            return AccessTools.Method(typeof(AIDataRequestController), nameof(AIDataRequestController.TryAdd));
         }
 
         [PatchPrefix]
-        public static bool Patch(
-            BotRequest request,
-            AIDataRequestController __instance,
-            ref bool __result
-        )
+        public static bool Patch(BotRequest request, AIDataRequestController __instance, ref bool __result)
         {
             if (!SAINEnableClass.IsBotInCombat(__instance.AiData?.Player_0))
+            {
                 return true;
+            }
+
             if (request.Requester?.IsAI == true)
             {
                 __result = false;

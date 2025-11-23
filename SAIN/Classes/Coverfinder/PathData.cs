@@ -8,7 +8,11 @@ public class PathData
     public NavMeshPath Path { get; private set; }
     public float PathLength { get; private set; }
     public int RoundedPathLength { get; private set; }
-    public float TimeSinceLastUpdated => Time.time - TimeLastUpdated;
+    public float TimeSinceLastUpdated
+    {
+        get { return Time.time - TimeLastUpdated; }
+    }
+
     public float TimeLastUpdated { get; private set; }
 
     public void CalcPath(Vector3 origin, Vector3 destination)
@@ -28,5 +32,4 @@ public class PathData
         }
         TimeLastUpdated = Time.time;
     }
-
 }

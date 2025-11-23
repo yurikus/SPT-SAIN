@@ -38,7 +38,10 @@ public class SAINShootData : BotComponentClassBase
     private void CheckEndShoot()
     {
         if (!_shooting)
+        {
             return;
+        }
+
         BotWeaponManager weaponManager = BotOwner.WeaponManager;
         if (weaponManager == null || !weaponManager.HaveBullets || weaponManager.Reload.Reloading)
         {
@@ -120,57 +123,56 @@ public class SAINShootData : BotComponentClassBase
     public Enemy CheckEnemiesForShootableTargets(EnemyList VisibleEnemies)
     {
         foreach (Enemy Enemy in VisibleEnemies)
-            if (
-                Enemy.IsVisible
-                && Time.time - Enemy.Vision.LastChangeVisionTime > 0.33f
-                && AimAndShootAtEnemy(Enemy, Bot)
-            )
+        {
+            if (Enemy.IsVisible && Time.time - Enemy.Vision.LastChangeVisionTime > 0.33f && AimAndShootAtEnemy(Enemy, Bot))
+            {
                 return Enemy;
+            }
+        }
+
         return null;
     }
 
     private bool AimAndShootAtEnemy(Enemy Enemy, BotComponent bot)
     {
         if (Enemy == null)
+        {
             return false;
+        }
 
         if (Enemy.Player?.HealthController?.IsAlive == false)
+        {
             return false;
+        }
 
         var weaponManager = bot.BotOwner.WeaponManager;
         if (weaponManager == null)
+        {
             return false;
+        }
 
         bool reloading = weaponManager.Reload.Reloading;
         if (reloading || !weaponManager.HaveBullets)
         {
-            if (
-                !reloading
-                && weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster
-                && !weaponManager.Selector.TryChangeToMain()
-            )
+            if (!reloading && weaponManager.Selector.EquipmentSlot == EquipmentSlot.Holster && !weaponManager.Selector.TryChangeToMain())
+            {
                 SelectWeapon(Enemy);
+            }
 
             return false;
         }
 
         if (!bot.Aim.CanAim)
+        {
             return false;
+        }
 
         Vector3? target = GetAimTarget(Enemy, bot);
         if (target != null && Enemy != null)
         {
             bot.BotLight.HandleLightForEnemy(Enemy);
 
-            if (
-                bot.Aim.AimAtTarget(
-                    target.Value,
-                    Enemy,
-                    out bool AimComplete,
-                    bot.BotOwner.AimingManager.CurrentAiming,
-                    bot
-                )
-            )
+            if (bot.Aim.AimAtTarget(target.Value, Enemy, out bool AimComplete, bot.BotOwner.AimingManager.CurrentAiming, bot))
             {
                 ShootWhenAimComplete(Enemy, bot, AimComplete);
                 return true;
@@ -203,7 +205,10 @@ public class SAINShootData : BotComponentClassBase
         }
     }
 
-    private EquipmentSlot CurrentSlot => BotOwner.WeaponManager.Selector.EquipmentSlot;
+    private EquipmentSlot CurrentSlot
+    {
+        get { return BotOwner.WeaponManager.Selector.EquipmentSlot; }
+    }
 
     private void TryChangeWeapon(EquipmentSlot slot)
     {
@@ -285,8 +290,10 @@ public class SAINShootData : BotComponentClassBase
         }
     }
 
-    private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f) =>
-        info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;
+    private static bool IsWeaponDurableEnough(WeaponInfo info, float min = 0.5f)
+    {
+        return info != null && info.Durability > min && info.Weapon.ChamberAmmoCount > 0;
+    }
 
     private static Vector3? GetAimTarget(Enemy enemy, BotComponent bot)
     {

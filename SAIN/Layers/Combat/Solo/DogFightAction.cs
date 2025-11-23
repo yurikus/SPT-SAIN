@@ -1,7 +1,7 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Text;
 
 namespace SAIN.Layers.Combat.Solo;
 

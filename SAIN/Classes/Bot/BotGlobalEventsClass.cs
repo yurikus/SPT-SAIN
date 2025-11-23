@@ -1,5 +1,5 @@
-﻿using SAIN.Components;
-using System;
+﻿using System;
+using SAIN.Components;
 
 namespace SAIN.SAINComponent.Classes;
 
@@ -9,7 +9,8 @@ public class BotGlobalEventsClass : BotComponentClassBase
 
     public event Action<BotComponent> OnExitPeace;
 
-    public BotGlobalEventsClass(BotComponent sain) : base(sain)
+    public BotGlobalEventsClass(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
     }
@@ -29,8 +30,12 @@ public class BotGlobalEventsClass : BotComponentClassBase
     public void PeaceChanged(bool value)
     {
         if (value)
+        {
             OnEnterPeace?.Invoke(Bot);
+        }
         else
+        {
             OnExitPeace?.Invoke(Bot);
+        }
     }
 }

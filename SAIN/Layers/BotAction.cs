@@ -12,11 +12,7 @@ public interface IBotAction
 {
     public string Name { get; }
 
-    public void OnPathSteeringTicked(
-        BotPathCorner cornerDestination,
-        int currentCornerIndex,
-        int totalCorners
-    );
+    public void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners);
 
     public void OnSteeringTicked();
 
@@ -25,7 +21,10 @@ public interface IBotAction
 
 public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(botOwner), IBotAction
 {
-    protected SAINShootData Shoot => Bot.Shoot;
+    protected SAINShootData Shoot
+    {
+        get { return Bot.Shoot; }
+    }
 
     public string Name { get; private set; } = name;
 
@@ -58,11 +57,7 @@ public abstract class BotAction(BotOwner botOwner, string name) : CustomLogic(bo
 
     public virtual void UpdateMovement() { }
 
-    public virtual void OnPathSteeringTicked(
-        BotPathCorner cornerDestination,
-        int currentCornerIndex,
-        int totalCorners
-    )
+    public virtual void OnPathSteeringTicked(BotPathCorner cornerDestination, int currentCornerIndex, int totalCorners)
     {
         OnSteeringTicked();
     }

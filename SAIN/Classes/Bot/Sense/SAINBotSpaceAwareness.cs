@@ -21,12 +21,7 @@ public class SAINBotSpaceAwareness : BotComponentClassBase
         CanEverTick = false;
     }
 
-    public static bool ArePathsDifferent(
-        NavMeshPath path1,
-        NavMeshPath path2,
-        float minRatio = 0.5f,
-        float sqrDistCheck = 0.05f
-    )
+    public static bool ArePathsDifferent(NavMeshPath path1, NavMeshPath path2, float minRatio = 0.5f, float sqrDistCheck = 0.05f)
     {
         Vector3[] path1Corners = path1.corners;
         int path1Length = path1Corners.Length;

@@ -25,12 +25,18 @@ public class EnemyAnglesClass
         {
             float delay;
             if (Enemy.IsAI)
+            {
                 delay = Enemy.EnemyKnown ? CALC_ANGLE_FREQ_KNOWN_AI : CALC_ANGLE_FREQ_AI;
+            }
             else
+            {
                 delay = Enemy.EnemyKnown ? CALC_ANGLE_FREQ_KNOWN : CALC_ANGLE_FREQ;
+            }
 
             if (Enemy.IsCurrentEnemy)
+            {
                 delay *= CALC_ANGLE_CURRENT_COEF;
+            }
 
             _calcAngleTime = currentTime + delay;
 

@@ -43,10 +43,8 @@ public class EnemyControllerEvents : BotSubClass<SAINEnemyController>, IBotClass
     public override void Dispose()
     {
         Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirst -= OnPeaceChanged.CheckToggle;
-        Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirstHuman -=
-            ActiveHumanEnemyEvent.CheckToggle;
-        Bot.EnemyController.EnemiesInLineOfSight.OnListEmptyOrGetFirstHuman -=
-            HumanInLineOfSightEvent.CheckToggle;
+        Bot.EnemyController.KnownEnemies.OnListEmptyOrGetFirstHuman -= ActiveHumanEnemyEvent.CheckToggle;
+        Bot.EnemyController.EnemiesInLineOfSight.OnListEmptyOrGetFirstHuman -= HumanInLineOfSightEvent.CheckToggle;
         base.Dispose();
     }
 
@@ -92,12 +90,7 @@ public class EnemyControllerEvents : BotSubClass<SAINEnemyController>, IBotClass
         OnEnemyHit?.Invoke(enemy);
     }
 
-    private void enemyKilled(
-        Player player,
-        IPlayer lastAggressor,
-        DamageInfoStruct lastDamageInfoStruct,
-        EBodyPart lastBodyPart
-    )
+    private void enemyKilled(Player player, IPlayer lastAggressor, DamageInfoStruct lastDamageInfoStruct, EBodyPart lastBodyPart)
     {
         if (player != null)
         {

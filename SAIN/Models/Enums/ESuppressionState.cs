@@ -6,5 +6,5 @@ public enum ESuppressionState
     Light,
     Medium,
     Heavy,
-    Extreme
+    Extreme,
 }

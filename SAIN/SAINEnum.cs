@@ -19,7 +19,7 @@ public enum ECombatDecision
     CreepOnEnemy,
     MeleeAttack,
     FightZombies,
-    DebugNoDecision
+    DebugNoDecision,
 }
 
 public enum ESelfActionType
@@ -58,7 +58,7 @@ public enum EWeaponClass
     sniperRifle,
     shotgun,
     grenadeLauncher,
-    specialWeapon
+    specialWeapon,
 }
 
 public enum ECaliber
@@ -93,7 +93,7 @@ public enum ECaliber
     Caliber68x51,
     Caliber20x1,
     Caliber127x33,
-    Caliber9x18PMM
+    Caliber9x18PMM,
 }
 
 public enum CoverStatus
@@ -116,7 +116,7 @@ public enum SideStepSetting
 {
     None = 0,
     Left = 1,
-    Right = 2
+    Right = 2,
 }
 
 public enum EPersonality
@@ -141,7 +141,7 @@ public enum GrenadeThrowDirection
 {
     None,
     Over,
-    Around
+    Around,
 }
 
 public enum GrenadeThrowType
@@ -149,7 +149,7 @@ public enum GrenadeThrowType
     None,
     Close,
     Mid,
-    Far
+    Far,
 }
 
 public enum ESquadDecision

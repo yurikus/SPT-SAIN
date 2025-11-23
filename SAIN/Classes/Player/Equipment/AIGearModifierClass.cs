@@ -66,22 +66,32 @@ public class AIGearModifierClass(SAINAIData sAINAIData) : AIDataBase(sAINAIData)
         foreach (var value in stealthValues)
         {
             if (value.Value.Count == 0)
+            {
                 continue;
+            }
 
             switch (value.Key)
             {
                 case EEquipmentType.Headwear:
                     item = GearInfo.GetItem(EquipmentSlot.Headwear);
                     if (item != null)
+                    {
                         result *= calcEffect(item.TemplateId, value.Value);
+                    }
+
                     break;
 
                 case EEquipmentType.BackPack:
                     item = GearInfo.GetItem(EquipmentSlot.Backpack);
                     if (item != null)
+                    {
                         result *= calcEffect(item.TemplateId, value.Value);
+                    }
                     else
+                    {
                         result *= 1.1f;
+                    }
+
                     break;
 
                 case EEquipmentType.FaceCover:
@@ -90,26 +100,37 @@ public class AIGearModifierClass(SAINAIData sAINAIData) : AIDataBase(sAINAIData)
                     {
                         float faceCoverValue = calcEffect(item.TemplateId, value.Value);
                         if (faceCoverValue == 1f)
+                        {
                             result *= 1.05f;
+                        }
                     }
                     break;
 
                 case EEquipmentType.Rig:
                     item = GearInfo.GetItem(EquipmentSlot.TacticalVest);
                     if (item != null)
+                    {
                         result *= calcEffect(item.TemplateId, value.Value);
+                    }
+
                     break;
 
                 case EEquipmentType.ArmorVest:
                     item = GearInfo.GetItem(EquipmentSlot.ArmorVest);
                     if (item != null)
+                    {
                         result *= calcEffect(item.TemplateId, value.Value);
+                    }
+
                     break;
 
                 case EEquipmentType.EyeWear:
                     item = GearInfo.GetItem(EquipmentSlot.Eyewear);
                     if (item != null)
+                    {
                         result *= calcEffect(item.TemplateId, value.Value);
+                    }
+
                     break;
 
                 default:

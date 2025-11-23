@@ -166,9 +166,7 @@ public struct PlayerPositionData
         if (!BodyParts.TryGetValue(PartType, out Result))
         {
 #if DEBUG
-            Logger.LogError(
-                $"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary"
-            );
+            Logger.LogError($"[{PlayerNickname}] Body Part [{PartType}] is not in Parts Dictionary");
 #endif
             return null;
         }

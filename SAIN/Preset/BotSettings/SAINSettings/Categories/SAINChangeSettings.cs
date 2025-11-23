@@ -2,6 +2,4 @@
 
 namespace SAIN.Preset.BotSettings.SAINSettings.Categories;
 
-public class SAINChangeSettings : SAINSettingsBase<SAINChangeSettings>, ISAINSettings
-{
-}
+public class SAINChangeSettings : SAINSettingsBase<SAINChangeSettings>, ISAINSettings { }

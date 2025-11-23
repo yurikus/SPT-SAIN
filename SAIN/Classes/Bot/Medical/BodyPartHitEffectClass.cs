@@ -10,9 +10,8 @@ public class BodyPartHitEffectClass : BotBase
     public EInjurySeverity RightArmInjury { get; private set; }
     public EHitReaction HitReaction { get; private set; }
 
-    public BodyPartHitEffectClass(BotComponent bot) : base(bot)
-    {
-    }
+    public BodyPartHitEffectClass(BotComponent bot)
+        : base(bot) { }
 
     public override void ManualUpdate()
     {
@@ -28,7 +27,6 @@ public class BodyPartHitEffectClass : BotBase
         LeftArmInjury = Bot.Medical.HitReaction.BodyParts[EBodyPart.LeftArm].InjurySeverity;
         RightArmInjury = Bot.Medical.HitReaction.BodyParts[EBodyPart.RightArm].InjurySeverity;
     }
-
 
     public void GetHit(DamageInfoStruct DamageInfoStruct, EBodyPart bodyPart, float floatVal)
     {

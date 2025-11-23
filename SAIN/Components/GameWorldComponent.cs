@@ -69,10 +69,7 @@ public class GameWorldComponent : MonoBehaviour
             from Data in OtherPlayerData
             let OtherPlayerDirNormal = Data.Value.DistanceData.DirectionNormal
             let PlayerComponent = Data.Value.OtherPlayerComponent
-            where
-                PlayerComponent?.IsAI == true
-                && PlayerComponent.IsActive
-                && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
+            where PlayerComponent?.IsAI == true && PlayerComponent.IsActive && Vector3.Dot(OtherPlayerDirNormal, PlayerLookDir) > 0.75f
             select Data.Value
         );
 
@@ -151,8 +148,13 @@ public class GameWorldComponent : MonoBehaviour
             if (players != null && players.Count > 0)
             {
                 foreach (PlayerComponent Player in players)
+                {
                     if (Player != null)
+                    {
                         Player.ManualUpdate(CurrentTime, DeltaTime);
+                    }
+                }
+
                 TickSoundCaches(players, CurrentTime);
             }
         }
@@ -211,13 +213,16 @@ public class GameWorldComponent : MonoBehaviour
                         {
                             bool isGunshot = soundEvent.IsGunShot;
                             if (isGunshot && !InGunfireRadius)
+                            {
                                 continue;
+                            }
+
                             if (!isGunshot && !InFootstepRadius)
+                            {
                                 continue;
-                            OtherPlayer.BotComponent?.Hearing.SoundInput.CheckAddSoundToCache(
-                                soundEvent,
-                                Distance
-                            );
+                            }
+
+                            OtherPlayer.BotComponent?.Hearing.SoundInput.CheckAddSoundToCache(soundEvent, Distance);
                         }
                     }
                 }
@@ -237,7 +242,9 @@ public class GameWorldComponent : MonoBehaviour
 
 #if DEBUG
         if (SAINPlugin.DebugMode)
+        {
             Logger.LogInfo($"Found {SpawnPointMarkers.Length} spawn point markers");
+        }
 #endif
     }
 
@@ -252,14 +259,8 @@ public class GameWorldComponent : MonoBehaviour
         foreach (SpawnPointMarker spawnPointMarker in SpawnPointMarkers)
         {
             // Try to find a point on the NavMesh nearby the spawn point
-            Vector3? spawnPointPosition = NavMeshHelpers.GetNearbyNavMeshPoint(
-                spawnPointMarker.Position,
-                2
-            );
-            if (
-                spawnPointPosition.HasValue
-                && !spawnPointPositions.Contains(spawnPointPosition.Value)
-            )
+            Vector3? spawnPointPosition = NavMeshHelpers.GetNearbyNavMeshPoint(spawnPointMarker.Position, 2);
+            if (spawnPointPosition.HasValue && !spawnPointPositions.Contains(spawnPointPosition.Value))
             {
                 spawnPointPositions.Add(spawnPointPosition.Value);
             }
@@ -286,9 +287,7 @@ public class GameWorldComponent : MonoBehaviour
         if (GameWorld == null)
         {
 #if DEBUG
-            Logger.LogWarning(
-                "GameWorld Null, cannot Init SAIN Gameworld! Check 2. Disposing Component..."
-            );
+            Logger.LogWarning("GameWorld Null, cannot Init SAIN Gameworld! Check 2. Disposing Component...");
 #endif
             DestroyComponent();
             return;

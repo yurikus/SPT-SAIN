@@ -42,7 +42,11 @@ public struct DoorDataStruct(NavMeshDoorLink link)
         }
     }
 
-    public readonly int Id => Link.Id;
+    public readonly int Id
+    {
+        get { return Link.Id; }
+    }
+
     public float LastInteractTime;
     public float LastOpenTime;
     public float LastCloseTime;

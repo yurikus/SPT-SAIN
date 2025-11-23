@@ -19,9 +19,11 @@ public class NoBushESPSettings : SAINSettingsBase<NoBushESPSettings>, ISAINSetti
     public float NoBushESPFrequency = 0.1f;
 
     [Name("No Bush ESP Enhanced Raycasts Ratio")]
-    [Description("Experimental: Increased Accuracy and extra checks. " +
-        "Sets the ratio of visible to not visible body parts to not block vision. " +
-        "0.75 means half the body parts of the player must be visible to not block vision.")]
+    [Description(
+        "Experimental: Increased Accuracy and extra checks. "
+            + "Sets the ratio of visible to not visible body parts to not block vision. "
+            + "0.75 means half the body parts of the player must be visible to not block vision."
+    )]
     [MinMax(0.1f, 1f, 100f)]
     [Advanced]
     public float NoBushESPEnhancedRatio = 0.75f;

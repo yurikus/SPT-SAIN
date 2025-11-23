@@ -1,8 +1,8 @@
-﻿using EFT;
+﻿using System.Reflection;
+using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SPT.Reflection.Patching;
-using System.Reflection;
 
 namespace SAIN.Patches.Talk;
 
@@ -16,9 +16,11 @@ public class PlayerHurtPatch : ModulePatch
     [PatchPrefix]
     public static void PatchPrefix(Player __instance, float damage)
     {
-        if (__instance?.HealthController?.IsAlive == true &&
-            __instance.IsAI &&
-            (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) || damage > 4f))
+        if (
+            __instance?.HealthController?.IsAlive == true
+            && __instance.IsAI
+            && (!__instance.MovementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) || damage > 4f)
+        )
         {
             __instance.Speaker?.Play(EPhraseTrigger.OnBeingHurt, __instance.HealthStatus, true, null);
         }
@@ -121,7 +123,7 @@ public class BotTalkManualUpdatePatch : ModulePatch
     public static bool PatchPrefix(BotTalk __instance)
     {
         // If handling of bots talking is disabled, let the original method run
-        return SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching ||
-            !SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out _);
+        return SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching
+            || !SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out _);
     }
 }

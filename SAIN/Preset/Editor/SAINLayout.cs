@@ -164,7 +164,14 @@ public static class SAINLayout
         return Toggle(value, new GUIContent(text, tooltip), sound, options);
     }
 
-    public static bool Toggle(bool value, string text, string tooltip, GUIStyle style, EUISoundType? sound = null, params GUILayoutOption[] options)
+    public static bool Toggle(
+        bool value,
+        string text,
+        string tooltip,
+        GUIStyle style,
+        EUISoundType? sound = null,
+        params GUILayoutOption[] options
+    )
     {
         return Toggle(value, new GUIContent(text, tooltip), sound, options);
     }
@@ -199,7 +206,14 @@ public static class SAINLayout
 
     public static float HorizontalSlider(float value, float min, float max, EUISoundType? sound = null, params GUILayoutOption[] options)
     {
-        float newvalue = GUILayout.HorizontalSlider(value, min, max, GetStyle(Style.horizontalSlider), GetStyle(Style.horizontalSliderThumb), options);
+        float newvalue = GUILayout.HorizontalSlider(
+            value,
+            min,
+            max,
+            GetStyle(Style.horizontalSlider),
+            GetStyle(Style.horizontalSliderThumb),
+            options
+        );
         float progress = (newvalue - min) / (max - min);
         sound = sound ?? EUISoundType.ButtonOver;
         progress = Mathf.Clamp(progress, 0.33f, 1f);
@@ -291,7 +305,10 @@ public static class SAINLayout
 
     public static void Space(float value, bool enable = true)
     {
-        if (enable && value > 0) GUILayout.Space(value);
+        if (enable && value > 0)
+        {
+            GUILayout.Space(value);
+        }
     }
 
     public static void BeginGroup(Rect rect)
@@ -316,7 +333,10 @@ public static class SAINLayout
 
     public static void FlexibleSpace(bool value = true)
     {
-        if (value) GUILayout.FlexibleSpace();
+        if (value)
+        {
+            GUILayout.FlexibleSpace();
+        }
     }
 
     public static Vector2 BeginScrollView(Vector2 scrollPos, float width)

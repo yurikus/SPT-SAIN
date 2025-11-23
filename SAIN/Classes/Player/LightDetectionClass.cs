@@ -12,11 +12,7 @@ public class LightDetectionClass(PlayerComponent component) : PlayerComponentBas
     public bool CheckIsBeamVisible(FlashLightClass EnemyFlashlight)
     {
         // If this isn't visible light, and the bot doesn't have night vision, ignore it
-        if (
-            !EnemyFlashlight.WhiteLight
-            && !EnemyFlashlight.Laser
-            && Player.AIData?.BotOwner?.NightVision?.UsingNow == false
-        )
+        if (!EnemyFlashlight.WhiteLight && !EnemyFlashlight.Laser && Player.AIData?.BotOwner?.NightVision?.UsingNow == false)
         {
             return false;
         }
@@ -29,11 +25,7 @@ public class LightDetectionClass(PlayerComponent component) : PlayerComponentBas
 
     public void TryToInvestigate(IPlayer Player)
     {
-        Vector3 estimatedPosition = EstimatePosition(
-            Player.Position,
-            PlayerComponent.GetDistanceToPlayer(Player.ProfileId),
-            10f
-        );
+        Vector3 estimatedPosition = EstimatePosition(Player.Position, PlayerComponent.GetDistanceToPlayer(Player.ProfileId), 10f);
         var botComponent = PlayerComponent.BotComponent;
         if (botComponent != null)
         {
@@ -48,13 +40,7 @@ public class LightDetectionClass(PlayerComponent component) : PlayerComponentBas
         }
         else
         {
-            PlayerComponent.BotOwner?.BotsGroup.AddPointToSearch(
-                estimatedPosition,
-                20f,
-                PlayerComponent.BotOwner,
-                true,
-                false
-            );
+            PlayerComponent.BotOwner?.BotsGroup.AddPointToSearch(estimatedPosition, 20f, PlayerComponent.BotOwner, true, false);
         }
     }
 

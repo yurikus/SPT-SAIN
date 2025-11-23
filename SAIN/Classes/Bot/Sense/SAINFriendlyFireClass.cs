@@ -6,10 +6,15 @@ namespace SAIN.SAINComponent.Classes;
 
 public class SAINFriendlyFireClass : BotComponentClassBase
 {
-    public bool ClearShot => FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock;
+    public bool ClearShot
+    {
+        get { return FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock; }
+    }
+
     public FriendlyFireStatus FriendlyFireStatus { get; private set; }
 
-    public SAINFriendlyFireClass(BotComponent sain) : base(sain)
+    public SAINFriendlyFireClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyBotInCombat;
     }
@@ -35,7 +40,12 @@ public class SAINFriendlyFireClass : BotComponentClassBase
         return FriendlyFireStatus != FriendlyFireStatus.FriendlyBlock;
     }
 
-    public static FriendlyFireStatus CheckFriendlyFireStatus(float distance, Vector3 weaponFirePort, Vector3 weaponPointDirection, BotComponent bot)
+    public static FriendlyFireStatus CheckFriendlyFireStatus(
+        float distance,
+        Vector3 weaponFirePort,
+        Vector3 weaponPointDirection,
+        BotComponent bot
+    )
     {
         var members = bot.Squad?.Members;
         if (members == null || members.Count <= 1)
@@ -45,7 +55,12 @@ public class SAINFriendlyFireClass : BotComponentClassBase
         return CheckFriendlyFire(weaponFirePort, distance, weaponPointDirection, bot);
     }
 
-    public static FriendlyFireStatus CheckFriendlyFireStatus(Vector3 target, Vector3 weaponFirePort, Vector3 weaponPointDirection, BotComponent bot)
+    public static FriendlyFireStatus CheckFriendlyFireStatus(
+        Vector3 target,
+        Vector3 weaponFirePort,
+        Vector3 weaponPointDirection,
+        BotComponent bot
+    )
     {
         var members = bot.Squad?.Members;
         if (members == null || members.Count <= 1)
@@ -55,7 +70,12 @@ public class SAINFriendlyFireClass : BotComponentClassBase
         return CheckFriendlyFire(weaponFirePort, (weaponFirePort - target).magnitude, weaponPointDirection, bot);
     }
 
-    public static FriendlyFireStatus CheckFriendlyFire(Vector3 weaponFirePort, float distance, Vector3 weaponPointDirection, BotComponent bot)
+    public static FriendlyFireStatus CheckFriendlyFire(
+        Vector3 weaponFirePort,
+        float distance,
+        Vector3 weaponPointDirection,
+        BotComponent bot
+    )
     {
         RaycastHit[] hits = SphereCastAll(weaponFirePort, distance, weaponPointDirection);
         int count = hits.Length;
@@ -68,16 +88,25 @@ public class SAINFriendlyFireClass : BotComponentClassBase
         {
             var hit = hits[i];
             if (hit.collider == null)
+            {
                 continue;
+            }
 
             Player player = GameWorldComponent.Instance.GameWorld.GetPlayerByCollider(hit.collider);
             if (player == null)
+            {
                 continue;
+            }
+
             if (player.ProfileId == bot.ProfileId)
+            {
                 continue;
+            }
 
             if (!bot.EnemyController.IsPlayerAnEnemy(player.ProfileId))
+            {
                 return FriendlyFireStatus.FriendlyBlock;
+            }
         }
         return FriendlyFireStatus.Clear;
     }

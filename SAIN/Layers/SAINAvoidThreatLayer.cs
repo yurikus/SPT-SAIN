@@ -68,5 +68,8 @@ internal class SAINAvoidThreatLayer(BotOwner bot, int priority) : SAINLayer(bot,
     }
 
     private ECombatDecision _lastActionDecision;
-    public ECombatDecision CurrentDecision => Bot.Decision.CurrentCombatDecision;
+    public ECombatDecision CurrentDecision
+    {
+        get { return Bot.Decision.CurrentCombatDecision; }
+    }
 }

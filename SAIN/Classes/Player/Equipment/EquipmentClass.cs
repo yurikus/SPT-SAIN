@@ -1,15 +1,16 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using EFT;
 using EFT.InventoryLogic;
 using SAIN.SAINComponent;
 using SAIN.SAINComponent.Classes.Info;
-using System;
-using System.Collections.Generic;
 
 namespace SAIN.Components.PlayerComponentSpace.Classes.Equipment;
 
 public class SAINEquipmentClass : PlayerComponentBase
 {
-    public SAINEquipmentClass(PlayerComponent playerComponent) : base(playerComponent)
+    public SAINEquipmentClass(PlayerComponent playerComponent)
+        : base(playerComponent)
     {
         EquipmentClass = playerComponent.Player.Equipment;
         GearInfo = new GearInfo(this);
@@ -110,8 +111,7 @@ public class SAINEquipmentClass : PlayerComponentBase
                 {
                     WeaponInfos.Add(slot, new WeaponInfo(weapon));
                 }
-                else if (WeaponInfos.TryGetValue(slot, out WeaponInfo info) &&
-                    info.Weapon != weapon)
+                else if (WeaponInfos.TryGetValue(slot, out WeaponInfo info) && info.Weapon != weapon)
                 {
                     info.Dispose();
                     WeaponInfos[slot] = new WeaponInfo(weapon);
@@ -131,7 +131,10 @@ public class SAINEquipmentClass : PlayerComponentBase
 
     public WeaponInfo CurrentWeaponInfo { get; private set; }
 
-    public WeaponInfo WeaponInInventory => PrimaryWeapon ?? SecondaryWeapon ?? HolsterWeapon;
+    public WeaponInfo WeaponInInventory
+    {
+        get { return PrimaryWeapon ?? SecondaryWeapon ?? HolsterWeapon; }
+    }
 
     private void GetCurrentWeaponInfo(Weapon weapon)
     {
@@ -149,13 +152,27 @@ public class SAINEquipmentClass : PlayerComponentBase
     public WeaponInfo GetWeaponInfo(EquipmentSlot slot)
     {
         if (WeaponInfos.TryGetValue(slot, out WeaponInfo weaponInfo))
+        {
             return weaponInfo;
+        }
+
         return null;
     }
 
-    public WeaponInfo PrimaryWeapon => GetWeaponInfo(EquipmentSlot.FirstPrimaryWeapon);
-    public WeaponInfo SecondaryWeapon => GetWeaponInfo(EquipmentSlot.SecondPrimaryWeapon);
-    public WeaponInfo HolsterWeapon => GetWeaponInfo(EquipmentSlot.Holster);
+    public WeaponInfo PrimaryWeapon
+    {
+        get { return GetWeaponInfo(EquipmentSlot.FirstPrimaryWeapon); }
+    }
+
+    public WeaponInfo SecondaryWeapon
+    {
+        get { return GetWeaponInfo(EquipmentSlot.SecondPrimaryWeapon); }
+    }
+
+    public WeaponInfo HolsterWeapon
+    {
+        get { return GetWeaponInfo(EquipmentSlot.Holster); }
+    }
 
     public Dictionary<EquipmentSlot, WeaponInfo> WeaponInfos { get; } = new Dictionary<EquipmentSlot, WeaponInfo>();
 }

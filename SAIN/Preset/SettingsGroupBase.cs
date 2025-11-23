@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using SAIN.Attributes;
 using SAIN.Preset.GlobalSettings;
-using System.Collections.Generic;
 
 namespace SAIN.Preset.Personalities;
 

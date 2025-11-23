@@ -34,12 +34,15 @@ public struct PlayerWeaponData
     {
         Vector3 weapRoot = player.WeaponRoot.position;
         weaponData.WeaponRoot = new Vector3(weapRoot.x, weapRoot.y, weapRoot.z);
-        weaponData.WeaponRootOffset = new Vector3(weapRoot.x - playerPosition.x, weapRoot.y - playerPosition.y, weapRoot.z - playerPosition.z);
+        weaponData.WeaponRootOffset = new Vector3(
+            weapRoot.x - playerPosition.x,
+            weapRoot.y - playerPosition.y,
+            weapRoot.z - playerPosition.z
+        );
         weaponData.WeaponRootHeightOffset = new Vector3(0, weapRoot.y - playerPosition.y, 0);
 
         // Is the player holding a weapon?
-        if (player.HandsController is Player.FirearmController firearmController &&
-            firearmController.CurrentFireport != null)
+        if (player.HandsController is Player.FirearmController firearmController && firearmController.CurrentFireport != null)
         {
             Vector3 firePort = firearmController.CurrentFireport.position;
             Vector3 pointDir = firearmController.CurrentFireport.Original.TransformDirection(player.LocalShotDirection);

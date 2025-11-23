@@ -1,10 +1,10 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
-using System.Text;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover;
@@ -18,18 +18,24 @@ internal class SeekCoverAction(BotOwner bot) : BotAction(bot, nameof(SeekCoverAc
 
         if (Bot.Cover.CoverInUse == null)
         {
-            if (!Bot.Mover.Running && !Bot.Mover.ActivePath?.Crawling != true) Bot.Mover.Pose.SetPoseToCover(enemy);
+            if (!Bot.Mover.Running && !Bot.Mover.ActivePath?.Crawling != true)
+            {
+                Bot.Mover.Pose.SetPoseToCover(enemy);
+            }
+
             return;
         }
 
         if (Bot.Info.FileSettings.Move.PRONE_TOGGLE && GlobalSettingsClass.Instance.Move.PRONE_TOGGLE)
         {
-            if (!Bot.Cover.TrySetProneConditional(enemy) &&
-                enemy != null &&
-                enemy.IsVisible &&
-                Bot.Player.MovementContext.CanProne &&
-                Bot.Player.PoseLevel <= 0.1 &&
-                BotOwner.WeaponManager.Reload.Reloading)
+            if (
+                !Bot.Cover.TrySetProneConditional(enemy)
+                && enemy != null
+                && enemy.IsVisible
+                && Bot.Player.MovementContext.CanProne
+                && Bot.Player.PoseLevel <= 0.1
+                && BotOwner.WeaponManager.Reload.Reloading
+            )
             {
                 Bot.Mover.Prone.SetProne(true);
             }
@@ -57,10 +63,12 @@ internal class SeekCoverAction(BotOwner bot) : BotAction(bot, nameof(SeekCoverAc
 
     private void checkSetLean()
     {
-        if (!Bot.Info.FileSettings.Move.LEAN_INCOVER_TOGGLE
+        if (
+            !Bot.Info.FileSettings.Move.LEAN_INCOVER_TOGGLE
             || !GlobalSettingsClass.Instance.Move.LEAN_INCOVER_TOGGLE
             || Bot.Suppression.IsSuppressed
-            || Bot.Decision.CurrentSelfDecision != ESelfActionType.None)
+            || Bot.Decision.CurrentSelfDecision != ESelfActionType.None
+        )
         {
             Bot.Mover.Lean.FastLean(LeanSetting.None);
             CurrentLean = LeanSetting.None;
@@ -169,7 +177,11 @@ internal class SeekCoverAction(BotOwner bot) : BotAction(bot, nameof(SeekCoverAc
     public override void BuildDebugText(StringBuilder stringBuilder)
     {
         stringBuilder.AppendLine("Cover Info");
-        if (Bot == null) return;
+        if (Bot == null)
+        {
+            return;
+        }
+
         var cover = Bot.Cover;
         stringBuilder.AppendLabeledValue("Cover Seeking State", $"{cover.CoverSeekingState}", Color.white, Color.yellow, true);
         stringBuilder.AppendLabeledValue("Running To Cover", $"{cover.SprintingToCover}", Color.white, Color.yellow, true);
@@ -181,10 +193,28 @@ internal class SeekCoverAction(BotOwner bot) : BotAction(bot, nameof(SeekCoverAc
         {
             stringBuilder.AppendLine($"Holding In Cover [{point.HardData.Id}]");
             stringBuilder.AppendLabeledValue("Path Length Status", $"{point.PathDistanceStatus}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Straight Distance Status", $"{point.StraightDistanceStatus}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Height / Value", $"{point.CoverHeight} {point.HardData.Value}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue(
+                "Straight Distance Status",
+                $"{point.StraightDistanceStatus}",
+                Color.white,
+                Color.yellow,
+                true
+            );
+            stringBuilder.AppendLabeledValue(
+                "Height / Value",
+                $"{point.CoverHeight} {point.HardData.Value}",
+                Color.white,
+                Color.yellow,
+                true
+            );
             stringBuilder.AppendLabeledValue("Path Length", $"{point.PathData.PathLength}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Distance", $"{point.GetDistance(Bot.Transform.NavData.Position)}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue(
+                "Distance",
+                $"{point.GetDistance(Bot.Transform.NavData.Position)}",
+                Color.white,
+                Color.yellow,
+                true
+            );
         }
         point = Bot.Cover.CoverPoint_MovingTo;
         if (point != null)
@@ -192,9 +222,21 @@ internal class SeekCoverAction(BotOwner bot) : BotAction(bot, nameof(SeekCoverAc
             stringBuilder.AppendLine($"Moving To Cover [{point.HardData.Id}]");
             stringBuilder.AppendLabeledValue("Path Length Status", $"{point.PathDistanceStatus}", Color.white, Color.yellow, true);
             stringBuilder.AppendLabeledValue("Status", $"{point.StraightDistanceStatus}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Height / Value", $"{point.CoverHeight} {point.HardData.Value}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue(
+                "Height / Value",
+                $"{point.CoverHeight} {point.HardData.Value}",
+                Color.white,
+                Color.yellow,
+                true
+            );
             stringBuilder.AppendLabeledValue("Path Length", $"{point.PathData.PathLength}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Distance", $"{point.GetDistance(Bot.Transform.NavData.Position)}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue(
+                "Distance",
+                $"{point.GetDistance(Bot.Transform.NavData.Position)}",
+                Color.white,
+                Color.yellow,
+                true
+            );
         }
     }
 }

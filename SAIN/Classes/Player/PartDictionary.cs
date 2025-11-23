@@ -1,8 +1,6 @@
-﻿using SAIN.Models.Structs;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Models.Structs;
 
 namespace SAIN.Components;
 
-public class PartDictionary : Dictionary<EBodyPart, SAINBodyPart>
-{
-}
+public class PartDictionary : Dictionary<EBodyPart, SAINBodyPart> { }

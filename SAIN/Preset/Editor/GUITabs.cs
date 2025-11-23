@@ -17,21 +17,27 @@ public static class GUITabs
         switch (selectedTab)
         {
             case EEditorTab.Home:
-                Home(); break;
+                Home();
+                break;
 
             case EEditorTab.BotSettings:
-                BotSettings(); break;
+                BotSettings();
+                break;
 
             case EEditorTab.Personalities:
-                Personality(); break;
+                Personality();
+                break;
 
             case EEditorTab.EquipmentStealth:
-                Stealth(); break;
+                Stealth();
+                break;
 
             case EEditorTab.Advanced:
-                Advanced(); break;
+                Advanced();
+                break;
 
-            default: break;
+            default:
+                break;
         }
         EditTabsClass.EndScrollView();
     }
@@ -47,7 +53,8 @@ public static class GUITabs
             "Global Settings",
             $"SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}",
             35f,
-            out bool saved);
+            out bool saved
+        );
 
         if (saved)
         {
@@ -76,18 +83,16 @@ public static class GUITabs
             BuilderClass.Alert(
                 "Click Save to export changes, and send changes to bots if in-game",
                 "YOU HAVE UNSAVED CHANGES!",
-                35f, ColorNames.DarkRed);
+                35f,
+                ColorNames.DarkRed
+            );
         }
         else
         {
             BuilderClass.Alert(null, null, 25f, null);
         }
 
-        if (Button(
-            "Save and Export",
-            ConfigEditingTracker.GetUnsavedValuesString(),
-            EUISoundType.InsuranceInsured,
-            Height(25f)))
+        if (Button("Save and Export", ConfigEditingTracker.GetUnsavedValuesString(), EUISoundType.InsuranceInsured, Height(25f)))
         {
             SAINPresetClass.ExportAll(SAINPlugin.LoadedPreset);
         }
@@ -113,13 +118,16 @@ public static class GUITabs
                 Space(spacing / 2f);
 
                 if (Button("Reset"))
+                {
                     SAINPlugin.ForceSoloDecision = ECombatDecision.None;
+                }
 
                 Space(spacing / 2f);
 
                 SAINPlugin.ForceSoloDecision = BuilderClass.SelectionGrid(
                     SAINPlugin.ForceSoloDecision,
-                    EnumValues.GetEnum<ECombatDecision>());
+                    EnumValues.GetEnum<ECombatDecision>()
+                );
             }
 
             Space(spacing);
@@ -130,13 +138,16 @@ public static class GUITabs
                 Space(spacing / 2f);
 
                 if (Button("Reset"))
+                {
                     SAINPlugin.ForceSquadDecision = ESquadDecision.None;
+                }
 
                 Space(spacing / 2f);
 
-                SAINPlugin.ForceSquadDecision =
-                    BuilderClass.SelectionGrid(SAINPlugin.ForceSquadDecision,
-                    EnumValues.GetEnum<ESquadDecision>());
+                SAINPlugin.ForceSquadDecision = BuilderClass.SelectionGrid(
+                    SAINPlugin.ForceSquadDecision,
+                    EnumValues.GetEnum<ESquadDecision>()
+                );
             }
 
             Space(spacing);
@@ -147,13 +158,16 @@ public static class GUITabs
                 Space(spacing / 2f);
 
                 if (Button("Reset"))
+                {
                     SAINPlugin.ForceSelfDecision = ESelfActionType.None;
+                }
 
                 Space(spacing / 2f);
 
                 SAINPlugin.ForceSelfDecision = BuilderClass.SelectionGrid(
                     SAINPlugin.ForceSelfDecision,
-                    EnumValues.GetEnum<ESelfActionType>());
+                    EnumValues.GetEnum<ESelfActionType>()
+                );
             }
         }
     }

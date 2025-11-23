@@ -6,25 +6,45 @@ namespace SAIN.Helpers.Events;
 public abstract class ToggleEventBase
 {
     public bool Value { get; protected set; }
-    public ToggleEventBase(bool defaultValue) => SetValue(defaultValue, 0f);
-    protected virtual void SetValue(bool value, float currentTime) => Value = value;
+
+    public ToggleEventBase(bool defaultValue)
+    {
+        SetValue(defaultValue, 0f);
+    }
+
+    protected virtual void SetValue(bool value, float currentTime)
+    {
+        Value = value;
+    }
 }
 
 public abstract class ToggleEventTimeTrackBase : ToggleEventBase
 {
-    public ToggleEventTimeTrackBase(bool defaultValue) : base(defaultValue) { }
+    public ToggleEventTimeTrackBase(bool defaultValue)
+        : base(defaultValue) { }
 
     public float TimeLastTrue { get; private set; }
     public float TimeLastFalse { get; private set; }
-    public float TimeSinceTrue => Time.time - TimeLastTrue;
-    public float TimeSinceFalse => Time.time - TimeLastFalse;
+    public float TimeSinceTrue
+    {
+        get { return Time.time - TimeLastTrue; }
+    }
+
+    public float TimeSinceFalse
+    {
+        get { return Time.time - TimeLastFalse; }
+    }
 
     protected override void SetValue(bool value, float currentTime)
     {
         if (value)
+        {
             TimeLastTrue = currentTime;
+        }
         else
+        {
             TimeLastFalse = currentTime;
+        }
 
         base.SetValue(value, currentTime);
     }
@@ -45,7 +65,8 @@ public class ToggleEventForObjectTimeTracked<T> : ToggleEventTimeTrackBase
 
     private readonly T Object;
 
-    public ToggleEventForObjectTimeTracked(T _object, bool defaultValue = false) : base(defaultValue)
+    public ToggleEventForObjectTimeTracked(T _object, bool defaultValue = false)
+        : base(defaultValue)
     {
         Object = _object;
     }
@@ -68,7 +89,8 @@ public class ToggleEventForObject<T> : ToggleEventBase
 
     private readonly T Object;
 
-    public ToggleEventForObject(T _object, bool defaultValue = false) : base(defaultValue)
+    public ToggleEventForObject(T _object, bool defaultValue = false)
+        : base(defaultValue)
     {
         Object = _object;
     }
@@ -87,7 +109,8 @@ public class ToggleEvent : ToggleEventBase
         }
     }
 
-    public ToggleEvent(bool defaultValue = false) : base(defaultValue) { }
+    public ToggleEvent(bool defaultValue = false)
+        : base(defaultValue) { }
 }
 
 public class ToggleEventTimeTracked : ToggleEventTimeTrackBase
@@ -103,7 +126,8 @@ public class ToggleEventTimeTracked : ToggleEventTimeTrackBase
         }
     }
 
-    public ToggleEventTimeTracked(bool defaultValue = false) : base(defaultValue) { }
+    public ToggleEventTimeTracked(bool defaultValue = false)
+        : base(defaultValue) { }
 }
 
 public class ToggleEvent<A> : ToggleEventBase
@@ -122,7 +146,8 @@ public class ToggleEvent<A> : ToggleEventBase
         }
     }
 
-    public ToggleEvent(bool defaultValue = false) : base(defaultValue) { }
+    public ToggleEvent(bool defaultValue = false)
+        : base(defaultValue) { }
 }
 
 public class ToggleEvent<A, B> : ToggleEventBase
@@ -138,7 +163,8 @@ public class ToggleEvent<A, B> : ToggleEventBase
         }
     }
 
-    public ToggleEvent(bool defaultValue = false) : base(defaultValue) { }
+    public ToggleEvent(bool defaultValue = false)
+        : base(defaultValue) { }
 }
 
 public class ToggleEvent<A, B, C> : ToggleEventBase
@@ -154,5 +180,6 @@ public class ToggleEvent<A, B, C> : ToggleEventBase
         }
     }
 
-    public ToggleEvent(bool defaultValue = false) : base(defaultValue) { }
+    public ToggleEvent(bool defaultValue = false)
+        : base(defaultValue) { }
 }

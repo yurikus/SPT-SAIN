@@ -14,20 +14,53 @@ public class AimHitEffectClass : BotBase
     private bool _affectActive;
     private float _timeFinished;
 
-    private float EFFECT_MIN_ANGLE => _settings.DAMAGE_BASE_MIN_ANGLE;
-    private float EFFECT_MAX_ANGLE => _settings.DAMAGE_BASE_MAX_ANGLE;
-    private float DAMAGE_BASELINE => _settings.DAMAGE_RECEIVED_BASELINE;
-    private float DAMAGE_MIN_MOD => _settings.DAMAGE_MIN_MOD;
-    private float DAMAGE_MAX_MOD => _settings.DAMAGE_MAX_MOD;
-    private float DAMAGE_MANUAL_MODIFIER => _settings.DAMAGE_MANUAL_MODIFIER;
-    private bool DAMAGE_USE_HIT_OFFSET_DIR => _settings.USE_HIT_POINT_DIRECTION;
-    private float DAMAGE_HIT_OFFSET_BASE_DIST => _settings.HIT_POINT_DIRECTION_BASE_DISTANCE;
-
-    private HitEffectSettings _settings => GlobalSettingsClass.Instance.Aiming.HitEffects;
-
-    public AimHitEffectClass(BotComponent bot) : base(bot)
+    private float EFFECT_MIN_ANGLE
     {
+        get { return _settings.DAMAGE_BASE_MIN_ANGLE; }
     }
+
+    private float EFFECT_MAX_ANGLE
+    {
+        get { return _settings.DAMAGE_BASE_MAX_ANGLE; }
+    }
+
+    private float DAMAGE_BASELINE
+    {
+        get { return _settings.DAMAGE_RECEIVED_BASELINE; }
+    }
+
+    private float DAMAGE_MIN_MOD
+    {
+        get { return _settings.DAMAGE_MIN_MOD; }
+    }
+
+    private float DAMAGE_MAX_MOD
+    {
+        get { return _settings.DAMAGE_MAX_MOD; }
+    }
+
+    private float DAMAGE_MANUAL_MODIFIER
+    {
+        get { return _settings.DAMAGE_MANUAL_MODIFIER; }
+    }
+
+    private bool DAMAGE_USE_HIT_OFFSET_DIR
+    {
+        get { return _settings.USE_HIT_POINT_DIRECTION; }
+    }
+
+    private float DAMAGE_HIT_OFFSET_BASE_DIST
+    {
+        get { return _settings.HIT_POINT_DIRECTION_BASE_DISTANCE; }
+    }
+
+    private HitEffectSettings _settings
+    {
+        get { return GlobalSettingsClass.Instance.Aiming.HitEffects; }
+    }
+
+    public AimHitEffectClass(BotComponent bot)
+        : base(bot) { }
 
     public Vector3 ApplyEffect(Vector3 dir)
     {

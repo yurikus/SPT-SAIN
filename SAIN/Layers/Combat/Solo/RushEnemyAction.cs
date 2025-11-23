@@ -38,10 +38,10 @@ internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAc
     {
         checkJumpEnemyInSight();
         if (Bot.Mover.Running)
-            Bot.Mover.ActivePath?.RequestEndSprint(
-                SAINComponent.Classes.Mover.ESprintUrgency.None,
-                "enemy in sight"
-            );
+        {
+            Bot.Mover.ActivePath?.RequestEndSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
+        }
+
         Bot.Mover.DogFight.DogFightMove(true, _enemy);
     }
 
@@ -59,10 +59,7 @@ internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAc
 
     private void checkJump()
     {
-        if (
-            !Bot.Info.FileSettings.Move.JUMP_TOGGLE
-            || !GlobalSettingsClass.Instance.Move.JUMP_TOGGLE
-        )
+        if (!Bot.Info.FileSettings.Move.JUMP_TOGGLE || !GlobalSettingsClass.Instance.Move.JUMP_TOGGLE)
         {
             return;
         }
@@ -70,11 +67,7 @@ internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAc
         {
             //&& Bot.Enemy.Path.PathDistance > 3f
             NavMeshPath enemyPath = _enemy.Path.PathToEnemy;
-            if (
-                enemyPath.corners.Length > 2
-                && (enemyPath.corners[enemyPath.corners.Length - 2] - Bot.Position).sqrMagnitude
-                    < 1f
-            )
+            if (enemyPath.corners.Length > 2 && (enemyPath.corners[enemyPath.corners.Length - 2] - Bot.Position).sqrMagnitude < 1f)
             {
                 TryJumpTimer = Time.time + 3f;
                 Bot.Mover.TryJump();
@@ -84,10 +77,7 @@ internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAc
 
     private void checkJumpEnemyInSight()
     {
-        if (
-            !Bot.Info.FileSettings.Move.JUMP_TOGGLE
-            || !GlobalSettingsClass.Instance.Move.JUMP_TOGGLE
-        )
+        if (!Bot.Info.FileSettings.Move.JUMP_TOGGLE || !GlobalSettingsClass.Instance.Move.JUMP_TOGGLE)
         {
             return;
         }
@@ -100,10 +90,7 @@ internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAc
             else if (TryJumpTimer < Time.time && Bot.Player.IsSprintEnabled)
             {
                 TryJumpTimer = Time.time + 3f;
-                if (
-                    !_shallBunnyHop
-                    && EFTMath.RandomBool(Bot.Info.PersonalitySettings.Rush.BunnyHopChance)
-                )
+                if (!_shallBunnyHop && EFTMath.RandomBool(Bot.Info.PersonalitySettings.Rush.BunnyHopChance))
                 {
                     _shallBunnyHop = true;
                 }
@@ -145,23 +132,14 @@ internal class RushEnemyAction(BotOwner bot) : BotAction(bot, nameof(RushEnemyAc
         {
             return true;
         }
-        if (
-            sprintController.Moving
-            && (_lastMovePos - lastKnown.Value).sqrMagnitude < CHANGE_MOVE_THRESHOLD
-        )
+        if (sprintController.Moving && (_lastMovePos - lastKnown.Value).sqrMagnitude < CHANGE_MOVE_THRESHOLD)
         {
             return true;
         }
         _lastMovePos = lastKnown.Value;
         if (
             pathDistance > BotOwner.Settings.FileSettings.Move.RUN_TO_COVER_MIN
-            && sprintController.RunToPointByWay(
-                enemy.Path.PathToEnemy,
-                true,
-                -1,
-                SAINComponent.Classes.Mover.ESprintUrgency.High,
-                true
-            )
+            && sprintController.RunToPointByWay(enemy.Path.PathToEnemy, true, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true)
         )
         {
             return true;

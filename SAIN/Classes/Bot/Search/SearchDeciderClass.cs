@@ -44,10 +44,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
 
     private void calcSearchTime()
     {
-        if (
-            Bot.Decision.CurrentCombatDecision != ECombatDecision.Search
-            && _nextRecalcSearchTime < Time.time
-        )
+        if (Bot.Decision.CurrentCombatDecision != ECombatDecision.Search && _nextRecalcSearchTime < Time.time)
         {
             _nextRecalcSearchTime = Time.time + 120f;
             Bot.Info.CalcTimeBeforeSearch();
@@ -96,8 +93,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
     {
         if (
             enemy.Hearing.EnemyHeardFromPeace
-            && Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior
-                == EHeardFromPeaceBehavior.SearchNow
+            && Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior == EHeardFromPeaceBehavior.SearchNow
         )
         {
             reason = EWantToSearchReason.HeardFromPeaceSearchNow;
@@ -127,10 +123,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
         {
             return false;
         }
-        if (
-            SAINPlugin.LoadedPreset.GlobalSettings.Mind.OnlySneakyPersonalitiesSneaky
-            && !Bot.Info.PersonalitySettings.Search.Sneaky
-        )
+        if (SAINPlugin.LoadedPreset.GlobalSettings.Mind.OnlySneakyPersonalitiesSneaky && !Bot.Info.PersonalitySettings.Search.Sneaky)
         {
             return false;
         }
@@ -138,10 +131,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
         {
             return false;
         }
-        if (
-            Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior
-            == EHeardFromPeaceBehavior.SearchNow
-        )
+        if (Bot.Info.PersonalitySettings.Search.HeardFromPeaceBehavior == EHeardFromPeaceBehavior.SearchNow)
         {
             return false;
         }
@@ -164,11 +154,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
         return false;
     }
 
-    private bool shallBeginSearch(
-        Enemy enemy,
-        float timeBeforeSearch,
-        out EWantToSearchReason reason
-    )
+    private bool shallBeginSearch(Enemy enemy, float timeBeforeSearch, out EWantToSearchReason reason)
     {
         if (shallBeginSearchCauseLooting(enemy))
         {
@@ -202,10 +188,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
                 return true;
             }
             var squadHeardPlace = enemy.KnownPlaces.LastSquadHeardPlace;
-            if (
-                squadHeardPlace != null
-                && squadHeardPlace.TimeSincePositionUpdated >= timeBeforeSearch
-            )
+            if (squadHeardPlace != null && squadHeardPlace.TimeSincePositionUpdated >= timeBeforeSearch)
             {
                 reason = EWantToSearchReason.NewSearch_EnemyNotHeard_Squad;
                 return true;
@@ -238,11 +221,7 @@ public class SearchDeciderClass : BotSubClass<SAINSearchClass>
         return true;
     }
 
-    private bool shallContinueSearch(
-        Enemy enemy,
-        float timeBeforeSearch,
-        out EWantToSearchReason reason
-    )
+    private bool shallContinueSearch(Enemy enemy, float timeBeforeSearch, out EWantToSearchReason reason)
     {
         if (enemy.IsVisible)
         {

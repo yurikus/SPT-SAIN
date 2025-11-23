@@ -41,7 +41,10 @@ public static class Extensions
     public static Vector3? Position(this EnemyPlace place)
     {
         if (place == null)
+        {
             return null;
+        }
+
         return place.Position;
     }
 
@@ -228,46 +231,24 @@ public static class Extensions
         return value.Scale(0, 1f, 1f - scalingFactor, 1f + scalingFactor);
     }
 
-    public static float Scale(
-        this float value,
-        float inputMin,
-        float inputMax,
-        float outputMin,
-        float outputMax
-    )
+    public static float Scale(this float value, float inputMin, float inputMax, float outputMin, float outputMax)
     {
         return outputMin + (outputMax - outputMin) * ((value - inputMin) / (inputMax - inputMin));
     }
 
-    public static bool GUIToggle(
-        this bool value,
-        GUIContent content,
-        EUISoundType? sound = null,
-        params GUILayoutOption[] options
-    )
+    public static bool GUIToggle(this bool value, GUIContent content, EUISoundType? sound = null, params GUILayoutOption[] options)
     {
         bool newvalue = GUILayout.Toggle(value, content, GetStyle(Style.toggle), options);
         CompareValuePlaySound(value, newvalue, sound);
         return newvalue;
     }
 
-    public static bool GUIToggle(
-        this bool value,
-        string name,
-        string toolTip,
-        EUISoundType? sound = null,
-        params GUILayoutOption[] options
-    )
+    public static bool GUIToggle(this bool value, string name, string toolTip, EUISoundType? sound = null, params GUILayoutOption[] options)
     {
         return GUIToggle(value, new GUIContent(name, toolTip), sound, options);
     }
 
-    public static bool GUIToggle(
-        this bool value,
-        string name,
-        EUISoundType? sound = null,
-        params GUILayoutOption[] options
-    )
+    public static bool GUIToggle(this bool value, string name, EUISoundType? sound = null, params GUILayoutOption[] options)
     {
         return GUIToggle(value, new GUIContent(name), sound, options);
     }
@@ -277,11 +258,7 @@ public static class Extensions
         return StylesClass.GetStyle(style);
     }
 
-    private static bool CompareValuePlaySound(
-        object oldValue,
-        object newValue,
-        EUISoundType? sound = null
-    )
+    private static bool CompareValuePlaySound(object oldValue, object newValue, EUISoundType? sound = null)
     {
         if (oldValue.ToString() != newValue.ToString() && sound != null)
         {
@@ -296,12 +273,7 @@ public static class Extensions
         return (value * Random(a, b)).Round100();
     }
 
-    public static float RandomizeSum(
-        this float value,
-        float a = -1,
-        float b = 1,
-        float min = 0.001f
-    )
+    public static float RandomizeSum(this float value, float a = -1, float b = 1, float min = 0.001f)
     {
         float randomValue = value + Random(a, b);
         if (randomValue < min)
@@ -350,14 +322,6 @@ public static class ThreadSafeRandom
 
     public static System.Random ThisThreadsRandom
     {
-        get
-        {
-            return Local
-                ?? (
-                    Local = new System.Random(
-                        unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId)
-                    )
-                );
-        }
+        get { return Local ?? (Local = new System.Random(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
     }
 }

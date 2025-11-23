@@ -1,20 +1,15 @@
-﻿using Newtonsoft.Json;
-using SAIN.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
-
 public abstract class SAINSettingsBase<T> : ISAINSettings
 {
-    public virtual void Update()
-    {
-    }
+    public virtual void Update() { }
 
-    public virtual void Apply(BotSettingsComponents settings)
-    {
-    }
+    public virtual void Apply(BotSettingsComponents settings) { }
 
     public object GetDefaults()
     {
@@ -35,7 +30,5 @@ public abstract class SAINSettingsBase<T> : ISAINSettings
     [JsonIgnore]
     public T Defaults;
 
-    public virtual void Init(List<ISAINSettings> list)
-    {
-    }
+    public virtual void Init(List<ISAINSettings> list) { }
 }

@@ -29,7 +29,9 @@ public class AimDownSightsController : BotComponentClassBase
     public void UpdateADSstatus(Enemy Enemy)
     {
         if (_timeLastCheckedStatus + 0.1f > Time.time)
+        {
             return;
+        }
 
         // If a bot is sneaky, don't change ADS if their enemy is close to avoid alerting them.
         if (
@@ -74,9 +76,7 @@ public class AimDownSightsController : BotComponentClassBase
             case EAimDownSightsStatus.EnemyVisible:
             case EAimDownSightsStatus.DogFight:
             case EAimDownSightsStatus.MovingToCover:
-                result =
-                    enemy != null
-                    && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
+                result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
                 break;
 
             //case EAimDownSightsStatus.DogFight:
@@ -93,9 +93,7 @@ public class AimDownSightsController : BotComponentClassBase
                     timeSinceChangeDecision > 3f
                     && (
                         EFTMath.RandomBool(60)
-                        || enemy != null
-                            && enemy.KnownPlaces.BotDistanceFromLastKnown
-                                > (AimingDownSights ? 5f : 10f)
+                        || enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f)
                     );
                 break;
 
@@ -110,9 +108,7 @@ public class AimDownSightsController : BotComponentClassBase
             //    break;
 
             default:
-                result =
-                    enemy != null
-                    && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
+                result = enemy != null && enemy.KnownPlaces.BotDistanceFromLastKnown > (AimingDownSights ? 5f : 10f);
                 break;
         }
 
@@ -178,10 +174,7 @@ public class AimDownSightsController : BotComponentClassBase
             }
         }
 
-        if (
-            Bot.Decision.CurrentSquadDecision == ESquadDecision.Suppress
-            && Bot.ManualShoot.Reason == EShootReason.SquadSuppressing
-        )
+        if (Bot.Decision.CurrentSquadDecision == ESquadDecision.Suppress && Bot.ManualShoot.Reason == EShootReason.SquadSuppressing)
         {
             return EAimDownSightsStatus.Suppressing;
         }

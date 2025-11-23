@@ -1,7 +1,7 @@
-﻿using SAIN.Helpers;
+﻿using System.Collections.Generic;
+using SAIN.Helpers;
 using SAIN.Plugin;
 using SAIN.Preset;
-using System.Collections.Generic;
 using static SAIN.Attributes.AttributesGUI;
 
 namespace SAIN.Editor.GUISections;
@@ -15,8 +15,9 @@ public static class BotPersonalityEditor
 
     public static void PersonalityMenu()
     {
-        string toolTip = $"Apply Values set below to Personalities. " +
-            $"Exports edited values to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}/Personalities folder";
+        string toolTip =
+            $"Apply Values set below to Personalities. "
+            + $"Exports edited values to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}/Personalities folder";
 
         if (BuilderClass.SaveChanges(ConfigEditingTracker.GetUnsavedValuesString(), 35))
         {
@@ -24,8 +25,10 @@ public static class BotPersonalityEditor
         }
 
         _selected = SelectPersonality(_selected, 35f, 4);
-        if (_selected != EPersonality.None &&
-            SAINPresetClass.Instance.PersonalityManager.PersonalityDictionary.TryGetValue(_selected, out var settings))
+        if (
+            _selected != EPersonality.None
+            && SAINPresetClass.Instance.PersonalityManager.PersonalityDictionary.TryGetValue(_selected, out var settings)
+        )
         {
             EditAllValuesInObj(settings, out bool newEdit, null, null, 1);
         }
@@ -42,7 +45,10 @@ public static class BotPersonalityEditor
     }
 
     private static EPersonality _selected = EPersonality.None;
-    public static bool PersonalitiesWereEdited => ConfigEditingTracker.UnsavedChanges;
+    public static bool PersonalitiesWereEdited
+    {
+        get { return ConfigEditingTracker.UnsavedChanges; }
+    }
 
     private static List<EPersonality> _options = new();
 

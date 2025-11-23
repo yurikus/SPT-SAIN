@@ -24,17 +24,18 @@ public class ReloadClass : BotBase
             {
                 bool canFill = true;
                 if (slotsToIgnore != null)
+                {
                     foreach (var slot in slotsToIgnore)
+                    {
                         if (slot == item.Key)
                         {
                             canFill = false;
                             break;
                         }
+                    }
+                }
 
-                if (
-                    canFill
-                    && BotMagazineWeapon.RefillMags(bot, item.Value, count, includeActiveMag)
-                )
+                if (canFill && BotMagazineWeapon.RefillMags(bot, item.Value, count, includeActiveMag))
                 {
                     result = true;
                 }
@@ -98,8 +99,7 @@ public class ReloadClass : BotBase
     {
         return reloadMode switch
         {
-            EReloadMode.ExternalMagazine or EReloadMode.ExternalMagazineWithInternalReloadSupport =>
-                true,
+            EReloadMode.ExternalMagazine or EReloadMode.ExternalMagazineWithInternalReloadSupport => true,
             _ => false,
         };
     }

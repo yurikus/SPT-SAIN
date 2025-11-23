@@ -1,7 +1,7 @@
-﻿using EFT;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using EFT;
+using Newtonsoft.Json;
 using EFTCore = LocalBotSettingsProviderClass;
 using EFTStatModifiersClass = BotLastBlindEffectModifierClass;
 
@@ -9,14 +9,33 @@ namespace SAIN.Helpers;
 
 internal class HelpersGClass
 {
-    public static float LAY_DOWN_ANG_SHOOT => EFTCore.Core.LAY_DOWN_ANG_SHOOT;
-    public static float Gravity => EFTCore.Core.G;
-    public static float SMOKE_GRENADE_RADIUS_COEF => EFTCore.Core.SMOKE_GRENADE_RADIUS_COEF;
+    public static float LAY_DOWN_ANG_SHOOT
+    {
+        get { return EFTCore.Core.LAY_DOWN_ANG_SHOOT; }
+    }
+
+    public static float Gravity
+    {
+        get { return EFTCore.Core.G; }
+    }
+
+    public static float SMOKE_GRENADE_RADIUS_COEF
+    {
+        get { return EFTCore.Core.SMOKE_GRENADE_RADIUS_COEF; }
+    }
 }
 
 public class TemporaryStatModifiers
 {
-    public TemporaryStatModifiers(float precision = 1f, float accuracySpeed = 1f, float gainSight = 1f, float scatter = 1f, float priorityScatter = 1f, float visibleDistance = 1f, float hearingDistance = 1f)
+    public TemporaryStatModifiers(
+        float precision = 1f,
+        float accuracySpeed = 1f,
+        float gainSight = 1f,
+        float scatter = 1f,
+        float priorityScatter = 1f,
+        float visibleDistance = 1f,
+        float hearingDistance = 1f
+    )
     {
         Modifiers = new EFTStatModifiersClass
         {
@@ -26,7 +45,7 @@ public class TemporaryStatModifiers
             ScatteringCoef = scatter,
             PriorityScatteringCoef = priorityScatter,
             VisibleDistCoef = visibleDistance,
-            HearingDistCoef = hearingDistance
+            HearingDistCoef = hearingDistance,
         };
     }
 
@@ -35,7 +54,8 @@ public class TemporaryStatModifiers
 
 public class CoreOverrides
 {
-    public string README = "Dont change anything here unless you know exactly what you are doing. Changes here require game restart! Not all settings do what the name suggests.";
+    public string README =
+        "Dont change anything here unless you know exactly what you are doing. Changes here require game restart! Not all settings do what the name suggests.";
     public bool SCAV_GROUPS_TOGETHER = false;
     public float DIST_NOT_TO_GROUP = 50f;
     public bool CAN_SHOOT_TO_HEAD = true;
@@ -112,8 +132,7 @@ public class EFTCoreSettings
 public class EFTBotSettings
 {
     [JsonConstructor]
-    public EFTBotSettings()
-    { }
+    public EFTBotSettings() { }
 
     public EFTBotSettings(string name, WildSpawnType type, BotDifficulty[] difficulties)
     {

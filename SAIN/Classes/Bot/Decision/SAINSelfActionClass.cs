@@ -6,7 +6,8 @@ namespace SAIN.SAINComponent.Classes.Decision;
 
 public class SAINSelfActionClass : BotComponentClassBase
 {
-    public SAINSelfActionClass(BotComponent sain) : base(sain)
+    public SAINSelfActionClass(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -57,7 +58,6 @@ public class SAINSelfActionClass : BotComponentClassBase
         }
         _nextCheckTime = Time.time + 0.2f;
 
-
         if (_handsBusyTimer > Time.time)
         {
             return;
@@ -67,7 +67,6 @@ public class SAINSelfActionClass : BotComponentClassBase
             _handsBusyTimer = Time.time + 0.5f;
             return;
         }
-
 
         bool didAction = false;
         switch (decision)
@@ -92,7 +91,10 @@ public class SAINSelfActionClass : BotComponentClassBase
         }
     }
 
-    private bool UsingMeds => BotOwner.Medecine?.Using == true;
+    private bool UsingMeds
+    {
+        get { return BotOwner.Medecine?.Using == true; }
+    }
 
     public bool DoFirstAid()
     {
@@ -101,8 +103,7 @@ public class SAINSelfActionClass : BotComponentClassBase
         {
             return false;
         }
-        if (_firstAidTimer < Time.time &&
-            heal.ShallStartUse())
+        if (_firstAidTimer < Time.time && heal.ShallStartUse())
         {
             _firstAidTimer = Time.time + 5f;
             heal.TryApplyToCurrentPart();
@@ -120,8 +121,7 @@ public class SAINSelfActionClass : BotComponentClassBase
         {
             return false;
         }
-        if (_trySurgeryTime < Time.time &&
-            surgery.ShallStartUse())
+        if (_trySurgeryTime < Time.time && surgery.ShallStartUse())
         {
             _trySurgeryTime = Time.time + 5f;
             surgery.ApplyToCurrentPart();
@@ -139,11 +139,13 @@ public class SAINSelfActionClass : BotComponentClassBase
         {
             return false;
         }
-        if (_stimTimer < Time.time &&
-            stims.CanUseNow())
+        if (_stimTimer < Time.time && stims.CanUseNow())
         {
             _stimTimer = Time.time + 3f;
-            try { stims.TryApply(); }
+            try
+            {
+                stims.TryApply();
+            }
             catch { }
             return true;
         }

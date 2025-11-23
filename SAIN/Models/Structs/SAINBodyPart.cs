@@ -1,5 +1,5 @@
-﻿using EFT;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using EFT;
 using UnityEngine;
 
 namespace SAIN.Models.Structs;

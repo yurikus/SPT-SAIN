@@ -12,14 +12,10 @@ public class PersonalitySearchSettings : SAINSettingsBase<PersonalitySearchSetti
     public bool WillSearchFromAudio = true;
 
     [Name("Heard From Peace Behavior")]
-    [Description(
-        "When a bot hears an enemy, and was previously at peace, so had no enemy and was in patrol, what is their reaction?"
-    )]
+    [Description("When a bot hears an enemy, and was previously at peace, so had no enemy and was in patrol, what is their reaction?")]
     public EHeardFromPeaceBehavior HeardFromPeaceBehavior = EHeardFromPeaceBehavior.Freeze;
 
-    [Description(
-        "Will this personality type hear and chase after distant gunshots if they aren't fired at them?"
-    )]
+    [Description("Will this personality type hear and chase after distant gunshots if they aren't fired at them?")]
     public bool WillChaseDistantGunshots = true;
 
     [Description(
@@ -28,9 +24,7 @@ public class PersonalitySearchSettings : SAINSettingsBase<PersonalitySearchSetti
     public float AudioStraightDistanceToIgnore = 100f;
 
     [Name("Start Search Base Time")]
-    [Description(
-        "The base time, before modifiers, that a personality will usually start searching for their enemy."
-    )]
+    [Description("The base time, before modifiers, that a personality will usually start searching for their enemy.")]
     [MinMax(0.1f, 500f)]
     public float SearchBaseTime = 40;
 

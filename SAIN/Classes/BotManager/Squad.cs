@@ -16,13 +16,7 @@ namespace SAIN.BotController.Classes;
 
 public class Squad
 {
-    public event Action<
-        ECombatDecision,
-        ESquadDecision,
-        ESelfActionType,
-        string,
-        BotComponent
-    > OnMemberDecisionMade;
+    public event Action<ECombatDecision, ESquadDecision, ESelfActionType, string, BotComponent> OnMemberDecisionMade;
 
     public event Action<EnemyPlace, Enemy, SAINSoundType> OnMemberHeardEnemy;
 
@@ -34,10 +28,8 @@ public class Squad
 
     public event Action<BotComponent, float> NewLeaderFound;
 
-    public Dictionary<string, BotComponent> Members { get; } =
-        new Dictionary<string, BotComponent>();
-    public Dictionary<string, MemberInfo> MemberInfos { get; } =
-        new Dictionary<string, MemberInfo>();
+    public Dictionary<string, BotComponent> Members { get; } = new Dictionary<string, BotComponent>();
+    public Dictionary<string, MemberInfo> MemberInfos { get; } = new Dictionary<string, MemberInfo>();
     public string Id { get; private set; } = string.Empty;
     public string GUID { get; } = Guid.NewGuid().ToString("N");
     public bool SquadReady { get; private set; }
@@ -46,15 +38,19 @@ public class Squad
     public BotComponent LeaderComponent { get; private set; }
     public string LeaderId { get; private set; }
     public float LeaderPowerLevel { get; private set; }
-    public bool LeaderIsDeadorNull =>
-        LeaderComponent?.Player == null
-        || LeaderComponent?.Player?.HealthController.IsAlive == false;
+    public bool LeaderIsDeadorNull
+    {
+        get { return LeaderComponent?.Player == null || LeaderComponent?.Player?.HealthController.IsAlive == false; }
+    }
+
     public float TimeThatLeaderDied { get; private set; }
-    public List<PlaceForCheck> GroupPlacesForCheck => BotsGroup?.PlacesForCheck;
-    public Dictionary<ESquadRole, BotComponent> Roles { get; } =
-        new Dictionary<ESquadRole, BotComponent>();
-    public Dictionary<string, PlaceForCheck> PlayerPlaceChecks { get; } =
-        new Dictionary<string, PlaceForCheck>();
+    public List<PlaceForCheck> GroupPlacesForCheck
+    {
+        get { return BotsGroup?.PlacesForCheck; }
+    }
+
+    public Dictionary<ESquadRole, BotComponent> Roles { get; } = new Dictionary<ESquadRole, BotComponent>();
+    public Dictionary<string, PlaceForCheck> PlayerPlaceChecks { get; } = new Dictionary<string, PlaceForCheck>();
 
     public bool MemberIsRegrouping
     {
@@ -86,16 +82,10 @@ public class Squad
 
     private void updateSettings(SAINPresetClass preset)
     {
-        _maxReportActionRangeSqr =
-            preset.GlobalSettings.Hearing.MaxRangeToReportEnemyActionNoHeadset.Sqr();
+        _maxReportActionRangeSqr = preset.GlobalSettings.Hearing.MaxRangeToReportEnemyActionNoHeadset.Sqr();
     }
 
-    public void ReportEnemyPosition(
-        Enemy reportedEnemy,
-        EnemyPlace place,
-        bool seen,
-        float currentTime
-    )
+    public void ReportEnemyPosition(Enemy reportedEnemy, EnemyPlace place, bool seen, float currentTime)
     {
         if (Members == null || Members.Count <= 1)
         {
@@ -154,11 +144,7 @@ public class Squad
         foreach (var member in Members)
         {
             Enemy enemy = member.Value?.GoalEnemy;
-            if (
-                enemy?.EnemyPlayer != null
-                && enemy.EnemyPlayer.ProfileId == profileId
-                && enemy.Status.EnemyIsSuppressed
-            )
+            if (enemy?.EnemyPlayer != null && enemy.EnemyPlayer.ProfileId == profileId && enemy.Status.EnemyIsSuppressed)
             {
                 suppressingMember = member.Value;
                 return true;
@@ -174,22 +160,9 @@ public class Squad
         Flashlight,
     }
 
-    public void AddPointToSearch(
-        Enemy Enemy,
-        Vector3 EstimatedPosition,
-        AISoundData Sound,
-        BotComponent sain
-    )
+    public void AddPointToSearch(Enemy Enemy, Vector3 EstimatedPosition, AISoundData Sound, BotComponent sain)
     {
-        AddPlaceForCheck(
-            EstimatedPosition,
-            Sound.SoundType,
-            sain,
-            Enemy,
-            true,
-            CheckSoundIsDanger(Sound),
-            Time.time
-        );
+        AddPlaceForCheck(EstimatedPosition, Sound.SoundType, sain, Enemy, true, CheckSoundIsDanger(Sound), Time.time);
     }
 
     private static bool CheckSoundIsDanger(AISoundData sound)
@@ -242,7 +215,9 @@ public class Squad
         EnemyPlace place = enemy.Hearing.SetHeard(report, currentTime);
 
         if (heard && place != null)
+        {
             OnMemberHeardEnemy?.Invoke(place, enemy, soundType);
+        }
     }
 
     public void AddPointToSearch(
@@ -261,18 +236,11 @@ public class Squad
             return;
         }
 
-        bool isDanger =
-            (position - sain.Position).sqrMagnitude
-            < SOUND_DIST_ALWAYS_DANGER * SOUND_DIST_ALWAYS_DANGER;
+        bool isDanger = (position - sain.Position).sqrMagnitude < SOUND_DIST_ALWAYS_DANGER * SOUND_DIST_ALWAYS_DANGER;
         AddPlaceForCheck(position, soundType.Convert(), sain, enemy, false, isDanger, Time.time);
     }
 
-    private PlaceForCheck addNewPlaceForCheck(
-        BotOwner botOwner,
-        Vector3 position,
-        PlaceForCheckType checkType,
-        IPlayer player
-    )
+    private PlaceForCheck addNewPlaceForCheck(BotOwner botOwner, Vector3 position, PlaceForCheckType checkType, IPlayer player)
     {
         const float navSampleDist = 10f;
         const float dontLerpDist = 50f;
@@ -283,16 +251,9 @@ public class Squad
             // This way I'm tying 1 placeforcheck to each player and updating it based on new info.
             if (PlayerPlaceChecks.TryGetValue(player.ProfileId, out PlaceForCheck oldPlace))
             {
-                if (
-                    oldPlace != null
-                    && (oldPlace.BasePoint - position).sqrMagnitude <= dontLerpDist * dontLerpDist
-                )
+                if (oldPlace != null && (oldPlace.BasePoint - position).sqrMagnitude <= dontLerpDist * dontLerpDist)
                 {
-                    Vector3 averagePosition = averagePosition = Vector3.Lerp(
-                        oldPlace.BasePoint,
-                        hitPosition,
-                        0.5f
-                    );
+                    Vector3 averagePosition = averagePosition = Vector3.Lerp(oldPlace.BasePoint, hitPosition, 0.5f);
 
                     if (
                         findNavMesh(averagePosition, out hitPosition, navSampleDist)
@@ -536,10 +497,7 @@ public class Squad
     {
         if (a != null && b != null)
         {
-            if (
-                a.PlayerComponent.Equipment.GearInfo.HasEarPiece
-                && b.PlayerComponent.Equipment.GearInfo.HasEarPiece
-            )
+            if (a.PlayerComponent.Equipment.GearInfo.HasEarPiece && b.PlayerComponent.Equipment.GearInfo.HasEarPiece)
             {
                 return true;
             }
@@ -598,12 +556,7 @@ public class Squad
         }
     }
 
-    private void memberWasKilled(
-        Player player,
-        IPlayer lastAggressor,
-        DamageInfoStruct lastDamageInfoStruct,
-        EBodyPart lastBodyPart
-    )
+    private void memberWasKilled(Player player, IPlayer lastAggressor, DamageInfoStruct lastDamageInfoStruct, EBodyPart lastBodyPart)
     {
 #if DEBUG
         if (SAINPlugin.DebugMode)
@@ -628,9 +581,9 @@ public class Squad
             {
 #if DEBUG
                 if (SAINPlugin.DebugMode)
-                    Logger.LogInfo(
-                        $"Leader [{player?.Profile.Nickname}] was killed for Squad: [{Id}]"
-                    );
+                {
+                    Logger.LogInfo($"Leader [{player?.Profile.Nickname}] was killed for Squad: [{Id}]");
+                }
 #endif
 
                 LeaderKilled?.Invoke(lastAggressor, lastDamageInfoStruct, Time.time);
@@ -646,9 +599,9 @@ public class Squad
     {
 #if DEBUG
         if (SAINPlugin.DebugMode)
-            Logger.LogInfo(
-                $"Leader [{sain?.Player?.Profile.Nickname}] Extracted for Squad: [{Id}]"
-            );
+        {
+            Logger.LogInfo($"Leader [{sain?.Player?.Profile.Nickname}] Extracted for Squad: [{Id}]");
+        }
 #endif
 
         RemoveMember(sain?.ProfileId);
@@ -663,7 +616,9 @@ public class Squad
         foreach (var memberInfo in MemberInfos.Values)
         {
             if (memberInfo.Bot == null || memberInfo.Bot.IsDead)
+            {
                 continue;
+            }
 
             // If this memberInfo is a boss type, they are the squad leader
             bool isBoss = memberInfo.Bot.Info.Profile.IsBoss;
@@ -691,9 +646,7 @@ public class Squad
         if (sain?.Player == null)
         {
 #if DEBUG
-            Logger.LogError(
-                $"Tried to Assign Null SAIN Component or Player for Squad [{Id}], skipping"
-            );
+            Logger.LogError($"Tried to Assign Null SAIN Component or Player for Squad [{Id}], skipping");
 #endif
             return;
         }
@@ -744,11 +697,7 @@ public class Squad
                     assignSquadLeader(bot);
                 }
                 // If this new memberInfo has a higher power level than the existing squad leader, set them as the new squad leader if they aren't a boss type
-                else if (
-                    LeaderComponent != null
-                    && bot.Info.Profile.PowerLevel > LeaderPowerLevel
-                    && !LeaderComponent.Info.Profile.IsBoss
-                )
+                else if (LeaderComponent != null && bot.Info.Profile.PowerLevel > LeaderPowerLevel && !LeaderComponent.Info.Profile.IsBoss)
                 {
                     assignSquadLeader(bot);
                 }
@@ -763,13 +712,7 @@ public class Squad
         }
     }
 
-    private void memberMadeDecision(
-        ECombatDecision solo,
-        ESquadDecision squad,
-        ESelfActionType self,
-        Enemy enemy,
-        BotComponent member
-    )
+    private void memberMadeDecision(ECombatDecision solo, ESquadDecision squad, ESelfActionType self, Enemy enemy, BotComponent member)
     {
         OnMemberDecisionMade?.Invoke(solo, squad, self, enemy?.EnemyProfileId, member);
     }
@@ -833,11 +776,7 @@ public class Squad
             return;
         }
 
-        if (
-            botOwner.HealthController?.IsAlive == true
-            && Members.TryGetValue(botOwner.ProfileId, out BotComponent bot)
-            && bot != null
-        )
+        if (botOwner.HealthController?.IsAlive == true && Members.TryGetValue(botOwner.ProfileId, out BotComponent bot) && bot != null)
         {
             bot.Squad.RemoveFromSquad();
             RemoveMember(bot);

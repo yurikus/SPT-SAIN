@@ -1,19 +1,20 @@
-﻿using EFT;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using EFT;
 using HarmonyLib;
 using SAIN.Attributes;
 using SAIN.Components.BotController;
 using SAIN.Helpers;
 using SAIN.Preset.BotSettings.SAINSettings;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using static SAIN.Helpers.JsonUtility;
 
 namespace SAIN.Preset.BotSettings;
 
 public class SAINBotSettingsClass : BasePreset
 {
-    public SAINBotSettingsClass(SAINPresetClass preset) : base(preset)
+    public SAINBotSettingsClass(SAINPresetClass preset)
+        : base(preset)
     {
         LoadEFTSettings();
         LoadSAINSettings();
@@ -62,9 +63,7 @@ public class SAINBotSettingsClass : BasePreset
             string name = BotType.Name;
             WildSpawnType wildSpawnType = BotType.WildSpawnType;
 
-            if (BotSpawnController.StrictExclusionList.Contains(wildSpawnType))
-            {
-            }
+            if (BotSpawnController.StrictExclusionList.Contains(wildSpawnType)) { }
 
             SAINSettingsGroupClass sainSettingsGroup;
             if (Preset.Info.IsCustom == false || !SAINPresetClass.Import(out sainSettingsGroup, Preset.Info.Name, name, "BotSettings"))
@@ -73,7 +72,7 @@ public class SAINBotSettingsClass : BasePreset
                 {
                     Name = name,
                     WildSpawnType = wildSpawnType,
-                    DifficultyModifier = DefaultDifficultyModifier[wildSpawnType]
+                    DifficultyModifier = DefaultDifficultyModifier[wildSpawnType],
                 };
 
                 UpdateSAINSettingsToEFTDefault(wildSpawnType, sainSettingsGroup);
@@ -151,7 +150,10 @@ public class SAINBotSettingsClass : BasePreset
         }
     }
 
-    private bool ShallUseEFTBotDefault(FieldInfo field) => AttributesGUI.GetAttributeInfo(field)?.CopyValue == true;
+    private bool ShallUseEFTBotDefault(FieldInfo field)
+    {
+        return AttributesGUI.GetAttributeInfo(field)?.CopyValue == true;
+    }
 
     public void LoadEFTSettings()
     {
@@ -169,9 +171,11 @@ public class SAINBotSettingsClass : BasePreset
                     eftSettings = new EFTBotSettings(name, wildSpawnType, Difficulties);
                     SaveObjectToJson(eftSettings, name, "Default Bot Config Values");
                 }
-                if (wildSpawnType != WildSpawnType.shooterBTR
+                if (
+                    wildSpawnType != WildSpawnType.shooterBTR
                     && wildSpawnType != WildSpawnType.bossZryachiy
-                    && wildSpawnType != WildSpawnType.followerZryachiy)
+                    && wildSpawnType != WildSpawnType.followerZryachiy
+                )
                 {
                     foreach (var settings in eftSettings.Settings)
                     {
@@ -256,11 +260,9 @@ public class SAINBotSettingsClass : BasePreset
         {
             { WildSpawnType.assault, 0.3f },
             { WildSpawnType.marksman, 0.3f },
-
             { WildSpawnType.crazyAssaultEvent, 0.35f },
             { WildSpawnType.cursedAssault, 0.35f },
             { WildSpawnType.assaultGroup, 0.35f },
-
             { WildSpawnType.bossBully, 0.75f },
             { WildSpawnType.bossBoar, 0.75f },
             { WildSpawnType.bossGluhar, 0.75f },
@@ -272,7 +274,6 @@ public class SAINBotSettingsClass : BasePreset
             { WildSpawnType.sectantPriest, 0.75f },
             { WildSpawnType.bossPartisan, 0.75f },
             { WildSpawnType.bossKnight, 1f },
-
             { WildSpawnType.sectantWarrior, 0.7f },
             { WildSpawnType.followerBully, 0.55f },
             { WildSpawnType.followerGluharAssault, 0.55f },
@@ -290,14 +291,12 @@ public class SAINBotSettingsClass : BasePreset
             { WildSpawnType.bossBoarSniper, 0.55f },
             { WildSpawnType.followerKolontayAssault, 0.55f },
             { WildSpawnType.followerKolontaySecurity, 0.55f },
-
             { WildSpawnType.followerBigPipe, 1f },
             { WildSpawnType.followerBirdEye, 1f },
             { WildSpawnType.pmcBot, 0.66f },
             { WildSpawnType.exUsec, 0.66f },
             { WildSpawnType.arenaFighter, 0.66f },
             { WildSpawnType.arenaFighterEvent, 0.66f },
-
             { WildSpawnType.pmcUSEC, 1f },
             { WildSpawnType.pmcBEAR, 1f },
         };

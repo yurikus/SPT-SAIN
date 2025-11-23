@@ -1,11 +1,11 @@
-﻿using SAIN.Plugin;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.Types.Jobs;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
@@ -30,7 +30,8 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
 
     private static int _commandsPerJob = 256;
 
-    public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller) : base("Path Visibility Job", botcontroller, true, 1f / 20f)
+    public EnemyPathVisibilityRaycastJob(MonoBehaviour botcontroller)
+        : base("Path Visibility Job", botcontroller, true, 1f / 20f)
     {
         LayerMask HighPolyWithTerrain = LayerMaskClass.HighPolyWithTerrainMask;
         LayerMask DoorLayer = LayerMaskClass.DoorLayer;
@@ -119,7 +120,11 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
         for (int i = 0; i < VisionJobs.Count; i++)
         {
             PathVisionJob job = VisionJobs[i];
-            if (!job.Handle.IsCompleted) job.Handle.Complete();
+            if (!job.Handle.IsCompleted)
+            {
+                job.Handle.Complete();
+            }
+
             Enemy enemy = job.Enemy;
             if (enemy.EnemyKnown)
             {
@@ -170,7 +175,11 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
         for (int i = 0; i < VisionJobs.Count; i++)
         {
             PathVisionJob job = VisionJobs[i];
-            if (!job.Handle.IsCompleted) job.Handle.Complete();
+            if (!job.Handle.IsCompleted)
+            {
+                job.Handle.Complete();
+            }
+
             Enemy enemy = job.Enemy;
             if (enemy.EnemyKnown)
             {
@@ -217,7 +226,10 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
         {
             PathVisionJob job = ShootJobs[i];
             if (!job.Handle.IsCompleted)
+            {
                 job.Handle.Complete();
+            }
+
             NativeArray<RaycastHit> hits = job.Hits;
             Enemy enemy = job.Enemy;
             if (enemy.EnemyKnown)
@@ -288,9 +300,17 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
 
     public void Dispose()
     {
-        foreach (var Job in VisionJobs) Job.Dispose();
+        foreach (var Job in VisionJobs)
+        {
+            Job.Dispose();
+        }
+
         VisionJobs.Clear();
-        foreach (var job in ShootJobs) job.Dispose();
+        foreach (var job in ShootJobs)
+        {
+            job.Dispose();
+        }
+
         ShootJobs.Clear();
     }
 }

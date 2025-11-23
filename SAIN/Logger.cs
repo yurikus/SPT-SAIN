@@ -24,70 +24,59 @@ internal static class Logger
 #endif
     }
 
-    public static void LogWarning(object data) => Log(LogLevel.Warning, data);
+    public static void LogWarning(object data)
+    {
+        Log(LogLevel.Warning, data);
+    }
 
-    public static void LogError(object data) => Log(LogLevel.Error, data);
+    public static void LogError(object data)
+    {
+        Log(LogLevel.Error, data);
+    }
 
-    public static void NotifyInfo(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Default
-    ) => NotifyMessage(data, duration, ENotificationIconType.Note);
+    public static void NotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
+    {
+        NotifyMessage(data, duration, ENotificationIconType.Note);
+    }
 
-    public static void NotifyDebug(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Default
-    ) => NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
+    public static void NotifyDebug(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
+    {
+        NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
+    }
 
-    public static void NotifyWarning(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Default
-    ) => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
+    public static void NotifyWarning(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
+    {
+        NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
+    }
 
-    public static void NotifyError(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Long
-    ) => NotifyMessage(data, duration, ENotificationIconType.Alert, Color.red, true);
+    public static void NotifyError(object data, ENotificationDurationType duration = ENotificationDurationType.Long)
+    {
+        NotifyMessage(data, duration, ENotificationIconType.Alert, Color.red, true);
+    }
 
-    public static void LogAndNotifyInfo(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Default
-    )
+    public static void LogAndNotifyInfo(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
     {
         Log(LogLevel.Info, data);
         NotifyMessage(data, duration, ENotificationIconType.Note);
     }
 
-    public static void LogAndNotifyDebug(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Default
-    )
+    public static void LogAndNotifyDebug(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
     {
         Log(LogLevel.Debug, data);
         NotifyMessage(data, duration, ENotificationIconType.Note, Color.gray);
     }
 
-    public static void LogAndNotifyWarning(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Default
-    )
+    public static void LogAndNotifyWarning(object data, ENotificationDurationType duration = ENotificationDurationType.Default)
     {
         Log(LogLevel.Warning, data);
         NotifyMessage(data, duration, ENotificationIconType.Alert, Color.yellow);
     }
 
-    public static void LogAndNotifyError(
-        object data,
-        ENotificationDurationType duration = ENotificationDurationType.Long
-    )
+    public static void LogAndNotifyError(object data, ENotificationDurationType duration = ENotificationDurationType.Long)
     {
         Log(LogLevel.Error, data);
         string message = CreateErrorMessage(data);
-        NotificationManagerClass.DisplayMessageNotification(
-            message,
-            duration,
-            ENotificationIconType.Alert,
-            Color.red
-        );
+        NotificationManagerClass.DisplayMessageNotification(message, duration, ENotificationIconType.Alert, Color.red);
     }
 
     public static void NotifyMessage(
@@ -103,12 +92,7 @@ internal static class Logger
         {
             _nextNotification = Time.time + 0.1f;
             string message = Error ? CreateErrorMessage(data) : data.ToString();
-            NotificationManagerClass.DisplayMessageNotification(
-                message,
-                durationType,
-                iconType,
-                textColor
-            );
+            NotificationManagerClass.DisplayMessageNotification(message, durationType, iconType, textColor);
         }
 #endif
     }
@@ -145,7 +129,9 @@ internal static class Logger
                 var method = stackTrace.GetFrame(i).GetMethod();
 
                 if (method.DeclaringType == typeof(Logger))
+                {
                     continue;
+                }
 
                 if (declaringType == null)
                 {

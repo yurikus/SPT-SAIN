@@ -17,7 +17,9 @@ public class JobManager : IDisposable
     public void Start()
     {
         foreach (var job in Jobs)
+        {
             job?.Start();
+        }
     }
 
     public void Stop()

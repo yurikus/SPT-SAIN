@@ -37,11 +37,7 @@ public class SAINBotLookClass : BotBase
         for (int i = 0; i < lookData.ReportsData.Count; i++)
         {
             EnemyVisionCheck enemyVision = lookData.ReportsData[i];
-            BotOwner.BotsGroup.ReportAboutEnemy(
-                enemyVision.Enemy,
-                enemyVision.VisibleOnlyBySence,
-                BotOwner
-            );
+            BotOwner.BotsGroup.ReportAboutEnemy(enemyVision.Enemy, enemyVision.VisibleOnlyBySence, BotOwner);
         }
 
         if (lookData.ReportsData.Count > 0)
@@ -57,11 +53,7 @@ public class SAINBotLookClass : BotBase
         lookData.Reset();
     }
 
-    private static int UpdateLookForEnemies(
-        LookAllData lookAll,
-        float currentTime,
-        BotComponent bot
-    )
+    private static int UpdateLookForEnemies(LookAllData lookAll, float currentTime, BotComponent bot)
     {
         int updated = 0;
         var lookSensor = bot.BotOwner.LookSensor;
@@ -79,11 +71,14 @@ public class SAINBotLookClass : BotBase
         lookAll.Reset();
         var enemies = bot.EnemyController.EnemiesArray;
         foreach (Enemy enemy in enemies)
+        {
             if (enemy.ShallCheckLook(currentTime, out float deltaTime))
             {
                 enemy.EnemyInfo.CheckLookEnemy(lookAll, deltaTime);
                 updated++;
             }
+        }
+
         return updated;
     }
 }

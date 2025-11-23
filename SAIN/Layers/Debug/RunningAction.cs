@@ -1,6 +1,6 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,18 +13,24 @@ internal class RunningAction(BotOwner bot) : BotAction(bot, nameof(RunningAction
         Bot.Mover.SetTargetPose(1f);
         Bot.Mover.SetTargetMoveSpeed(1f);
 
-
         if (!Bot.Mover.Moving)
+        {
             nextRandomRunTime = 0f;
+        }
         else if (nextRandomRunTime > Time.time && (_runDestination - Bot.Position).sqrMagnitude < 2f)
         {
             nextRandomRunTime = 0f;
         }
 
         if (nextRandomRunTime > Time.time)
+        {
             return;
+        }
 
-        if (findRandomPlace(out var path) && Bot.Mover.RunToPoint(_runDestination, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true))
+        if (
+            findRandomPlace(out var path)
+            && Bot.Mover.RunToPoint(_runDestination, false, -1, SAINComponent.Classes.Mover.ESprintUrgency.High, true)
+        )
         {
             nextRandomRunTime = Time.time + 20f;
         }

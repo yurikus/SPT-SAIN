@@ -5,6 +5,24 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "<Pending>", Scope = "member", Target = "~M:SAIN.Patches.Hearing.SpecificStepAudioControllerPatch.GetTargetMethod~System.Reflection.MethodBase")]
-[assembly: SuppressMessage("Minor Code Smell", "S1104:Fields should not have public accessibility", Justification = "<Pending>", Scope = "member", Target = "~F:SAIN.Preset.GlobalSettings.HearingSettings.HEARINGDELAY_SETTINGS")]
-[assembly: SuppressMessage("Minor Code Smell", "S101:Types should be named in PascalCase", Justification = "<Pending>", Scope = "type", Target = "~T:SAIN.SAINComponent.Classes.Info.SAINBotInfoClass")]
+[assembly: SuppressMessage(
+    "Major Code Smell",
+    "S125:Sections of code should not be commented out",
+    Justification = "<Pending>",
+    Scope = "member",
+    Target = "~M:SAIN.Patches.Hearing.SpecificStepAudioControllerPatch.GetTargetMethod~System.Reflection.MethodBase"
+)]
+[assembly: SuppressMessage(
+    "Minor Code Smell",
+    "S1104:Fields should not have public accessibility",
+    Justification = "<Pending>",
+    Scope = "member",
+    Target = "~F:SAIN.Preset.GlobalSettings.HearingSettings.HEARINGDELAY_SETTINGS"
+)]
+[assembly: SuppressMessage(
+    "Minor Code Smell",
+    "S101:Types should be named in PascalCase",
+    Justification = "<Pending>",
+    Scope = "type",
+    Target = "~T:SAIN.SAINComponent.Classes.Info.SAINBotInfoClass"
+)]

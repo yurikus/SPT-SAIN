@@ -1,5 +1,5 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -32,8 +32,8 @@ public class VisionSpeedSettings : SAINSettingsBase<VisionSpeedSettings>, ISAINS
 public class PeripheralVisionSettings : SAINSettingsBase<PeripheralVisionSettings>, ISAINSettings
 {
     public string Description =
-        "Adds additional vision speed reduction to targets in a bot's peripheral vision." +
-        "Scales with the angle from their look direction.";
+        "Adds additional vision speed reduction to targets in a bot's peripheral vision."
+        + "Scales with the angle from their look direction.";
 
     public bool Enabled = true;
 
@@ -49,8 +49,8 @@ public class PeripheralVisionSettings : SAINSettingsBase<PeripheralVisionSetting
 public class ThirdPartySettings : SAINSettingsBase<ThirdPartySettings>, ISAINSettings
 {
     public string Description =
-        "When an enemy is a certain angle away from their active enemies last known position, " +
-        "this will reduce their vision speed of that target up to the maximum set amount.";
+        "When an enemy is a certain angle away from their active enemies last known position, "
+        + "this will reduce their vision speed of that target up to the maximum set amount.";
 
     public bool Enabled = true;
 
@@ -66,8 +66,8 @@ public class ThirdPartySettings : SAINSettingsBase<ThirdPartySettings>, ISAINSet
 public class PartsVisibilitySettings : SAINSettingsBase<PartsVisibilitySettings>, ISAINSettings
 {
     public string Description =
-        "Scales vision speed based on the number of body parts that are within line of sight to their enemy. " +
-        "Only applies to Non-AI targets.";
+        "Scales vision speed based on the number of body parts that are within line of sight to their enemy. "
+        + "Only applies to Non-AI targets.";
 
     public bool Enabled = true;
 
@@ -83,15 +83,15 @@ public class PartsVisibilitySettings : SAINSettingsBase<PartsVisibilitySettings>
 public class MovementVisibilitySettings : SAINSettingsBase<MovementVisibilitySettings>, ISAINSettings
 {
     public string Description =
-        "Scales vision speed based on the movement speed of their enemy. " +
-        "Faster movement = faster vision speed.";
+        "Scales vision speed based on the movement speed of their enemy. " + "Faster movement = faster vision speed.";
 
     public bool Enabled = true;
 
     [Name("Movement Vision Modifier")]
     [Description(
-        "Bots will see moving players this much faster, at any range." +
-        "Higher is slower speed, so 0.66 would result in bots spotting an enemy who is moving 0.66x faster. So if they usually would take 10 seconds to spot someone, it would instead take around 6.6 seconds.")]
+        "Bots will see moving players this much faster, at any range."
+            + "Higher is slower speed, so 0.66 would result in bots spotting an enemy who is moving 0.66x faster. So if they usually would take 10 seconds to spot someone, it would instead take around 6.6 seconds."
+    )]
     [MinMax(0.01f, 1f, 100f)]
     [Advanced]
     public float MOVEMENT_VISION_MULTIPLIER = 0.5f;
@@ -99,9 +99,7 @@ public class MovementVisibilitySettings : SAINSettingsBase<MovementVisibilitySet
 
 public class PoseVisibilitySettings : SAINSettingsBase<PoseVisibilitySettings>, ISAINSettings
 {
-    public string Description =
-        "Scales vision speed based on the pose of their enemy. " +
-        "Only applies to Non-AI targets.";
+    public string Description = "Scales vision speed based on the pose of their enemy. " + "Only applies to Non-AI targets.";
 
     public bool Enabled = true;
 

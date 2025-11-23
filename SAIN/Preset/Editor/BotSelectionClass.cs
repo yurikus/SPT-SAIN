@@ -1,11 +1,11 @@
-﻿using EFT.UI;
+﻿using System;
+using System.Collections.Generic;
+using EFT.UI;
 using SAIN.Attributes;
 using SAIN.Editor.Util;
 using SAIN.Plugin;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using static SAIN.Editor.SAINLayout;
 
@@ -35,8 +35,9 @@ public static class BotSelectionClass
     {
         BeginHorizontal();
         FlexibleSpace();
-        string toolTip = $"Apply Values set below to selected Bot Type. " +
-            $"Exports edited values to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}/BotSettings folder";
+        string toolTip =
+            $"Apply Values set below to selected Bot Type. "
+            + $"Exports edited values to SAIN/Presets/{SAINPlugin.LoadedPreset.Info.Name}/BotSettings folder";
         if (BuilderClass.SaveChanges(ConfigEditingTracker.GetUnsavedValuesString(), 35f))
         {
             SAINPresetClass.ExportAll(SAINPlugin.LoadedPreset);
@@ -58,11 +59,18 @@ public static class BotSelectionClass
                     padding = new RectOffset(5, 5, 0, 0),
                     margin = new RectOffset(5, 5, 0, 0),
                     border = new RectOffset(5, 5, 0, 0),
-                    fontStyle = FontStyle.Bold
+                    fontStyle = FontStyle.Bold,
                 };
             }
             string section = Sections[i];
-            SectionOpens[i] = Toggle(SectionOpens[i], new GUIContent(section), botTypeSectionStyle, EUISoundType.MenuDropdown, Height(35), Width(sectionWidth));
+            SectionOpens[i] = Toggle(
+                SectionOpens[i],
+                new GUIContent(section),
+                botTypeSectionStyle,
+                EUISoundType.MenuDropdown,
+                Height(35),
+                Width(sectionWidth)
+            );
             if (SectionOpens[i])
             {
                 ModifyLists.AddOrRemove(SelectedBotTypes, section, 27.5f, sectionWidth);
@@ -95,7 +103,13 @@ public static class BotSelectionClass
 
     private static readonly List<BotType> SelectedBotTypes = new();
 
-    public static readonly BotDifficulty[] BotDifficultyOptions = [BotDifficulty.easy, BotDifficulty.normal, BotDifficulty.hard, BotDifficulty.impossible];
+    public static readonly BotDifficulty[] BotDifficultyOptions =
+    [
+        BotDifficulty.easy,
+        BotDifficulty.normal,
+        BotDifficulty.hard,
+        BotDifficulty.impossible,
+    ];
     public static readonly List<BotDifficulty> SelectedDifficulties = new();
 
     public static bool BotSettingsWereEdited;
@@ -127,7 +141,12 @@ public static class BotSelectionClass
                 var toggleStyle = GetStyle(Style.toggle);
                 var oldAlignment = toggleStyle.alignment;
                 toggleStyle.alignment = TextAnchor.MiddleLeft;
-                category.CategoryInfo.MenuOpen = Toggle(category.CategoryInfo.MenuOpen, category.CategoryInfo.Name, null, Height(PresetHandler.EditorDefaults.ConfigEntryHeight));
+                category.CategoryInfo.MenuOpen = Toggle(
+                    category.CategoryInfo.MenuOpen,
+                    category.CategoryInfo.Name,
+                    null,
+                    Height(PresetHandler.EditorDefaults.ConfigEntryHeight)
+                );
                 toggleStyle.alignment = oldAlignment;
                 if (!category.CategoryInfo.MenuOpen)
                 {
@@ -145,7 +164,14 @@ public static class BotSelectionClass
                     BeginHorizontal();
                     Space(30f);
                     toggleStyle.alignment = TextAnchor.MiddleLeft;
-                    fieldAtt.MenuOpen = Toggle(fieldAtt.MenuOpen, fieldAtt.Name, fieldAtt.Description, null, Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(500f));
+                    fieldAtt.MenuOpen = Toggle(
+                        fieldAtt.MenuOpen,
+                        fieldAtt.Name,
+                        fieldAtt.Description,
+                        null,
+                        Height(PresetHandler.EditorDefaults.ConfigEntryHeight),
+                        Width(500f)
+                    );
                     toggleStyle.alignment = oldAlignment;
                     EndHorizontal();
                     if (!fieldAtt.MenuOpen)
@@ -172,9 +198,21 @@ public static class BotSelectionClass
                                     object categoryValue = category.GetValue(SAINSettings);
                                     object value = fieldAtt.GetValue(categoryValue);
                                     Label($"{bot.Name} : {difficulty}", Height(PresetHandler.EditorDefaults.ConfigEntryHeight), Width(200));
-                                    value = AttributesGUI.EditFloatBoolInt(ref value, categoryValue, fieldAtt, entryConfig, 0, out bool newEdit, false, false);
+                                    value = AttributesGUI.EditFloatBoolInt(
+                                        ref value,
+                                        categoryValue,
+                                        fieldAtt,
+                                        entryConfig,
+                                        0,
+                                        out bool newEdit,
+                                        false,
+                                        false
+                                    );
                                     if (newEdit)
+                                    {
                                         ConfigEditingTracker.Add(fieldAtt.Name, value);
+                                    }
+
                                     fieldAtt.SetValue(categoryValue, value);
                                     EndHorizontal();
                                 }

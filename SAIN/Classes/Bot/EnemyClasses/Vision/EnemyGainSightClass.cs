@@ -36,23 +36,40 @@ public static class EnemyGainSightClass
     private const float PARTS_VISIBLE_MAX_PARTS = 6;
     private const float PARTS_VISIBLE_MIN_PARTS = 2;
 
-    private static float PARTS_VISIBLE_MAX_COEF => Settings.PartsVisibility.PARTS_VISIBLE_MAX_COEF;
-    private static float PARTS_VISIBLE_MIN_COEF => Settings.PartsVisibility.PARTS_VISIBLE_MIN_COEF;
+    private static float PARTS_VISIBLE_MAX_COEF
+    {
+        get { return Settings.PartsVisibility.PARTS_VISIBLE_MAX_COEF; }
+    }
+
+    private static float PARTS_VISIBLE_MIN_COEF
+    {
+        get { return Settings.PartsVisibility.PARTS_VISIBLE_MIN_COEF; }
+    }
 
     private const float ELEVATION_LASTKNOWN_MAX_DIST = 1.5f;
     private const float ELEVATION_MIN_ANGLE = 5f;
 
-    private static float THIRDPARTY_VISION_START_ANGLE =>
-        Settings.ThirdParty.THIRDPARTY_VISION_START_ANGLE;
-    private static float THIRDPARTY_VISION_MAX_COEF =>
-        Settings.ThirdParty.THIRDPARTY_VISION_MAX_COEF;
+    private static float THIRDPARTY_VISION_START_ANGLE
+    {
+        get { return Settings.ThirdParty.THIRDPARTY_VISION_START_ANGLE; }
+    }
+
+    private static float THIRDPARTY_VISION_MAX_COEF
+    {
+        get { return Settings.ThirdParty.THIRDPARTY_VISION_MAX_COEF; }
+    }
 
     private const float THIRDPARTY_VISION_MAX_DIST_LASTKNOWN = 50f;
 
-    private static float PERIPHERAL_VISION_START_ANGLE =>
-        Settings.Peripheral.PERIPHERAL_VISION_START_ANGLE;
-    private static float PERIPHERAL_VISION_MAX_REDUCTION_COEF =>
-        Settings.Peripheral.PERIPHERAL_VISION_MAX_REDUCTION_COEF;
+    private static float PERIPHERAL_VISION_START_ANGLE
+    {
+        get { return Settings.Peripheral.PERIPHERAL_VISION_START_ANGLE; }
+    }
+
+    private static float PERIPHERAL_VISION_MAX_REDUCTION_COEF
+    {
+        get { return Settings.Peripheral.PERIPHERAL_VISION_MAX_REDUCTION_COEF; }
+    }
 
     private const float PERIPHERAL_VISION_SPEED_DIRECT_FRONT_ANGLE = 3f;
     private const float PERIPHERAL_VISION_SPEED_DIRECT_FRONT_MOD = 0.66f;
@@ -63,8 +80,15 @@ public static class EnemyGainSightClass
     private const float PERIPHERAL_VISION_SPEED_ENEMY_VERYCLOSE_DIST = 5;
     private const float PERIPHERAL_VISION_SPEED_ENEMY_VERYCLOSE_MOD = 0.8f;
 
-    private static float PRONE_VISION_SPEED_COEF => Settings.Pose.PRONE_VISION_SPEED_COEF;
-    private static float DUCK_VISION_SPEED_COEF => Settings.Pose.DUCK_VISION_SPEED_COEF;
+    private static float PRONE_VISION_SPEED_COEF
+    {
+        get { return Settings.Pose.PRONE_VISION_SPEED_COEF; }
+    }
+
+    private static float DUCK_VISION_SPEED_COEF
+    {
+        get { return Settings.Pose.DUCK_VISION_SPEED_COEF; }
+    }
 
     private const float UNKNOWN_ENEMY_HAS_ENEMY_COEF = 1.5f;
 
@@ -84,16 +108,12 @@ public static class EnemyGainSightClass
     private static float CalcModifier(Enemy enemy)
     {
         float partMod = CalcPartsMod(enemy);
-        float gearMod = enemy.EnemyPlayerComponent.AIData.AIGearModifier.StealthModifier(
-            enemy.RealDistance
-        );
+        float gearMod = enemy.EnemyPlayerComponent.AIData.AIGearModifier.StealthModifier(enemy.RealDistance);
 
         bool flareEnabled =
-            enemy.EnemyPlayer.AIData?.GetFlare == true
-            && enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo.HasSuppressor == false;
+            enemy.EnemyPlayer.AIData?.GetFlare == true && enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo.HasSuppressor == false;
 
-        bool underFire =
-            enemy.BotOwner.Memory.IsUnderFire && enemy.Bot.Memory.LastUnderFireEnemy == enemy;
+        bool underFire = enemy.BotOwner.Memory.IsUnderFire && enemy.Bot.Memory.LastUnderFireEnemy == enemy;
 
         float underFireMod = underFire ? UNDER_FIRE_FROM_ME_COEF : 1f;
         float weatherMod = CalcWeatherMod(flareEnabled, enemy);
@@ -107,7 +127,9 @@ public static class EnemyGainSightClass
 
         float notLookMod = 1f;
         if (!enemy.IsAI)
+        {
             notLookMod = SAINNotLooking.GetVisionSpeedDecrease(enemy.EnemyInfo);
+        }
 
         float result =
             1f
@@ -198,13 +220,7 @@ public static class EnemyGainSightClass
         Audio = 2,
     }
 
-    private static float CalcVisionSpeedPositional(
-        float distance,
-        float minSpeedCoef,
-        float minDist,
-        float maxDist,
-        SeenSpeedCheck check
-    )
+    private static float CalcVisionSpeedPositional(float distance, float minSpeedCoef, float minDist, float maxDist, SeenSpeedCheck check)
     {
         if (distance <= minDist)
         {
@@ -241,7 +257,9 @@ public static class EnemyGainSightClass
         float enemyDist = Enemy.RealDistance;
 
         if (EnemyInRangeOfLight(enemyDist, usingNVGS, Enemy))
+        {
             return 1f;
+        }
 
         float max = 1f + baseModifier;
         float min = 1f;
@@ -249,9 +267,14 @@ public static class EnemyGainSightClass
         float minDist = usingNVGS ? TIME_MIN_DIST_CLAMP_NVGS : TIME_MIN_DIST_CLAMP;
 
         if (enemyDist >= maxDist)
+        {
             return max;
+        }
+
         if (enemyDist < minDist)
+        {
             return min;
+        }
 
         float enemyVelocity = Enemy.Vision.EnemyVelocity;
         bool moving = enemyVelocity > 0.1f;
@@ -302,18 +325,11 @@ public static class EnemyGainSightClass
     {
         var Bot = Enemy.Bot;
         var settings = Bot.Info.FileSettings.Look;
-        if (
-            Bot.PlayerComponent.Flashlight.WhiteLight
-            && enemyDist <= settings.VISIBLE_DISNACE_WITH_LIGHT
-        )
+        if (Bot.PlayerComponent.Flashlight.WhiteLight && enemyDist <= settings.VISIBLE_DISNACE_WITH_LIGHT)
         {
             return true;
         }
-        if (
-            usingNVGS
-            && Bot.PlayerComponent.Flashlight.IRLight
-            && enemyDist <= settings.VISIBLE_DISNACE_WITH_IR_LIGHT
-        )
+        if (usingNVGS && Bot.PlayerComponent.Flashlight.IRLight && enemyDist <= settings.VISIBLE_DISNACE_WITH_IR_LIGHT)
         {
             return true;
         }
@@ -325,7 +341,9 @@ public static class EnemyGainSightClass
         float baseModifier = BaseWeatherMod(flareEnabled, Enemy);
 
         if (baseModifier <= 1f)
+        {
             return 1f;
+        }
 
         float max = 1f + baseModifier;
         float min = 1f;
@@ -334,11 +352,19 @@ public static class EnemyGainSightClass
         float enemyDist = Enemy.RealDistance;
 
         if (enemyDist >= maxDist)
+        {
             return max;
+        }
+
         if (enemyDist < minDist)
+        {
             return min;
+        }
+
         if (EnemyUsingLight(out _, Enemy))
+        {
             return min;
+        }
 
         //bool moving = Enemy.Vision.EnemyVelocity > 0.1f;
         //if (!moving)
@@ -371,7 +397,10 @@ public static class EnemyGainSightClass
 
     // private static float _nextLogTime;
 
-    private static VisionSpeedSettings Settings => GlobalSettingsClass.Instance.Look.VisionSpeed;
+    private static VisionSpeedSettings Settings
+    {
+        get { return GlobalSettingsClass.Instance.Look.VisionSpeed; }
+    }
 
     private static float CalcPartsMod(Enemy Enemy)
     {
@@ -417,7 +446,9 @@ public static class EnemyGainSightClass
         {
             partCount++;
             if (part.CanBeSeen)
+            {
                 visibleCount++;
+            }
         }
         return (float)visibleCount / (float)partCount;
     }
@@ -428,11 +459,7 @@ public static class EnemyGainSightClass
         {
             return 1f;
         }
-        return Mathf.Lerp(
-            1,
-            Settings.Movement.MOVEMENT_VISION_MULTIPLIER,
-            Enemy.Vision.EnemyVelocity
-        );
+        return Mathf.Lerp(1, Settings.Movement.MOVEMENT_VISION_MULTIPLIER, Enemy.Vision.EnemyVelocity);
     }
 
     private static bool IsLastKnownAtSameElev(Enemy Enemy)
@@ -456,7 +483,9 @@ public static class EnemyGainSightClass
             return 1f;
         }
         if (IsLastKnownAtSameElev(Enemy))
+        {
             return 1f;
+        }
 
         var settings = SAINPlugin.LoadedPreset.GlobalSettings.Look.VisionSpeed.Elevation;
         var angles = Enemy.Vision.Angles;
@@ -464,16 +493,18 @@ public static class EnemyGainSightClass
 
         float elevationAngle = angles.AngleToEnemyVertical;
         if (elevationAngle < min)
+        {
             return 1f;
+        }
 
         bool enemyAbove = angles.AngleToEnemyVerticalSigned > 0;
         float max = enemyAbove ? settings.HighElevationMaxAngle : settings.LowElevationMaxAngle;
-        float targetCoef = enemyAbove
-            ? settings.HighElevationVisionModifier
-            : settings.LowElevationVisionModifier;
+        float targetCoef = enemyAbove ? settings.HighElevationVisionModifier : settings.LowElevationVisionModifier;
 
         if (elevationAngle > max)
+        {
             return targetCoef;
+        }
 
         float num = max - min;
         float diff = elevationAngle - min;
@@ -492,10 +523,7 @@ public static class EnemyGainSightClass
         {
             return 1f;
         }
-        if (
-            Enemy.EnemyKnown
-            && Enemy.KnownPlaces.EnemyDistanceFromLastKnown > THIRDPARTY_VISION_MAX_DIST_LASTKNOWN
-        )
+        if (Enemy.EnemyKnown && Enemy.KnownPlaces.EnemyDistanceFromLastKnown > THIRDPARTY_VISION_MAX_DIST_LASTKNOWN)
         {
             return 1f;
         }

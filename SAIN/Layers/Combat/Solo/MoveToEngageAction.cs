@@ -5,9 +5,7 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo;
 
-internal class MoveToEngageAction(BotOwner bot)
-    : BotAction(bot, nameof(MoveToEngageAction)),
-        IBotAction
+internal class MoveToEngageAction(BotOwner bot) : BotAction(bot, nameof(MoveToEngageAction)), IBotAction
 {
     private float RecalcPathTimer;
 
@@ -76,10 +74,7 @@ internal class MoveToEngageAction(BotOwner bot)
 
         if (Bot.Mover.Moving)
         {
-            Bot.Mover.ActivePath?.RequestStartSprint(
-                SAINComponent.Classes.Mover.ESprintUrgency.None,
-                "enemy in sight"
-            );
+            Bot.Mover.ActivePath?.RequestStartSprint(SAINComponent.Classes.Mover.ESprintUrgency.None, "enemy in sight");
         }
 
         if (RecalcPathTimer < Time.time)

@@ -15,9 +15,20 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         get { return _activePath; }
     }
 
-    public bool Moving => _activePath != null && _activePath.Moving;
-    public bool Running => _activePath != null && _activePath.Running;
-    public bool Crawling => _activePath != null && _activePath.Crawling;
+    public bool Moving
+    {
+        get { return _activePath != null && _activePath.Moving; }
+    }
+
+    public bool Running
+    {
+        get { return _activePath != null && _activePath.Running; }
+    }
+
+    public bool Crawling
+    {
+        get { return _activePath != null && _activePath.Crawling; }
+    }
 
     public event Action<OperationResult, IBotPathData> OnPathComplete;
 
@@ -49,9 +60,7 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
 #if DEBUG
             if (Bot.CurrentAction == null)
             {
-                Logger.LogWarning(
-                    $"[{Bot.name}] No current action set, cannot update movement and steering!."
-                );
+                Logger.LogWarning($"[{Bot.name}] No current action set, cannot update movement and steering!.");
             }
 #endif
             Bot.CurrentAction?.UpdateMovement();
@@ -139,11 +148,19 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
     )
     {
         if (reachDist <= 0)
+        {
             reachDist = BASE_DESTINATION_REACH_DIST;
+        }
+
         if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
+
         if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
 
         if (checkSameWay && TryUpdatePath(point))
         {
@@ -174,27 +191,49 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
     )
     {
         if (path == null)
+        {
             return false;
+        }
+
         if (path.status == NavMeshPathStatus.PathInvalid)
+        {
             return false;
+        }
+
         if (mustHaveCompletePath && path.status != NavMeshPathStatus.PathComplete)
+        {
             return false;
+        }
 
         Vector3[] pathCorners = path.corners;
         if (pathCorners.Length <= 1)
+        {
             return false;
+        }
+
         Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
         if (reachDist <= 0)
+        {
             reachDist = BASE_DESTINATION_REACH_DIST;
+        }
+
         if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
+
         if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
 
         if (checkSameWay && TryUpdatePath(lastCorner))
         {
             if (!_activePath.WantToSprint)
+            {
                 _activePath.RequestStartSprint(urgency, "path updated");
+            }
+
             _activePath.SetDestinationReachDistance(reachDist);
             return true;
         }
@@ -205,24 +244,30 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
 
     private const float BASE_DESTINATION_REACH_DIST = 0.5f;
 
-    public bool WalkToPoint(
-        Vector3 point,
-        bool mustHaveCompletePath = true,
-        float reachDist = -1,
-        bool checkSameWay = true
-    )
+    public bool WalkToPoint(Vector3 point, bool mustHaveCompletePath = true, float reachDist = -1, bool checkSameWay = true)
     {
         if (reachDist <= 0)
+        {
             reachDist = BASE_DESTINATION_REACH_DIST;
+        }
+
         if ((point - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
+
         if ((point - Bot.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
 
         if (checkSameWay && TryUpdatePath(point))
         {
             if (_activePath.WantToSprint)
+            {
                 _activePath.RequestEndSprint(ESprintUrgency.None, "path updated");
+            }
+
             return true;
         }
         if (Bot.Mover.CanGoToPoint(point, out NavMeshPath path, mustHaveCompletePath))
@@ -235,30 +280,44 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         return false;
     }
 
-    public bool WalkToPointByWay(
-        NavMeshPath path,
-        bool mustHaveCompletePath = true,
-        float reachDist = -1,
-        bool checkSameWay = true
-    )
+    public bool WalkToPointByWay(NavMeshPath path, bool mustHaveCompletePath = true, float reachDist = -1, bool checkSameWay = true)
     {
         if (path == null)
+        {
             return false;
+        }
+
         if (path.status == NavMeshPathStatus.PathInvalid)
+        {
             return false;
+        }
+
         if (mustHaveCompletePath && path.status == NavMeshPathStatus.PathPartial)
+        {
             return false;
+        }
 
         Vector3[] pathCorners = path.corners;
         if (pathCorners.Length <= 1)
+        {
             return false;
+        }
+
         Vector3 lastCorner = pathCorners[pathCorners.Length - 1];
         if (reachDist <= 0)
+        {
             reachDist = BASE_DESTINATION_REACH_DIST;
+        }
+
         if ((lastCorner - Bot.Transform.NavData.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
+
         if ((lastCorner - Bot.Position).sqrMagnitude <= reachDist * reachDist)
+        {
             return true;
+        }
 
         if (checkSameWay && TryUpdatePath(lastCorner))
         {
@@ -279,38 +338,18 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         return _preparedPath1.TryUpdatePath(point) || _preparedPath2.TryUpdatePath(point);
     }
 
-    private void TriggerNewMove(
-        Vector3[] pathCorners,
-        Vector3 point,
-        bool shallSprint,
-        ESprintUrgency urgency,
-        NavMeshPath path
-    )
+    private void TriggerNewMove(Vector3[] pathCorners, Vector3 point, bool shallSprint, ESprintUrgency urgency, NavMeshPath path)
     {
         if (_activePath != null)
         {
             _activePath.Cancel();
             if (_activePath == _preparedPath1)
             {
-                _preparedPath2.Initialize(
-                    Bot.NavMeshPosition,
-                    point,
-                    shallSprint,
-                    urgency,
-                    pathCorners,
-                    path
-                );
+                _preparedPath2.Initialize(Bot.NavMeshPosition, point, shallSprint, urgency, pathCorners, path);
             }
             else
             {
-                _preparedPath1.Initialize(
-                    Bot.NavMeshPosition,
-                    point,
-                    shallSprint,
-                    urgency,
-                    pathCorners,
-                    path
-                );
+                _preparedPath1.Initialize(Bot.NavMeshPosition, point, shallSprint, urgency, pathCorners, path);
             }
             return;
         }
@@ -322,18 +361,29 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
     private bool TriggerRecalcPath()
     {
         if (_activePath == null)
+        {
             return false;
+        }
+
         if (_activePath.WantToSprint)
+        {
             return RunToPoint(_activePath.Destination, true, -1, _activePath.SprintUrgency, true);
+        }
+
         return WalkToPoint(_activePath.Destination, true, -1, false);
     }
 
     private bool CanSetPatrol()
     {
         if (BotOwner.WeaponManager?.Reload?.Reloading == true)
+        {
             return false;
+        }
+
         if (BotOwner.Medecine?.Using == true)
+        {
             return false;
+        }
 
         // Credit to Fontaine, these checks are taken from realism mod's code.
         if (
@@ -371,12 +421,7 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         throw new NotImplementedException();
     }
 
-    public bool CanGoToPoint(
-        Vector3 point,
-        out NavMeshPath path,
-        bool mustHaveCompletePath = true,
-        float navSampleRange = 0.5f
-    )
+    public bool CanGoToPoint(Vector3 point, out NavMeshPath path, bool mustHaveCompletePath = true, float navSampleRange = 0.5f)
     {
         var navData = Bot.Transform.NavData;
         if (!navData.IsOnNavMesh)
@@ -387,10 +432,7 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         if (NavMesh.SamplePosition(point, out NavMeshHit targetHit, navSampleRange, -1))
         {
             path = new NavMeshPath();
-            if (
-                NavMesh.CalculatePath(navData.Position, targetHit.position, -1, path)
-                && path.corners.Length > 1
-            )
+            if (NavMesh.CalculatePath(navData.Position, targetHit.position, -1, path) && path.corners.Length > 1)
             {
                 if (mustHaveCompletePath && path.status != NavMeshPathStatus.PathComplete)
                 {
@@ -403,16 +445,15 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         return false;
     }
 
-    public bool GoToCoverPoint(
-        CoverPoint point,
-        bool sprint,
-        ESprintUrgency urgency = ESprintUrgency.Low
-    )
+    public bool GoToCoverPoint(CoverPoint point, bool sprint, ESprintUrgency urgency = ESprintUrgency.Low)
     {
         if (CanGoToCoverPoint(point, Bot.Transform.NavData))
         {
             if (sprint)
+            {
                 return RunToPointByWay(point.PathData.Path, true, -1, urgency);
+            }
+
             return WalkToPointByWay(point.PathData.Path);
         }
         else
@@ -441,11 +482,7 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         return false;
     }
 
-    private static bool TryRecalcCoverPointPath(
-        CoverPoint point,
-        PlayerNavData navData,
-        PathData coverPathData
-    )
+    private static bool TryRecalcCoverPointPath(CoverPoint point, PlayerNavData navData, PathData coverPathData)
     {
         coverPathData.Path.ClearCorners();
         if (
@@ -457,9 +494,7 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
         }
 #if DEBUG
 #endif
-        Logger.LogDebug(
-            $"Failed to recalculate path to cover point, path status: {coverPathData.Path.status}"
-        );
+        Logger.LogDebug($"Failed to recalculate path to cover point, path status: {coverPathData.Path.status}");
         return false;
     }
 
@@ -487,7 +522,9 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
     public void RecalcPath()
     {
         if (_activePath != null)
+        {
             _activePath.PathRecalcRequested = true;
+        }
     }
 
     public bool TryJump()
@@ -539,10 +576,7 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
                     return;
                 }
 
-                if (
-                    leftStanceController != null
-                    && leftStanceController.LeftStance != _wantLeftStance
-                )
+                if (leftStanceController != null && leftStanceController.LeftStance != _wantLeftStance)
                 {
                     leftStanceController.ToggleLeftStance();
                 }
@@ -605,7 +639,10 @@ public class SAINMoverClass : BotComponentClassBase, IBotPathFinder
     private float _movingTime;
 
     private readonly float _timeAfterJumpVaultReset = 1.25f;
-    private bool _wantLeftStance => Lean.LeanAngleValue.TargetValue < 0;
+    private bool _wantLeftStance
+    {
+        get { return Lean.LeanAngleValue.TargetValue < 0; }
+    }
 
     private float _nextJumpTime = 0f;
 

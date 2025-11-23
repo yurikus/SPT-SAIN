@@ -45,10 +45,7 @@ public struct PlayerTickData
 
         OtherPlayerData.Clear();
         List<OtherPlayerData> OtherPlayers = Owner.OtherPlayersData.DataList;
-        OtherPlayerDirectionData = new NativeArray<PlayerDirectionData>(
-            OtherPlayers.Count,
-            Allocator.TempJob
-        );
+        OtherPlayerDirectionData = new NativeArray<PlayerDirectionData>(OtherPlayers.Count, Allocator.TempJob);
         for (int j = 0; j < OtherPlayers.Count; j++)
         {
             OtherPlayerData otherPlayer = OtherPlayers[j];
@@ -104,9 +101,14 @@ public struct PlayerTickJob : IJobFor
     public void Dispose()
     {
         if (Input.IsCreated)
+        {
             Input.Dispose();
+        }
+
         if (Output.IsCreated)
+        {
             Output.Dispose();
+        }
     }
 }
 
@@ -162,7 +164,10 @@ public class DirectionDataJob : BotManagerBase
 
                 var handle = _PlayerTickJobHandle;
                 if (!handle.IsCompleted)
+                {
                     handle.Complete();
+                }
+
                 _PlayerTickJobHandle = handle;
 
                 for (int i = 0; i < jobCount; i++)

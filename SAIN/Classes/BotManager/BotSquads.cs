@@ -14,13 +14,17 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
     public void Update(float currentTime, float deltaTime)
     {
         foreach (Squad squad in SquadArray)
+        {
             squad?.Update(currentTime, deltaTime);
+        }
 
         ClearEmptySquads();
 
 #if DEBUG
         if (SAINPlugin.DebugMode && DebugTimer < Time.time)
+        {
             LogDebug();
+        }
 #endif
     }
 
@@ -43,7 +47,10 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
         foreach (Squad squad in SquadArray)
         {
             if (squad != null)
+            {
                 LogDebug(count, squad);
+            }
+
             count++;
         }
     }
@@ -62,7 +69,9 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
         );
 
         foreach (var member in squad.MemberInfos.Values)
+        {
             sb.AppendLine($" [{member.Nickname}, {member.PowerLevel}]");
+        }
 
         Logger.LogDebug(sb);
     }
@@ -77,7 +86,9 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
 
 #if DEBUG
             if (SAINPlugin.DebugMode)
+            {
                 Logger.LogDebug($"Member Count: {groupCount} Checking for existing squad object");
+            }
 #endif
 
             for (int i = 0; i < groupCount; i++)
@@ -91,7 +102,9 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
                 {
 #if DEBUG
                     if (SAINPlugin.DebugMode)
+                    {
                         Logger.LogInfo($"Found SAIN Bot for squad");
+                    }
 #endif
 
                     result = sainComponent.Squad.SquadInfo;
@@ -99,7 +112,9 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
                     {
 #if DEBUG
                         if (SAINPlugin.DebugMode)
+                        {
                             Logger.LogInfo($"Adding bot to squad [{result.GUID}]");
+                        }
 #endif
 
                         break;
@@ -113,7 +128,9 @@ public class BotSquads(BotManagerComponent botController) : BotManagerBase(botCo
             result = new Squad();
 #if DEBUG
             if (SAINPlugin.DebugMode)
+            {
                 Logger.LogWarning($"Created New Squad [{result.GUID}]");
+            }
 #endif
 
             if (!Squads.ContainsKey(result.GUID))

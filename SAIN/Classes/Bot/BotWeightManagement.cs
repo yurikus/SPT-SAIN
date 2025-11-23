@@ -1,15 +1,16 @@
-﻿using EFT.InventoryLogic;
+﻿using System.Collections.Generic;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.Preset.GlobalSettings;
-using System.Collections.Generic;
 using FloatFunc = GClass849<float>;
 
 namespace SAIN.SAINComponent.Classes;
 
 public class BotWeightManagement : BotComponentClassBase
 {
-    public BotWeightManagement(BotComponent sain) : base(sain)
+    public BotWeightManagement(BotComponent sain)
+        : base(sain)
     {
         CanEverTick = false;
     }
@@ -19,8 +20,7 @@ public class BotWeightManagement : BotComponentClassBase
         if (GlobalSettingsClass.Instance.General.BOT_INERTIA_TOGGLE)
         {
             GetSlots();
-            Traverse.Create(Player.InventoryController.Inventory)
-                .Field<FloatFunc>("TotalWeight").Value = new FloatFunc(GetBotTotalWeight);
+            Traverse.Create(Player.InventoryController.Inventory).Field<FloatFunc>("TotalWeight").Value = new FloatFunc(GetBotTotalWeight);
             Player.Physical.EncumberDisabled = false;
         }
         base.Init();

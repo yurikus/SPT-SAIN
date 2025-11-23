@@ -1,5 +1,5 @@
-﻿using SAIN.Helpers;
-using System;
+﻿using System;
+using SAIN.Helpers;
 using UnityEngine;
 
 namespace SAIN.Models.Structs;

@@ -36,10 +36,7 @@ public class EnemyTalk : BotBase
         if (Bot.Talk.CanTalk && CanTaunt && EFTMath.RandomBool(70))
         {
             EPhraseTrigger trigger;
-            if (
-                EFTMath.RandomBool(15)
-                || (Bot.Memory.Health.HealthStatus == ETagStatus.Healthy && EFTMath.RandomBool(50))
-            )
+            if (EFTMath.RandomBool(15) || (Bot.Memory.Health.HealthStatus == ETagStatus.Healthy && EFTMath.RandomBool(50)))
             {
                 trigger = EPhraseTrigger.GoodWork;
             }
@@ -108,8 +105,15 @@ public class EnemyTalk : BotBase
         base.Dispose();
     }
 
-    private PersonalityTalkSettings PersonalitySettings => Bot?.Info?.PersonalitySettings.Talk;
-    private SAINSettingsClass FileSettings => Bot?.Info?.FileSettings;
+    private PersonalityTalkSettings PersonalitySettings
+    {
+        get { return Bot?.Info?.PersonalitySettings.Talk; }
+    }
+
+    private SAINSettingsClass FileSettings
+    {
+        get { return Bot?.Info?.FileSettings; }
+    }
 
     private float FakeDeathChance = 2f;
 
@@ -127,9 +131,7 @@ public class EnemyTalk : BotBase
         }
         else
         {
-            Logger.LogAndNotifyError(
-                "Personality settings or filesettings are null! Cannot Apply Settings!"
-            );
+            Logger.LogAndNotifyError("Personality settings or filesettings are null! Cannot Apply Settings!");
         }
 
         var talkSettings = preset.GlobalSettings.Talk;
@@ -157,10 +159,7 @@ public class EnemyTalk : BotBase
             && Bot.GoalEnemy != null
             && !Bot.Squad.BotInGroup
             && _fakeDeathTimer < Time.time
-            && (
-                Bot.Memory.Health.HealthStatus == ETagStatus.Dying
-                || Bot.Memory.Health.HealthStatus == ETagStatus.BadlyInjured
-            )
+            && (Bot.Memory.Health.HealthStatus == ETagStatus.Dying || Bot.Memory.Health.HealthStatus == ETagStatus.BadlyInjured)
             && (Bot.GoalEnemy.EnemyPosition - BotOwner.Position).sqrMagnitude < 70f * 70f
         )
         {
@@ -278,11 +277,7 @@ public class EnemyTalk : BotBase
         {
             if (!enemy.IsVisible && enemy.Seen)
             {
-                if (
-                    enemy.TimeSinceSeen > 60f
-                    && EFTMath.RandomBool(10)
-                    && Bot.Talk.Say(EPhraseTrigger.Rat, ETagStatus.Combat, true)
-                )
+                if (enemy.TimeSinceSeen > 60f && EFTMath.RandomBool(10) && Bot.Talk.Say(EPhraseTrigger.Rat, ETagStatus.Combat, true))
                 {
                     return true;
                 }
@@ -344,13 +339,7 @@ public class EnemyTalk : BotBase
         return true;
     }
 
-    private IEnumerator RespondToFriendly(
-        EPhraseTrigger trigger,
-        ETagStatus mask,
-        float delay,
-        Player sourcePlayer,
-        float chance = 100f
-    )
+    private IEnumerator RespondToFriendly(EPhraseTrigger trigger, ETagStatus mask, float delay, Player sourcePlayer, float chance = 100f)
     {
         if (!EFTMath.RandomBool(chance))
         {
@@ -387,12 +376,7 @@ public class EnemyTalk : BotBase
         Bot.Talk.Say(trigger, mask, false);
     }
 
-    private IEnumerator RespondToEnemy(
-        EPhraseTrigger trigger,
-        ETagStatus mask,
-        float delay,
-        Enemy enemy
-    )
+    private IEnumerator RespondToEnemy(EPhraseTrigger trigger, ETagStatus mask, float delay, Enemy enemy)
     {
         yield return new WaitForSeconds(delay);
 
@@ -449,9 +433,7 @@ public class EnemyTalk : BotBase
                 return;
             }
             _nextResponseTime = Time.time + 2f;
-            Bot.StartCoroutine(
-                RespondToEnemy(trigger.Value, ETagStatus.Combat, Random.Range(0.4f, 0.75f), enemy)
-            );
+            Bot.StartCoroutine(RespondToEnemy(trigger.Value, ETagStatus.Combat, Random.Range(0.4f, 0.75f), enemy));
         }
     }
 
@@ -567,13 +549,7 @@ public class EnemyTalk : BotBase
         var role = Bot.Info.Profile.WildSpawnType;
         if ((Bot.Info.Profile.IsBoss || Bot.Info.Profile.IsFollower))
         {
-            if (
-                (
-                    role == WildSpawnType.bossKnight
-                    || role == WildSpawnType.followerBirdEye
-                    || role == WildSpawnType.followerBigPipe
-                )
-            )
+            if ((role == WildSpawnType.bossKnight || role == WildSpawnType.followerBirdEye || role == WildSpawnType.followerBigPipe))
             {
                 return SAINPlugin.LoadedPreset.GlobalSettings.Talk.TalkativeGoons;
             }
@@ -594,10 +570,7 @@ public class EnemyTalk : BotBase
             return;
         }
 
-        if (
-            (BotOwner.Memory.IsPeace || (Bot.Squad.HumanFriendClose && !player.IsAI))
-            && _nextResponseTime < Time.time
-        )
+        if ((BotOwner.Memory.IsPeace || (Bot.Squad.HumanFriendClose && !player.IsAI)) && _nextResponseTime < Time.time)
         {
             _nextResponseTime = Time.time + _friendlyResponseFrequencyLimit;
 
@@ -623,10 +596,7 @@ public class EnemyTalk : BotBase
                 Bot.Squad.SquadInfo.SquadPersonality != ESquadPersonality.GigaChads
                 || Bot.Squad.SquadInfo.SquadPersonality != ESquadPersonality.Elite
             )
-            && (
-                Bot.Info.Personality == EPersonality.GigaChad
-                || Bot.Info.Personality == EPersonality.Chad
-            )
+            && (Bot.Info.Personality == EPersonality.GigaChad || Bot.Info.Personality == EPersonality.Chad)
         )
         {
             if (_saySilenceTime < Time.time)
@@ -654,12 +624,7 @@ public class EnemyTalk : BotBase
     private float _fakeDeathTimer = 0f;
     private float _begTimer = 0f;
 
-    private static readonly EPhraseTrigger[] BegPhrases =
-    [
-        EPhraseTrigger.Stop,
-        EPhraseTrigger.HoldFire,
-        EPhraseTrigger.GetBack,
-    ];
+    private static readonly EPhraseTrigger[] BegPhrases = [EPhraseTrigger.Stop, EPhraseTrigger.HoldFire, EPhraseTrigger.GetBack];
 
     private float _friendlyResponseDistance = 60f;
     private float _friendlyResponseDistanceAI = 35f;

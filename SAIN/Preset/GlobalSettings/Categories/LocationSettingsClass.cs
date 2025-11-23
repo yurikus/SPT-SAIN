@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using SAIN.Attributes;
 using SAIN.Components;
 using SAIN.Helpers;
-using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -19,7 +19,9 @@ public class LocationSettingsClass : SAINSettingsBase<LocationSettingsClass>, IS
         foreach (var type in EnumValues.GetEnum<ELocation>())
         {
             if (LocationSettings.ContainsKey(type))
+            {
                 continue;
+            }
 
             if (type == ELocation.None || type == ELocation.Terminal || type == ELocation.Town)
             {

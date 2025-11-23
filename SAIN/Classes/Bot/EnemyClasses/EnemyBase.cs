@@ -62,5 +62,8 @@ public abstract class EnemyBase
         Enemy.OnEnemyDisposed -= Dispose;
     }
 
-    protected Vector3 EnemyCurrentPosition => EnemyTransform.Position;
+    protected Vector3 EnemyCurrentPosition
+    {
+        get { return EnemyTransform.Position; }
+    }
 }

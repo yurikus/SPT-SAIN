@@ -164,40 +164,35 @@ public class BotTypeDefinitions
                 WildSpawnType = WildSpawnType.cursedAssault,
                 Name = "Tagged and Cursed Scav",
                 Section = "Scavs",
-                Description =
-                    "The type a scav is assigned when the player is marked as Tagged and Cursed",
+                Description = "The type a scav is assigned when the player is marked as Tagged and Cursed",
             },
             new BotType
             {
                 WildSpawnType = WildSpawnType.bossKnight,
                 Name = "Knight",
                 Section = "Goons",
-                Description =
-                    "Goons leader. Close proximity to the goons has been noted to cause smashed keyboards",
+                Description = "Goons leader. Close proximity to the goons has been noted to cause smashed keyboards",
             },
             new BotType
             {
                 WildSpawnType = WildSpawnType.followerBigPipe,
                 Name = "BigPipe",
                 Section = "Goons",
-                Description =
-                    "Goons follower. Close proximity to the goons has been noted to cause smashed keyboards\"",
+                Description = "Goons follower. Close proximity to the goons has been noted to cause smashed keyboards\"",
             },
             new BotType
             {
                 WildSpawnType = WildSpawnType.followerBirdEye,
                 Name = "BirdEye",
                 Section = "Goons",
-                Description =
-                    "Goons follower. Close proximity to the goons has been noted to cause smashed keyboards\"",
+                Description = "Goons follower. Close proximity to the goons has been noted to cause smashed keyboards\"",
             },
             new BotType
             {
                 WildSpawnType = WildSpawnType.exUsec,
                 Name = "Rogue",
                 Section = "Other",
-                Description =
-                    "Ex Usec Personel on Lighthouse usually found around the water treatment plant",
+                Description = "Ex Usec Personel on Lighthouse usually found around the water treatment plant",
             },
             new BotType
             {
@@ -211,8 +206,7 @@ public class BotTypeDefinitions
                 WildSpawnType = WildSpawnType.arenaFighterEvent,
                 Name = "Bloodhound",
                 Section = "Other",
-                Description =
-                    "From the Live Event, nearly identical to raiders except with different voicelines and better gear. Found in",
+                Description = "From the Live Event, nearly identical to raiders except with different voicelines and better gear. Found in",
             },
             new BotType
             {

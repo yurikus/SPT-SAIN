@@ -7,7 +7,8 @@ namespace SAIN.SAINComponent.Classes.WeaponFunction;
 
 public class BotLightController : BotComponentClassBase
 {
-    public BotLightController(BotComponent sain) : base(sain)
+    public BotLightController(BotComponent sain)
+        : base(sain)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
     }
@@ -24,16 +25,17 @@ public class BotLightController : BotComponentClassBase
 
     private void updateLightToggle()
     {
-        if ((Bot.SAINLayersActive || Bot.HasEnemy) &&
-            IsLightEnabled != wantLightOn &&
-            _nextLightChangeTime < Time.time)
+        if ((Bot.SAINLayersActive || Bot.HasEnemy) && IsLightEnabled != wantLightOn && _nextLightChangeTime < Time.time)
         {
             _nextLightChangeTime = Time.time + _changelightFreq * UnityEngine.Random.Range(0.66f, 1.33f);
             setLight(wantLightOn);
         }
     }
 
-    public bool IsLightEnabled => BotOwner?.BotLight?.IsEnable == true;
+    public bool IsLightEnabled
+    {
+        get { return BotOwner?.BotLight?.IsEnable == true; }
+    }
 
     private float _nextLightChangeTime;
     private float _changelightFreq = 1f;
@@ -42,7 +44,6 @@ public class BotLightController : BotComponentClassBase
     {
         try
         {
-
             if (value)
             {
                 BotOwner.BotLight.TurnOn(true);
@@ -64,10 +65,7 @@ public class BotLightController : BotComponentClassBase
 
     private bool wantLightOn;
 
-    public void ToggleLaser(bool value)
-    {
-
-    }
+    public void ToggleLaser(bool value) { }
 
     public void HandleLightForSearch(float distanceToCurrentCornerSqr)
     {
@@ -113,8 +111,7 @@ public class BotLightController : BotComponentClassBase
                 return;
             }
 
-            if (enemy.IsVisible &&
-                Time.time - enemy.Vision.VisibleStartTime > 0.75f)
+            if (enemy.IsVisible && Time.time - enemy.Vision.VisibleStartTime > 0.75f)
             {
                 if (enemy.RealDistance <= maxTurnOnrange * 0.9f)
                 {
@@ -127,9 +124,7 @@ public class BotLightController : BotComponentClassBase
                 return;
             }
 
-            if (enemy.Seen &&
-                BotOwner.BotLight?.IsEnable == true &&
-                enemy.TimeSinceSeen > randomizedTurnOffTime)
+            if (enemy.Seen && BotOwner.BotLight?.IsEnable == true && enemy.TimeSinceSeen > randomizedTurnOffTime)
             {
                 ToggleLight(false);
                 return;

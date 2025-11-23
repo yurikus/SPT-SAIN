@@ -4,9 +4,7 @@ using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo;
 
-public class ThrowGrenadeAction(BotOwner bot)
-    : BotAction(bot, nameof(ThrowGrenadeAction)),
-        IBotAction
+public class ThrowGrenadeAction(BotOwner bot) : BotAction(bot, nameof(ThrowGrenadeAction)), IBotAction
 {
     public override void Update(CustomLayer.ActionData data)
     {

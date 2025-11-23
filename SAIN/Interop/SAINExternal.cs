@@ -21,12 +21,7 @@ public static class SAINExternal
             return false;
         }
 
-        bool result = component.Hearing.SoundInput.SetIgnoreHearingExternal(
-            value,
-            ignoreUnderFire,
-            duration,
-            out string reason
-        );
+        bool result = component.Hearing.SoundInput.SetIgnoreHearingExternal(value, ignoreUnderFire, duration, out string reason);
         return result;
     }
 
@@ -129,7 +124,10 @@ public static class SAINExternal
         return true;
     }
 
-    private static bool DebugExternal => SAINPlugin.DebugSettings.Logs.DebugExternal;
+    private static bool DebugExternal
+    {
+        get { return SAINPlugin.DebugSettings.Logs.DebugExternal; }
+    }
 
     public static float TimeSinceSenseEnemy(BotOwner botOwner)
     {
@@ -148,12 +146,7 @@ public static class SAINExternal
         return enemy.TimeSinceLastKnownUpdated;
     }
 
-    public static bool IsPathTowardEnemy(
-        NavMeshPath path,
-        BotOwner botOwner,
-        float ratioSameOverAll = 0.25f,
-        float sqrDistCheck = 0.05f
-    )
+    public static bool IsPathTowardEnemy(NavMeshPath path, BotOwner botOwner, float ratioSameOverAll = 0.25f, float sqrDistCheck = 0.05f)
     {
         var component = GetBotComponent(botOwner);
         if (component == null)
@@ -168,14 +161,7 @@ public static class SAINExternal
         }
 
         // Compare the corners in both paths, and check if the nodes used in each are the same.
-        if (
-            SAINBotSpaceAwareness.ArePathsDifferent(
-                path,
-                enemy.Path.PathToEnemy,
-                ratioSameOverAll,
-                sqrDistCheck
-            )
-        )
+        if (SAINBotSpaceAwareness.ArePathsDifferent(path, enemy.Path.PathToEnemy, ratioSameOverAll, sqrDistCheck))
         {
             return false;
         }
@@ -183,11 +169,7 @@ public static class SAINExternal
         return true;
     }
 
-    public static bool CanBotQuest(
-        BotOwner botOwner,
-        Vector3 questPosition,
-        float dotProductThresh = 0.33f
-    )
+    public static bool CanBotQuest(BotOwner botOwner, Vector3 questPosition, float dotProductThresh = 0.33f)
     {
         var component = GetBotComponent(botOwner);
         if (component == null)
@@ -197,29 +179,25 @@ public static class SAINExternal
         if (IsBotInCombat(component, out var reason))
         {
             if (DebugExternal)
-                Logger.LogInfo(
-                    $"{botOwner.name} is currently engaging an enemy, cannot quest. Reason: [{reason}]"
-                );
+            {
+                Logger.LogInfo($"{botOwner.name} is currently engaging an enemy, cannot quest. Reason: [{reason}]");
+            }
 
             return false;
         }
         if (IsBotSearching(component))
         {
             if (DebugExternal)
-                Logger.LogInfo(
-                    $"{botOwner.name} is currently searching and hasn't cleared last known position, cannot quest."
-                );
+            {
+                Logger.LogInfo($"{botOwner.name} is currently searching and hasn't cleared last known position, cannot quest.");
+            }
 
             return false;
         }
         return true;
     }
 
-    public static bool IsQuestTowardTarget(
-        BotComponent component,
-        Vector3 questPosition,
-        float dotProductThresh
-    )
+    public static bool IsQuestTowardTarget(BotComponent component, Vector3 questPosition, float dotProductThresh)
     {
         Vector3? currentTarget = component.GoalEnemy?.LastKnownPosition;
         if (currentTarget == null)
@@ -231,8 +209,7 @@ public static class SAINExternal
         Vector3 targetDirection = currentTarget.Value - botPosition;
         Vector3 questDirection = questPosition - botPosition;
 
-        return Vector3.Dot(targetDirection.normalized, questDirection.normalized)
-            > dotProductThresh;
+        return Vector3.Dot(targetDirection.normalized, questDirection.normalized) > dotProductThresh;
     }
 
     private static bool IsBotSearching(BotComponent component)

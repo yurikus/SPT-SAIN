@@ -15,10 +15,7 @@ public class PlayerSpawnTracker
 
     public PlayerComponent GetPlayerComponent(IPlayer Player)
     {
-        if (
-            Player != null
-            && AlivePlayersDictionary.TryGetValue(Player.ProfileId, out PlayerComponent component)
-        )
+        if (Player != null && AlivePlayersDictionary.TryGetValue(Player.ProfileId, out PlayerComponent component))
         {
             return component;
         }
@@ -27,21 +24,14 @@ public class PlayerSpawnTracker
 
     public PlayerComponent GetPlayerComponent(string profileId)
     {
-        if (
-            !profileId.IsNullOrEmpty()
-            && AlivePlayersDictionary.TryGetValue(profileId, out PlayerComponent component)
-        )
+        if (!profileId.IsNullOrEmpty() && AlivePlayersDictionary.TryGetValue(profileId, out PlayerComponent component))
         {
             return component;
         }
         return null;
     }
 
-    public PlayerComponent FindClosestHumanPlayer(
-        out float closestPlayerSqrMag,
-        Vector3 targetPosition,
-        out Player player
-    )
+    public PlayerComponent FindClosestHumanPlayer(out float closestPlayerSqrMag, Vector3 targetPosition, out Player player)
     {
         PlayerComponent closestPlayer = null;
         closestPlayerSqrMag = float.MaxValue;
@@ -63,11 +53,7 @@ public class PlayerSpawnTracker
         return closestPlayer;
     }
 
-    public PlayerComponent FindClosestHumanPlayer(
-        out float distance,
-        PlayerComponent quierrier,
-        out Player player
-    )
+    public PlayerComponent FindClosestHumanPlayer(out float distance, PlayerComponent quierrier, out Player player)
     {
         List<OtherPlayerData> otherPlayers = quierrier.OtherPlayersData.DataList;
         otherPlayers.Sort((x, y) => x.DistanceData.Distance.CompareTo(y.DistanceData.Distance));
@@ -97,9 +83,7 @@ public class PlayerSpawnTracker
         if (AlivePlayersDictionary.TryGetValue(player.ProfileId, out var component))
         {
 #if DEBUG
-            Logger.LogDebug(
-                $"Successfully created new Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]"
-            );
+            Logger.LogDebug($"Successfully created new Player Component for [{player.Profile?.Nickname} : {player.ProfileId}]");
 #endif
             return component;
         }
@@ -121,18 +105,14 @@ public class PlayerSpawnTracker
         if (player == null)
         {
 #if DEBUG
-            Logger.LogError(
-                $"Could not add PlayerComponent for Null Player. IPlayer: {iPlayer.Profile?.Nickname} : {profileId}"
-            );
+            Logger.LogError($"Could not add PlayerComponent for Null Player. IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
 #endif
             return;
         }
         if (player.gameObject == null)
         {
 #if DEBUG
-            Logger.LogError(
-                $"Player Has null gameobject? IPlayer: {iPlayer.Profile?.Nickname} : {profileId}"
-            );
+            Logger.LogError($"Player Has null gameobject? IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
 #endif
             return;
         }
@@ -140,14 +120,10 @@ public class PlayerSpawnTracker
         if (TryRemove(profileId, out bool compDestroyed))
         {
 #if DEBUG
-            Logger.LogWarning(
-                $"PlayerComponent already exists for Player: {player.name} : {player.Profile?.Nickname} : {profileId}"
-            );
+            Logger.LogWarning($"PlayerComponent already exists for Player: {player.name} : {player.Profile?.Nickname} : {profileId}");
             if (compDestroyed)
             {
-                Logger.LogWarning(
-                    $"Destroyed old Component for: {player.name} : {player.Profile?.Nickname} : {profileId}"
-                );
+                Logger.LogWarning($"Destroyed old Component for: {player.name} : {player.Profile?.Nickname} : {profileId}");
             }
 #endif
         }
@@ -261,9 +237,7 @@ public class PlayerSpawnTracker
                 if (component.Player != null)
                 {
 #if DEBUG
-                    Logger.LogDebug(
-                        $"Removing {component.Player.Profile?.Nickname} from player dictionary"
-                    );
+                    Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
 #endif
                 }
             }

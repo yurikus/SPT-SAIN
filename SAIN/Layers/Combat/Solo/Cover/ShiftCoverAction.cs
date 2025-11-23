@@ -1,9 +1,9 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Collections.Generic;
+using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace SAIN.Layers.Combat.Solo.Cover;
@@ -12,8 +12,7 @@ internal class ShiftCoverAction(BotOwner bot) : BotAction(bot, nameof(ShiftCover
 {
     public override void Update(CustomLayer.ActionData data)
     {
-        if (NewPoint == null
-            && FindPointToGo())
+        if (NewPoint == null && FindPointToGo())
         {
             Bot.Mover.SetTargetMoveSpeed(GetSpeed());
             Bot.Mover.SetTargetPose(GetPose());
@@ -37,9 +36,7 @@ internal class ShiftCoverAction(BotOwner bot) : BotAction(bot, nameof(ShiftCover
     public override void OnSteeringTicked()
     {
         Enemy enemy = Bot.GoalEnemy;
-        if (!Shoot.ShootAnyVisibleEnemies(enemy) && !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies))
-        {
-        }
+        if (!Shoot.ShootAnyVisibleEnemies(enemy) && !Bot.Suppression.TrySuppressAnyEnemy(enemy, Bot.EnemyController.KnownEnemies)) { }
         Bot.Steering.SteerByPriority(enemy);
     }
 
@@ -78,13 +75,14 @@ internal class ShiftCoverAction(BotOwner bot) : BotAction(bot, nameof(ShiftCover
                 {
                     CoverPoint shiftCoverTarget = coverPoints[i];
 
-                    if (shiftCoverTarget.CoverHeight > coverInUse.CoverHeight
-                        && !UsedPoints.Contains(shiftCoverTarget))
+                    if (shiftCoverTarget.CoverHeight > coverInUse.CoverHeight && !UsedPoints.Contains(shiftCoverTarget))
                     {
                         for (int j = 0; j < UsedPoints.Count; j++)
                         {
-                            if ((UsedPoints[j].Position - shiftCoverTarget.Position).sqrMagnitude > 5f
-                                && Bot.Mover.GoToCoverPoint(shiftCoverTarget, false))
+                            if (
+                                (UsedPoints[j].Position - shiftCoverTarget.Position).sqrMagnitude > 5f
+                                && Bot.Mover.GoToCoverPoint(shiftCoverTarget, false)
+                            )
                             {
                                 NewPoint = shiftCoverTarget;
                                 return true;
@@ -127,9 +125,21 @@ internal class ShiftCoverAction(BotOwner bot) : BotAction(bot, nameof(ShiftCover
         {
             stringBuilder.AppendLine("Cover In Use");
             stringBuilder.AppendLabeledValue("Status", $"{NewPoint.StraightDistanceStatus}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Height / Value", $"{NewPoint.CoverHeight} {NewPoint.HardData.Value}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue(
+                "Height / Value",
+                $"{NewPoint.CoverHeight} {NewPoint.HardData.Value}",
+                Color.white,
+                Color.yellow,
+                true
+            );
             stringBuilder.AppendLabeledValue("Path Length", $"{NewPoint.PathData.PathLength}", Color.white, Color.yellow, true);
-            stringBuilder.AppendLabeledValue("Straight Distance", $"{(NewPoint.Position - Bot.Position).magnitude}", Color.white, Color.yellow, true);
+            stringBuilder.AppendLabeledValue(
+                "Straight Distance",
+                $"{(NewPoint.Position - Bot.Position).magnitude}",
+                Color.white,
+                Color.yellow,
+                true
+            );
         }
     }
 }

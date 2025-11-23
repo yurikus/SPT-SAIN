@@ -18,7 +18,8 @@ public class SAINWeatherClass : BotManagerBase
 
     public static SAINWeatherClass Instance { get; private set; }
 
-    public SAINWeatherClass(BotManagerComponent botController) : base(botController)
+    public SAINWeatherClass(BotManagerComponent botController)
+        : base(botController)
     {
         Instance = this;
     }
@@ -55,7 +56,8 @@ public class SAINWeatherClass : BotManagerBase
             return 1f;
         }
 
-        float weathermodifier = 1f * (FogModifier(weatherCurve.Fog) * RainModifier(weatherCurve.Rain) * CloudsModifier(weatherCurve.Cloudiness));
+        float weathermodifier =
+            1f * (FogModifier(weatherCurve.Fog) * RainModifier(weatherCurve.Rain) * CloudsModifier(weatherCurve.Cloudiness));
         weathermodifier = Mathf.Clamp(weathermodifier, 0.01f, 1f);
 
         //if (GameWorldComponent.Instance.Location.WinterActive) {
@@ -124,7 +126,11 @@ public class SAINWeatherClass : BotManagerBase
         return Mathf.Lerp(1f, minScale, cloudsScaled);
     }
 
-    private TimeSettings _timeSettings => GlobalSettingsClass.Instance.Look.Time;
+    private TimeSettings _timeSettings
+    {
+        get { return GlobalSettingsClass.Instance.Look.Time; }
+    }
+
     private float _rainCheckTime;
     private float _weatherCheckTime;
 }

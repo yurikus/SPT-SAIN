@@ -4,7 +4,8 @@ namespace SAIN.Preset.Personalities;
 
 public class PersonalityManagerClass : BasePreset
 {
-    public PersonalityManagerClass(SAINPresetClass preset) : base(preset)
+    public PersonalityManagerClass(SAINPresetClass preset)
+        : base(preset)
     {
         import();
         PersonalityDefaultsClass.InitDefaults(PersonalityDictionary, Preset);

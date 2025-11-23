@@ -1,10 +1,10 @@
-﻿using EFT;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using EFT;
 using HarmonyLib;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.WeaponFunction;
@@ -25,7 +25,11 @@ public class GrenadeVelocityTracker : MonoBehaviour
 
     public void Update()
     {
-        if (_grenade == null) return;
+        if (_grenade == null)
+        {
+            return;
+        }
+
         if (_rigidBody == null)
         {
             GrenadeDestroyed(_grenade);
@@ -64,12 +68,15 @@ public class GrenadeVelocityTracker : MonoBehaviour
 public class GrenadeReactionClass : BotSubClass<BotGrenadeManager>, IBotClass
 {
     public GrenadeTrackerClass DangerGrenade { get; private set; }
-    public Vector3? GrenadeDangerPoint => DangerGrenade?.DangerPoint;
+    public Vector3? GrenadeDangerPoint
+    {
+        get { return DangerGrenade?.DangerPoint; }
+    }
+
     public Dictionary<Throwable, GrenadeTrackerClass> EnemyGrenadesList { get; private set; } = [];
 
-    public GrenadeReactionClass(BotGrenadeManager ThrowWeapItemClass) : base(ThrowWeapItemClass)
-    {
-    }
+    public GrenadeReactionClass(BotGrenadeManager ThrowWeapItemClass)
+        : base(ThrowWeapItemClass) { }
 
     public override void Init()
     {
@@ -97,8 +104,13 @@ public class GrenadeReactionClass : BotSubClass<BotGrenadeManager>, IBotClass
         grenadeController.OnGrenadeDangerUpdated -= GrenadeDangerUpdated;
 
         foreach (var tracker in EnemyGrenadesList.Values)
+        {
             if (tracker?.Grenade != null)
+            {
                 tracker.Grenade.DestroyEvent -= RemoveGrenade;
+            }
+        }
+
         EnemyGrenadesList.Clear();
         base.Dispose();
     }
@@ -110,8 +122,7 @@ public class GrenadeReactionClass : BotSubClass<BotGrenadeManager>, IBotClass
             return;
         }
         Enemy enemy = Bot.EnemyController.GetEnemy(profileId, false);
-        if (enemy != null &&
-            enemy.RealDistance <= MAX_ENEMY_GRENADE_DIST_TOCARE)
+        if (enemy != null && enemy.RealDistance <= MAX_ENEMY_GRENADE_DIST_TOCARE)
         {
             EnemyGrenadesList.Add(grenade, new GrenadeTrackerClass(Bot, grenade, dangerPoint, GetReactionTime()));
             grenade.DestroyEvent += RemoveGrenade;

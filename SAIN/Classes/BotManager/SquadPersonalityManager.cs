@@ -1,7 +1,7 @@
-﻿using SAIN.Components;
-using SAIN.Models.Enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
+using SAIN.Components;
+using SAIN.Models.Enums;
 
 namespace SAIN.BotController.Classes;
 
@@ -45,7 +45,6 @@ public class SquadPersonalityManager
         }
 
         //Logger.LogAndNotifyInfo(stringbuilder.ToString());
-
     }
 
     private static EPersonality GetMostFrequentPersonality(Dictionary<EPersonality, int> PersonalityCounts, out int count)
@@ -116,7 +115,12 @@ public class SquadPersonalityManager
         }
     }
 
-    private static SquadPersonalitySettings CreateSettings(ESquadPersonality squadPersonality, float vocalization, float coordination, float aggression)
+    private static SquadPersonalitySettings CreateSettings(
+        ESquadPersonality squadPersonality,
+        float vocalization,
+        float coordination,
+        float aggression
+    )
     {
         if (!SquadSettings.ContainsKey(squadPersonality))
         {
@@ -124,7 +128,7 @@ public class SquadPersonalityManager
             {
                 VocalizationLevel = vocalization,
                 CoordinationLevel = coordination,
-                AggressionLevel = aggression
+                AggressionLevel = aggression,
             };
             SquadSettings.Add(squadPersonality, settings);
         }

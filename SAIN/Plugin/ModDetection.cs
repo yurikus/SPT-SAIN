@@ -59,9 +59,7 @@ public static class ModDetection
         if (RealismLoaded)
         {
             EFTCoreSettings.UpdateArmorClassCoef(3.5f);
-            Logger.LogInfo(
-                $"Realism Detected, updating armor class number to reflect new armor classes..."
-            );
+            Logger.LogInfo($"Realism Detected, updating armor class number to reflect new armor classes...");
         }
         else
         {

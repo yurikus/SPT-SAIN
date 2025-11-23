@@ -5,10 +5,7 @@ namespace SAIN.Helpers;
 
 internal class Reflection
 {
-    public static FieldInfo[] GetFieldsInType(
-        Type type,
-        BindingFlags flags = BindingFlags.Instance | BindingFlags.Public
-    )
+    public static FieldInfo[] GetFieldsInType(Type type, BindingFlags flags = BindingFlags.Instance | BindingFlags.Public)
     {
         return type.GetFields(flags);
     }
@@ -19,18 +16,12 @@ internal class Reflection
         {
             return null;
         }
-        var field = type.GetField(
-            name,
-            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public
-        );
+        var field = type.GetField(name, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
         if (field != null)
         {
             return field.GetValue(null);
         }
-        var prop = type.GetProperty(
-            name,
-            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public
-        );
+        var prop = type.GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
         if (prop != null)
         {
             return prop.GetValue(null);

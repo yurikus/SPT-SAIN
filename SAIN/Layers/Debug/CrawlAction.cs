@@ -1,6 +1,6 @@
-﻿using DrakiaXYZ.BigBrain.Brains;
+﻿using System.Text;
+using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,9 +18,7 @@ internal class CrawlAction(BotOwner bot) : BotAction(bot, nameof(CrawlAction)), 
             nextRandomRunTime = 0f;
         }
 
-        if (nextRandomRunTime < Time.time &&
-            FindRandomPlace(out var path) &&
-            Bot.Mover.RunToPoint(_runDestination, false, -1f))
+        if (nextRandomRunTime < Time.time && FindRandomPlace(out var path) && Bot.Mover.RunToPoint(_runDestination, false, -1f))
         {
             nextRandomRunTime = Time.time + 20f;
         }
@@ -53,7 +51,5 @@ internal class CrawlAction(BotOwner bot) : BotAction(bot, nameof(CrawlAction)), 
         return false;
     }
 
-    public override void BuildDebugText(StringBuilder stringBuilder)
-    {
-    }
+    public override void BuildDebugText(StringBuilder stringBuilder) { }
 }

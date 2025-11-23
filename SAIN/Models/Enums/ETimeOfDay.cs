@@ -5,5 +5,5 @@ public enum ETimeOfDay
     Night,
     Day,
     Dusk,
-    Dawn
+    Dawn,
 }

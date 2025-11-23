@@ -48,10 +48,7 @@ public class SAINBotInfoClass : BotComponentClassBase
         {
             if (_fileSettings == null)
             {
-                _fileSettings = SAINPresetClass.Instance.BotSettings.GetSAINSettings(
-                    Profile.WildSpawnType,
-                    Profile.BotDifficulty
-                );
+                _fileSettings = SAINPresetClass.Instance.BotSettings.GetSAINSettings(Profile.WildSpawnType, Profile.BotDifficulty);
             }
             return _fileSettings;
         }
@@ -61,23 +58,25 @@ public class SAINBotInfoClass : BotComponentClassBase
     public BotProfile Profile { get; private set; }
     public BotWeaponInfoClass WeaponInfo { get; private set; }
     public EPersonality Personality { get; private set; }
-    public PersonalityBehaviorSettings PersonalitySettings => PersonalitySettingsClass?.Behavior;
+    public PersonalityBehaviorSettings PersonalitySettings
+    {
+        get { return PersonalitySettingsClass?.Behavior; }
+    }
+
     public PersonalitySettingsClass PersonalitySettingsClass { get; private set; }
     public float TimeBeforeSearch { get; private set; } = 0f;
     public float HoldGroundDelay { get; private set; }
     public float PercentageBeforeExtract { get; set; } = -1f;
     public bool ForceExtract { get; set; } = false;
     public float ForgetEnemyTime { get; private set; }
-    public float AggressionMultiplier => Difficulty.AggressionModifier;
+    public float AggressionMultiplier
+    {
+        get { return Difficulty.AggressionModifier; }
+    }
 
     public void SetPersonality(EPersonality personality)
     {
-        if (
-            SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.TryGetValue(
-                personality,
-                out var personalitySettings
-            )
-        )
+        if (SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.TryGetValue(personality, out var personalitySettings))
         {
             PersonalitySettingsClass = personalitySettings;
             Personality = personality;
@@ -153,10 +152,7 @@ public class SAINBotInfoClass : BotComponentClassBase
 
     private void UpdateExtractTime()
     {
-        float percentage = Random.Range(
-            FileSettings.Mind.MinExtractPercentage,
-            FileSettings.Mind.MaxExtractPercentage
-        );
+        float percentage = Random.Range(FileSettings.Mind.MinExtractPercentage, FileSettings.Mind.MaxExtractPercentage);
 
         var squad = Bot?.Squad;
         var members = squad?.Members;
@@ -191,10 +187,7 @@ public class SAINBotInfoClass : BotComponentClassBase
 
     public EPersonality GetPersonality(out PersonalitySettingsClass settings)
     {
-        return SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.GetPersonality(
-            this,
-            out settings
-        );
+        return SAINPlugin.LoadedPreset.PersonalityManager.PersonalityDictionary.GetPersonality(this, out settings);
     }
 
     private void SetConfigValues(SAINSettingsClass sainFileSettings)

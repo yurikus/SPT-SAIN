@@ -22,15 +22,35 @@ public class SAINActivationClass(BotComponent botComponent) : BotComponentClassB
         CurrentAction = action;
     }
 
-    public bool BotActive => BotActiveToggle.Value;
+    public bool BotActive
+    {
+        get { return BotActiveToggle.Value; }
+    }
+
     public ToggleEvent BotActiveToggle { get; } = new ToggleEvent();
-    public bool BotInStandBy => BotStandByToggle.Value;
+    public bool BotInStandBy
+    {
+        get { return BotStandByToggle.Value; }
+    }
+
     public ToggleEvent BotStandByToggle { get; } = new ToggleEvent();
-    public bool GameEnding => GameEndingToggle.Value;
+    public bool GameEnding
+    {
+        get { return GameEndingToggle.Value; }
+    }
+
     public ToggleEvent GameEndingToggle { get; } = new ToggleEvent();
-    public bool SAINLayersActive => SAINLayersActiveToggle.Value;
+    public bool SAINLayersActive
+    {
+        get { return SAINLayersActiveToggle.Value; }
+    }
+
     public ToggleEvent SAINLayersActiveToggle { get; } = new ToggleEvent();
-    public bool BotInCombat => BotInCombatToggle.Value;
+    public bool BotInCombat
+    {
+        get { return BotInCombatToggle.Value; }
+    }
+
     public ToggleEvent BotInCombatToggle { get; } = new ToggleEvent();
 
     public void SetActive(bool botActive)
@@ -136,11 +156,19 @@ public class SAINActivationClass(BotComponent botComponent) : BotComponentClassB
 
         var enemies = Bot.EnemyController.Enemies.Values;
         foreach (var enemy in enemies)
-            if (enemy != null &&
-                (enemy.InLineOfSight ||
-                (enemy.IsAI && enemy.RealDistance < _activate_standby_ai) ||
-                (!enemy.IsAI && enemy.RealDistance < _activate_standby_human)))
+        {
+            if (
+                enemy != null
+                && (
+                    enemy.InLineOfSight
+                    || (enemy.IsAI && enemy.RealDistance < _activate_standby_ai)
+                    || (!enemy.IsAI && enemy.RealDistance < _activate_standby_human)
+                )
+            )
+            {
                 return true;
+            }
+        }
 
         return false;
     }

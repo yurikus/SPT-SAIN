@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using SAIN.Attributes;
-using System.Collections.Generic;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -24,7 +24,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     public float MAX_FIRE_RATE_COEF_FULLAUTO = 0.25f; // maximum time between shots
 
     [Name("Firerate Randomization")]
-    [Description("Randomize the time a bot waits between shots to make it less robotic. A value of 0.25 means it will multiply it by a random value between 0.75x - 1.25x")]
+    [Description(
+        "Randomize the time a bot waits between shots to make it less robotic. A value of 0.25 means it will multiply it by a random value between 0.75x - 1.25x"
+    )]
     [Category("General")]
     [MinMax(0.0f, 1f, 100f)]
     public float FIRERATE_RANDOMIZATION_COEF = 0.25f; // randomization coefficient for firerate
@@ -55,16 +57,20 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     public float BOT_RECOIL_DECAY_COEF = 0.3f;
 
     [Name("Bot Weapon Recoil Baseline")]
-    [Description("A Bot's weapon's recoil will get divided by this to calculate how much to rotate their view on each shot, so, for example, " +
-        "with a baseline of 100 - if a bot has 250 total recoil, that number gets divided by this to produce 2.5. Higher = Less recoil for bots. " +
-        "This is basically an average recoil of all possible weapons.")]
+    [Description(
+        "A Bot's weapon's recoil will get divided by this to calculate how much to rotate their view on each shot, so, for example, "
+            + "with a baseline of 100 - if a bot has 250 total recoil, that number gets divided by this to produce 2.5. Higher = Less recoil for bots. "
+            + "This is basically an average recoil of all possible weapons."
+    )]
     [Category("Bot Recoil")]
     [MinMax(25f, 300f, 1f)]
     [Advanced]
     public float BOT_RECOIL_BASELINE = 100;
 
     [Name("Bot Weapon Recoil Baseline - Realism Mod")]
-    [Description("A Bot's weapon's recoil will get divided by this to calculate how much to rotate their view on each shot. This value is used if Realism mod is on to reflect different recoil numbers.")]
+    [Description(
+        "A Bot's weapon's recoil will get divided by this to calculate how much to rotate their view on each shot. This value is used if Realism mod is on to reflect different recoil numbers."
+    )]
     [Category("Bot Recoil")]
     [MinMax(25f, 300f, 1f)]
     [Advanced]
@@ -72,12 +78,12 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
 
     [Name("Ammo Shootability")]
     [Description(
-        "Lower is BETTER. " +
-        "How Shootable this ammo type is, affects semi auto firerate and full auto burst length." +
-        "Value is scaled but roughly gives a plus or minus 20% to firerate depending on the value set here." +
-        "For Example. 9x19 will shoot about 20% faster fire-rate on semi-auto at 50 meters" +
-        ", and fire 20% longer bursts when on full auto"
-        )]
+        "Lower is BETTER. "
+            + "How Shootable this ammo type is, affects semi auto firerate and full auto burst length."
+            + "Value is scaled but roughly gives a plus or minus 20% to firerate depending on the value set here."
+            + "For Example. 9x19 will shoot about 20% faster fire-rate on semi-auto at 50 meters"
+            + ", and fire 20% longer bursts when on full auto"
+    )]
     [Category("Bot Weapon Control")]
     [Percentage0to1(0.01f)]
     [Advanced]
@@ -149,7 +155,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     };
 
     [Name("Max FullAuto Distances")]
-    [Description("The maximum distance a bot using this caliber can fire it full auto. Not all values are used since some calibers don't have any full auto weapons that use it.")]
+    [Description(
+        "The maximum distance a bot using this caliber can fire it full auto. Not all values are used since some calibers don't have any full auto weapons that use it."
+    )]
     [Category("Bot Weapon Control")]
     [MinMax(10f, 150f)]
     [Advanced]
@@ -222,12 +230,12 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
 
     [Name("Weapon Shootability")]
     [Description(
-        "Lower is BETTER. " +
-        "How Shootable this weapon type is, affects semi auto firerate and full auto burst length." +
-        "Value is scaled but roughly gives a plus or minus 20% to firerate depending on the value set here." +
-        "For Example. SMGs will shoot about 20% faster fire-rate on semi-auto at 50 meters" +
-        ", and fire 20% longer bursts when on full auto"
-        )]
+        "Lower is BETTER. "
+            + "How Shootable this weapon type is, affects semi auto firerate and full auto burst length."
+            + "Value is scaled but roughly gives a plus or minus 20% to firerate depending on the value set here."
+            + "For Example. SMGs will shoot about 20% faster fire-rate on semi-auto at 50 meters"
+            + ", and fire 20% longer bursts when on full auto"
+    )]
     [Category("Bot Weapon Control")]
     [Percentage0to1(0.01f)]
     [Advanced]
@@ -266,13 +274,13 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
 
     [Name("Weapon Firerate Wait Time")]
     [Description(
-        "HIGHER is BETTER. " +
-        "This is the time to wait inbetween shots for every meter." +
-        "the number is divided by the distance to their target, to get a wait period between shots." +
-        "For Example. With a setting of 100: " +
-        "if a target is 50m away, they will wait 0.5 sec between shots because 50 / 100 is 0.5." +
-        "This number is later modified by the Shootability multiplier, to get a final fire-rate that gets sent to a bot."
-        )]
+        "HIGHER is BETTER. "
+            + "This is the time to wait inbetween shots for every meter."
+            + "the number is divided by the distance to their target, to get a wait period between shots."
+            + "For Example. With a setting of 100: "
+            + "if a target is 50m away, they will wait 0.5 sec between shots because 50 / 100 is 0.5."
+            + "This number is later modified by the Shootability multiplier, to get a final fire-rate that gets sent to a bot."
+    )]
     [MinMax(30f, 250f, 1f)]
     [Category("Bot Weapon Control")]
     [Advanced]
@@ -311,9 +319,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
 
     [Name("Bot Preferred Shoot Distances")]
     [Description(
-        "The distances that a bot prefers to shoot a particular weapon class. " +
-        "Bots will try to close the distance if further than this."
-        )]
+        "The distances that a bot prefers to shoot a particular weapon class. "
+            + "Bots will try to close the distance if further than this."
+    )]
     [MinMax(10f, 250f, 1f)]
     [Category("Bot Weapon Control")]
     [Advanced]
@@ -352,9 +360,11 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
 
     [JsonIgnore]
     [Hidden]
-    private const string Shootability = "Affects Weapon Shootability Calculations, which tells a bot how fast they should shoot, how long they should hold down full auto fire, and how far they will decide to fire full auto or swap to only semi-auto.. ";
+    private const string Shootability =
+        "Affects Weapon Shootability Calculations, which tells a bot how fast they should shoot, how long they should hold down full auto fire, and how far they will decide to fire full auto or swap to only semi-auto.. ";
 
-    private const string Scaling = "Affects how much this type of effect has on how Shootable a bot's weapon is considered. Higher = More effect. So if you set RecoilScaling to 0, recoil will play no part in how fast or slow a bot shoots.";
+    private const string Scaling =
+        "Affects how much this type of effect has on how Shootable a bot's weapon is considered. Higher = More effect. So if you set RecoilScaling to 0, recoil will play no part in how fast or slow a bot shoots.";
 
     [Description(Shootability + Scaling)]
     [Category("Bot Weapon Control")]

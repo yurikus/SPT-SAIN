@@ -72,8 +72,11 @@ public struct CalcDistanceJob : IDisposableJobFor
         return Result;
     }
 
-    [ReadOnly] public NativeArray<Vector3> Directions;
-    [WriteOnly] public NativeArray<float> Distances;
+    [ReadOnly]
+    public NativeArray<Vector3> Directions;
+
+    [WriteOnly]
+    public NativeArray<float> Distances;
 
     public void Execute(int index)
     {
@@ -82,7 +85,14 @@ public struct CalcDistanceJob : IDisposableJobFor
 
     public void Dispose()
     {
-        if (Directions.IsCreated) Directions.Dispose();
-        if (Distances.IsCreated) Distances.Dispose();
+        if (Directions.IsCreated)
+        {
+            Directions.Dispose();
+        }
+
+        if (Distances.IsCreated)
+        {
+            Distances.Dispose();
+        }
     }
 }

@@ -1,5 +1,5 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -15,9 +15,11 @@ public class HitEffectSettings : SAINSettingsBase<HitEffectSettings>, ISAINSetti
     public float DAMAGE_MANUAL_MODIFIER = 1f;
 
     [Name("Use Hit Point Direction")]
-    [Description("Instead of randomly calculating an angle to affect bot aim. " +
-        "Use the direction they were hit from, so if they are shot in the right arm, their aim gets kicked to the right. " +
-        "If they are shot in the leg, kick their aim down towards their leg.")]
+    [Description(
+        "Instead of randomly calculating an angle to affect bot aim. "
+            + "Use the direction they were hit from, so if they are shot in the right arm, their aim gets kicked to the right. "
+            + "If they are shot in the leg, kick their aim down towards their leg."
+    )]
     public bool USE_HIT_POINT_DIRECTION = true;
 
     [MinMax(0.01f, 2f, 100f)]
@@ -37,8 +39,10 @@ public class HitEffectSettings : SAINSettingsBase<HitEffectSettings>, ISAINSetti
     public float DAMAGE_BASE_MAX_ANGLE = 10f;
 
     [Name("Damage Baseline")]
-    [Description("The amount of damage a bot received is divided by this number to produce a multiplier for how much to kick their aim. " +
-        "So if the value here is 50, and a bot is shot by a bullet that does 100 damage, it will result in their hit reaction being 2x, or twice as impactful.")]
+    [Description(
+        "The amount of damage a bot received is divided by this number to produce a multiplier for how much to kick their aim. "
+            + "So if the value here is 50, and a bot is shot by a bullet that does 100 damage, it will result in their hit reaction being 2x, or twice as impactful."
+    )]
     [MinMax(10f, 100f, 1f)]
     [Advanced]
     public float DAMAGE_RECEIVED_BASELINE = 50;

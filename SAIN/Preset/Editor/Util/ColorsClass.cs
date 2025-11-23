@@ -64,7 +64,10 @@ public static class ColorsClass
         return new Color(random * Randomize, random, random);
     }
 
-    private static float Randomize => UnityEngine.Random.Range(0.81f, 1.21f);
+    private static float Randomize
+    {
+        get { return UnityEngine.Random.Range(0.81f, 1.21f); }
+    }
 
     private static readonly Dictionary<string, Color> RandomColors = new();
 

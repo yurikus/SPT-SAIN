@@ -26,7 +26,10 @@ public class SprintLookDirPatch : ModulePatch
         }
         BotOwner botOwner = __instance.BotOwner_0;
         if (SAINEnableClass.IsBotInCombat(botOwner))
+        {
             return false;
+        }
+
         if (__instance.NoSprint)
         {
             __instance.Player.EnableSprint(false);
@@ -60,10 +63,7 @@ public class SprintLookDirPatch : ModulePatch
 /// </summary>
 public class PlayerSetPosePatch : ModulePatch
 {
-    private static readonly FieldInfo playerField = AccessTools.Field(
-        typeof(MovementContext),
-        "_player"
-    );
+    private static readonly FieldInfo playerField = AccessTools.Field(typeof(MovementContext), "_player");
 
     protected override MethodBase GetTargetMethod()
     {
@@ -162,10 +162,7 @@ public class PoseStaminaPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(
-            typeof(PlayerPhysicalClass),
-            nameof(PlayerPhysicalClass.ConsumePoseLevelChange)
-        );
+        return AccessTools.Method(typeof(PlayerPhysicalClass), nameof(PlayerPhysicalClass.ConsumePoseLevelChange));
     }
 
     [PatchPrefix]
@@ -269,10 +266,7 @@ public class EncumberedPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(
-            typeof(BasePhysicalClass),
-            nameof(BasePhysicalClass.UpdateWeightLimits)
-        );
+        return AccessTools.Method(typeof(BasePhysicalClass), nameof(BasePhysicalClass.UpdateWeightLimits));
     }
 
     [PatchPrefix]
@@ -300,14 +294,10 @@ public class EncumberedPatch : ModulePatch
         }
 
         // Copy Pasted from original EFT code, there is a check to not enable weight limits for AI
-        BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>
-            .Instance
-            .Inertia;
+        BackendConfigSettingsClass.InertiaSettings inertia = Singleton<BackendConfigSettingsClass>.Instance.Inertia;
         Vector3 b2 = new(
-            inertia.InertiaLimitsStep
-                * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel,
-            inertia.InertiaLimitsStep
-                * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel,
+            inertia.InertiaLimitsStep * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel,
+            inertia.InertiaLimitsStep * (float)__instance.IobserverToPlayerBridge_0.Skills.Strength.SummaryLevel,
             0f
         );
         __instance.BaseInertiaLimits = inertia.InertiaLimits + b2;

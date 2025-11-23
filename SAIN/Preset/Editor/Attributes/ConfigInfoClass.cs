@@ -1,8 +1,8 @@
-﻿using SAIN.Helpers;
+﻿using System;
+using System.Reflection;
+using SAIN.Helpers;
 using SAIN.Plugin;
 using SAIN.Preset.GlobalSettings;
-using System;
-using System.Reflection;
 
 namespace SAIN.Attributes;
 
@@ -37,14 +37,19 @@ public sealed class ConfigInfoClass
         }
     }
 
-    public Type DeclaringType => MemberInfo.DeclaringType;
+    public Type DeclaringType
+    {
+        get { return MemberInfo.DeclaringType; }
+    }
 
     public readonly MemberInfo MemberInfo;
 
     public object GetValue(object obj)
     {
         if (obj == null)
+        {
             return null;
+        }
 
         switch (MemberInfo.MemberType)
         {
@@ -117,12 +122,17 @@ public sealed class ConfigInfoClass
         }
     }
 
-    private T Get<T>() where T : Attribute
+    private T Get<T>()
+        where T : Attribute
     {
         return MemberInfo.GetCustomAttribute<T>();
     }
 
-    public object DefaultDictionary => Reflection.GetStaticValue(DeclaringType, DictionaryString);
+    public object DefaultDictionary
+    {
+        get { return Reflection.GetStaticValue(DeclaringType, DictionaryString); }
+    }
+
     private string DictionaryString;
 
     public string Name { get; private set; }
@@ -140,9 +150,15 @@ public sealed class ConfigInfoClass
 
     public bool CopyValue { get; private set; }
 
-    public bool DoNotShowGUI => Hidden
-        || (AdvancedOption && !PresetHandler.EditorDefaults.AdvancedBotConfigs)
-        || (DeveloperOption && !PresetHandler.EditorDefaults.DevBotConfigs); // || (Debug && !SAINPlugin.DebugMode)
+    public bool DoNotShowGUI
+    {
+        get
+        {
+            return Hidden
+                || (AdvancedOption && !PresetHandler.EditorDefaults.AdvancedBotConfigs)
+                || (DeveloperOption && !PresetHandler.EditorDefaults.DevBotConfigs); // || (Debug && !SAINPlugin.DebugMode)
+        }
+    }
 
     public EListType EListType { get; private set; } = EListType.None;
     public Type ListType { get; private set; }

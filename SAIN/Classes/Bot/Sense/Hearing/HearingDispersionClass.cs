@@ -9,9 +9,7 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes;
 
-public class HearingDispersionClass(SAINHearingSensorClass hearing)
-    : BotSubClass<SAINHearingSensorClass>(hearing),
-        IBotClass
+public class HearingDispersionClass(SAINHearingSensorClass hearing) : BotSubClass<SAINHearingSensorClass>(hearing), IBotClass
 {
     private const float MIN_DISTANCE_LAST_KNOWN_NO_RANDOMIZATION = 3f;
     private const float MAX_DISTANCE_LASTKNOWN_REDUCE_RANDOM = 50;
@@ -20,8 +18,7 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
     public Vector3 CalcRandomizedPosition(AISoundData Sound, float addDispersion)
     {
         EnemyPlace enemyLastKnown = Sound.Enemy.KnownPlaces.LastKnownPlace;
-        float distanceFromLastKnown =
-            enemyLastKnown != null ? enemyLastKnown.DistanceToEnemyRealPosition : float.MaxValue;
+        float distanceFromLastKnown = enemyLastKnown != null ? enemyLastKnown.DistanceToEnemyRealPosition : float.MaxValue;
 
         if (distanceFromLastKnown <= MIN_DISTANCE_LAST_KNOWN_NO_RANDOMIZATION)
         {
@@ -41,35 +38,15 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
         float finalDispersion = baseDispersion * dispersionMod * lastKnownDistCoef;
 
         HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;
-        finalDispersion = Mathf.Clamp(
-            finalDispersion,
-            0f,
-            hearingSettings.HEAR_DISPERSION_MAX_DISPERSION
-        );
+        finalDispersion = Mathf.Clamp(finalDispersion, 0f, hearingSettings.HEAR_DISPERSION_MAX_DISPERSION);
         //Vector3 randomBox = getRandomizedDirection(finalDispersion, 1f, 0.1f, 1f);
-        if (
-            GetRandomReachablePointAroundPlayer(
-                Sound.HeardPlayerComponent,
-                finalDispersion,
-                0f,
-                out Vector3 result,
-                4f,
-                20
-            )
-        )
+        if (GetRandomReachablePointAroundPlayer(Sound.HeardPlayerComponent, finalDispersion, 0f, out Vector3 result, 4f, 20))
         {
 #if DEBUG
             if (Sound.HeardPlayer.IsYourPlayer)
             {
                 //DebugGizmos.DrawBox(Sound.HeardPlayer.Position, randomBox * 0.5f, Color.magenta, 10f);
-                var line = DebugGizmos.DrawLine(
-                    Vector3.zero,
-                    Vector3.forward,
-                    Color.magenta,
-                    0.1f,
-                    10f,
-                    false
-                );
+                var line = DebugGizmos.DrawLine(Vector3.zero, Vector3.forward, Color.magenta, 0.1f, 10f, false);
                 DebugGizmos.SetLinePositions(line, _randomPath.corners);
             }
 #endif
@@ -79,9 +56,11 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
         {
 #if DEBUG
             if (SAINPlugin.DebugMode)
+            {
                 Logger.LogWarning(
                     $"[{Bot.name}] Failed to find reachable point from perception event for Enemy: [{Sound.Enemy.Player.name}]! but we had their old last known to fall back on."
                 );
+            }
 #endif
             return enemyLastKnown.Position;
         }
@@ -109,10 +88,7 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
         //}
         PlayerNavData navData = playerComp.Transform.NavData;
         Vector3 minSize = size * 0.5f;
-        Vector3 origin =
-            navData.Status == EPlayerNavMeshDistance.OffNavMesh
-                ? playerComp.Position
-                : playerComp.Transform.NavData.Position;
+        Vector3 origin = navData.Status == EPlayerNavMeshDistance.OffNavMesh ? playerComp.Position : playerComp.Transform.NavData.Position;
         for (int i = 0; i < maxTries; i++)
         {
             Vector3 randomPoint = RandomPointInBox(origin, size);
@@ -161,24 +137,15 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
         //    _preAlocPathList.Add(new());
         //}
         PlayerNavData navData = playerComp.Transform.NavData;
-        Vector3 origin =
-            navData.Status == EPlayerNavMeshDistance.OffNavMesh
-                ? playerComp.Position
-                : playerComp.Transform.NavData.Position;
+        Vector3 origin = navData.Status == EPlayerNavMeshDistance.OffNavMesh ? playerComp.Position : playerComp.Transform.NavData.Position;
         for (int i = 0; i < maxTries; i++)
         {
-            Vector3 randomDir = new(
-                Random.Range(-radius, radius),
-                Random.Range(-height, height),
-                Random.Range(-radius, radius)
-            );
+            Vector3 randomDir = new(Random.Range(-radius, radius), Random.Range(-height, height), Random.Range(-radius, radius));
             Vector3 randomPoint = origin + randomDir;
             if (!NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, navSampleRange, -1))
             {
 #if DEBUG
-                Logger.LogDebug(
-                    $"Failed nav sample [randomDir magnitude: {randomDir.magnitude}] [Radius: {radius}]"
-                );
+                Logger.LogDebug($"Failed nav sample [randomDir magnitude: {randomDir.magnitude}] [Radius: {radius}]");
 #endif
                 continue; // No valid point found
             }
@@ -222,10 +189,7 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
     private float getBaseDispersion(float enemyDistance, SAINSoundType soundType)
     {
         HearingSettings hearingSettings = GlobalSettingsClass.Instance.Hearing;
-        if (
-            hearingSettings.HEAR_DISPERSION_VALUES.TryGetValue(soundType, out float dispersionValue)
-            == false
-        )
+        if (hearingSettings.HEAR_DISPERSION_VALUES.TryGetValue(soundType, out float dispersionValue) == false)
         {
             dispersionValue = 12.5f;
             //Logger.LogWarning($"Could not find [{soundType}] in Hearing Dispersion Dictionary!");
@@ -249,12 +213,7 @@ public class HearingDispersionClass(SAINHearingSensorClass hearing)
         return dispersionModifier;
     }
 
-    private static Vector3 getRandomizedDirection(
-        float dispersion,
-        float xCoef = 1f,
-        float yCoef = 0.25f,
-        float zCoef = 1f
-    )
+    private static Vector3 getRandomizedDirection(float dispersion, float xCoef = 1f, float yCoef = 0.25f, float zCoef = 1f)
     {
         float randomX = Random.Range(-dispersion * xCoef, dispersion * xCoef);
         float randomy = Random.Range(-dispersion * yCoef, dispersion * yCoef);

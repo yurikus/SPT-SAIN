@@ -1,10 +1,10 @@
-﻿using SAIN.Helpers;
+﻿using System.Collections;
+using System.Collections.Generic;
+using SAIN.Helpers;
 using SAIN.Models.Enums;
 using SAIN.Models.Structs;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -16,7 +16,8 @@ public class VisionRaycastJob : BotManagerBase
     private const float VISION_UPDATE_INTERVAL = 1f / 30f;
     private const float VISION_JOB_INTERVAL = 1f / 30f;
 
-    public VisionRaycastJob(BotManagerComponent botcontroller) : base(botcontroller)
+    public VisionRaycastJob(BotManagerComponent botcontroller)
+        : base(botcontroller)
     {
         botcontroller.StartCoroutine(EnemyVisionJob());
         botcontroller.StartCoroutine(UpdateEFTVision());
@@ -118,7 +119,10 @@ public class VisionRaycastJob : BotManagerBase
             if (botGroup1.Count > 0)
             {
                 float currentTime = Time.time;
-                foreach (var bot in botGroup1) bot.Vision.BotLook.UpdateLook(currentTime);
+                foreach (var bot in botGroup1)
+                {
+                    bot.Vision.BotLook.UpdateLook(currentTime);
+                }
             }
             yield return null;
 
@@ -127,7 +131,10 @@ public class VisionRaycastJob : BotManagerBase
             if (botGroup2.Count > 0)
             {
                 float currentTime = Time.time;
-                foreach (var bot in botGroup2) bot.Vision.BotLook.UpdateLook(currentTime);
+                foreach (var bot in botGroup2)
+                {
+                    bot.Vision.BotLook.UpdateLook(currentTime);
+                }
             }
             yield return null;
         }
@@ -135,9 +142,20 @@ public class VisionRaycastJob : BotManagerBase
 
     public void Dispose()
     {
-        if (!_handle.IsCompleted) _handle.Complete();
-        if (_commands.IsCreated) _commands.Dispose();
-        if (_hits.IsCreated) _hits.Dispose();
+        if (!_handle.IsCompleted)
+        {
+            _handle.Complete();
+        }
+
+        if (_commands.IsCreated)
+        {
+            _commands.Dispose();
+        }
+
+        if (_hits.IsCreated)
+        {
+            _hits.Dispose();
+        }
     }
 
     private NativeArray<RaycastHit> _hits;
@@ -233,7 +251,13 @@ public class VisionRaycastJob : BotManagerBase
 
                     if (raycastHits[hits].collider == null)
                     {
-                        DebugGizmos.DrawLine(_commands[hits].from, _commands[hits].from + _commands[hits].direction, Color.red, 0.025f, 0.02f);
+                        DebugGizmos.DrawLine(
+                            _commands[hits].from,
+                            _commands[hits].from + _commands[hits].direction,
+                            Color.red,
+                            0.025f,
+                            0.02f
+                        );
                     }
                     hits++;
                     //if (raycastHits[hits].collider == null)
@@ -260,10 +284,18 @@ public class VisionRaycastJob : BotManagerBase
         float currentTime = Time.time;
         enemies.Clear();
         foreach (BotComponent bot in bots)
+        {
             if (bot != null)
+            {
                 foreach (Enemy enemy in bot.EnemyController.EnemiesArray)
+                {
                     if (enemy.ShallCheckLoS(currentTime))
+                    {
                         enemies.Add(enemy);
+                    }
+                }
+            }
+        }
     }
 
     private readonly List<Enemy> _enemies = [];

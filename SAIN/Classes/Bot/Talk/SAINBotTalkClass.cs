@@ -7,8 +7,16 @@ namespace SAIN.SAINComponent.Classes.Talk;
 
 public class SAINBotTalkClass : BotComponentClassBase
 {
-    public bool CanTalk => Bot.Info.FileSettings.Mind.CanTalk && _timeCanTalk < Time.time;
-    public bool IsSpeaking => Player.Speaker?.Speaking == true;
+    public bool CanTalk
+    {
+        get { return Bot.Info.FileSettings.Mind.CanTalk && _timeCanTalk < Time.time; }
+    }
+
+    public bool IsSpeaking
+    {
+        get { return Player.Speaker?.Speaking == true; }
+    }
+
     public EnemyTalk EnemyTalk { get; private set; }
     public GroupTalk GroupTalk { get; private set; }
 
@@ -91,10 +99,7 @@ public class SAINBotTalkClass : BotComponentClassBase
         {
             _allTalkDelay = Time.time + Bot.Info.FileSettings.Mind.TalkFrequency;
 
-            if (
-                TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Roger
-                || TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Negative
-            )
+            if (TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Roger || TalkPack.Value.phraseInfo.Phrase == EPhraseTrigger.Negative)
             {
                 if (
                     Bot.Squad.VisibleMembers != null
@@ -168,12 +173,7 @@ public class SAINBotTalkClass : BotComponentClassBase
         return true;
     }
 
-    public bool Say(
-        EPhraseTrigger phrase,
-        ETagStatus? additionalMask = null,
-        bool withGroupDelay = false,
-        bool skipCheck = false
-    )
+    public bool Say(EPhraseTrigger phrase, ETagStatus? additionalMask = null, bool withGroupDelay = false, bool skipCheck = false)
     {
         if (SAINPlugin.LoadedPreset.GlobalSettings.Talk.DisableBotTalkPatching)
         {
@@ -209,12 +209,7 @@ public class SAINBotTalkClass : BotComponentClassBase
         return true;
     }
 
-    public bool GroupSay(
-        EPhraseTrigger phrase,
-        ETagStatus? additionalMask = null,
-        bool withGroupDelay = false,
-        float chance = 60
-    )
+    public bool GroupSay(EPhraseTrigger phrase, ETagStatus? additionalMask = null, bool withGroupDelay = false, float chance = 60)
     {
         var squadSettings = Bot.Squad.SquadInfo?.SquadPersonalitySettings;
         if (squadSettings != null)
@@ -222,9 +217,7 @@ public class SAINBotTalkClass : BotComponentClassBase
             float vocalization = squadSettings.VocalizationLevel * 10f - 25f;
             chance += vocalization;
         }
-        return EFTMath.RandomBool(chance)
-            && GroupTalk.FriendIsClose
-            && Say(phrase, additionalMask, withGroupDelay);
+        return EFTMath.RandomBool(chance) && GroupTalk.FriendIsClose && Say(phrase, additionalMask, withGroupDelay);
     }
 
     public void TalkAfterDelay(EPhraseTrigger phrase, ETagStatus? mask = null, float delay = 0.5f)
@@ -252,29 +245,14 @@ public class SAINBotTalkClass : BotComponentClassBase
         tellSpeakerToSay(phrase, mask, mask == ETagStatus.Combat);
     }
 
-    private void tellSpeakerToSay(
-        EPhraseTrigger trigger,
-        ETagStatus mask = (ETagStatus)0,
-        bool aggressive = false
-    )
+    private void tellSpeakerToSay(EPhraseTrigger trigger, ETagStatus mask = (ETagStatus)0, bool aggressive = false)
     {
         if (trigger == EPhraseTrigger.MumblePhrase)
         {
-            trigger = (
-                (aggressive || Time.time < Player.Awareness)
-                    ? EPhraseTrigger.OnFight
-                    : EPhraseTrigger.OnMutter
-            );
+            trigger = ((aggressive || Time.time < Player.Awareness) ? EPhraseTrigger.OnFight : EPhraseTrigger.OnMutter);
         }
-        ETagStatus etagStatus =
-            (aggressive || Player.Awareness > Time.time) ? ETagStatus.Combat : ETagStatus.Unaware;
-        if (
-            PlayerComponent.PlayVoiceLine(
-                trigger,
-                Bot.Memory.Health.HealthStatus | mask | etagStatus,
-                aggressive
-            )
-        )
+        ETagStatus etagStatus = (aggressive || Player.Awareness > Time.time) ? ETagStatus.Combat : ETagStatus.Unaware;
+        if (PlayerComponent.PlayVoiceLine(trigger, Bot.Memory.Health.HealthStatus | mask | etagStatus, aggressive))
         {
             BotManagerComponent.Instance?.BotHearing.PlayerTalked(trigger, etagStatus, Player);
             BotOwner.BotsGroup.GroupTalk.PhraseSad(BotOwner, trigger);
@@ -297,11 +275,7 @@ public class SAINBotTalkClass : BotComponentClassBase
             etagStatus = ETagStatus.Solo;
         }
 
-        if (
-            BotOwner.Memory.IsUnderFire
-            || Bot.Suppression.IsSuppressed
-            || Bot.Suppression.IsHeavySuppressed
-        )
+        if (BotOwner.Memory.IsUnderFire || Bot.Suppression.IsSuppressed || Bot.Suppression.IsHeavySuppressed)
         {
             etagStatus |= ETagStatus.Combat;
         }
@@ -385,11 +359,7 @@ public class SAINBotTalkClass : BotComponentClassBase
         return ChangeTalk ? newTalk : oldTalk;
     }
 
-    private BotTalkPackage? CheckPriority(
-        BotTalkPackage? newTalk,
-        BotTalkPackage? oldTalk,
-        out bool ChangeTalk
-    )
+    private BotTalkPackage? CheckPriority(BotTalkPackage? newTalk, BotTalkPackage? oldTalk, out bool ChangeTalk)
     {
         if (oldTalk == null)
         {
@@ -484,12 +454,7 @@ public class SAINBotTalkClass : BotComponentClassBase
         }
     }
 
-    private static void AddPhrase(
-        EPhraseTrigger phrase,
-        int priority,
-        float timeDelay,
-        Dictionary<EPhraseTrigger, PhraseInfo> dictionary
-    )
+    private static void AddPhrase(EPhraseTrigger phrase, int priority, float timeDelay, Dictionary<EPhraseTrigger, PhraseInfo> dictionary)
     {
         if (!dictionary.ContainsKey(phrase))
         {

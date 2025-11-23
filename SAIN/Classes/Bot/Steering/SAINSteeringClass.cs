@@ -18,9 +18,15 @@ public class SAINSteeringClass : BotComponentClassBase
         HeardSoundSteering = new HeardSoundSteeringClass(this);
     }
 
-    public ESteerPriority CurrentSteerPriority => _steerPriorityClass.CurrentSteerPriority;
+    public ESteerPriority CurrentSteerPriority
+    {
+        get { return _steerPriorityClass.CurrentSteerPriority; }
+    }
 
-    public ESteerPriority LastSteerPriority => _steerPriorityClass.LastSteerPriority;
+    public ESteerPriority LastSteerPriority
+    {
+        get { return _steerPriorityClass.LastSteerPriority; }
+    }
 
     public EEnemySteerDir EnemySteerDir { get; private set; }
 
@@ -29,11 +35,7 @@ public class SAINSteeringClass : BotComponentClassBase
         get { return Bot.Transform.WeaponRoot - Bot.Position; }
     }
 
-    public bool SteerByPriority(
-        Enemy enemy = null,
-        bool lookRandom = true,
-        bool ignoreRunningPath = false
-    )
+    public bool SteerByPriority(Enemy enemy = null, bool lookRandom = true, bool ignoreRunningPath = false)
     {
         enemy ??= Bot.GoalEnemy;
 
@@ -219,11 +221,7 @@ public class SAINSteeringClass : BotComponentClassBase
         LookToRandomPosition();
     }
 
-    internal bool IsLookingAtPoint(
-        Vector3 point,
-        out float dotResult,
-        float dotProductThreshold = 0.66f
-    )
+    internal bool IsLookingAtPoint(Vector3 point, out float dotResult, float dotProductThreshold = 0.66f)
     {
         Vector3 lookDirection = Bot.PlayerComponent.CharacterController.CurrentControlLookDirection;
         Vector3 pointDirection = point - Bot.Transform.WeaponData.WeaponRoot;
@@ -233,11 +231,7 @@ public class SAINSteeringClass : BotComponentClassBase
 
     internal void TickPlayerSteering()
     {
-        PlayerComponent.CharacterController.SetTargetLookDirection(
-            _targetLookDirection,
-            BotOwner,
-            Bot
-        );
+        PlayerComponent.CharacterController.SetTargetLookDirection(_targetLookDirection, BotOwner, Bot);
     }
 
     private Vector3 _targetLookDirection = Vector3.forward;
@@ -246,5 +240,8 @@ public class SAINSteeringClass : BotComponentClassBase
     private readonly RandomLookClass _randomLook;
     private readonly SteerPriorityClass _steerPriorityClass;
 
-    private Vector3 _lookDirection => Bot.LookDirection;
+    private Vector3 _lookDirection
+    {
+        get { return Bot.LookDirection; }
+    }
 }

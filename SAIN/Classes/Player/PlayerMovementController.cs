@@ -1,4 +1,5 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Components;
 using SAIN.Components.PlayerComponentSpace;
 using SAIN.Components.RotationController;
@@ -6,14 +7,16 @@ using SAIN.Helpers;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.Types.TurnSmoothing;
-using System;
 using UnityEngine;
 
 namespace SAIN.Classes;
 
 public class PlayerMovementController
 {
-    public Vector3 CurrentControlLookDirection => TurnData.CurrentLookDirection;
+    public Vector3 CurrentControlLookDirection
+    {
+        get { return TurnData.CurrentLookDirection; }
+    }
 
     public BotTurnData TurnData { get; set; } = new(Vector3.forward);
 
@@ -35,7 +38,10 @@ public class PlayerMovementController
     public void RotatePlayer(PlayerComponent playerComp)
     {
         Vector3 dir = TurnData.CurrentLookDirection + RandomSwayOffset;
-        if (playerComp.BotComponent != null) dir = playerComp.BotComponent.Info.WeaponInfo.Recoil.ApplyRecoil(dir);
+        if (playerComp.BotComponent != null)
+        {
+            dir = playerComp.BotComponent.Info.WeaponInfo.Recoil.ApplyRecoil(dir);
+        }
 
         SetXAngle(playerComp.BotOwner, dir);
         SetYAngle(CalcYByDir(dir), playerComp.Player, playerComp.BotOwner);
@@ -48,8 +54,14 @@ public class PlayerMovementController
             RandomSwayOffset = Vector3.zero; // Disable random sway while aiming
             return;
         }
-        if (randomSwayEnabled) RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
-        else RandomSwayOffset = Vector3.zero;
+        if (randomSwayEnabled)
+        {
+            RandomSwayOffset = CalcRandomSway(deltaTime) * CalcRandomSwayModifier(player, botOwner, botComponent);
+        }
+        else
+        {
+            RandomSwayOffset = Vector3.zero;
+        }
     }
 
     private void SetPlayerSpeed(Player player, float magnitude, float playerSpeed, float START_SLOW_DIST, bool shallSprint)
@@ -73,7 +85,10 @@ public class PlayerMovementController
 
     private static void ChangeSpeed(Player player, float delta)
     {
-        if (Math.Abs(delta) >= 1E-45f) player.ChangeSpeed(delta);
+        if (Math.Abs(delta) >= 1E-45f)
+        {
+            player.ChangeSpeed(delta);
+        }
     }
 
     private static bool CheckCanSprintByDistanceRemaining(float magnitude, float STOP_SPRINT_DIST)
@@ -181,9 +196,18 @@ public class PlayerMovementController
         return -Mathf.Abs(num) * Mathf.Sign(dir.y);
     }
 
-    public void SetTargetMoveDirection(Vector3 direction, Vector3 finalMoveDestination, PlayerComponent playerComp, float START_SLOW_DIST = 0.75f, float STOP_SPRINT_DIST = 1f)
+    public void SetTargetMoveDirection(
+        Vector3 direction,
+        Vector3 finalMoveDestination,
+        PlayerComponent playerComp,
+        float START_SLOW_DIST = 0.75f,
+        float STOP_SPRINT_DIST = 1f
+    )
     {
-        if (direction.sqrMagnitude < Mathf.Epsilon) return;
+        if (direction.sqrMagnitude < Mathf.Epsilon)
+        {
+            return;
+        }
 
         Player player = playerComp.Player;
         float playerSpeed = player.Speed;
@@ -221,19 +245,45 @@ public class PlayerMovementController
 
         if (aimingDownSights && aiming)
         {
-            if (!moving) return 0.0001f;
+            if (!moving)
+            {
+                return 0.0001f;
+            }
+
             return 0.01f;
         }
 
         MovementContext movementContext = player.MovementContext;
-        bool armsDamaged = movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged) || movementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
+        bool armsDamaged =
+            movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged)
+            || movementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
         bool noStamina = player.Physical.Stamina.NormalValue <= 0.1f;
 
-        if (aimingDownSights) result *= 0.2f;
-        if (aiming) result *= 0.5f;
-        if (moving) result *= 1.25f;
-        if (armsDamaged) result *= 1.5f;
-        if (noStamina) result *= 1.5f;
+        if (aimingDownSights)
+        {
+            result *= 0.2f;
+        }
+
+        if (aiming)
+        {
+            result *= 0.5f;
+        }
+
+        if (moving)
+        {
+            result *= 1.25f;
+        }
+
+        if (armsDamaged)
+        {
+            result *= 1.5f;
+        }
+
+        if (noStamina)
+        {
+            result *= 1.5f;
+        }
+
         return Mathf.Clamp(result, 0.001f, 2.5f);
     }
 
@@ -296,14 +346,21 @@ public class PlayerMovementController
 
     public static class Util
     {
-        public static Vector3 CalculateBallisticOffset(Vector3 weaponRoot, Vector3 targetPosition, Vector3 playerVelocity, float muzzleVelocity, float gravity = 9.81f)
+        public static Vector3 CalculateBallisticOffset(
+            Vector3 weaponRoot,
+            Vector3 targetPosition,
+            Vector3 playerVelocity,
+            float muzzleVelocity,
+            float gravity = 9.81f
+        )
         {
             // Basic vector from shooter to target
             Vector3 displacement = targetPosition - weaponRoot;
             float horizontalDistance = new Vector3(displacement.x, 0, displacement.z).magnitude;
 
             // Target is directly above/below, no ballistic correction needed
-            Vector3 bulletDropOffset = horizontalDistance < 0.01f ? Vector3.zero : CalculateSimpleBallisticOffset(displacement, muzzleVelocity, gravity);
+            Vector3 bulletDropOffset =
+                horizontalDistance < 0.01f ? Vector3.zero : CalculateSimpleBallisticOffset(displacement, muzzleVelocity, gravity);
             Vector3 leadOffset = playerVelocity * (displacement.magnitude / muzzleVelocity);
             //DebugGizmos.DrawLine(targetPosition, targetPosition + playerVelocity, Color.blue, 0.015f, 5f);
             //DebugGizmos.DrawLine(targetPosition, targetPosition + leadOffset, Color.green, 0.015f, 5f);
@@ -332,18 +389,15 @@ public class PlayerMovementController
             return new Vector3(0, verticalDrop, 0);
         }
 
-        private static float CalculateTimeOfFlight(
-            float horizontalDistance,
-            float heightDifference,
-            float muzzleVelocity,
-            float gravity)
+        private static float CalculateTimeOfFlight(float horizontalDistance, float heightDifference, float muzzleVelocity, float gravity)
         {
             // For a given horizontal distance and height difference,
             // solve for the time using the kinematic equation
 
             // We assume optimal launch angle for maximum range
-            var discriminant = muzzleVelocity * muzzleVelocity * muzzleVelocity * muzzleVelocity -
-                               gravity * (gravity * horizontalDistance * horizontalDistance + 2 * heightDifference * muzzleVelocity * muzzleVelocity);
+            var discriminant =
+                muzzleVelocity * muzzleVelocity * muzzleVelocity * muzzleVelocity
+                - gravity * (gravity * horizontalDistance * horizontalDistance + 2 * heightDifference * muzzleVelocity * muzzleVelocity);
 
             if (discriminant < 0)
             {

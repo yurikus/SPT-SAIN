@@ -62,52 +62,33 @@ public class GrenadeController(BotManagerComponent controller) : BotManagerBase(
         {
             if (!isSmoke)
             {
-                RegisterGrenadeExplosionForSAINBots(
-                    explosionPosition,
-                    player,
-                    playerProfileID,
-                    200f
-                );
+                RegisterGrenadeExplosionForSAINBots(explosionPosition, player, playerProfileID, 200f);
             }
             else
             {
-                RegisterGrenadeExplosionForSAINBots(
-                    explosionPosition,
-                    player,
-                    playerProfileID,
-                    50f
-                );
+                RegisterGrenadeExplosionForSAINBots(explosionPosition, player, playerProfileID, 50f);
 
                 float radius = smokeRadius * HelpersGClass.SMOKE_GRENADE_RADIUS_COEF;
                 Vector3 position = player.Position;
 
                 if (BotController.DefaultController != null)
+                {
                     foreach (var keyValuePair in BotController.DefaultController.Groups())
-                    foreach (BotsGroup botGroupClass in keyValuePair.Value.GetGroups(true))
-                        botGroupClass.AddSmokePlace(
-                            explosionPosition,
-                            smokeLifeTime,
-                            radius,
-                            position
-                        );
+                    {
+                        foreach (BotsGroup botGroupClass in keyValuePair.Value.GetGroups(true))
+                        {
+                            botGroupClass.AddSmokePlace(explosionPosition, smokeLifeTime, radius, position);
+                        }
+                    }
+                }
             }
         }
     }
 
-    private void RegisterGrenadeExplosionForSAINBots(
-        Vector3 explosionPosition,
-        Player player,
-        string playerProfileID,
-        float range
-    )
+    private void RegisterGrenadeExplosionForSAINBots(Vector3 explosionPosition, Player player, string playerProfileID, float range)
     {
         // Play a sound with the input range.
-        Singleton<BotEventHandler>.Instance?.PlaySound(
-            player,
-            explosionPosition,
-            range,
-            AISoundType.gun
-        );
+        Singleton<BotEventHandler>.Instance?.PlaySound(player, explosionPosition, range, AISoundType.gun);
         float currentTime = Time.time;
         // We dont want bots to think the grenade explosion was a place they heard an enemy, so set this manually.
         foreach (var bot in Bots.Values)
@@ -160,30 +141,20 @@ public class GrenadeController(BotManagerComponent controller) : BotManagerBase(
 
         Vector3 dangerPoint = Vector.DangerPoint(position, force, mass);
         grenade.DestroyEvent += grenadeDestroyed;
-        Singleton<BotEventHandler>.Instance?.PlaySound(
-            player,
-            grenade.transform.position,
-            20f,
-            AISoundType.gun
-        );
+        Singleton<BotEventHandler>.Instance?.PlaySound(player, grenade.transform.position, 20f, AISoundType.gun);
         OnGrenadeThrown?.Invoke(grenade, dangerPoint, grenade.ProfileId);
         if (GameWorldComponent.TryGetPlayerComponent(player, out PlayerComponent playerComponent))
         {
             List<PlayerComponent> RelevantPlayers = [];
             foreach (var otherPlayer in playerComponent.OtherPlayersData.DataDictionary.Values)
             {
-                if (
-                    otherPlayer.DistanceData.Distance < 125f
-                    && otherPlayer.OtherPlayerComponent.IsSAINBot
-                )
+                if (otherPlayer.DistanceData.Distance < 125f && otherPlayer.OtherPlayerComponent.IsSAINBot)
                 {
                     RelevantPlayers.Add(otherPlayer.OtherPlayerComponent);
                 }
             }
             ActiveGrenades.Add(grenade, RelevantPlayers);
-            BotController.StartCoroutine(
-                GrenadeTracker(grenade, playerComponent, RelevantPlayers, dangerPoint)
-            );
+            BotController.StartCoroutine(GrenadeTracker(grenade, playerComponent, RelevantPlayers, dangerPoint));
         }
     }
 
@@ -194,12 +165,7 @@ public class GrenadeController(BotManagerComponent controller) : BotManagerBase(
         ActiveGrenades.Remove(Grenade);
     }
 
-    private IEnumerator GrenadeTracker(
-        Grenade Grenade,
-        PlayerComponent Thrower,
-        List<PlayerComponent> RelevantPlayers,
-        Vector3 DangerPoint
-    )
+    private IEnumerator GrenadeTracker(Grenade Grenade, PlayerComponent Thrower, List<PlayerComponent> RelevantPlayers, Vector3 DangerPoint)
     {
         Rigidbody Rigidbody = (Rigidbody)_rigidBodyField.GetValue(Grenade);
 

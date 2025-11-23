@@ -1,7 +1,7 @@
-﻿using EFT;
+﻿using System;
+using EFT;
 using SAIN.Components;
 using SAIN.SAINComponent.Classes.Sense;
-using System;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
@@ -13,7 +13,8 @@ public class SAINVisionClass : BotComponentClassBase
     public FlashLightDazzleClass FlashLightDazzle { get; private set; }
     public SAINBotLookClass BotLook { get; private set; }
 
-    public SAINVisionClass(BotComponent component) : base(component)
+    public SAINVisionClass(BotComponent component)
+        : base(component)
     {
         TickRequirement = ESAINTickState.OnlyNoSleep;
         FlashLightDazzle = new FlashLightDazzleClass(component);
@@ -43,7 +44,8 @@ public class SAINVisionClass : BotComponentClassBase
     {
         if (_nextUpdateVisibleDist < Time.time)
         {
-            _nextUpdateVisibleDist = Time.time + (BotOwner.FlashGrenade.IsFlashed ? VISIONDISTANCE_UPDATE_FREQ_FLASHED : VISIONDISTANCE_UPDATE_FREQ);
+            _nextUpdateVisibleDist =
+                Time.time + (BotOwner.FlashGrenade.IsFlashed ? VISIONDISTANCE_UPDATE_FREQ_FLASHED : VISIONDISTANCE_UPDATE_FREQ);
             var timeSettings = GlobalSettings.Look.Time;
             var lookSensor = BotOwner.LookSensor;
 
@@ -63,7 +65,11 @@ public class SAINVisionClass : BotComponentClassBase
 
             float currentVisionDistance = BotOwner.Settings.Current.CurrentVisibleDistance;
             // Sets a minimum cap based on weather conditions to avoid bots having too low of a vision Distance while at peace in bad weather
-            float currentVisionDistanceCapped = Mathf.Clamp(currentVisionDistance * weatherMod, timeSettings.VISION_WEATHER_MIN_DIST_METERS, currentVisionDistance);
+            float currentVisionDistanceCapped = Mathf.Clamp(
+                currentVisionDistance * weatherMod,
+                timeSettings.VISION_WEATHER_MIN_DIST_METERS,
+                currentVisionDistance
+            );
 
             // Applies SeenTime Modifier to the final vision Distance results
             float finalVisionDistance = currentVisionDistanceCapped * timeMod;

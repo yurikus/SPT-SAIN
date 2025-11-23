@@ -1,5 +1,5 @@
-﻿using SAIN.Attributes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SAIN.Attributes;
 
 namespace SAIN.Preset.GlobalSettings;
 
@@ -46,7 +46,9 @@ public class MoveSettings : SAINSettingsBase<MoveSettings>, ISAINSettings
     public bool VAULT_UNSTUCK_TOGGLE = true;
 
     [Name("Force Constant Sprint Speed")]
-    [Description("In vanilla, bot movement speed while sprinting is set to a constant speed, if this is disabled, bots will use the same movement speed calculations as a normal player.")]
+    [Description(
+        "In vanilla, bot movement speed while sprinting is set to a constant speed, if this is disabled, bots will use the same movement speed calculations as a normal player."
+    )]
     [Category("Sprinting")]
     [Advanced]
     public bool EditSprintSpeed = false;
@@ -100,7 +102,9 @@ public class MoveSettings : SAINSettingsBase<MoveSettings>, ISAINSettings
     public float BotWalkCornerReachDist = 0.1f;
 
     [Name("Max Corner Angle to Pause Sprint")]
-    [Description("When a bot approaches a turn along a path, this is the maximum degrees before they pause sprinting to turn instead of keeping sprint active while they turn.")]
+    [Description(
+        "When a bot approaches a turn along a path, this is the maximum degrees before they pause sprinting to turn instead of keeping sprint active while they turn."
+    )]
     [Category("Sprinting")]
     [Advanced]
     [MinMax(1f, 90f, 1f)]

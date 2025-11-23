@@ -15,7 +15,10 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 {
     public static float MinDistanceToStartExtract { get; } = 6f;
 
-    private Vector3? Exfil => Bot.Memory.Extract.ExfilPosition;
+    private Vector3? Exfil
+    {
+        get { return Bot.Memory.Extract.ExfilPosition; }
+    }
 
     public override void Start()
     {
@@ -102,9 +105,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 
     private bool IsFightingEnemy()
     {
-        return Bot.GoalEnemy != null
-            && Bot.GoalEnemy.Seen
-            && (Bot.GoalEnemy.Path.PathLength < 50f || Bot.GoalEnemy.InLineOfSight);
+        return Bot.GoalEnemy != null && Bot.GoalEnemy.Seen && (Bot.GoalEnemy.Path.PathLength < 50f || Bot.GoalEnemy.InLineOfSight);
     }
 
     private bool shallSprint;
@@ -118,10 +119,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
 
         if (shallSprint && Bot.Mover.Moving)
         {
-            Bot.Mover.ActivePath.RequestStartSprint(
-                SAINComponent.Classes.Mover.ESprintUrgency.High,
-                "extract"
-            );
+            Bot.Mover.ActivePath.RequestStartSprint(SAINComponent.Classes.Mover.ESprintUrgency.High, "extract");
         }
 
         if (shouldStartExtract(distance))
@@ -152,10 +150,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
         }
 
         // If the path to the extract is invalid or the path is incomplete and the bot reached the end of it, select a new extract
-        float distanceToEndOfPath = Vector3.Distance(
-            BotOwner.Position,
-            pathController.ActivePath.GetLastCorner().Position
-        );
+        float distanceToEndOfPath = Vector3.Distance(BotOwner.Position, pathController.ActivePath.GetLastCorner().Position);
         if (distanceToEndOfPath < BotExtractManager.MinDistanceToExtract)
         {
             // Need to reset the search timer to prevent the bot from immediately selecting (possibly) the same extract
@@ -226,9 +221,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
         Bot.Memory.Extract.ExtractStatus = EExtractStatus.ExtractingNow;
         if (ExtractTimer == -1f)
         {
-            ExtractTimer = BotManagerComponent.Instance.BotExtractManager.GetExfilTime(
-                Bot.Memory.Extract.ExfilPoint
-            );
+            ExtractTimer = BotManagerComponent.Instance.BotExtractManager.GetExfilTime(Bot.Memory.Extract.ExfilPoint);
 
             // Needed to get car extracts working
             ActivateExfil(Bot.Memory.Extract.ExfilPoint);

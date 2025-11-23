@@ -25,17 +25,10 @@ public class ColliderFinder
     /// <summary>
     /// Find colliders in a box that expands in size until there are enough colliders to begin cover analysis
     /// </summary>
-    public static IEnumerator GetNewColliders(
-        SainBotCoverData coverData,
-        ColliderFinderParams config
-    )
+    public static IEnumerator GetNewColliders(SainBotCoverData coverData, ColliderFinderParams config)
     {
         Vector3 boxOrigin = config.OriginPoint + Vector3.up * config.StartBoxHeight;
-        Vector3 minColliderSize = new(
-            0.25f,
-            GlobalSettingsClass.Instance.General.Cover.CoverMinHeight,
-            0.25f
-        );
+        Vector3 minColliderSize = new(0.25f, GlobalSettingsClass.Instance.General.Cover.CoverMinHeight, 0.25f);
         Vector3 maxColliderSize = new(50f, 50f, 50f);
         int layerCount = _masks.Count;
         for (int i = 0; i < layerCount; i++)
@@ -58,14 +51,7 @@ public class ColliderFinder
                 if (hits >= config.HitThreshold)
                 {
 #if DEBUG
-                    Logger.LogDebug(
-                        hits
-                            + " colliders found in Layer: ["
-                            + mask.MaskToString()
-                            + "] after "
-                            + (j + 1)
-                            + " iterations"
-                    );
+                    Logger.LogDebug(hits + " colliders found in Layer: [" + mask.MaskToString() + "] after " + (j + 1) + " iterations");
 #endif
                     yield break;
                 }
@@ -111,14 +97,7 @@ public class ColliderFinder
             for (int i = 0; i < iterationMax; i++)
             {
                 totalIterations++;
-                hits = GetCollidersInBox(
-                    boxLength,
-                    boxHeight,
-                    boxLength,
-                    boxOrigin,
-                    preAllocArray,
-                    layer
-                );
+                hits = GetCollidersInBox(boxLength, boxHeight, boxLength, boxOrigin, preAllocArray, layer);
                 foundEnough = hits >= hitThreshold;
                 if (foundEnough)
                 {
@@ -132,9 +111,7 @@ public class ColliderFinder
             }
             if (foundEnough)
             {
-                Logger.LogInfo(
-                    $"Found [{hits}] colliders in Layer: [{layer.MaskToString()}] after [{totalIterations}] total iterations"
-                );
+                Logger.LogInfo($"Found [{hits}] colliders in Layer: [{layer.MaskToString()}] after [{totalIterations}] total iterations");
                 break;
             }
         }
@@ -149,22 +126,9 @@ public class ColliderFinder
         //LayerMaskClass.LowPolyColliderLayerMask,
     };
 
-    private static int GetCollidersInBox(
-        float x,
-        float y,
-        float z,
-        Vector3 boxOrigin,
-        Collider[] array,
-        LayerMask colliderMask
-    )
+    private static int GetCollidersInBox(float x, float y, float z, Vector3 boxOrigin, Collider[] array, LayerMask colliderMask)
     {
-        int rawHits = Physics.OverlapBoxNonAlloc(
-            boxOrigin,
-            new(x, y, z),
-            array,
-            _orientation,
-            colliderMask
-        );
+        int rawHits = Physics.OverlapBoxNonAlloc(boxOrigin, new(x, y, z), array, _orientation, colliderMask);
         return FilterColliders(array, rawHits);
     }
 
@@ -240,7 +204,9 @@ public class ColliderFinder
             foreach (Collider collider in array)
             {
                 if (collider == null)
+                {
                     continue;
+                }
 
                 if (!debugGUIObjects.ContainsKey(collider))
                 {
@@ -252,12 +218,7 @@ public class ColliderFinder
                 }
                 if (!debugColliders.ContainsKey(collider))
                 {
-                    var marker = DebugGizmos.DrawSphere(
-                        collider.transform.position,
-                        0.1f,
-                        Color.white,
-                        1f
-                    );
+                    var marker = DebugGizmos.DrawSphere(collider.transform.position, 0.1f, Color.white, 1f);
                     if (marker != null)
                     {
                         debugColliders.Add(collider, marker);

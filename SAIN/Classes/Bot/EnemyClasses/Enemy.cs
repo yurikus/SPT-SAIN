@@ -38,7 +38,10 @@ public class Enemy : BotBase, ISPlayer
         if (_nextCheckLoSTime < currentTime)
         {
             if (!CheckValid())
+            {
                 return false;
+            }
+
             _nextCheckLoSTime = currentTime + LookUpdateInterval();
             return true;
         }
@@ -78,7 +81,10 @@ public class Enemy : BotBase, ISPlayer
     private float _nextCheckLookTime = 0f;
     private float _nextCheckLoSTime = 0f;
 
-    public Vector3 NavMeshPosition => EnemyTransform.NavData.Position;
+    public Vector3 NavMeshPosition
+    {
+        get { return EnemyTransform.NavData.Position; }
+    }
 
     /// <summary>
     /// Enemy player to ProfileId player
@@ -101,7 +107,10 @@ public class Enemy : BotBase, ISPlayer
     {
         UpdateDistAndDirection();
         if (IsSniper)
+        {
             IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
+        }
+
         KnownChecker.TickEnemy(currentTime, forgetEnemyTime, botSearching);
         Vision.TickEnemy(currentTime);
         Hearing.TickEnemy(currentTime);
@@ -125,8 +134,15 @@ public class Enemy : BotBase, ISPlayer
     public Player EnemyPlayer { get; private set; }
     public PlayerTransformClass EnemyTransform { get; }
     public OtherPlayerData EnemyPlayerData { get; }
-    public bool IsAI => EnemyPlayer.IsAI;
-    public bool IsZombie => EnemyPlayer.UsedSimplifiedSkeleton;
+    public bool IsAI
+    {
+        get { return EnemyPlayer.IsAI; }
+    }
+
+    public bool IsZombie
+    {
+        get { return EnemyPlayer.UsedSimplifiedSkeleton; }
+    }
 
     /// <summary>
     /// Does this enemy have a usable firearm
@@ -151,7 +167,10 @@ public class Enemy : BotBase, ISPlayer
     public EnemyAim Aim { get; }
     public EnemyHearing Hearing { get; }
 
-    public bool IsCurrentEnemy => Bot.EnemyController.GoalEnemy == this;
+    public bool IsCurrentEnemy
+    {
+        get { return Bot.EnemyController.GoalEnemy == this; }
+    }
 
     public float RealDistance { get; private set; }
     public bool IsSniper { get; private set; }
@@ -173,10 +192,7 @@ public class Enemy : BotBase, ISPlayer
             {
                 return null;
             }
-            if (
-                GetVisibilePathPoint(out Vector3 point)
-                && IsTargetInSuppRange(enemyLastKnown.Value, point)
-            )
+            if (GetVisibilePathPoint(out Vector3 point) && IsTargetInSuppRange(enemyLastKnown.Value, point))
             {
                 return point;
             }
@@ -184,51 +200,124 @@ public class Enemy : BotBase, ISPlayer
         }
     }
 
-    public bool EnemyKnown => Events.OnEnemyKnownChanged.Value;
-    public bool EnemyNotLooking => IsVisible && !Status.EnemyLookAtMe && !Status.ShotAtMeRecently;
+    public bool EnemyKnown
+    {
+        get { return Events.OnEnemyKnownChanged.Value; }
+    }
+
+    public bool EnemyNotLooking
+    {
+        get { return IsVisible && !Status.EnemyLookAtMe && !Status.ShotAtMeRecently; }
+    }
+
     public bool WasValid { get; private set; } = true;
 
-    public Vector3 CenterMass => FindCenterMass(EnemyPlayerComponent);
+    public Vector3 CenterMass
+    {
+        get { return FindCenterMass(EnemyPlayerComponent); }
+    }
 
-    public bool FirstContactOccured => Vision.FirstContactOccured;
+    public bool FirstContactOccured
+    {
+        get { return Vision.FirstContactOccured; }
+    }
 
     public bool FirstContactReported { get; set; }
 
-    public EPathDistance EPathDistance => Path.EPathDistance;
-    public Vector3? LastKnownPosition => KnownPlaces.LastKnownPosition;
+    public EPathDistance EPathDistance
+    {
+        get { return Path.EPathDistance; }
+    }
 
-    public Vector3 EnemyPosition => EnemyTransform.Position;
+    public Vector3? LastKnownPosition
+    {
+        get { return KnownPlaces.LastKnownPosition; }
+    }
+
+    public Vector3 EnemyPosition
+    {
+        get { return EnemyTransform.Position; }
+    }
+
     public Vector3 EnemyDirection { get; private set; }
     public Vector3 EnemyDirectionNormal { get; private set; }
 
-    public float TimeSinceLastKnownUpdated => KnownPlaces.TimeSinceLastKnownUpdated;
-    public bool InLineOfSight => Vision.InLineOfSight;
-    public bool IsVisible => Vision.IsVisible;
-    public bool CanShoot => Vision.CanShoot;
-    public bool Seen => Vision.Seen;
-    public bool Heard => Hearing.Heard;
+    public float TimeSinceLastKnownUpdated
+    {
+        get { return KnownPlaces.TimeSinceLastKnownUpdated; }
+    }
 
-    public bool EnemyLookingAtMe => Status.EnemyLookAtMe;
-    public float TimeSinceSeen => Vision.TimeSinceSeen;
-    public float TimeSinceHeard => Hearing.TimeSinceHeard;
+    public bool InLineOfSight
+    {
+        get { return Vision.InLineOfSight; }
+    }
+
+    public bool IsVisible
+    {
+        get { return Vision.IsVisible; }
+    }
+
+    public bool CanShoot
+    {
+        get { return Vision.CanShoot; }
+    }
+
+    public bool Seen
+    {
+        get { return Vision.Seen; }
+    }
+
+    public bool Heard
+    {
+        get { return Hearing.Heard; }
+    }
+
+    public bool EnemyLookingAtMe
+    {
+        get { return Status.EnemyLookAtMe; }
+    }
+
+    public float TimeSinceSeen
+    {
+        get { return Vision.TimeSinceSeen; }
+    }
+
+    public float TimeSinceHeard
+    {
+        get { return Hearing.TimeSinceHeard; }
+    }
 
     private const float SQUADREPORT_SIGHT_INTERVAL = 0.25f;
 
     public static bool IsEnemyActive(Enemy enemy)
     {
         if (enemy == null)
+        {
             return false;
+        }
+
         if (!enemy.PlayerComponent.IsActive)
+        {
             return false;
+        }
+
         if (enemy.IsAI)
         {
             BotOwner enemyBotOwner = enemy.EnemyPlayerComponent.BotOwner;
             if (enemyBotOwner == null)
+            {
                 return false;
+            }
+
             if (enemyBotOwner.BotState != EBotState.Active)
+            {
                 return false;
+            }
+
             if (enemyBotOwner.StandBy.StandByType != BotStandByType.active)
+            {
                 return false;
+            }
         }
         return true;
     }
@@ -244,9 +333,7 @@ public class Enemy : BotBase, ISPlayer
         EnemyProfileId = enemyComponent.ProfileId;
         OwnerProfileId = bot.ProfileId;
 
-        EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[
-            enemyComponent.ProfileId
-        ];
+        EnemyPlayerData = bot.PlayerComponent.OtherPlayersData.DataDictionary[enemyComponent.ProfileId];
         UpdateDistAndDirection();
 
         var _enemyData = new EnemyData(this);
@@ -303,13 +390,7 @@ public class Enemy : BotBase, ISPlayer
 
     private void UpdateVisiblePathPointDist(Vector3 headPosition)
     {
-        TryUpdateVisPathDist(
-            headPosition,
-            VisiblePathPoint,
-            LastKnownPosition,
-            out float distToBot,
-            out float distToEnemy
-        );
+        TryUpdateVisPathDist(headPosition, VisiblePathPoint, LastKnownPosition, out float distToBot, out float distToEnemy);
         VisiblePathPointDistanceToBot = distToBot;
         VisiblePathPointDistanceToEnemyLastKnown = distToEnemy;
     }
@@ -441,7 +522,10 @@ public class Enemy : BotBase, ISPlayer
     public bool CheckValid()
     {
         if (!WasValid)
+        {
             return false;
+        }
+
         WasValid = IsEnemyValid(OwnerProfileId, EnemyPlayerComponent);
         return WasValid;
     }
@@ -529,11 +613,7 @@ public class Enemy : BotBase, ISPlayer
     {
         Vector3 headPos = playerComp.Player.MainParts[BodyPartType.head].Position;
         Vector3 floorPos = playerComp.Position;
-        Vector3 centerMass = Vector3.Lerp(
-            headPos,
-            floorPos,
-            SAINPlugin.LoadedPreset.GlobalSettings.Aiming.CenterMassVal
-        );
+        Vector3 centerMass = Vector3.Lerp(headPos, floorPos, SAINPlugin.LoadedPreset.GlobalSettings.Aiming.CenterMassVal);
         return centerMass;
     }
 
@@ -577,11 +657,7 @@ public class Enemy : BotBase, ISPlayer
         IsSniper = isSniper;
         if (isSniper && Bot.Squad.BotInGroup && Bot.Talk.GroupTalk.FriendIsClose)
         {
-            Bot.Talk.TalkAfterDelay(
-                EPhraseTrigger.SniperPhrase,
-                ETagStatus.Combat,
-                UnityEngine.Random.Range(0.33f, 0.66f)
-            );
+            Bot.Talk.TalkAfterDelay(EPhraseTrigger.SniperPhrase, ETagStatus.Combat, UnityEngine.Random.Range(0.33f, 0.66f));
         }
     }
 

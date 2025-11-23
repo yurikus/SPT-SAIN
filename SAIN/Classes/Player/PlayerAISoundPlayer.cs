@@ -6,7 +6,8 @@ public class PlayerAISoundPlayer : AIDataBase
 {
     public bool SoundMakerStarted { get; private set; }
 
-    public PlayerAISoundPlayer(SAINAIData aidata) : base(aidata)
+    public PlayerAISoundPlayer(SAINAIData aidata)
+        : base(aidata)
     {
         SoundMakerStarted = false;
         _startPlaySoundsTime = Time.time + 1.0f;

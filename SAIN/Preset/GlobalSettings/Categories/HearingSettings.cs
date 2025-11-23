@@ -174,9 +174,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float HEAR_DISPERSION_MIN_DISTANCE_THRESH = 10f;
 
     [Name("Max Randomization Distance")]
-    [Description(
-        "The max cap, in meters, that an estimated position can be from the real position that a sound is played from. "
-    )]
+    [Description("The max cap, in meters, that an estimated position can be from the real position that a sound is played from. ")]
     [Category("Position Randomization")]
     [Advanced]
     [MinMax(10f, 250f, 1000f)]
@@ -204,72 +202,56 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float BUNKER_REDUCTION_COEF = 0.2f;
 
     [Name("Bunker Elevation Range")]
-    [Description(
-        "Reduces audio range if a bot and an enemy are both in a bunker, but at different levels"
-    )]
+    [Description("Reduces audio range if a bot and an enemy are both in a bunker, but at different levels")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 100f)]
     public float BUNKER_ELEV_DIFF_COEF = 0.66f;
 
     [Name("Gunshot Occlusion")]
-    [Description(
-        "If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount"
-    )]
+    [Description("If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 1000f)]
     public float GUNSHOT_OCCLUSION_MOD = 0.8f;
 
     [Name("Suppressed Gunshot Occlusion")]
-    [Description(
-        "If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount"
-    )]
+    [Description("If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 100f)]
     public float GUNSHOT_OCCLUSION_MOD_SUPP = 0.65f;
 
     [Name("Footstep Occlusion")]
-    [Description(
-        "If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount"
-    )]
+    [Description("If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 1000f)]
     public float FOOTSTEP_OCCLUSION_MOD = 0.6f;
 
     [Name("Sprint Occlusion")]
-    [Description(
-        "If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount"
-    )]
+    [Description("If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 100f)]
     public float FOOTSTEP_OCCLUSION_MOD_SPRINT = 0.8f;
 
     [Name("Other Occlusion")]
-    [Description(
-        "If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount"
-    )]
+    [Description("If an obstacle is inbetween a bot's head and the position of a sound, reduce its range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 100f)]
     public float OTHER_OCCLUSION_MOD = 0.6f;
 
     [Name("Indoor / Outdoor Difference - Gunfire")]
-    [Description(
-        "If bots are not in the same area as the source of a sound, reduce audio range by this amount"
-    )]
+    [Description("If bots are not in the same area as the source of a sound, reduce audio range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 1000f)]
     public float GUNSHOT_ENVIR_MOD = 0.65f;
 
     [Name("Indoor / Outdoor Difference - Footsteps/Other")]
-    [Description(
-        "If bots are not in the same area as the source of a sound, reduce audio range by this amount"
-    )]
+    [Description("If bots are not in the same area as the source of a sound, reduce audio range by this amount")]
     [Category("Hearing Environment Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 100f)]
@@ -283,25 +265,19 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float MIN_ENVIRONMENT_MOD = 0.05f;
 
     [Name("No Headphones")]
-    [Description(
-        "If a bot does not have headphones, reduce audible range of all sounds by this amount."
-    )]
+    [Description("If a bot does not have headphones, reduce audible range of all sounds by this amount.")]
     [Category("Hearing Modifiers")]
     [MinMax(0.01f, 1f, 1000f)]
     public float HEAR_MODIFIER_NO_EARS = 0.6f;
 
     [Name("Heavy Helmet")]
-    [Description(
-        "If a bot is wearing a heavy helmet, reduce audible range of all sounds by this amount."
-    )]
+    [Description("If a bot is wearing a heavy helmet, reduce audible range of all sounds by this amount.")]
     [Category("Hearing Modifiers")]
     [MinMax(0.01f, 1f, 100f)]
     public float HEAR_MODIFIER_HEAVY_HELMET = 0.8f;
 
     [Name("Dying")]
-    [Description(
-        "If a bot is dying or seriously injured, reduce audible range of all sounds by this amount."
-    )]
+    [Description("If a bot is dying or seriously injured, reduce audible range of all sounds by this amount.")]
     [Category("Hearing Modifiers")]
     [MinMax(0.01f, 1f, 1000f)]
     public float HEAR_MODIFIER_DYING = 0.8f;
@@ -314,9 +290,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float HEAR_MODIFIER_SPRINT = 0.85f;
 
     [Name("Heavy Breathing")]
-    [Description(
-        "If a bot is breathing heavily, reduce audible range of all sounds by this amount."
-    )]
+    [Description("If a bot is breathing heavily, reduce audible range of all sounds by this amount.")]
     [Category("Hearing Modifiers")]
     [Advanced]
     [MinMax(0.01f, 1f, 1000f)]
@@ -374,9 +348,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float HEAR_CHANCE_MIDRANGE_MINCHANCE_HEADPHONES = 3;
 
     [Name("Long range Minimum Chance - Headphones")]
-    [Description(
-        "If a sound is further than mid-range. Increase the minimum chance by this amount"
-    )]
+    [Description("If a sound is further than mid-range. Increase the minimum chance by this amount")]
     [Category("Hearing Chance")]
     [Advanced]
     [MinMax(0, 100, 1)]
@@ -390,26 +362,20 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float HEAR_CHANCE_NOTMOVING_VELOCITY = 0.05f;
 
     [Name("Standing Still Min Chance - No Headphones")]
-    [Description(
-        "If a bot is standing still, add X percent to a bot minimum hear chance for sounds that aren't gunshots."
-    )]
+    [Description("If a bot is standing still, add X percent to a bot minimum hear chance for sounds that aren't gunshots.")]
     [Category("Hearing Chance")]
     [Advanced]
     [MinMax(0, 100, 1)]
     public float HEAR_CHANCE_NOTMOVING_MINCHANCE = 2;
 
     [Name("Standing Still Min Chance - Headphones")]
-    [Description(
-        "If a bot is standing still, add X percent to a bot minimum hear chance for sounds that aren't gunshots."
-    )]
+    [Description("If a bot is standing still, add X percent to a bot minimum hear chance for sounds that aren't gunshots.")]
     [Category("Hearing Chance")]
     [MinMax(0, 100, 1)]
     public float HEAR_CHANCE_NOTMOVING_MINCHANCE_HEADPHONES = 4;
 
     [Name("Other Sounds Min Chance - Headphones")]
-    [Description(
-        "If the type of sound is not footsteps or gunfire, add X percent to a bot minimum hear chance."
-    )]
+    [Description("If the type of sound is not footsteps or gunfire, add X percent to a bot minimum hear chance.")]
     [Category("Hearing Chance")]
     [Advanced]
     [MinMax(0, 100, 1)]
@@ -510,9 +476,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public HearingDelaySettings BaseHearingDelaySettings = new(0.5f, 0.1f, 0.25f, 0.66f);
 
     [Name("Sound Type based Hearing Delay / Reaction Time")]
-    [Description(
-        "Optional: If a soundtype is defined here, it will override the Base Hearing Delays defined above."
-    )]
+    [Description("Optional: If a soundtype is defined here, it will override the Base Hearing Delays defined above.")]
     [MinMax(0.0f, 1f, 100f)]
     [Category("Hearing Delay / Reaction Delay")]
     [Advanced]
@@ -549,17 +513,13 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
     public float SuppressorModifier = 0.6f;
 
     [Name("Subsonic Sound Modifier")]
-    [Description(
-        "Audible Gun Range is multiplied by this number when using a suppressor and subsonic ammo"
-    )]
+    [Description("Audible Gun Range is multiplied by this number when using a suppressor and subsonic ammo")]
     [MinMax(0.1f, 0.95f, 100f)]
     [Category("Hearing Distance")]
     public float SubsonicModifier = 0.33f;
 
     [Name("Hearing Distances by Ammo Type")]
-    [Description(
-        "How far a bot can hear a gunshot when fired from each specific caliber listed here."
-    )]
+    [Description("How far a bot can hear a gunshot when fired from each specific caliber listed here.")]
     [Category("Hearing Distance")]
     [MinMax(30f, 400f, 10f)]
     [Advanced]

@@ -6,9 +6,7 @@ namespace SAIN.Preset.Personalities;
 public class PersonalitySettingsClass : SettingsGroupBase<PersonalitySettingsClass>
 {
     [JsonConstructor]
-    public PersonalitySettingsClass()
-    {
-    }
+    public PersonalitySettingsClass() { }
 
     public PersonalitySettingsClass(EPersonality personality)
     {

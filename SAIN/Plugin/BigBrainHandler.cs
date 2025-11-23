@@ -33,7 +33,11 @@ public static class BigBrainHandler
     private static readonly List<Type> _SAINLayers = [];
     private static readonly List<string> _SAINLayerNames = [];
 
-    public static List<string> SAINLayerNames => FindAllSAINLayers();
+    public static List<string> SAINLayerNames
+    {
+        get { return FindAllSAINLayers(); }
+    }
+
     public static List<Type> SAINLayers
     {
         get
@@ -69,10 +73,7 @@ public static class BigBrainHandler
 
         foreach (Type layerType in SAINLayers)
         {
-            FieldInfo nameFieldInfo = layerType.GetField(
-                "Name",
-                BindingFlags.Public | BindingFlags.Static
-            );
+            FieldInfo nameFieldInfo = layerType.GetField("Name", BindingFlags.Public | BindingFlags.Static);
             if (nameFieldInfo == null)
             {
                 Logger.LogError(
@@ -139,10 +140,7 @@ public static class BigBrainHandler
 
             if (INCLUDE_RAIDER_BRAIN_FOR_PMCS)
             {
-                ToggleVanillaLayersForRaiders(
-                    [WildSpawnType.pmcBEAR, WildSpawnType.pmcUSEC],
-                    useVanillaLayers
-                );
+                ToggleVanillaLayersForRaiders([WildSpawnType.pmcBEAR, WildSpawnType.pmcUSEC], useVanillaLayers);
             }
         }
 
@@ -164,10 +162,7 @@ public static class BigBrainHandler
             ToggleVanillaLayersForRaiders([WildSpawnType.assaultGroup], useVanillaLayers);
         }
 
-        public static void ToggleVanillaLayersForRaiders(
-            List<WildSpawnType> roles,
-            bool useVanillaLayers
-        )
+        public static void ToggleVanillaLayersForRaiders(List<WildSpawnType> roles, bool useVanillaLayers)
         {
             List<string> brainList = [nameof(EBrain.PMC)];
 
@@ -190,14 +185,7 @@ public static class BigBrainHandler
         {
             List<string> brainList = GetBrainList(AIBrains.Others);
 
-            List<string> LayersToToggle =
-            [
-                "Request",
-                "KnightFight",
-                "PmcBear",
-                "PmcUsec",
-                .. _commonVanillaLayersToRemove,
-            ];
+            List<string> LayersToToggle = ["Request", "KnightFight", "PmcBear", "PmcUsec", .. _commonVanillaLayersToRemove];
 
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
@@ -299,11 +287,7 @@ public static class BigBrainHandler
             ToggleVanillaLayers(brainList, LayersToToggle, useVanillaLayers);
         }
 
-        private static void ToggleVanillaLayers(
-            List<string> brainNames,
-            List<string> layerNames,
-            bool useVanillaLayers
-        )
+        private static void ToggleVanillaLayers(List<string> brainNames, List<string> layerNames, bool useVanillaLayers)
         {
             if (useVanillaLayers)
             {
@@ -347,21 +331,9 @@ public static class BigBrainHandler
 
             BrainManager.AddCustomLayer(typeof(DebugLayer), pmcBrain, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), pmcBrain, 80);
-            BrainManager.AddCustomLayer(
-                typeof(ExtractLayer),
-                pmcBrain,
-                settings.SAINExtractLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSquadLayer),
-                pmcBrain,
-                settings.SAINCombatSquadLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSoloLayer),
-                pmcBrain,
-                settings.SAINCombatSoloLayerPriority
-            );
+            BrainManager.AddCustomLayer(typeof(ExtractLayer), pmcBrain, settings.SAINExtractLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSquadLayer), pmcBrain, settings.SAINCombatSquadLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSoloLayer), pmcBrain, settings.SAINCombatSoloLayerPriority);
 
             if (INCLUDE_RAIDER_BRAIN_FOR_PMCS)
             {
@@ -377,21 +349,9 @@ public static class BigBrainHandler
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
             BrainManager.AddCustomLayer(typeof(DebugLayer), brainList, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), brainList, 80);
-            BrainManager.AddCustomLayer(
-                typeof(ExtractLayer),
-                brainList,
-                settings.SAINExtractLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSquadLayer),
-                brainList,
-                settings.SAINCombatSquadLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSoloLayer),
-                brainList,
-                settings.SAINCombatSoloLayerPriority
-            );
+            BrainManager.AddCustomLayer(typeof(ExtractLayer), brainList, settings.SAINExtractLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSquadLayer), brainList, settings.SAINCombatSquadLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSoloLayer), brainList, settings.SAINCombatSoloLayerPriority);
 
             AddCustomLayersToRaiders([WildSpawnType.assaultGroup]);
         }
@@ -403,24 +363,9 @@ public static class BigBrainHandler
 
             BrainManager.AddCustomLayer(typeof(DebugLayer), raiderBrain, 99, roles);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), raiderBrain, 80, roles);
-            BrainManager.AddCustomLayer(
-                typeof(ExtractLayer),
-                raiderBrain,
-                settings.SAINExtractLayerPriority,
-                roles
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSquadLayer),
-                raiderBrain,
-                settings.SAINCombatSquadLayerPriority,
-                roles
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSoloLayer),
-                raiderBrain,
-                settings.SAINCombatSoloLayerPriority,
-                roles
-            );
+            BrainManager.AddCustomLayer(typeof(ExtractLayer), raiderBrain, settings.SAINExtractLayerPriority, roles);
+            BrainManager.AddCustomLayer(typeof(CombatSquadLayer), raiderBrain, settings.SAINCombatSquadLayerPriority, roles);
+            BrainManager.AddCustomLayer(typeof(CombatSoloLayer), raiderBrain, settings.SAINCombatSoloLayerPriority, roles);
         }
 
         private static void AddCustomLayersToOthers()
@@ -431,21 +376,9 @@ public static class BigBrainHandler
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
             BrainManager.AddCustomLayer(typeof(DebugLayer), brainList, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), brainList, 80);
-            BrainManager.AddCustomLayer(
-                typeof(ExtractLayer),
-                brainList,
-                settings.SAINExtractLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSquadLayer),
-                brainList,
-                settings.SAINCombatSquadLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSoloLayer),
-                brainList,
-                settings.SAINCombatSoloLayerPriority
-            );
+            BrainManager.AddCustomLayer(typeof(ExtractLayer), brainList, settings.SAINExtractLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSquadLayer), brainList, settings.SAINCombatSquadLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSoloLayer), brainList, settings.SAINCombatSoloLayerPriority);
         }
 
         private static void AddCustomLayersToRogues()
@@ -456,21 +389,9 @@ public static class BigBrainHandler
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
             BrainManager.AddCustomLayer(typeof(DebugLayer), brainList, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), brainList, 80);
-            BrainManager.AddCustomLayer(
-                typeof(ExtractLayer),
-                brainList,
-                settings.SAINExtractLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSquadLayer),
-                brainList,
-                settings.SAINCombatSquadLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSoloLayer),
-                brainList,
-                settings.SAINCombatSoloLayerPriority
-            );
+            BrainManager.AddCustomLayer(typeof(ExtractLayer), brainList, settings.SAINExtractLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSquadLayer), brainList, settings.SAINCombatSquadLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSoloLayer), brainList, settings.SAINCombatSoloLayerPriority);
         }
 
         private static void AddCustomLayersToBloodHounds()
@@ -481,21 +402,9 @@ public static class BigBrainHandler
             //BrainManager.AddCustomLayer(typeof(BotUnstuckLayer), stringList, 98);
             BrainManager.AddCustomLayer(typeof(DebugLayer), brainList, 99);
             BrainManager.AddCustomLayer(typeof(SAINAvoidThreatLayer), brainList, 80);
-            BrainManager.AddCustomLayer(
-                typeof(ExtractLayer),
-                brainList,
-                settings.SAINExtractLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSquadLayer),
-                brainList,
-                settings.SAINCombatSquadLayerPriority
-            );
-            BrainManager.AddCustomLayer(
-                typeof(CombatSoloLayer),
-                brainList,
-                settings.SAINCombatSoloLayerPriority
-            );
+            BrainManager.AddCustomLayer(typeof(ExtractLayer), brainList, settings.SAINExtractLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSquadLayer), brainList, settings.SAINCombatSquadLayerPriority);
+            BrainManager.AddCustomLayer(typeof(CombatSoloLayer), brainList, settings.SAINCombatSoloLayerPriority);
         }
 
         private static void AddCustomLayersToBosses()
@@ -550,7 +459,9 @@ public static class BigBrainHandler
             return brainList;
         }
 
-        private static VanillaBotSettings VanillaBotSettings =>
-            SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots;
+        private static VanillaBotSettings VanillaBotSettings
+        {
+            get { return SAINPlugin.LoadedPreset.GlobalSettings.General.VanillaBots; }
+        }
     }
 }

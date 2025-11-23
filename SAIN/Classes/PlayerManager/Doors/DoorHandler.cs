@@ -1,8 +1,8 @@
-﻿using Comfort.Common;
+﻿using System;
+using System.Collections.Generic;
+using Comfort.Common;
 using EFT.Interactive;
 using SAIN.Preset.GlobalSettings;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.Components;
@@ -13,13 +13,10 @@ public class DoorHandler : GameWorldBase, IGameWorldClass
 
     public event Action<bool> OnDoorsDisabled;
 
-    public DoorHandler(GameWorldComponent component) : base(component)
-    {
-    }
+    public DoorHandler(GameWorldComponent component)
+        : base(component) { }
 
-    public void Init()
-    {
-    }
+    public void Init() { }
 
     public void ManualUpdate(float currentTime, float deltaTime)
     {
@@ -43,13 +40,17 @@ public class DoorHandler : GameWorldBase, IGameWorldClass
     public void ChangeDoorState(Door door, EDoorState state, bool shallInvert)
     {
         if (shallInvert)
+        {
             door.OpenAngle = -door.OpenAngle;
+        }
 
         door.SetDoorState(state);
         OnDoorStateChanged?.Invoke(door, state, shallInvert);
 
         if (shallInvert)
+        {
             door.OpenAngle = -door.OpenAngle;
+        }
     }
 
     public void HostDisabledDoors(bool value)
@@ -59,20 +60,21 @@ public class DoorHandler : GameWorldBase, IGameWorldClass
 
     private void checkDoors()
     {
-        if (Singleton<IBotGame>.Instance == null) { return; }
+        if (Singleton<IBotGame>.Instance == null)
+        {
+            return;
+        }
 
         bool shallDisable = _doorsDisabledByHost || GlobalSettingsClass.Instance.General.Doors.DisableAllDoors;
 
-        if (!_doorsDisabled &&
-            shallDisable)
+        if (!_doorsDisabled && shallDisable)
         {
             OnDoorsDisabled?.Invoke(true);
             _doorsDisabled = true;
             disableDoors();
             return;
         }
-        if (_doorsDisabled &&
-            !shallDisable)
+        if (_doorsDisabled && !shallDisable)
         {
             OnDoorsDisabled?.Invoke(false);
             _doorsDisabled = false;
@@ -85,15 +87,21 @@ public class DoorHandler : GameWorldBase, IGameWorldClass
     {
         // We don't support doors that don't start open/closed
         if (door.DoorState != EDoorState.Open && door.DoorState != EDoorState.Shut)
+        {
             return false;
+        }
 
         // We don't support non-operatable doors
         if (!door.Operatable || !door.enabled)
+        {
             return false;
+        }
 
         // We don't support doors that aren't on the "Interactive" layer
         if (door.gameObject.layer != LayerMaskClass.InteractiveLayer)
+        {
             return false;
+        }
 
         door.gameObject.SmartDisable();
         door.enabled = false;
@@ -105,11 +113,15 @@ public class DoorHandler : GameWorldBase, IGameWorldClass
     {
         int doorCount = 0;
         // Code taken from Drakia's Door Randomizer Mod
-        UnityEngine.Object.FindObjectsOfType<Door>().ExecuteForEach(door =>
-        {
-            if (DisableDoor(door))
-                doorCount++;
-        });
+        UnityEngine
+            .Object.FindObjectsOfType<Door>()
+            .ExecuteForEach(door =>
+            {
+                if (DisableDoor(door))
+                {
+                    doorCount++;
+                }
+            });
 
         _doorsDisabled = true;
         Logger.LogDebug($"Disabled Doors: {doorCount}");
