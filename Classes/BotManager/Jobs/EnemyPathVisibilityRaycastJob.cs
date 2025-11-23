@@ -90,7 +90,7 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
                     {
                         if (enemy.IsVisible)
                         {
-                            enemy.SetLastCornerAsVisiblePathPoint(enemy.EnemyPosition, 0);
+                            enemy.SetLastCornerAsVisiblePathPoint(enemy.EnemyPosition);
                             continue;
                         }
                         if (enemy.Path.ShallCheckPathVision(currentTime, neutralViewPosition))
@@ -146,7 +146,7 @@ public class EnemyPathVisibilityRaycastJob : SainJobTemplate, IDisposable
                 {
                     if (enemy.Path.PathCorners.Length > 1)
                     {
-                        enemy.SetLastCornerAsVisiblePathPoint(enemy.Path.PathCorners[1], 1);
+                        enemy.SetLastCornerAsVisiblePathPoint(enemy.Path.PathCorners[1]);
                     }
                     else
                     {

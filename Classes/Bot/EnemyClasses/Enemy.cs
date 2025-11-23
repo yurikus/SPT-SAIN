@@ -8,7 +8,6 @@ using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.Types.PlayerSmoothing;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes.EnemyClasses;
@@ -340,27 +339,32 @@ public class Enemy : BotBase, ISPlayer
         _visPathPointIsCorner = false;
         VisiblePathPoint = node.Point;
         UpdateVisiblePathPointDist(Bot.Transform.EyePosition);
+
         if (node.CornerStartIndex == node.CornerEndIndex)
         {
             VisiblePathPointSignedAngle = null;
             return;
         }
+
         Vector3? LastKnown = LastKnownPosition;
-        if (LastKnown != null)
+        if (LastKnown != null && Path.PathCorners.Length >= 2)
         {
             Vector3 botPosition = Bot.Position;
             Vector3 botEyePosition = Bot.Transform.EyePosition;
             botPosition.y = botEyePosition.y;
 
-            //Vector3 otherPoint = point.Point + node.DirectionToCornerNormal * VisiblePathPointDistanceToBot;
             Vector3 cornerA = Path.PathCorners[node.CornerStartIndex];
             Vector3 cornerB = Path.PathCorners[node.CornerEndIndex];
             DebugGizmos.DrawLine(cornerA, cornerB, Color.yellow, 0.05f, 1f);
             VisiblePathPointSignedAngle = Vector.FindFlatSignedAngle(cornerA, cornerB, botPosition);
         }
+        else
+        {
+            VisiblePathPointSignedAngle = null;
+        }
     }
 
-    public void SetLastCornerAsVisiblePathPoint(Vector3 LastCorner, int CornerIndex)
+    public void SetLastCornerAsVisiblePathPoint(Vector3 LastCorner)
     {
         _visPathPointIsCorner = true;
         VisiblePathPoint = LastCorner;
