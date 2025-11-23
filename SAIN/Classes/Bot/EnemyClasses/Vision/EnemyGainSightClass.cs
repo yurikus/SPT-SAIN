@@ -111,9 +111,14 @@ public static class EnemyGainSightClass
         float gearMod = enemy.EnemyPlayerComponent.AIData.AIGearModifier.StealthModifier(enemy.RealDistance);
 
         bool flareEnabled =
-            enemy.EnemyPlayer.AIData?.GetFlare == true && enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo.HasSuppressor == false;
+            enemy.EnemyPlayer.AIData != null
+            && enemy.EnemyPlayer.AIData.GetFlare == true
+            && enemy.EnemyPlayerComponent.Equipment.CurrentWeaponInfo.HasSuppressor == false;
 
-        bool underFire = enemy.BotOwner.Memory.IsUnderFire && enemy.Bot.Memory.LastUnderFireEnemy == enemy;
+        bool underFire =
+            enemy.BotOwner.Memory.IsUnderFire
+            && enemy.Bot.Memory.LastUnderFireEnemy != null
+            && enemy.Bot.Memory.LastUnderFireEnemy == enemy;
 
         float underFireMod = underFire ? UNDER_FIRE_FROM_ME_COEF : 1f;
         float weatherMod = CalcWeatherMod(flareEnabled, enemy);
