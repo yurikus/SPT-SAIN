@@ -36,8 +36,3 @@ public interface IBotDecisionClass
 {
     bool GetDecision(Enemy enemy, out string reason);
 }
-
-public interface IBotEnemyClass : IBotClass
-{
-    void OnEnemyKnownChanged(bool known, Enemy enemy);
-}
