@@ -191,7 +191,9 @@ public class VisionRaycastJob : BotManagerBase
 #if DEBUG
         if (DebugSettings.Instance.Gizmos.DrawLineOfSightGizmos)
         {
+            // Reset here because otherwise this breaks debug
             hits = 0;
+            colliderTypeCount = 0;
 
             for (int i = 0; i < enemyCount; i++)
             {
