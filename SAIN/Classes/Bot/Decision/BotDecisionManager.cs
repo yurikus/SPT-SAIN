@@ -119,7 +119,7 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
             return;
         }
 
-        // TODO: rework melee decisions
+        // TODO: Tagilla stays locked on one person here, if another enemy is closer we need to switch over to him
         if (Bot.Info.Profile.WildSpawnType is WildSpawnType.bossTagilla or WildSpawnType.bossTagillaAgro)
         {
             if (shallTagillaHammerAttack(enemy))
