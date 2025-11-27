@@ -7,11 +7,8 @@ using UnityEngine;
 
 namespace SAIN.SAINComponent.Classes;
 
-public class HearingAnalysisClass : BotSubClass<SAINHearingSensorClass>, IBotClass
+public class HearingAnalysisClass(SAINHearingSensorClass hearing) : BotSubClass<SAINHearingSensorClass>(hearing), IBotClass
 {
-    public HearingAnalysisClass(SAINHearingSensorClass hearing)
-        : base(hearing) { }
-
     public bool CheckIfSoundHeard(AISoundData sound)
     {
         if (ShallLimitAI(sound))

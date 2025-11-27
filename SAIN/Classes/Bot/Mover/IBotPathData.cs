@@ -5,13 +5,6 @@ using UnityEngine.AI;
 
 namespace SAIN.SAINComponent.Classes.Mover;
 
-public enum EBotMovementState
-{
-    Walk,
-    Sprint,
-    Crawl,
-}
-
 public interface IBotPathData : IDisposable
 {
     public bool Moving { get; }

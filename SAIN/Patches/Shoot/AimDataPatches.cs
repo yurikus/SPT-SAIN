@@ -13,45 +13,8 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.SubComponents.CoverFinder;
 using SPT.Reflection.Patching;
 using UnityEngine;
-using HitAffectClass = BotHitAffectClass;
 
 namespace SAIN.Patches.Shoot.Aim;
-
-internal class WeaponMoAModificationPatch : ModulePatch
-{
-    private const float MIN_START_MOA_AI = 4f;
-    private const float MOA_FULLAUTO_COEF = 3f;
-
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player.FirearmController), "method_54", null, null);
-    }
-
-    [PatchPostfix]
-    public static void Patch(Player.FirearmController __instance, Player ____player, ref float __result)
-    {
-        // this method was lost due to a VS crash, so I grabbed from a decompiled build
-        BotOwner botOwner = ____player.AIData?.BotOwner;
-        if (botOwner == null)
-        {
-            return;
-        }
-        __result = Mathf.Min(__result, MIN_START_MOA_AI);
-        __result *= botOwner.Settings.Current.CurrentScattering;
-        if (__instance.Weapon?.FireMode?.FireMode == EFT.InventoryLogic.Weapon.EFireMode.fullauto)
-        {
-            __result *= MOA_FULLAUTO_COEF;
-        }
-        if (SAINEnableClass.GetSAIN(botOwner.ProfileId, out BotComponent botComponent))
-        {
-            Enemy lastShotEnemy = botComponent.Shoot.LastShotEnemy;
-            if (lastShotEnemy != null)
-            {
-                __result /= lastShotEnemy.Aim.AimAndScatterMultiplier;
-            }
-        }
-    }
-}
 
 /// <summary>
 /// This method is usually called by NodeUpdate, we want to remove a few function calls from the original method.
@@ -173,11 +136,11 @@ internal class HitAffectApplyPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(HitAffectClass), nameof(HitAffectClass.Affect));
+        return AccessTools.Method(typeof(BotHitAffectClass), nameof(BotHitAffectClass.Affect));
     }
 
     [PatchPrefix]
-    public static bool Patch(HitAffectClass __instance, ref Vector3 __result, Vector3 dir)
+    public static bool Patch(BotHitAffectClass __instance, ref Vector3 __result, Vector3 dir)
     {
         if (!GlobalSettingsClass.Instance.Aiming.HitEffects.HIT_REACTION_TOGGLE)
         {
@@ -196,11 +159,11 @@ internal class DoHitAffectPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(HitAffectClass), nameof(HitAffectClass.DoAffection));
+        return AccessTools.Method(typeof(BotHitAffectClass), nameof(BotHitAffectClass.DoAffection));
     }
 
     [PatchPrefix]
-    public static bool Patch(HitAffectClass __instance)
+    public static bool Patch(BotHitAffectClass __instance)
     {
         if (!GlobalSettingsClass.Instance.Aiming.HitEffects.HIT_REACTION_TOGGLE)
         {

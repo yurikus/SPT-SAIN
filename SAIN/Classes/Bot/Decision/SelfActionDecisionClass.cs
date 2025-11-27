@@ -337,24 +337,6 @@ public class SelfActionDecisionClass : BotBase
             return false;
         }
 
-        const int BULLET_COUNT_TO_STOP_RELOAD = 3;
-        if (
-            currentWeapon.ReloadMode == Weapon.EReloadMode.InternalMagazine
-            && reload.BulletCount >= BULLET_COUNT_TO_STOP_RELOAD
-            && enemy != null
-            && enemy.IsVisible
-            && Time.time - enemy.Vision.VisibleStartTime > 0.25f
-        )
-        {
-            //reload.TryStopReload();
-            //if (this._nextPossibleTryStopReload < Time.time)
-            //{
-            //    this._nextPossibleTryStopReload = Time.time + 1f;
-            //    BotOwner.ShootData.Shoot();
-            //}
-            //return false;
-        }
-
         reload.CheckReloadLongTime();
 
         if (timeSinceChange > 8f)
@@ -430,11 +412,6 @@ public class SelfActionDecisionClass : BotBase
         return Time.time - Bot.Decision.ChangeDecisionTime > 60f;
     }
 
-    public bool UsingMeds
-    {
-        get { return BotOwner.Medecine?.Using == true && CurrentSelfAction != ESelfActionType.None; }
-    }
-
     public bool GetCanUseStims()
     {
         var stims = BotOwner.Medecine?.Stimulators;
@@ -444,16 +421,6 @@ public class SelfActionDecisionClass : BotBase
     public bool CanUseFirstAid
     {
         get { return BotOwner.Medecine?.FirstAid?.ShallStartUse() == true; }
-    }
-
-    public bool CanUseSurgery
-    {
-        get { return BotOwner.Medecine?.SurgicalKit?.ShallStartUse() == true && BotOwner.Medecine?.FirstAid?.IsBleeding == false; }
-    }
-
-    public bool CanReload
-    {
-        get { return BotOwner.WeaponManager?.IsReady == true && BotOwner.WeaponManager?.Reload.CanReload(false) == true; }
     }
 
     private bool startUseStims()
@@ -505,17 +472,6 @@ public class SelfActionDecisionClass : BotBase
 
         return true;
     }
-
-    //public struct BotCombatStimsSettings()
-    //{
-    //    bool MustBeSeen = true;
-    //    bool MustBeHeard = true;
-    //    bool MustBeSeenAndHeard = true;
-    //    bool CanBeInLineOfSight = false;
-    //    float TimeSinceKnownIfUnseenToUse = 3f;
-    //    float PathVeryCloseDist =
-    //
-    //}
 
     private static bool ShallUseStimsCheckEnemy(Enemy enemy)
     {
@@ -777,25 +733,4 @@ public class SelfActionDecisionClass : BotBase
 
     private float _ammoRatio;
     private float _nextGetRatioTime;
-
-    /// <summary>
-    /// Add a callback for sain bots when a bot finishes using first aid.
-    /// </summary>
-    public class BotFirstAidCallBackPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotFirstAidClass), nameof(BotFirstAidClass.method_3));
-        }
-
-        [PatchPrefix]
-        public static void PatchPrefix(BotFirstAidClass __instance, Action callback)
-        {
-            //if (SAINEnableClass.IsBotExluded(__instance.botOwner_0)) return;
-            if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent sain))
-            {
-                if (sain.SAINLayersActive) { }
-            }
-        }
-    }
 }

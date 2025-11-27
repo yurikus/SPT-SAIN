@@ -22,7 +22,6 @@ public class BotWeaponInfoClass : BotBase
     public Recoil Recoil { get; private set; }
     public Firerate Firerate { get; private set; }
     public Firemode Firemode { get; private set; }
-    public ReloadClass Reload { get; private set; }
 
     public BotWeaponInfoClass(BotComponent bot)
         : base(bot)
@@ -30,7 +29,6 @@ public class BotWeaponInfoClass : BotBase
         Recoil = new Recoil(bot);
         Firerate = new Firerate(this);
         Firemode = new Firemode();
-        Reload = new ReloadClass(bot);
     }
 
     public override void Init()

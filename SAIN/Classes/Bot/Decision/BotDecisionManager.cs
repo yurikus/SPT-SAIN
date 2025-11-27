@@ -17,8 +17,6 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
 
     public ToggleEvent HasDecisionToggle { get; } = new ToggleEvent();
 
-    public FSainBotDecision CurrentDecision { get; private set; } = new();
-
     public ECombatDecision CurrentCombatDecision { get; private set; }
     public ECombatDecision PreviousCombatDecision { get; private set; }
     public ESquadDecision CurrentSquadDecision { get; private set; }
@@ -212,40 +210,6 @@ public class BotDecisionManager(SAINDecisionClass decisionClass) : BotSubClass<S
             ChangeDecisionTime = Time.time;
             HasDecisionToggle.CheckToggle(hasDecision, ChangeDecisionTime);
             OnDecisionMade?.Invoke(solo, squad, self, enemy, Bot);
-        }
-    }
-
-    private void SetDecision(FSainBotDecision decision)
-    {
-#if DEBUG
-        if (SAINPlugin.DebugMode)
-        {
-            if (SAINPlugin.ForceSoloDecision != ECombatDecision.None)
-            {
-                decision.CombatDecision = SAINPlugin.ForceSoloDecision;
-            }
-            if (SAINPlugin.ForceSquadDecision != ESquadDecision.None)
-            {
-                decision.SquadDecision = SAINPlugin.ForceSquadDecision;
-            }
-            if (SAINPlugin.ForceSelfDecision != ESelfActionType.None)
-            {
-                decision.SelfAction = SAINPlugin.ForceSelfDecision;
-            }
-        }
-#endif
-
-        if (CurrentDecision != decision)
-        {
-            bool hasDecision =
-                decision.CombatDecision != ECombatDecision.None
-                || decision.SelfAction != ESelfActionType.None
-                || decision.SquadDecision != ESquadDecision.None;
-
-            ChangeDecisionTime = Time.time;
-            HasDecisionToggle.CheckToggle(hasDecision, ChangeDecisionTime);
-            CurrentDecision = decision;
-            OnDecisionMade?.Invoke(decision.CombatDecision, decision.SquadDecision, decision.SelfAction, decision.Enemy, Bot);
         }
     }
 
