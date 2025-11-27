@@ -188,7 +188,7 @@ public class VisionRaycastJob : BotManagerBase
                 hits++;
             }
         }
-#if DEBUG
+
         if (DebugSettings.Instance.Gizmos.DrawLineOfSightGizmos)
         {
             // Reset here because otherwise this breaks debug
@@ -223,7 +223,6 @@ public class VisionRaycastJob : BotManagerBase
                 }
             }
         }
-#endif
     }
 
     private static void FindEnemies(HashSet<BotComponent> bots, List<Enemy> enemies)

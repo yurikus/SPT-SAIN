@@ -21,7 +21,6 @@ public enum EPathCalcFailReason
 public class SearchPathFinder : BotSubClass<SAINSearchClass>
 {
     public EnemyPlace TargetPlace { get; private set; }
-    public BotPeekPlan? PeekPoints { get; private set; }
     public bool SearchedTargetPosition
     {
         get { return TargetPlace == null || TargetPlace.HasArrivedPersonal || TargetPlace.HasArrivedSquad; }
@@ -98,7 +97,6 @@ public class SearchPathFinder : BotSubClass<SAINSearchClass>
 
     public void Reset()
     {
-        PeekPoints = null;
         TargetPlace = null;
         FinishedPeeking = false;
     }
@@ -140,59 +138,9 @@ public class SearchPathFinder : BotSubClass<SAINSearchClass>
         }
 
         BaseClass.Reset();
-        PeekPoints = findPeekPosition(enemy);
         TargetPlace = lastKnownPlace;
         failReason = string.Empty;
         return true;
-    }
-
-    private BotPeekPlan? findPeekPosition(Enemy enemy)
-    {
-        //const float MIN_ANGLE_TO_PEEK = 5f;
-        //const float CORNER_PEEK_DIST = 3f;
-        //if (enemy.VisiblePathPoint == null)
-        //{
-        //    return null;
-        //}
-        //
-        // Need to rework this because the "blindcorner" is no longer created
-        //Vector3[] pathCorners = enemy.Path.PathToEnemy.corners;
-        //int count = pathCorners.Length;
-        //int blindCornerIndex = blindCorner.PathIndex;
-        //Vector3 blindCornerPosition = blindCorner.GroundPosition;
-        //Vector3 botPosition = Bot.Position;
-        //Vector3 blindCornerDir = blindCornerPosition - botPosition;
-        //Vector3 blindCornerDirNormal = blindCornerDir.normalized;
-        //
-        //Vector3 startPeekPosition = blindCornerPosition - (blindCornerDirNormal * CORNER_PEEK_DIST);
-        //
-        //for (int i = blindCornerIndex; i < count; i++)
-        //{
-        //    Vector3 corner = pathCorners[i];
-        //    Vector3 dir = corner - blindCornerPosition;
-        //    Vector3 dirNormal = dir.normalized;
-        //    float signedAngle = findHorizSignedAngle(blindCornerDirNormal, dirNormal);
-        //    if (Mathf.Abs(signedAngle) < MIN_ANGLE_TO_PEEK)
-        //    {
-        //        continue;
-        //    }
-        //    Vector3 oppositePoint = blindCornerPosition - (dirNormal * CORNER_PEEK_DIST);
-        //    if (NavMesh.Raycast(blindCornerPosition, oppositePoint, out NavMeshHit hit, -1))
-        //    {
-        //        oppositePoint = hit.position;
-        //    }
-        //
-        //    return new BotPeekPlan(startPeekPosition, oppositePoint, corner);
-        //}
-        return null;
-    }
-
-    private float findHorizSignedAngle(Vector3 dirA, Vector3 dirB)
-    {
-        dirA.y = 0;
-        dirB.y = 0;
-        float signedAngle = Vector3.SignedAngle(dirA, dirB, Vector3.up);
-        return signedAngle;
     }
 
     private float _nextCheckPosTime;

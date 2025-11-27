@@ -18,11 +18,6 @@ public class SAINSearchClass : BotComponentClassBase
     public ESearchMove CurrentState { get; private set; }
     public ESearchMove LastState { get; private set; }
 
-    public BotPeekPlan? PeekPoints
-    {
-        get { return PathFinder.PeekPoints; }
-    }
-
     public SearchDeciderClass SearchDecider { get; private set; }
     public SearchPathFinder PathFinder { get; private set; }
 
@@ -243,10 +238,6 @@ public class SAINSearchClass : BotComponentClassBase
                 return false;
 
             default:
-                if (PeekPoints == null)
-                {
-                    return true;
-                }
                 if (PathFinder.FinishedPeeking)
                 {
                     return true;
