@@ -15,7 +15,8 @@ public class PlayerSpawnTracker
 
     public PlayerComponent GetPlayerComponent(IPlayer Player)
     {
-        if (Player != null && AlivePlayersDictionary.TryGetValue(Player.ProfileId, out PlayerComponent component))
+        if (Player != null &&
+            AlivePlayersDictionary.TryGetValue(Player.ProfileId, out PlayerComponent component))
         {
             return component;
         }
@@ -24,7 +25,8 @@ public class PlayerSpawnTracker
 
     public PlayerComponent GetPlayerComponent(string profileId)
     {
-        if (!profileId.IsNullOrEmpty() && AlivePlayersDictionary.TryGetValue(profileId, out PlayerComponent component))
+        if (!profileId.IsNullOrEmpty() &&
+            AlivePlayersDictionary.TryGetValue(profileId, out PlayerComponent component))
         {
             return component;
         }
@@ -39,7 +41,9 @@ public class PlayerSpawnTracker
 
         foreach (var component in AlivePlayersDictionary.Values)
         {
-            if (component != null && component.Player != null && !component.IsAI)
+            if (component != null &&
+                component.Player != null &&
+                !component.IsAI)
             {
                 float sqrMag = (component.Position - targetPosition).sqrMagnitude;
                 if (sqrMag < closestPlayerSqrMag)
@@ -92,31 +96,16 @@ public class PlayerSpawnTracker
 
     private void AddPlayer(IPlayer iPlayer)
     {
-        if (iPlayer == null)
-        {
-#if DEBUG
-            Logger.LogError($"Could not add PlayerComponent for Null IPlayer.");
-#endif
-            return;
-        }
-
-        string profileId = iPlayer.ProfileId;
-        Player player = iPlayer as Player;
+        var player = (Player)iPlayer;
         if (player == null)
         {
 #if DEBUG
-            Logger.LogError($"Could not add PlayerComponent for Null Player. IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
-#endif
-            return;
-        }
-        if (player.gameObject == null)
-        {
-#if DEBUG
-            Logger.LogError($"Player Has null gameobject? IPlayer: {iPlayer.Profile?.Nickname} : {profileId}");
+            Logger.LogError("Could not add PlayerComponent for Null Player.");
 #endif
             return;
         }
 
+        string profileId = player.ProfileId;
         if (TryRemove(profileId, out bool compDestroyed))
         {
 #if DEBUG
@@ -130,7 +119,7 @@ public class PlayerSpawnTracker
         if (TryAddPlayerComponent(player))
         {
 #if DEBUG
-            Logger.LogDebug($"Added New Player [{player.name}] : [{player.Profile.Nickname}]");
+            Logger.LogDebug($"Added New Player [{player.name}] : [{player.Profile?.Nickname}]");
 #endif
         }
     }
@@ -167,14 +156,21 @@ public class PlayerSpawnTracker
 
     public void Dispose()
     {
-        var gameWorld = _sainGameWorld?.GameWorld;
+        if (_sainGameWorld == null)
+        {
+            return;
+        }
+        var gameWorld = _sainGameWorld.GameWorld;
         if (gameWorld != null)
         {
             gameWorld.OnPersonAdd -= AddPlayer;
         }
-        foreach (var player in AlivePlayersDictionary)
+        foreach (var (_, player) in AlivePlayersDictionary)
         {
-            player.Value?.Dispose();
+            if (player != null)
+            {
+                player.Dispose();
+            }
         }
         AlivePlayersDictionary.Clear();
     }
@@ -182,7 +178,7 @@ public class PlayerSpawnTracker
     private bool TryAddPlayerComponent(Player player)
     {
         PlayerComponent component = player.gameObject.AddComponent<PlayerComponent>();
-        if (component?.Init(player) == true)
+        if (component != null && component.Init(player))
         {
             player.OnIPlayerDeadOrUnspawn += RemovePerson;
             AlivePlayersDictionary.Add(player.ProfileId, component);
@@ -193,14 +189,11 @@ public class PlayerSpawnTracker
 #endif
             return true;
         }
-        else
-        {
 #if DEBUG
-            Logger.LogError($"Init PlayerComponent Failed for {player.name} : {player.ProfileId}");
+        Logger.LogError($"Init PlayerComponent Failed for {player.name} : {player.ProfileId}");
 #endif
-            GameObject.Destroy(component);
-            return false;
-        }
+        UnityEngine.Object.Destroy(component);
+        return false;
     }
 
     private bool TryRemove(string profileId, out bool destroyedComponent)
@@ -227,18 +220,18 @@ public class PlayerSpawnTracker
 
     private void ClearNullPlayers()
     {
-        foreach (KeyValuePair<string, PlayerComponent> kvp in AlivePlayersDictionary)
+        foreach ((string profileId, PlayerComponent playerComponent) in AlivePlayersDictionary)
         {
-            PlayerComponent component = kvp.Value;
-            if (component == null || component.Player == null)
+            if (playerComponent == null ||
+                playerComponent.Player == null)
             {
-                _ids.Add(kvp.Key);
-                if (component.Player != null)
-                {
+                _ids.Add(profileId);
 #if DEBUG
-                    Logger.LogDebug($"Removing {component.Player.Profile?.Nickname} from player dictionary");
-#endif
+                if (playerComponent.Player != null)
+                {
+                    Logger.LogDebug($"Removing {playerComponent.Player.Profile?.Nickname} from player dictionary");
                 }
+#endif
             }
         }
         if (_ids.Count > 0)
