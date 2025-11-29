@@ -113,6 +113,16 @@ public class BotTypeDefinitions
         }
     }
 
+    public static void AddBotType(BotType botType)
+    {
+        if (!BotTypes.ContainsKey(botType.WildSpawnType))
+        {
+            BotTypes.Add(botType.WildSpawnType, botType);
+            BotTypesList.Add(botType);
+            BotTypesNames.Add(botType.Name);
+        }
+    }
+
     static List<BotType> CreateBotTypes()
     {
         return new List<BotType>
