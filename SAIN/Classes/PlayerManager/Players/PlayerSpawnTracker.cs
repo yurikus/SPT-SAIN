@@ -147,17 +147,16 @@ public class PlayerSpawnTracker
         if (TryRemove(player.ProfileId, out _))
         {
 #if DEBUG
-            Logger.LogDebug($"Removed Player Component [{player.Profile.Nickname}]]");
+            Logger.LogDebug($"Removed Player Component [{player.Profile.Nickname}]");
 #endif
         }
         else
         {
 #if DEBUG
-            Logger.LogWarning("Could not find player in Player Component Dictionary!");
+            Logger.LogWarning($"Could not find player [{player.Profile.Nickname}] in Player Component Dictionary!");
 #endif
         }
-#if DEBUG
-#endif
+        player.OnIPlayerDeadOrUnspawn -= RemovePerson;
     }
 
     public PlayerSpawnTracker(GameWorldComponent sainGameWorld)
