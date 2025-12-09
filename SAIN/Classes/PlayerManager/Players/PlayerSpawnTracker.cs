@@ -96,11 +96,11 @@ public class PlayerSpawnTracker
 
     private void AddPlayer(IPlayer iPlayer)
     {
-        var player = (Player)iPlayer;
+        var player = iPlayer as Player;
         if (player == null)
         {
 #if DEBUG
-            Logger.LogError("Could not add PlayerComponent for Null Player.");
+            Logger.LogError("Could not add PlayerComponent for non-Player type or null Player.");
 #endif
             return;
         }
