@@ -243,15 +243,7 @@ internal class ExtractAction(BotOwner bot) : BotAction(bot, "Extract"), IBotActi
                 Bot.Memory.Extract.ExfilPoint
             );
 
-            var botgame = Singleton<IBotGame>.Instance;
-            Player player = Bot.Player;
-            Singleton<Effects>.Instance.EffectsCommutator.StopBleedingForPlayer(player);
-            BotOwner.Deactivate();
-            BotOwner.Dispose();
-            botgame.BotsController.BotDied(BotOwner);
-            botgame.BotsController.DestroyInfo(player);
-            Object.DestroyImmediate(BotOwner.gameObject);
-            Object.Destroy(BotOwner);
+            Singleton<IBotGame>.Instance.BotDespawn(BotOwner);
         }
     }
 
