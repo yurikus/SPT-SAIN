@@ -93,6 +93,7 @@ public enum ECaliber
     Caliber68x51,
     Caliber20x1,
     Caliber127x33,
+    Caliber127x99,
     Caliber9x18PMM,
 }
 

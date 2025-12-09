@@ -254,6 +254,7 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
         { ECaliber.Caliber40x46, 3f },
         { ECaliber.Caliber40mmRU, 3f },
         { ECaliber.Caliber86x70, 5f },
+        { ECaliber.Caliber127x99, 5f },
         { ECaliber.Caliber127x108, 5f },
         { ECaliber.Default, 2f },
     };
@@ -288,6 +289,7 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
         { ECaliber.Caliber30x29, 3f },
         { ECaliber.Caliber40x46, 3f },
         { ECaliber.Caliber40mmRU, 3f },
+        { ECaliber.Caliber127x99, 5f },
         { ECaliber.Caliber127x108, 5f },
         { ECaliber.Default, 2f },
     };
