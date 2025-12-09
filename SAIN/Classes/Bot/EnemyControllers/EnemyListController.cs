@@ -398,6 +398,12 @@ public class EnemyListController : BotSubClass<SAINEnemyController>, IBotClass
             var groupEnemies = BotOwner.BotsGroup.Enemies;
             foreach (var person in groupEnemies.Keys)
             {
+                // IPlayer could be a BotOwner instead of Player and sometimes the BotOwner persists even if its Player component is destroyed
+                if (validateComponents(person))
+                {
+                    continue;
+                }
+
                 Enemy enemy = tryAddEnemy(person);
                 if (enemy == null)
                 {
@@ -409,6 +415,11 @@ public class EnemyListController : BotSubClass<SAINEnemyController>, IBotClass
             var myEnemies = BotOwner.EnemiesController.EnemyInfos;
             foreach (var person in myEnemies.Keys)
             {
+                if (validateComponents(person))
+                {
+                    continue;
+                }
+
                 Enemy enemy = tryAddEnemy(person);
                 if (enemy == null)
                 {
@@ -421,6 +432,13 @@ public class EnemyListController : BotSubClass<SAINEnemyController>, IBotClass
                 //Logger.LogDebug($"Failed to add [{failedGroupAdds}] enemies from botsgroup and [{failedMyAdds}] enemies from enemyInfos");
             }
         }
+    }
+
+    private static bool validateComponents(IPlayer person)
+    {
+        return person != null
+            && person.IsAI
+            && person.AIData.BotOwner.GetPlayer == null;
     }
 
     private float _nextCompareListsTime;
