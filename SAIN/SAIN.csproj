@@ -8,10 +8,16 @@
     <AssemblyName>SAIN</AssemblyName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+  </PropertyGroup>
+
   <!-- targets -->
   <PropertyGroup>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include="References\**" />
   </ItemGroup>

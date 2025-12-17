@@ -1,4 +1,11 @@
-﻿namespace SAIN;
+﻿using System.Reflection;
+
+[assembly: AssemblyTitle(SAIN.AssemblyInfoClass.Description)]
+[assembly: AssemblyDescription(SAIN.AssemblyInfoClass.Description)]
+[assembly: AssemblyCopyright(SAIN.AssemblyInfoClass.Copyright)]
+[assembly: AssemblyFileVersion(SAIN.AssemblyInfoClass.SAINVersion)]
+
+namespace SAIN;
 
 public static class AssemblyInfoClass
 {
@@ -11,7 +18,7 @@ public static class AssemblyInfoClass
     public const string Trademark = "";
     public const string Culture = "";
 
-    public const int TarkovVersion = 35392;
+    public const int TarkovVersion = 40087;
 
     public const string EscapeFromTarkov = "EscapeFromTarkov.exe";
 
