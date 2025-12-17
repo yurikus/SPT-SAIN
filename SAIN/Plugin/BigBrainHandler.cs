@@ -238,6 +238,7 @@ public static class BigBrainHandler
                 "KnightFight",
                 "BirdEyeFight",
                 "BossBoarFight",
+                "PrtFight",
                 "KojaniyB_Enemy",
                 "Bully Layer",
                 "KlnSolo",
