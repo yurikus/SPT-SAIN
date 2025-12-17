@@ -95,6 +95,7 @@ public enum ECaliber
     Caliber127x33,
     Caliber127x99,
     Caliber9x18PMM,
+    Caliber725,
 }
 
 public enum CoverStatus

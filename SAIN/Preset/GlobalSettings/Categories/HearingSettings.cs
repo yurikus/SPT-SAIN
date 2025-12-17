@@ -66,6 +66,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
             { ECaliber.Caliber40mmRU, 50 },
             { ECaliber.Caliber127x99, 275 },
             { ECaliber.Caliber127x108, 300 },
+            { ECaliber.Caliber725, 400 },
             { ECaliber.Caliber68x51, 200f },
             { ECaliber.Default, 125 },
         };
@@ -556,6 +557,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
         { ECaliber.Caliber40mmRU, 50 },
         { ECaliber.Caliber127x99, 275 },
         { ECaliber.Caliber127x108, 300 },
+        { ECaliber.Caliber725, 400 },
         { ECaliber.Caliber68x51, 200f },
         { ECaliber.Default, 125 },
     };
@@ -592,6 +594,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
         { ECaliber.Caliber40mmRU, 50 },
         { ECaliber.Caliber127x99, 275 },
         { ECaliber.Caliber127x108, 300 },
+        { ECaliber.Caliber725, 400 },
         { ECaliber.Caliber68x51, 200f },
         { ECaliber.Default, 125 },
     };
