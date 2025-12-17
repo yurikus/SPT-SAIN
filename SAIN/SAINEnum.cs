@@ -91,7 +91,7 @@ public enum ECaliber
     Caliber40mmRU,
     Caliber127x108,
     Caliber68x51,
-    Caliber20x1,
+    Caliber20x1mm,
     Caliber127x33,
     Caliber127x99,
     Caliber9x18PMM,

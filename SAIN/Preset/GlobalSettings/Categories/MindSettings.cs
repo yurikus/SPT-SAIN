@@ -228,6 +228,7 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
     [DefaultDictionary(nameof(SUPP_AMOUNTS_DEFAULT))]
     public Dictionary<ECaliber, float> SUPP_AMOUNTS = new()
     {
+        { ECaliber.Caliber20x1mm, 0.25f },
         { ECaliber.Caliber9x18PM, 1f },
         { ECaliber.Caliber9x19PARA, 1.1f },
         { ECaliber.Caliber46x30, 1.2f },
@@ -263,6 +264,7 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
     [Hidden]
     public static readonly Dictionary<ECaliber, float> SUPP_AMOUNTS_DEFAULT = new()
     {
+        { ECaliber.Caliber20x1mm, 0.25f },
         { ECaliber.Caliber9x18PM, 1f },
         { ECaliber.Caliber9x19PARA, 1.1f },
         { ECaliber.Caliber46x30, 1.2f },

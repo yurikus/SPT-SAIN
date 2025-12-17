@@ -38,6 +38,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
         // Gunfire Hearing Distances
         HearingDistancesDefaults = new Dictionary<ECaliber, float>()
         {
+            { ECaliber.Caliber20x1mm, 50 },
             { ECaliber.Caliber9x18PM, 110f },
             { ECaliber.Caliber9x19PARA, 110f },
             { ECaliber.Caliber46x30, 120f },
@@ -548,6 +549,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
         { ECaliber.Caliber20g, 185 },
         { ECaliber.Caliber12g, 185 },
         { ECaliber.Caliber23x75, 210 },
+        { ECaliber.Caliber20x1mm, 50 },
         { ECaliber.Caliber26x75, 50 },
         { ECaliber.Caliber30x29, 50 },
         { ECaliber.Caliber40x46, 50 },
@@ -583,6 +585,7 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
         { ECaliber.Caliber20g, 185 },
         { ECaliber.Caliber12g, 185 },
         { ECaliber.Caliber23x75, 210 },
+        { ECaliber.Caliber20x1mm, 50 },
         { ECaliber.Caliber26x75, 50 },
         { ECaliber.Caliber30x29, 50 },
         { ECaliber.Caliber40x46, 50 },
