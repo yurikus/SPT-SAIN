@@ -20,6 +20,7 @@ public static class BigBrainHandler
     [
         "Help",
         "AdvAssaultTarget",
+        "AssaultEnemyFar",
         "Hit",
         "Simple Target",
         "Pmc",
