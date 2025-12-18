@@ -15,7 +15,7 @@ public class VisionRaycastJob : BotManagerBase
 {
     private static readonly QueryParameters _losParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
     private static readonly QueryParameters _visParams = new(LayerMaskClass.AI);
-    private static readonly QueryParameters _shootParams = new(LayerMaskClass.HighPolyWithTerrainMaskAI);
+    private static readonly QueryParameters _shootParams = new(LayerMaskClass.HighPolyWithTerrainNoGrassMask);
 
     private const float VISION_UPDATE_INTERVAL = 1f / 30f;
     private const float VISION_JOB_INTERVAL = 1f / 30f;
