@@ -19,7 +19,7 @@ public class PoseClass : BotBase
         {
             _stopSprintAndPoseChangeTime = Time.time + 0.5f;
         }
-        if (Bot.SAINLayersActive || Bot.HasEnemy)
+        if (Bot.SAINLayersActive && Bot.HasEnemy)
         {
             float deltaTime = Time.fixedDeltaTime;
             if (_stopSprintAndPoseChangeTime > Time.time)

@@ -269,9 +269,9 @@ public class AimTimePatch : ModulePatch
 
         timeToAimResult = CalcMoveModifier(moving, timeToAimResult, fileSettings, stringBuilder);
         timeToAimResult = CalcADSModifier(botOwner.WeaponManager?.ShootController?.IsAiming == true, timeToAimResult, stringBuilder);
-        timeToAimResult = ClampAimTime(timeToAimResult, fileSettings, stringBuilder);
         timeToAimResult = CalcFasterCQB(distance, timeToAimResult, sainAimSettings, stringBuilder);
         timeToAimResult = CalcAttachmentMod(botComponent, timeToAimResult, stringBuilder);
+        timeToAimResult = ClampAimTime(timeToAimResult, fileSettings, stringBuilder);
 
         if (stringBuilder != null && botOwner?.Memory?.GoalEnemy?.Person?.IsYourPlayer == true)
         {
@@ -350,10 +350,12 @@ public class AimTimePatch : ModulePatch
 
     private static float ClampAimTime(float timeToAimResult, BotSettingsComponents fileSettings, StringBuilder stringBuilder)
     {
-        float clampedResult = Mathf.Clamp(timeToAimResult, 0f, fileSettings.Aiming.MAX_AIM_TIME);
+        float minAimTime = SAINPlugin.LoadedPreset.GlobalSettings.Aiming.MinAimTime;
+        float maxAimTime = fileSettings.Aiming.MAX_AIM_TIME;
+        float clampedResult = Mathf.Clamp(timeToAimResult, minAimTime, maxAimTime);
         if (clampedResult != timeToAimResult)
         {
-            stringBuilder?.AppendLine($"Clamped Aim Time [{clampedResult}] : MAX_AIM_TIME [{fileSettings.Aiming.MAX_AIM_TIME}]");
+            stringBuilder?.AppendLine($"Clamped Aim Time [{clampedResult}] : MIN_AIM_TIME: {minAimTime} MAX_AIM_TIME [{maxAimTime}]");
         }
         return clampedResult;
     }

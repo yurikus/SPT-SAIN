@@ -175,6 +175,14 @@ public class AimSettings : SAINSettingsBase<AimSettings>, ISAINSettings
     [MinMax(0f, 1f, 10000f)]
     public float CenterMassVal = 0.3f;
 
+    [Category("Time to Aim")]
+    [Name("Global Minimum Aiming Time")]
+    [Description(
+        "The global minimum time to aim in seconds (1 = 1000 milliseconds = 1 second)."
+    )]
+    [MinMax(0f, 1f, 10000f)]
+    public float MinAimTime = 0f;
+
     [Category("Time To Aim")]
     [Name("Global Faster CQB Reactions")]
     [Description(
