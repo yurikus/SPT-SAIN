@@ -186,7 +186,7 @@ public class SAINCoverClass : BotComponentClassBase
 
         _timeLastUpdate = Time.time;
 
-        _shallSprint = CheckStartRun(enemy, out _);
+        _shallSprint = CheckStartRun(enemy, out string reason);
 
         if (CoverInUse != null)
         {
@@ -207,9 +207,12 @@ public class SAINCoverClass : BotComponentClassBase
         {
             if (_shallSprint)
             {
-                Bot.Mover.ActivePath?.RequestStartSprint(Mover.ESprintUrgency.High, "runToCover");
+                Bot.Mover.ActivePath?.RequestStartSprint(Mover.ESprintUrgency.High, $"runToCover, {reason}");
             }
-            Bot.Mover.ActivePath?.RequestEndSprint(Mover.ESprintUrgency.High, "noRunToCover");
+            else
+            {
+                Bot.Mover.ActivePath?.RequestEndSprint(Mover.ESprintUrgency.High, $"noRunToCover, {reason}");
+            }
 
             var pathStatus = CoverPoint_MovingTo.PathDistanceStatus;
             var straightStatus = CoverPoint_MovingTo.StraightDistanceStatus;
@@ -221,7 +224,7 @@ public class SAINCoverClass : BotComponentClassBase
                 SetCoverSeekingState(ECoverSeekingState.HoldInCover);
                 return;
             }
-            if (CoverPoint_MovingTo != null && Bot.Mover.GoToCoverPoint(CoverPoint_MovingTo, false, Mover.ESprintUrgency.High))
+            if (CoverPoint_MovingTo != null && Bot.Mover.GoToCoverPoint(CoverPoint_MovingTo, _shallSprint, Mover.ESprintUrgency.High))
             {
                 SetCoverSeekingState(ECoverSeekingState.MoveTo);
                 return;
