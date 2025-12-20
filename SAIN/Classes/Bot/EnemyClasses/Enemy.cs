@@ -108,7 +108,7 @@ public class Enemy : BotBase, ISPlayer
         UpdateDistAndDirection();
         if (IsSniper)
         {
-            IsSniper = RealDistance < Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
+            IsSniper = RealDistance > Bot.Info.PersonalitySettings.General.ENEMYSNIPER_DISTANCE_END;
         }
 
         KnownChecker.TickEnemy(currentTime, forgetEnemyTime, botSearching);
