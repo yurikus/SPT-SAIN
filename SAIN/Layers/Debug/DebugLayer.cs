@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Extensions;
 using SAIN.Models.Enums;
 
 namespace SAIN.Layers.Combat.Run;
@@ -32,6 +33,12 @@ internal class DebugLayer : SAINLayer
 
     public override bool IsActive()
     {
+        if (!BotOwner.IsBotActive())
+        {
+            CheckActiveChanged(false);
+            return false;
+        }
+
         bool active =
             GetBotComponent() && SAINPlugin.DebugSettings.Logs.ForceBotsToRunAround || SAINPlugin.DebugSettings.Logs.ForceBotsToTryCrawl;
         CheckActiveChanged(active);

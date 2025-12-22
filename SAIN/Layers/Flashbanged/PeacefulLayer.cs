@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Extensions;
 using SAIN.Models.Enums;
 
 namespace SAIN.Layers.Peace;
@@ -17,6 +18,12 @@ internal class FlashBangedLayer : SAINLayer
 
     public override bool IsActive()
     {
+        if (!BotOwner.IsBotActive())
+        {
+            CheckActiveChanged(false);
+            return false;
+        }
+
         GetBotComponent();
         CheckActiveChanged(false);
         return false;

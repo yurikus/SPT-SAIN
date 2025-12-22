@@ -70,6 +70,12 @@ internal class CombatSoloLayer(BotOwner bot, int priority) : SAINLayer(bot, prio
 
     public override bool IsActive()
     {
+        if (!BotOwner.IsBotActive())
+        {
+            CheckActiveChanged(false);
+            return false;
+        }
+
         bool active = GetBotComponent() && _currentDecision != ECombatDecision.None;
         CheckActiveChanged(active);
         return active;

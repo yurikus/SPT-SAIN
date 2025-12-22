@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Extensions;
 using SAIN.Layers.Combat.Solo;
 using SAIN.Layers.Combat.Solo.Cover;
 using SAIN.Models.Enums;
@@ -43,6 +44,12 @@ internal class SAINAvoidThreatLayer(BotOwner bot, int priority) : SAINLayer(bot,
 
     public override bool IsActive()
     {
+        if (!BotOwner.IsBotActive())
+        {
+            CheckActiveChanged(false);
+            return false;
+        }
+
         bool active = GetBotComponent() && CheckDecisionsForBot(Bot);
         CheckActiveChanged(active);
         return active;

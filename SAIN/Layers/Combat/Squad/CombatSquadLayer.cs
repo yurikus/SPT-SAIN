@@ -1,5 +1,6 @@
 ﻿using EFT;
 using SAIN.Components;
+using SAIN.Extensions;
 using SAIN.Layers.Combat.Solo;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.Decision;
@@ -44,6 +45,12 @@ internal class CombatSquadLayer(BotOwner botOwner, int priority) : SAINLayer(bot
 
     public override bool IsActive()
     {
+        if (!BotOwner.IsBotActive())
+        {
+            CheckActiveChanged(false);
+            return false;
+        }
+
         if (GetBotComponent())
         {
             BotComponent bot = Bot;

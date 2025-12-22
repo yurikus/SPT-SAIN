@@ -1,4 +1,5 @@
 ﻿using EFT;
+using SAIN.Extensions;
 using SAIN.Models.Enums;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.Memory;
@@ -20,6 +21,12 @@ internal class ExtractLayer : SAINLayer
 
     public override bool IsActive()
     {
+        if (!BotOwner.IsBotActive())
+        {
+            CheckActiveChanged(false);
+            return false;
+        }
+
         bool active = GetBotComponent() && allowedToExtract() && hasExtractReason() && hasExtractLocation();
         CheckActiveChanged(active);
         return active;
