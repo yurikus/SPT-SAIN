@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using SAIN.Components;
+using SAIN.Extensions;
 using SAIN.Helpers.Events;
 using SAIN.Layers;
 using SAIN.Models.Enums;
@@ -118,28 +119,10 @@ public class SAINActivationClass(BotComponent botComponent) : BotComponentClassB
 
     private void CheckStandBy()
     {
-        bool standby = BotOwner?.StandBy?.StandByType != BotStandByType.active;
-        if (standby)
-        {
-            //if (Bot.HasEnemy)
-            //{
-            //    //Logger.LogWarning($"Had to activate bot manually because they were in stand by.");
-            //    BotOwner.StandBy.Activate();
-            //    standby = false;
-            //}
-            //else if (CheckAllEnemies())
-            //{
-#if DEBUG       //
-            //    Logger.LogDebug($"[{BotOwner.name}] disabled standby due to enemies being near.");
-#endif          //
-            //    BotOwner.StandBy.Activate();
-            //    standby = false;
-            //}
-        }
+        bool standby = !BotOwner.IsBotActive();
 
         if (standby)
         {
-            Bot.Mover.Stop();
             CurrentAction = null;
         }
 
