@@ -132,7 +132,6 @@ public class BotComponent : BotComponentBase, ISPlayer
     public SAINSearchClass Search { get; private set; }
     public SAINMemoryClass Memory { get; private set; }
     public SAINEnemyController EnemyController { get; private set; }
-    public SAINNoBushESP NoBushESP { get; private set; }
     public SAINFriendlyFireClass FriendlyFire { get; private set; }
     public SAINVisionClass Vision { get; private set; }
     public SAINMoverClass Mover { get; private set; }
@@ -257,8 +256,6 @@ public class BotComponent : BotComponentBase, ISPlayer
             // Must be first, other classes use it
             Info = new SAINBotInfoClass(this);
 
-            NoBushESP = gameObject.AddComponent<SAINNoBushESP>();
-
             Squad = new BotSquadContainer(this);
             BusyHandsDetector = new BotBusyHandsDetector(this);
             GlobalEvents = new BotGlobalEventsClass(this);
@@ -354,15 +351,6 @@ public class BotComponent : BotComponentBase, ISPlayer
 
     private bool InitClasses()
     {
-        try
-        {
-            NoBushESP.Init(PlayerComponent.BotOwner, this);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Error When Initializing Components, Disposing... : {ex}");
-            return false;
-        }
         foreach (var botClass in _botClasses)
         {
             try
@@ -528,11 +516,6 @@ public class BotComponent : BotComponentBase, ISPlayer
             {
                 Logger.LogError($"Dispose Class [{botClass}] Error: {ex}");
             }
-        }
-
-        if (NoBushESP != null)
-        {
-            Destroy(NoBushESP);
         }
 
         if (BotOwner != null)

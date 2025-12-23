@@ -139,7 +139,6 @@ public static class DebugOverlay
                     stringBuilder.AppendLine(
                         $"AimOffsetMagnitude [{((bot.BotOwner.AimingManager.CurrentAiming.RealTargetPoint - bot.BotOwner.AimingManager.CurrentAiming.EndTargetPoint).magnitude).Round100()}] "
                             + $"Friendly Fire Status [{bot.FriendlyFire.FriendlyFireStatus}] "
-                            + $"No Bush ESP Status: [{bot.NoBushESP.NoBushESPActive}]"
                     );
                 }
             }

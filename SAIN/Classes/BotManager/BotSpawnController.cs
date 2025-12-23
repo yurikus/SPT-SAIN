@@ -92,8 +92,6 @@ public class BotSpawnController : BotManagerBase
             //Logger.LogDebug($"Checking if {botOwner.name} excluded...");
             if (SAINEnableClass.IsSAINDisabledForBot(botOwner))
             {
-                //Logger.LogDebug($"{botOwner.name} is excluded");
-                botOwner.gameObject.AddComponent<SAINNoBushESP>().Init(botOwner);
                 return;
             }
 
@@ -210,13 +208,6 @@ public class BotSpawnController : BotManagerBase
 #endif
             botComponent.Dispose();
         }
-        if (gameObject.TryGetComponent(out SAINNoBushESP noBushComponent))
-        {
-#if DEBUG
-            Logger.LogDebug($"{ProfileId} already had No Bush ESP attached. Destroying...");
-#endif
-            GameObject.Destroy(noBushComponent);
-        }
     }
 
     public void RemoveBot(BotOwner botOwner)
@@ -242,10 +233,6 @@ public class BotSpawnController : BotManagerBase
                     BotGroup2.Remove(botComponent);
 
                     component.Dispose();
-                }
-                if (botOwner.TryGetComponent(out SAINNoBushESP noBush))
-                {
-                    UnityEngine.Object.Destroy(noBush);
                 }
             }
             else

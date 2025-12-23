@@ -25,16 +25,11 @@ public class LookSettings : SAINSettingsBase<LookSettings>, ISAINSettings
     [Name("Not Looking At Bot Settings")]
     public NotLookingSettings NotLooking = new();
 
-    [Category("Extra")]
-    [Name("No Bush ESP")]
-    public NoBushESPSettings NoBushESP = new();
-
     public override void Init(List<ISAINSettings> list)
     {
         VisionSpeed.Init(list);
         list.Add(VisionDistance);
         list.Add(NotLooking);
-        list.Add(NoBushESP);
         list.Add(Time);
         list.Add(Light);
     }
