@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using SAIN.Editor;
 using SAIN.Helpers;
 using SAIN.Patches.Components;
+using SAIN.Patches.Event;
 using SAIN.Patches.Hearing;
 using SAIN.Plugin;
 using SAIN.Preset;
@@ -202,6 +203,8 @@ public class SAINPlugin : BaseUnityPlugin
                 new Patches.Shoot.Aim.BotSteeringPitchLimitPatch(),
                 new Patches.Shoot.Grenades.ResetGrenadePatch(),
                 new Patches.Shoot.Grenades.SetGrenadePatch(),
+                new EnableBearPmcKhorovodPatch(),
+                new EnableUsecPmcKhorovodPatch(),
             ];
         }
     }

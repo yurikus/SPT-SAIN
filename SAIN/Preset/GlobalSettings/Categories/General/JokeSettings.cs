@@ -14,4 +14,10 @@ public class JokeSettings : SAINSettingsBase<JokeSettings>, ISAINSettings
     [Description("If for some reason you enabled random cheaters, this is the chance they will be assigned as one.")]
     [Percentage]
     public float RandomCheaterChance = 1f;
+
+    [Name("Enable Khorovod layers for PMCs")]
+    [Description(
+        "Requires restart. Allows the pmc's to get assigned a khorovod brain similar to the ones on scavs, will make PMC's rush you at the generator"
+    )]
+    public bool EnableKhorovodPMCs = true;
 }
