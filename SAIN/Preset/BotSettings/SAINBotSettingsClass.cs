@@ -70,7 +70,7 @@ public class SAINBotSettingsClass : BasePreset
             {
                 Name = name,
                 WildSpawnType = wildSpawnType,
-                DifficultyModifier = DefaultDifficultyModifier[wildSpawnType]
+                DifficultyModifier = DefaultDifficultyModifier[wildSpawnType],
             };
 
             UpdateSAINSettingsToEFTDefault(wildSpawnType, sainSettingsGroup);
@@ -327,6 +327,7 @@ public class SAINBotSettingsClass : BasePreset
             { WildSpawnType.arenaFighterEvent, 0.66f },
             { WildSpawnType.pmcUSEC, 1f },
             { WildSpawnType.pmcBEAR, 1f },
+            { WildSpawnType.gifter, 1f },
         };
 
         foreach (WildSpawnType type in BotTypeDefinitions.BotTypes.Keys)

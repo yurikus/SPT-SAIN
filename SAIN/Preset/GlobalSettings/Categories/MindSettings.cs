@@ -50,6 +50,7 @@ public class MindSettings : SAINSettingsBase<MindSettings>, ISAINSettings
         { WildSpawnType.bossBully, EPersonality.Coward },
         { WildSpawnType.bossSanitar, EPersonality.Coward },
         { WildSpawnType.bossBoar, EPersonality.Coward },
+        { WildSpawnType.gifter, EPersonality.GigaChad },
     };
 
     [MinMax(0.1f, 5f, 100f)]

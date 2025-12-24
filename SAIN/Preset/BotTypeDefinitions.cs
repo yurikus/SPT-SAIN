@@ -435,6 +435,13 @@ public class BotTypeDefinitions
                 Section = "Other",
                 Description = "Zoom. Zoom. Bang. Bang.",
             },
+            new BotType
+            {
+                WildSpawnType = WildSpawnType.gifter,
+                Name = "Santa Claus",
+                Section = "Bosses",
+                Description = "Event boss, he will jingle your bells if you try to kill him",
+            },
         };
     }
 }
