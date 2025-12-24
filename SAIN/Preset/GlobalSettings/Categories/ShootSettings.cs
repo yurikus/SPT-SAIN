@@ -90,6 +90,7 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     [DefaultDictionary(nameof(AmmoCaliberShootabilityDefaults))]
     public Dictionary<ECaliber, float> AmmoCaliberShootability = new()
     {
+        { ECaliber.Caliber20x1mm, 0.225f },
         { ECaliber.Caliber9x18PM, 0.225f },
         { ECaliber.Caliber9x19PARA, 0.275f },
         { ECaliber.Caliber46x30, 0.325f },
@@ -115,7 +116,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
         { ECaliber.Caliber30x29, 1f },
         { ECaliber.Caliber40x46, 1f },
         { ECaliber.Caliber40mmRU, 1f },
+        { ECaliber.Caliber127x99, 0.5f },
         { ECaliber.Caliber127x108, 0.5f },
+        { ECaliber.Caliber725, 1f },
         { ECaliber.Caliber68x51, 0.6f },
         { ECaliber.Default, 0.5f },
     };
@@ -124,6 +127,7 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     [Hidden]
     public static readonly Dictionary<ECaliber, float> AmmoCaliberShootabilityDefaults = new()
     {
+        { ECaliber.Caliber20x1mm, 0.225f },
         { ECaliber.Caliber9x18PM, 0.225f },
         { ECaliber.Caliber9x19PARA, 0.275f },
         { ECaliber.Caliber46x30, 0.325f },
@@ -149,7 +153,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
         { ECaliber.Caliber30x29, 1f },
         { ECaliber.Caliber40x46, 1f },
         { ECaliber.Caliber40mmRU, 1f },
+        { ECaliber.Caliber127x99, 0.5f },
         { ECaliber.Caliber127x108, 0.5f },
+        { ECaliber.Caliber725, 1f },
         { ECaliber.Caliber68x51, 0.6f },
         { ECaliber.Default, 0.5f },
     };
@@ -164,6 +170,7 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     [DefaultDictionary(nameof(AmmoCaliberFullAutoMaxDistancesDefaults))]
     public Dictionary<ECaliber, float> AmmoCaliberFullAutoMaxDistances = new()
     {
+        { ECaliber.Caliber20x1mm, 80f },
         { ECaliber.Caliber9x18PM, 80f },
         { ECaliber.Caliber9x19PARA, 80f },
         { ECaliber.Caliber46x30, 70f },
@@ -189,7 +196,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
         { ECaliber.Caliber30x29, 30f },
         { ECaliber.Caliber40x46, 30f },
         { ECaliber.Caliber40mmRU, 30f },
+        { ECaliber.Caliber127x99, 30f },
         { ECaliber.Caliber127x108, 30f },
+        { ECaliber.Caliber725, 30f },
         { ECaliber.Caliber68x51, 50f },
         { ECaliber.Default, 55f },
     };
@@ -198,6 +207,7 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
     [Hidden]
     public static readonly Dictionary<ECaliber, float> AmmoCaliberFullAutoMaxDistancesDefaults = new()
     {
+        { ECaliber.Caliber20x1mm, 80f },
         { ECaliber.Caliber9x18PM, 80f },
         { ECaliber.Caliber9x19PARA, 80f },
         { ECaliber.Caliber46x30, 70f },
@@ -223,7 +233,9 @@ public class ShootSettings : SAINSettingsBase<ShootSettings>, ISAINSettings
         { ECaliber.Caliber30x29, 30f },
         { ECaliber.Caliber40x46, 30f },
         { ECaliber.Caliber40mmRU, 30f },
+        { ECaliber.Caliber127x99, 30f },
         { ECaliber.Caliber127x108, 30f },
+        { ECaliber.Caliber725, 30f },
         { ECaliber.Caliber68x51, 50f },
         { ECaliber.Default, 55f },
     };
