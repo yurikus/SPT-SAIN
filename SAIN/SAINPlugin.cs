@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using SAIN.Editor;
 using SAIN.Helpers;
+using SAIN.Patches;
 using SAIN.Patches.Components;
 using SAIN.Patches.Event;
 using SAIN.Patches.Hearing;
@@ -162,11 +163,7 @@ public class SAINPlugin : BaseUnityPlugin
                 new TreeSoundPatch(),
                 new DoorBreachSoundPatch(),
                 new DoorOpenSoundPatch(),
-                new FootstepSoundPatch(),
-                new GenericMovementSoundPatch(),
-                new SpecificStepAudioControllerPatch(),
                 new DryShotPatch(),
-                new ProneSoundPatch(),
                 new SoundClipNameCheckerPatch(),
                 new SoundClipNameCheckerPatch2(),
                 new AimSoundPatch(),

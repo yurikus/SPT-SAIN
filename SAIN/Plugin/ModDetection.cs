@@ -39,7 +39,6 @@ public static class ModDetection
         {
             ProjectFikaHeadlessLoaded = true;
             Logger.LogInfo($"SAIN: Project Fika Headless Detected.");
-            new Patches.Hearing.FikaHeadlessTempFixPatch().Enable();
         }
 
         if (Chainloader.PluginInfos.ContainsKey(QuestingBotsGUID))

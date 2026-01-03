@@ -93,6 +93,7 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
     public PlayerTickData PlayerTickData { get; private set; }
     public OtherPlayersData OtherPlayersData { get; private set; }
     public BodyPartsClass BodyParts { get; private set; }
+    public PlayerSoundController SoundController { get; private set; }
 
     public event Action<Weapon, Weapon> OnWeaponEquipped;
 
@@ -318,6 +319,8 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
             Flashlight = new FlashLightClass(this);
             Equipment = new SAINEquipmentClass(this);
             AIData = new SAINAIData(Equipment.GearInfo, this);
+            SoundController = new PlayerSoundController(this);
+            Player.MovementContext.OnStateChanged += SoundController.HandleMovementState;
             ActivationClass.OnPlayerActiveChanged += HandleCoroutines;
             HandleCoroutines(true);
         }
@@ -374,6 +377,8 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         ActivationClass.OnPlayerActiveChanged -= HandleCoroutines;
         Equipment?.Dispose();
         OtherPlayersData?.Dispose();
+        Player.MovementContext.OnStateChanged -= SoundController.HandleMovementState;
+        SoundController.Dispose();
         Destroy(this);
     }
 
