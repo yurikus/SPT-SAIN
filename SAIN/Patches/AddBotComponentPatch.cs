@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using EFT;
 using HarmonyLib;
@@ -60,6 +61,12 @@ internal class AddGameWorldPatch : ModulePatch
             return;
         }
 
+        if (ModDetection.ProjectFikaLoaded && ModDetection.FikaInterop.IsClient())
+        {
+            Logger.LogInfo("Skipping SAIN gameworld initialization - player is a fika client");
+            return;
+        }
+
         try
         {
             if (GameWorldComponent.Instance != null)
@@ -89,6 +96,11 @@ internal class WorldTickPatch : ModulePatch
     [PatchPostfix]
     public static void Patch(GameWorld __instance, float dt)
     {
+        if (ModDetection.ProjectFikaLoaded && ModDetection.FikaInterop.IsClient())
+        {
+            return;
+        }
+
         GameWorldComponent.Instance?.WorldTick(dt);
     }
 }
