@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using EFT;
 using HarmonyLib;
 using SAIN.Components;
@@ -312,5 +314,19 @@ public class StopSetToNavMeshPatch2 : ModulePatch
             return false;
         }
         return true;
+    }
+}
+
+public class RemoveSkillIssueController : ModulePatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return AccessTools.Method(typeof(BotOwner), nameof(BotOwner.ShouldApplyDamage));
+    }
+
+    [PatchTranspiler]
+    public static IEnumerable<CodeInstruction> Transpile()
+    {
+        return [new CodeInstruction(OpCodes.Ldc_I4_1), new CodeInstruction(OpCodes.Ret)];
     }
 }

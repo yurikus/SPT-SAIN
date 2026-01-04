@@ -7,6 +7,7 @@ using SAIN.Helpers;
 using SAIN.Patches;
 using SAIN.Patches.Components;
 using SAIN.Patches.Event;
+using SAIN.Patches.Generic.Fixes;
 using SAIN.Patches.Hearing;
 using SAIN.Patches.Vision;
 using SAIN.Plugin;
@@ -204,6 +205,7 @@ public class SAINPlugin : BaseUnityPlugin
                 new Patches.Shoot.Grenades.SetGrenadePatch(),
                 new EnableBearPmcKhorovodPatch(),
                 new EnableUsecPmcKhorovodPatch(),
+                new RemoveSkillIssueController(),
             ];
         }
     }
