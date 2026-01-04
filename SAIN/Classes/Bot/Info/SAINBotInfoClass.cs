@@ -1,6 +1,7 @@
 ﻿using EFT;
 using SAIN.Components;
 using SAIN.Helpers;
+using SAIN.Models.Preset.Personalities;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;
 using SAIN.Preset.Personalities;

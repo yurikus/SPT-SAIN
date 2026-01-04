@@ -2,6 +2,7 @@
 using System.Text;
 using SAIN.Components;
 using SAIN.Models.Enums;
+using SAIN.Models.Preset.Personalities;
 
 namespace SAIN.BotController.Classes;
 

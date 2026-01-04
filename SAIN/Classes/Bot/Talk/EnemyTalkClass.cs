@@ -3,6 +3,7 @@ using Comfort.Common;
 using EFT;
 using SAIN.Components;
 using SAIN.Models.Enums;
+using SAIN.Models.Preset.Personalities;
 using SAIN.Models.Structs;
 using SAIN.Preset;
 using SAIN.Preset.BotSettings.SAINSettings;

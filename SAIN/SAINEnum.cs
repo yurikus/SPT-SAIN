@@ -114,46 +114,6 @@ public enum LeanSetting
     Right = 2,
 }
 
-public enum SideStepSetting
-{
-    None = 0,
-    Left = 1,
-    Right = 2,
-}
-
-public enum EPersonality
-{
-    None,
-    Wreckless,
-    SnappingTurtle,
-    GigaChad,
-    Chad,
-    Rat,
-    Timmy,
-    Coward,
-    Normal,
-    Custom1,
-    Custom2,
-    Custom3,
-    Custom4,
-    Custom5,
-}
-
-public enum GrenadeThrowDirection
-{
-    None,
-    Over,
-    Around,
-}
-
-public enum GrenadeThrowType
-{
-    None,
-    Close,
-    Mid,
-    Far,
-}
-
 public enum ESquadDecision
 {
     None,

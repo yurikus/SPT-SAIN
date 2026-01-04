@@ -1,9 +1,12 @@
 ﻿using SAIN.Helpers;
+using SAIN.Models.Preset.Personalities;
 
 namespace SAIN.Preset.Personalities;
 
 public class PersonalityManagerClass : BasePreset
 {
+    public PersonalityDictionary PersonalityDictionary = new();
+
     public PersonalityManagerClass(SAINPresetClass preset)
         : base(preset)
     {
@@ -70,6 +73,4 @@ public class PersonalityManagerClass : BasePreset
         PersonalityDictionary.Remove(personality);
         PersonalityDefaultsClass.InitDefaults(PersonalityDictionary, Preset);
     }
-
-    public PersonalityDictionary PersonalityDictionary = new();
 }

@@ -1,43 +1,28 @@
 ﻿using System.Collections.Generic;
 using EFT;
 using SAIN.Preset.GlobalSettings;
+using SAIN.Preset.Personalities;
 using SAIN.SAINComponent.Classes.Info;
+using SPT.Common.Http;
+using SPT.Common.Utils;
+using SPT.Custom.Models;
 using UnityEngine;
 using JsonUtility = SAIN.Helpers.JsonUtility;
 
-namespace SAIN.Preset.Personalities;
+namespace SAIN.Models.Preset.Personalities;
 
-public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySettingsClass>
+public sealed class PersonalityDictionary : Dictionary<EPersonality, PersonalitySettingsClass>
 {
     static PersonalityDictionary()
     {
-        if (!JsonUtility.Load.LoadObject(out _nicknames, "NicknamePersonalities"))
+        if (_nicknames == null)
         {
-            _nicknames = new NickNames();
-            JsonUtility.SaveObjectToJson(_nicknames, "NicknamePersonalities");
+            var nicknamesJson = RequestHandler.GetJson("/sain/namepersonalities");
+            _nicknames = Json.Deserialize<NicknamesModel>(nicknamesJson);
         }
     }
 
-    private class NickNames
-    {
-        public string Description =
-            "Names are not case sensitive. Any bot nick name that contains one of the entries here will be forced to use the matching personality.";
-
-        public Dictionary<string, EPersonality> NicknamePersonalityMatches = new()
-        {
-            { "steve", EPersonality.Wreckless },
-            { "solarint", EPersonality.GigaChad },
-            { "lvndmark", EPersonality.SnappingTurtle },
-            { "chomp", EPersonality.Chad },
-            { "senko", EPersonality.Chad },
-            { "kaeno", EPersonality.Timmy },
-            { "justnu", EPersonality.Timmy },
-            { "ratthew", EPersonality.Rat },
-            { "choccy", EPersonality.Rat },
-        };
-    }
-
-    private static readonly NickNames _nicknames;
+    private static readonly NicknamesModel _nicknames;
 
     public EPersonality GetPersonality(SAINBotInfoClass infoClass, out PersonalitySettingsClass settings)
     {
@@ -106,8 +91,6 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
         return false;
     }
 
-    public Dictionary<EPersonality, List<string>> Nickname_Personalities = new();
-
     private EPersonality setNicknamePersonality(string nickname)
     {
         if (nickname.IsNullOrEmpty())
@@ -115,7 +98,7 @@ public class PersonalityDictionary : Dictionary<EPersonality, PersonalitySetting
             return EPersonality.Normal;
         }
         string lowerNick = nickname.ToLower();
-        foreach (KeyValuePair<string, EPersonality> kvp in _nicknames.NicknamePersonalityMatches)
+        foreach (KeyValuePair<string, EPersonality> kvp in _nicknames.NicknamePersonalities)
         {
             if (lowerNick.Contains(kvp.Key.ToLower()))
             {
