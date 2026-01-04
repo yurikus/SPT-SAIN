@@ -422,6 +422,24 @@ public class HearingSettings : SAINSettingsBase<HearingSettings>, ISAINSettings
 
     [MinMax(1f, 150f, 100f)]
     [Category("Hearing Distance")]
+    [Name("Footstep Sound")]
+    [Advanced]
+    public float BaseSoundRange_Footstep = 70f;
+
+    [MinMax(1f, 150f, 100f)]
+    [Category("Hearing Distance")]
+    [Name("Sprint Sound")]
+    [Advanced]
+    public float BaseSoundRange_Sprint = 70f;
+
+    [MinMax(1f, 150f, 100f)]
+    [Category("Hearing Distance")]
+    [Name("Jump Sound")]
+    [Advanced]
+    public float BaseSoundRange_Jump = 70f;
+
+    [MinMax(1f, 150f, 100f)]
+    [Category("Hearing Distance")]
     [Name("Prone Sound")]
     [Advanced]
     public float BaseSoundRange_Prone = 50f;

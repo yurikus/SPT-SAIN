@@ -62,7 +62,7 @@ public sealed class PlayerSoundController(PlayerComponent player) : PlayerCompon
                             Player.ProfileId,
                             SAINSoundType.FootStep,
                             Player.Position,
-                            70f,
+                            SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Footstep,
                             CalculateStepVolume()
                         );
                     }
@@ -79,7 +79,7 @@ public sealed class PlayerSoundController(PlayerComponent player) : PlayerCompon
                             Player.ProfileId,
                             SAINSoundType.Sprint,
                             Player.Position,
-                            70f,
+                            SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Sprint,
                             Player.method_64(EAudioMovementState.Sprint)
                         );
                     }
@@ -89,7 +89,13 @@ public sealed class PlayerSoundController(PlayerComponent player) : PlayerCompon
                 {
                     float num = 1f * Player.MovementContext.CovertMovementVolume;
                     num *= Player.method_64(EAudioMovementState.Stop);
-                    BotManagerComponent.Instance.BotHearing.PlayAISound(Player.ProfileId, SAINSoundType.Sprint, Player.Position, 70f, num);
+                    BotManagerComponent.Instance.BotHearing.PlayAISound(
+                        Player.ProfileId,
+                        SAINSoundType.Sprint,
+                        Player.Position,
+                        SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Sprint,
+                        num
+                    );
                 }
                 break;
         }
@@ -109,7 +115,13 @@ public sealed class PlayerSoundController(PlayerComponent player) : PlayerCompon
                 break;
             case EPlayerState.Jump:
                 float vol = Player.method_64(EAudioMovementState.Jump);
-                BotManagerComponent.Instance.BotHearing.PlayAISound(Player.ProfileId, SAINSoundType.Jump, Player.Position, 70f, vol);
+                BotManagerComponent.Instance.BotHearing.PlayAISound(
+                    Player.ProfileId,
+                    SAINSoundType.Jump,
+                    Player.Position,
+                    SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Jump,
+                    vol
+                );
                 break;
             case EPlayerState.Idle:
             case EPlayerState.IdleZombieState:
@@ -184,7 +196,7 @@ public sealed class PlayerSoundController(PlayerComponent player) : PlayerCompon
                             Player.ProfileId,
                             SAINSoundType.FootStep,
                             Player.Position,
-                            70f,
+                            SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Footstep,
                             CalculateStepVolume()
                         );
                     }
@@ -214,7 +226,7 @@ public sealed class PlayerSoundController(PlayerComponent player) : PlayerCompon
                             Player.ProfileId,
                             SAINSoundType.Sprint,
                             Player.Position,
-                            70f,
+                            SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Sprint,
                             Player.method_64(EAudioMovementState.Sprint)
                         );
                     }
