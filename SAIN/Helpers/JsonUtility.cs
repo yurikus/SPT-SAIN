@@ -23,15 +23,14 @@ public static class JsonUtility
         { JsonEnum.GlobalSettings, "GlobalSettings" },
     };
 
-    private static JsonSerializerSettings JsonSerializerSettings = new()
+    private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         Converters = { new StringEnumConverter() },
         Formatting = Formatting.Indented,
     };
 
     public const string PresetsFolder = "Presets";
-    public const string JSON = ".json";
-    public const string JSONSearch = "*" + JSON;
+    public const string JsonExtension = ".json";
     public const string Info = "Info";
 
     public static void SaveObjectToJson(object objectToSave, string fileName, params string[] folders)
@@ -47,16 +46,11 @@ public static class JsonUtility
             {
                 Directory.CreateDirectory(foldersPath);
             }
-            string filePath = Path.Combine(foldersPath, fileName);
-            filePath += ".json";
 
-            string jsonString = JsonConvert.SerializeObject(objectToSave, JsonSerializerSettings);
-            File.Create(filePath).Dispose();
+            var fullPath = Path.Combine(foldersPath, fileName);
+            fullPath = Path.ChangeExtension(fullPath, JsonExtension);
 
-            StreamWriter streamWriter = new(filePath);
-            streamWriter.Write(jsonString);
-            streamWriter.Flush();
-            streamWriter.Close();
+            File.WriteAllText(fullPath, JsonConvert.SerializeObject(objectToSave, JsonSerializerSettings));
         }
         catch (Exception e)
         {
@@ -71,17 +65,12 @@ public static class JsonUtility
             return false;
         }
         string filePath = Path.Combine(foldersPath, fileName);
-        filePath += ".json";
+        filePath = Path.ChangeExtension(filePath, JsonExtension);
         return File.Exists(filePath);
     }
 
     public static class Load
     {
-        public static void LoadAllJsonFiles<T>(List<T> list, params string[] folders)
-        {
-            LoadAllFiles(list, folders);
-        }
-
         public static void LoadCustomPresetOptions(List<SAINPresetDefinition> list)
         {
             list.Clear();
@@ -92,7 +81,7 @@ public static class JsonUtility
             var array = Directory.GetDirectories(foldersPath);
             foreach (var item in array)
             {
-                string path = Path.Combine(item, Info) + JSON;
+                string path = Path.Combine(item, Info + JsonExtension);
                 if (File.Exists(path))
                 {
                     string json = File.ReadAllText(path);
@@ -106,19 +95,6 @@ public static class JsonUtility
                 {
                     Logger.LogError($"Could not Import Info.json at path [{path}]. Is the file missing?");
                 }
-            }
-        }
-
-        public static void LoadAllFiles<T>(List<T> list, params string[] folders)
-        {
-            if (!GetFoldersPath(out string foldersPath, folders))
-            {
-                return;
-            }
-            foreach (var file in Directory.GetFiles(foldersPath, "*.json"))
-            {
-                string jsonContent = File.ReadAllText(file);
-                list.Add(JsonConvert.DeserializeObject<T>(jsonContent));
             }
         }
 
@@ -158,13 +134,13 @@ public static class JsonUtility
 
         public static bool LoadJsonFile(out string json, string fileName, params string[] folders)
         {
-            json = LoadTextFile(JSON, fileName, folders);
+            json = LoadTextFile(JsonExtension, fileName, folders);
             return json != null;
         }
 
         public static bool LoadObject<T>(out T obj, string fileName, params string[] folders)
         {
-            string json = LoadTextFile(JSON, fileName, folders);
+            string json = LoadTextFile(JsonExtension, fileName, folders);
             if (json != null)
             {
                 obj = DeserializeObject<T>(json);
