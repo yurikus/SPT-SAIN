@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using SAIN.Preset;
 using SAIN.Preset.GearStealthValues;
 
@@ -20,6 +21,12 @@ public static class JsonUtility
     {
         { JsonEnum.Presets, "Presets" },
         { JsonEnum.GlobalSettings, "GlobalSettings" },
+    };
+
+    private static JsonSerializerSettings JsonSerializerSettings = new()
+    {
+        Converters = { new StringEnumConverter() },
+        Formatting = Formatting.Indented,
     };
 
     public const string PresetsFolder = "Presets";
@@ -43,7 +50,7 @@ public static class JsonUtility
             string filePath = Path.Combine(foldersPath, fileName);
             filePath += ".json";
 
-            string jsonString = JsonConvert.SerializeObject(objectToSave, Formatting.Indented);
+            string jsonString = JsonConvert.SerializeObject(objectToSave, JsonSerializerSettings);
             File.Create(filePath).Dispose();
 
             StreamWriter streamWriter = new(filePath);
