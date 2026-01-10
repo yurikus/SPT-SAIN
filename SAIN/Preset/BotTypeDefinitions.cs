@@ -50,7 +50,7 @@ public class BotTypeDefinitions
                 return importedList;
             }
         }
-        catch (JsonSerializationException ex) { }
+        catch (JsonSerializationException) { }
 
         JsonUtility.SaveObjectToJson(defaultList, FileName);
         return defaultList;
