@@ -41,19 +41,17 @@ public class BotTypeDefinitions
         List<BotType> defaultList = CreateBotTypes();
         removeExcluded(defaultList, out _);
 
-        try
+        if (JsonUtility.Load.LoadObject(out List<BotType> importedList, FileName))
         {
-            if (JsonUtility.Load.LoadObject(out List<BotType> importedList, FileName))
-            {
-                // Check that the imported list contains each entry created, to account for BotTypes being added with newer versions of EFT
-                CheckImportedList(importedList, defaultList);
-                return importedList;
-            }
+            // Check that the imported list contains each entry created, to account for BotTypes being added with newer versions of EFT
+            CheckImportedList(importedList, defaultList);
+            return importedList;
         }
-        catch (JsonSerializationException) { }
-
-        JsonUtility.SaveObjectToJson(defaultList, FileName);
-        return defaultList;
+        else
+        {
+            JsonUtility.SaveObjectToJson(defaultList, FileName);
+            return defaultList;
+        }
     }
 
     private static void CheckImportedList(List<BotType> importedList, List<BotType> defaultList)

@@ -140,12 +140,16 @@ public static class JsonUtility
 
         public static bool LoadObject<T>(out T obj, string fileName, params string[] folders)
         {
-            string json = LoadTextFile(JsonExtension, fileName, folders);
-            if (json != null)
+            try
             {
-                obj = DeserializeObject<T>(json);
-                return true;
+                string json = LoadTextFile(JsonExtension, fileName, folders);
+                if (json != null)
+                {
+                    obj = DeserializeObject<T>(json);
+                    return true;
+                }
             }
+            catch (JsonSerializationException) { }
             obj = default;
             return false;
         }
