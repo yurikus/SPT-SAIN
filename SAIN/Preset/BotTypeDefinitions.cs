@@ -16,9 +16,9 @@ public sealed class BotType
 
 public class BotTypeDefinitions
 {
-    public static Dictionary<WildSpawnType, BotType> BotTypes = new();
-    public static List<BotType> BotTypesList;
-    public static readonly List<string> BotTypesNames = new();
+    public static Dictionary<WildSpawnType, BotType> BotTypes { get; private set; } = [];
+    public static List<BotType> BotTypesList { get; private set; }
+    public static List<string> BotTypesNames { get; private set; } = [];
 
     static BotTypeDefinitions()
     {
@@ -37,42 +37,69 @@ public class BotTypeDefinitions
 
     public static List<BotType> ImportBotTypes()
     {
-        List<BotType> tempList = CreateBotTypes();
-        removeExcluded(tempList, out _);
+        List<BotType> defaultList = CreateBotTypes();
+        removeExcluded(defaultList, out _);
 
         if (JsonUtility.Load.LoadObject(out List<BotType> importedList, FileName))
         {
             // Check that the imported list contains each entry created, to account for BotTypes being added with newer versions of EFT
-            CheckImportedList(importedList, tempList);
+            CheckImportedList(importedList, defaultList);
             return importedList;
         }
         else
         {
-            JsonUtility.SaveObjectToJson(tempList, FileName);
-            return tempList;
+            JsonUtility.SaveObjectToJson(defaultList, FileName);
+            return defaultList;
         }
     }
 
-    private static void CheckImportedList(List<BotType> importedList, List<BotType> tempList)
+    private static void CheckImportedList(List<BotType> importedList, List<BotType> defaultList)
     {
-        for (int i = 0; i < tempList.Count; i++)
+        bool modified = false;
+
+        // Remove items from importedList that no longer exist in defaultList
+        for (int i = importedList.Count - 1; i >= 0; i--)
+        {
+            bool existsInDefault = false;
+            for (int j = 0; j < defaultList.Count; j++)
+            {
+                if (importedList[i].WildSpawnType == defaultList[j].WildSpawnType)
+                {
+                    existsInDefault = true;
+                    break;
+                }
+            }
+
+            if (!existsInDefault)
+            {
+                importedList.RemoveAt(i);
+                modified = true;
+            }
+        }
+
+        // Add items from defaultList that don't exist in importedList
+        for (int i = 0; i < defaultList.Count; i++)
         {
             bool alreadyExists = false;
             for (int j = 0; j < importedList.Count; j++)
             {
-                if (tempList[i].WildSpawnType == importedList[j].WildSpawnType)
+                if (defaultList[i].WildSpawnType == importedList[j].WildSpawnType)
                 {
                     alreadyExists = true;
                     break;
                 }
             }
+
             if (!alreadyExists)
             {
-                importedList.Add(tempList[i]);
+                importedList.Add(defaultList[i]);
+                modified = true;
             }
         }
+
         removeExcluded(importedList, out bool removed);
-        if (removed)
+
+        if (removed || modified)
         {
             JsonUtility.SaveObjectToJson(importedList, FileName);
         }
@@ -125,8 +152,8 @@ public class BotTypeDefinitions
 
     static List<BotType> CreateBotTypes()
     {
-        return new List<BotType>
-        {
+        return
+        [
             new BotType
             {
                 WildSpawnType = WildSpawnType.assault,
@@ -442,6 +469,6 @@ public class BotTypeDefinitions
                 Section = "Bosses",
                 Description = "Event boss, he will jingle your bells if you try to kill him",
             },
-        };
+        ];
     }
 }
