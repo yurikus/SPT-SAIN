@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using EFT;
+using Newtonsoft.Json;
 using SAIN.Components.BotController;
 using SAIN.Helpers;
 
@@ -40,17 +41,19 @@ public class BotTypeDefinitions
         List<BotType> defaultList = CreateBotTypes();
         removeExcluded(defaultList, out _);
 
-        if (JsonUtility.Load.LoadObject(out List<BotType> importedList, FileName))
+        try
         {
-            // Check that the imported list contains each entry created, to account for BotTypes being added with newer versions of EFT
-            CheckImportedList(importedList, defaultList);
-            return importedList;
+            if (JsonUtility.Load.LoadObject(out List<BotType> importedList, FileName))
+            {
+                // Check that the imported list contains each entry created, to account for BotTypes being added with newer versions of EFT
+                CheckImportedList(importedList, defaultList);
+                return importedList;
+            }
         }
-        else
-        {
-            JsonUtility.SaveObjectToJson(defaultList, FileName);
-            return defaultList;
-        }
+        catch (JsonSerializationException ex) { }
+
+        JsonUtility.SaveObjectToJson(defaultList, FileName);
+        return defaultList;
     }
 
     private static void CheckImportedList(List<BotType> importedList, List<BotType> defaultList)
