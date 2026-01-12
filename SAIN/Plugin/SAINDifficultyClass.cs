@@ -784,13 +784,15 @@ internal static class SAINDifficultyClass
         global.Shoot.BOT_RECOIL_COEF = 0.5f;
 
         global.Difficulty.ScatteringCoef = 0.01f;
-        global.Difficulty.VisibleDistCoef = 2f;
+        global.Difficulty.VisibleDistCoef = 2.5f;
         global.Difficulty.GainSightCoef = 2f;
         global.Difficulty.PRECISION_SPEED_COEF = 3f;
         global.Difficulty.ACCURACY_SPEED_COEF = 0.1f;
 
         global.Aiming.AimCenterMassGlobal = false;
         global.Look.NotLooking.NotLookingToggle = false;
+
+        ApplyHarderPMCs(preset);
 
         foreach (var bot in preset.BotSettings.SAINSettings)
         {
