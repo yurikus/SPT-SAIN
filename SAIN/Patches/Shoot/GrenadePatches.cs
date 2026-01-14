@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using HarmonyLib;
 using SAIN.Components;
+using SAIN.Preset.GlobalSettings;
 using SPT.Reflection.Patching;
 
 namespace SAIN.Patches.Shoot.Grenades;
@@ -43,5 +44,43 @@ public class ResetGrenadePatch : ModulePatch
             return;
         }
         botComponent.Grenade.MyGrenade = __instance.Grenade;
+    }
+}
+
+public class DisableGrenadesPatch : ModulePatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return AccessTools.Method(typeof(BotGrenadeToPortal), nameof(BotGrenadeToPortal.method_0));
+    }
+
+    [PatchPrefix]
+    public static bool Patch(BotGrenadeToPortal __instance)
+    {
+        var settings = GlobalSettingsClass.Instance.General;
+        if (!settings.BotsUseGrenades)
+        {
+            return false;
+        }
+
+        if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot))
+        {
+            if (!bot.Info.FileSettings.Core.CanGrenade)
+            {
+                return false;
+            }
+
+            var goalEnemy = bot.EnemyController.GoalEnemy;
+            if (goalEnemy == null)
+            {
+                return false;
+            }
+
+            if (!settings.BotVsBotGrenade && goalEnemy.IsAI)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

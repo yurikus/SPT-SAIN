@@ -9,6 +9,7 @@ using SAIN.Patches.Components;
 using SAIN.Patches.Event;
 using SAIN.Patches.Generic.Fixes;
 using SAIN.Patches.Hearing;
+using SAIN.Patches.Shoot.Grenades;
 using SAIN.Patches.Vision;
 using SAIN.Plugin;
 using SAIN.Preset;
@@ -137,7 +138,7 @@ public class SAINPlugin : BaseUnityPlugin
                 new Patches.Generic.Fixes.FixItemTakerPatch2(),
                 new Patches.Generic.Fixes.RotateClampPatch(),
                 new Patches.Generic.Fixes.RunToEnemyUpdatePatch(),
-                new Patches.Generic.Fixes.DisableGrenadesPatch(),
+                new DisableGrenadesPatch(),
                 new Patches.Movement.EncumberedPatch(),
                 new Patches.Movement.CrawlPatch(),
                 new Patches.Movement.StopShootCauseAnimatorPatch(),
