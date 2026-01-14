@@ -162,6 +162,11 @@ internal class DisableGrenadesPatch : ModulePatch
 
         if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot))
         {
+            if (!bot.Info.FileSettings.Core.CanGrenade)
+            {
+                return false;
+            }
+
             var goalEnemy = bot.EnemyController.GoalEnemy;
             if (goalEnemy == null)
             {
