@@ -223,57 +223,6 @@ public class SpawnInHandsSoundPatch : ModulePatch
     }
 }
 
-public class LootingSoundPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player), nameof(Player.method_46));
-    }
-
-    [PatchPostfix]
-    public static void PatchPostfix(Player __instance, BetterSource ____searchSource)
-    {
-        if (____searchSource == null)
-        {
-            return;
-        }
-        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Looting;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(
-            __instance.ProfileId,
-            SAINSoundType.Looting,
-            __instance.Position,
-            baseRange,
-            1f
-        );
-    }
-}
-
-public class AimSoundPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.SetAim), [typeof(bool)]);
-    }
-
-    [PatchPostfix]
-    public static void PatchPrefix(Player.FirearmController __instance, Player ____player)
-    {
-        if (!__instance.Blindfire)
-        {
-            return;
-        }
-
-        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_AimingandGearRattle;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(
-            ____player.ProfileId,
-            SAINSoundType.GearSound,
-            ____player.Position,
-            baseRange,
-            0.2f
-        );
-    }
-}
-
 public class BulletImpactPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()

@@ -123,3 +123,50 @@ public class PlaySwitchHeadlightSoundPatch : ModulePatch
         }
     }
 }
+
+public class LootingSoundPatch : ModulePatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return AccessTools.Method(typeof(LootableContainer), nameof(LootableContainer.Interact), [typeof(InteractionResult)]);
+    }
+
+    [PatchPostfix]
+    public static void PatchPostfix(LootableContainer __instance, InteractionResult interactionResult)
+    {
+        switch (interactionResult.InteractionType)
+        {
+            case EInteractionType.Open:
+                float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_Looting;
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                    __instance.InteractingPlayer.ProfileId,
+                    SAINSoundType.Looting,
+                    __instance.InteractingPlayer.Position,
+                    baseRange,
+                    1f
+                );
+                break;
+        }
+    }
+}
+
+public class AimSoundPatch : ModulePatch
+{
+    protected override MethodBase GetTargetMethod()
+    {
+        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.method_60));
+    }
+
+    [PatchPrefix]
+    public static void PatchPrefix(Player.FirearmController __instance, Player ____player)
+    {
+        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_AimingandGearRattle;
+        BotManagerComponent.Instance?.BotHearing.PlayAISound(
+            ____player.ProfileId,
+            SAINSoundType.GearSound,
+            ____player.Position,
+            baseRange,
+            __instance.CalculateAimingSoundVolume()
+        );
+    }
+}
