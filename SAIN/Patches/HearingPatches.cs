@@ -51,97 +51,6 @@ public class GrenadeCollisionPatch2 : ModulePatch
     }
 }
 
-public class TreeSoundPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(TreeInteractive), nameof(TreeInteractive.method_0));
-    }
-
-    [PatchPostfix]
-    public static void Patch(Vector3 soundPosition, BetterSource source, IPlayerOwner player, SoundBank ____soundBank)
-    {
-        if (player.iPlayer != null)
-        {
-            float baseRange = 50f;
-            if (____soundBank != null)
-            {
-                baseRange = ____soundBank.Rolloff * player.SoundRadius * 0.8f;
-            }
-            //Logger.LogDebug($"Playing Bush Sound Range: {baseRange}");
-            BotManagerComponent.Instance?.BotHearing.PlayAISound(
-                player.iPlayer.ProfileId,
-                SAINSoundType.Bush,
-                soundPosition,
-                baseRange,
-                1f
-            );
-        }
-    }
-}
-
-public class DoorSoundPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Door), nameof(Door.Interact), [typeof(InteractionResult)]);
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(Door __instance, InteractionResult interactionResult)
-    {
-        switch (interactionResult.InteractionType)
-        {
-            case EInteractionType.Open:
-                float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_OPEN_SOUND_RANGE;
-                BotManagerComponent.Instance?.BotHearing.PlayAISound(
-                    __instance.InteractingPlayer.ProfileId,
-                    SAINSoundType.Door,
-                    __instance.InteractingPlayer.Position,
-                    baseRange,
-                    1f
-                );
-                break;
-        }
-    }
-}
-
-public class DoorBreachSoundPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.PlayBreachSound));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(Player ____player)
-    {
-        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_KICK_SOUND_RANGE;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
-    }
-}
-
-public class DryShotPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.DryShot));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(Player ____player)
-    {
-        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.BaseSoundRange_DryFire;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(
-            ____player.ProfileId,
-            SAINSoundType.DryFire,
-            ____player.WeaponRoot.position,
-            baseRange,
-            1f
-        );
-    }
-}
-
 public class HearingSensorPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -311,26 +220,6 @@ public class SpawnInHandsSoundPatch : ModulePatch
         //if (itemClip != null) {
         //    SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, 30f, 1f);
         //}
-    }
-}
-
-public class PlaySwitchHeadlightSoundPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player), nameof(Player.PlayTacticalSound));
-    }
-
-    [PatchPostfix]
-    public static void PatchPostfix(Player __instance, Vector3 ___SpeechLocalPosition)
-    {
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(
-            __instance.ProfileId,
-            SAINSoundType.GearSound,
-            __instance.Position + ___SpeechLocalPosition,
-            10f,
-            1f
-        );
     }
 }
 
