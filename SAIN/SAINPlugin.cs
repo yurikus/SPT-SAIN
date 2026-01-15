@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using SAIN.Editor;
 using SAIN.Helpers;
 using SAIN.Patches;
+using SAIN.Patches.BotHearing;
 using SAIN.Patches.Components;
 using SAIN.Patches.Event;
 using SAIN.Patches.Generic.Fixes;
