@@ -80,18 +80,29 @@ public class TreeSoundPatch : ModulePatch
     }
 }
 
-public class DoorOpenSoundPatch : ModulePatch
+public class DoorSoundPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(MovementContext), nameof(MovementContext.StartInteraction));
+        return AccessTools.Method(typeof(Door), nameof(Door.Interact), [typeof(InteractionResult)]);
     }
 
     [PatchPrefix]
-    public static void PatchPrefix(Player ____player)
+    public static void PatchPrefix(Door __instance, InteractionResult interactionResult)
     {
-        float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_OPEN_SOUND_RANGE;
-        BotManagerComponent.Instance?.BotHearing.PlayAISound(____player.ProfileId, SAINSoundType.Door, ____player.Position, baseRange, 1f);
+        switch (interactionResult.InteractionType)
+        {
+            case EInteractionType.Open:
+                float baseRange = SAINPlugin.LoadedPreset.GlobalSettings.Hearing.DOOR_OPEN_SOUND_RANGE;
+                BotManagerComponent.Instance?.BotHearing.PlayAISound(
+                    __instance.InteractingPlayer.ProfileId,
+                    SAINSoundType.Door,
+                    __instance.InteractingPlayer.Position,
+                    baseRange,
+                    1f
+                );
+                break;
+        }
     }
 }
 
