@@ -17,9 +17,9 @@ public sealed class BotType
 
 public class BotTypeDefinitions
 {
-    public static Dictionary<WildSpawnType, BotType> BotTypes { get; private set; } = [];
-    public static List<BotType> BotTypesList { get; private set; }
-    public static List<string> BotTypesNames { get; private set; } = [];
+    public static Dictionary<WildSpawnType, BotType> BotTypes = [];
+    public static List<BotType> BotTypesList;
+    public static readonly List<string> BotTypesNames = [];
 
     static BotTypeDefinitions()
     {
