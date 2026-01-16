@@ -12,57 +12,60 @@ namespace SAIN.Preset.BotSettings;
 
 public class SAINBotSettingsClass : BasePreset
 {
-    public static Dictionary<WildSpawnType, float> DefaultDifficultyModifier { get; } =
-        new()
-        {
-            { WildSpawnType.assault, 0.3f },
-            { WildSpawnType.marksman, 0.3f },
-            { WildSpawnType.crazyAssaultEvent, 0.35f },
-            { WildSpawnType.cursedAssault, 0.35f },
-            { WildSpawnType.assaultGroup, 0.35f },
-            { WildSpawnType.bossBully, 0.75f },
-            { WildSpawnType.bossBoar, 0.75f },
-            { WildSpawnType.bossGluhar, 0.75f },
-            { WildSpawnType.bossKilla, 0.75f },
-            { WildSpawnType.bossKillaAgro, 0.75f },
-            { WildSpawnType.bossSanitar, 0.75f },
-            { WildSpawnType.bossKojaniy, 0.75f },
-            { WildSpawnType.bossZryachiy, 0.75f },
-            { WildSpawnType.bossTagilla, 0.75f },
-            { WildSpawnType.bossKolontay, 0.75f },
-            { WildSpawnType.sectantPriest, 0.75f },
-            { WildSpawnType.bossPartisan, 0.75f },
-            { WildSpawnType.bossKnight, 1f },
-            { WildSpawnType.sectantWarrior, 0.7f },
-            { WildSpawnType.followerBully, 0.55f },
-            { WildSpawnType.followerGluharAssault, 0.55f },
-            { WildSpawnType.followerGluharScout, 0.55f },
-            { WildSpawnType.followerGluharSecurity, 0.55f },
-            { WildSpawnType.followerGluharSnipe, 0.55f },
-            { WildSpawnType.followerKojaniy, 0.55f },
-            { WildSpawnType.followerSanitar, 0.55f },
-            { WildSpawnType.followerTagilla, 0.55f },
-            { WildSpawnType.tagillaHelperAgro, 0.55f },
-            { WildSpawnType.followerZryachiy, 0.55f },
-            { WildSpawnType.followerBoar, 0.55f },
-            { WildSpawnType.followerBoarClose1, 0.55f },
-            { WildSpawnType.followerBoarClose2, 0.55f },
-            { WildSpawnType.bossBoarSniper, 0.55f },
-            { WildSpawnType.followerKolontayAssault, 0.55f },
-            { WildSpawnType.followerKolontaySecurity, 0.55f },
-            { WildSpawnType.followerBigPipe, 1f },
-            { WildSpawnType.followerBirdEye, 1f },
-            { WildSpawnType.pmcBot, 0.66f },
-            { WildSpawnType.exUsec, 0.66f },
-            { WildSpawnType.arenaFighter, 0.66f },
-            { WildSpawnType.arenaFighterEvent, 0.66f },
-            { WildSpawnType.pmcUSEC, 1f },
-            { WildSpawnType.pmcBEAR, 1f },
-            { WildSpawnType.gifter, 1f },
-        };
+    // Todo: convert to property in SPT 4.1, can't be done at the moment due to More Bots API
+    public static Dictionary<WildSpawnType, float> DefaultDifficultyModifier = new()
+    {
+        { WildSpawnType.assault, 0.3f },
+        { WildSpawnType.marksman, 0.3f },
+        { WildSpawnType.crazyAssaultEvent, 0.35f },
+        { WildSpawnType.cursedAssault, 0.35f },
+        { WildSpawnType.assaultGroup, 0.35f },
+        { WildSpawnType.bossBully, 0.75f },
+        { WildSpawnType.bossBoar, 0.75f },
+        { WildSpawnType.bossGluhar, 0.75f },
+        { WildSpawnType.bossKilla, 0.75f },
+        { WildSpawnType.bossKillaAgro, 0.75f },
+        { WildSpawnType.bossSanitar, 0.75f },
+        { WildSpawnType.bossKojaniy, 0.75f },
+        { WildSpawnType.bossZryachiy, 0.75f },
+        { WildSpawnType.bossTagilla, 0.75f },
+        { WildSpawnType.bossKolontay, 0.75f },
+        { WildSpawnType.sectantPriest, 0.75f },
+        { WildSpawnType.bossPartisan, 0.75f },
+        { WildSpawnType.bossKnight, 1f },
+        { WildSpawnType.sectantWarrior, 0.7f },
+        { WildSpawnType.followerBully, 0.55f },
+        { WildSpawnType.followerGluharAssault, 0.55f },
+        { WildSpawnType.followerGluharScout, 0.55f },
+        { WildSpawnType.followerGluharSecurity, 0.55f },
+        { WildSpawnType.followerGluharSnipe, 0.55f },
+        { WildSpawnType.followerKojaniy, 0.55f },
+        { WildSpawnType.followerSanitar, 0.55f },
+        { WildSpawnType.followerTagilla, 0.55f },
+        { WildSpawnType.tagillaHelperAgro, 0.55f },
+        { WildSpawnType.followerZryachiy, 0.55f },
+        { WildSpawnType.followerBoar, 0.55f },
+        { WildSpawnType.followerBoarClose1, 0.55f },
+        { WildSpawnType.followerBoarClose2, 0.55f },
+        { WildSpawnType.bossBoarSniper, 0.55f },
+        { WildSpawnType.followerKolontayAssault, 0.55f },
+        { WildSpawnType.followerKolontaySecurity, 0.55f },
+        { WildSpawnType.followerBigPipe, 1f },
+        { WildSpawnType.followerBirdEye, 1f },
+        { WildSpawnType.pmcBot, 0.66f },
+        { WildSpawnType.exUsec, 0.66f },
+        { WildSpawnType.arenaFighter, 0.66f },
+        { WildSpawnType.arenaFighterEvent, 0.66f },
+        { WildSpawnType.pmcUSEC, 1f },
+        { WildSpawnType.pmcBEAR, 1f },
+        { WildSpawnType.gifter, 1f },
+    };
 
-    public Dictionary<WildSpawnType, SAINSettingsGroupClass> SAINSettings { get; private set; } = [];
-    public Dictionary<WildSpawnType, EFTBotSettings> EFTSettings { get; private set; } = [];
+    // Todo: convert to property in SPT 4.1, can't be done at the moment due to More Bots API
+    public Dictionary<WildSpawnType, SAINSettingsGroupClass> SAINSettings = [];
+
+    // Todo: convert to property in SPT 4.1, can't be done at the moment due to More Bots API
+    public Dictionary<WildSpawnType, EFTBotSettings> EFTSettings = [];
 
     public SAINBotSettingsClass(SAINPresetClass preset)
         : base(preset)
