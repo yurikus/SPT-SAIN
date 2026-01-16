@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace SAIN.Patches.Hearing;
 
-//Todo: Test all patches in this file and seperate them out undre .BotHearing
+//Todo: Test all patches in this file and seperate them out under .BotHearing
 //Testing should be done on Headless fika to make sure that they are fika compatible.
 
 public class GrenadeCollisionPatch : ModulePatch
