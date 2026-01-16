@@ -84,37 +84,6 @@ public class TryPlayShootSoundPatch : ModulePatch
     }
 }
 
-public class OnMakingShotPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player), nameof(Player.OnMakingShot));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(Player __instance, IWeapon weapon, Vector3 force)
-    {
-        if (GameWorldComponent.TryGetPlayerComponent(__instance, out PlayerComponent PlayerComponent))
-        {
-            PlayerComponent.OnMakingShot(weapon, force);
-        }
-    }
-}
-
-public class RegisterShotPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.RegisterShot));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(Player ____player, Item weapon, EftBulletClass shot)
-    {
-        GameWorldComponent.Instance?.RegisterShot(____player, shot, weapon);
-    }
-}
-
 public class OnWeaponModifiedPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
