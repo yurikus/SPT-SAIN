@@ -52,24 +52,6 @@ public class GrenadeCollisionPatch2 : ModulePatch
     }
 }
 
-public class HearingSensorPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(BotHearingSensor), nameof(BotHearingSensor.Init));
-    }
-
-    [PatchPrefix]
-    public static bool PatchPrefix(BotHearingSensor __instance)
-    {
-        if (SAINEnableClass.IsSAINDisabledForBot(__instance.BotOwner))
-        {
-            return false;
-        }
-        return true;
-    }
-}
-
 public class TryPlayShootSoundPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -98,30 +80,6 @@ public class OnWeaponModifiedPatch : ModulePatch
         if (GameWorldComponent.TryGetPlayerComponent(____player, out PlayerComponent PlayerComponent))
         {
             PlayerComponent.Equipment.WeaponModified(__instance.Weapon);
-        }
-    }
-}
-
-public class SoundClipNameCheckerPatch : ModulePatch
-{
-    private static MethodInfo _Player;
-    private static FieldInfo _PlayerBridge;
-
-    protected override MethodBase GetTargetMethod()
-    {
-        _PlayerBridge = AccessTools.Field(typeof(BaseSoundPlayer), "playersBridge");
-        _Player = AccessTools.PropertyGetter(_PlayerBridge.FieldType, "iPlayer");
-        return AccessTools.Method(typeof(BaseSoundPlayer), nameof(BaseSoundPlayer.SoundEventHandler));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(string soundName, BaseSoundPlayer __instance)
-    {
-        if (BotManagerComponent.Instance != null)
-        {
-            object playerBridge = _PlayerBridge.GetValue(__instance);
-            Player player = _Player.Invoke(playerBridge, null) as Player;
-            SAINSoundTypeHandler.AISoundFileChecker(soundName, player);
         }
     }
 }
@@ -191,22 +149,5 @@ public class SpawnInHandsSoundPatch : ModulePatch
         //if (itemClip != null) {
         //    SAINBotController.Instance?.BotHearing.PlayAISound(__instance.ProfileId, SAINSoundType.GearSound, __instance.Position, 30f, 1f);
         //}
-    }
-}
-
-public class BulletImpactPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(EffectsCommutator), nameof(EffectsCommutator.PlayHitEffect));
-    }
-
-    [PatchPostfix]
-    public static void PatchPostfix(EftBulletClass info)
-    {
-        if (BotManagerComponent.Instance != null)
-        {
-            BotManagerComponent.Instance.BotHearing.BulletImpacted(info);
-        }
     }
 }
