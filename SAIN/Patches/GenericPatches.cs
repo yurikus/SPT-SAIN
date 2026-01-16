@@ -15,18 +15,6 @@ using SetInHandsMedsStruct = GStruct382<EBodyPart>;
 
 namespace SAIN.Patches.Generic
 {
-    public static class GenericHelpers
-    {
-        public static bool CheckNotNull(BotOwner botOwner)
-        {
-            return botOwner != null
-                && botOwner.gameObject != null
-                && botOwner.gameObject.transform != null
-                && botOwner.Transform != null
-                && !botOwner.IsDead;
-        }
-    }
-
     namespace SetInHands
     {
         public static class Helpers

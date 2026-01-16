@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using EFT;
 using HarmonyLib;
 using SAIN.Components;
+using SAIN.Extensions;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
@@ -163,6 +164,7 @@ internal class FightShallReloadFixPatch : ModulePatch
     }
 }
 
+//Todo: Still necessary?
 internal class FixItemTakerPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -173,10 +175,11 @@ internal class FixItemTakerPatch : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotItemTaker __instance)
     {
-        return GenericHelpers.CheckNotNull(__instance.BotOwner_0);
+        return __instance.BotOwner_0.IsBotNotNullOrDead();
     }
 }
 
+//Todo: Still necessary?
 internal class FixItemTakerPatch2 : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -187,7 +190,7 @@ internal class FixItemTakerPatch2 : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotItemTaker __instance)
     {
-        return GenericHelpers.CheckNotNull(__instance.BotOwner_0);
+        return __instance.BotOwner_0.IsBotNotNullOrDead();
     }
 }
 
