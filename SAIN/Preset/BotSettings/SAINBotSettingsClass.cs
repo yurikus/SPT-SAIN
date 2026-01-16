@@ -315,7 +315,8 @@ public class SAINBotSettingsClass : BasePreset
         return SAINSettings[WildSpawnType.pmcUSEC].Settings[BotDifficulty.normal];
     }
 
-    public BotSettingsComponents GetEFTSettings(WildSpawnType type, BotDifficulty difficulty)
+    // Todo: convert to BotsSettingsComponents in SPT 4.1, can't be done at the moment due to More Bots API
+    public object GetEFTSettings(WildSpawnType type, BotDifficulty difficulty)
     {
         LoadEFTSettings();
         if (EFTSettings.TryGetValue(type, out var settingsGroup))
