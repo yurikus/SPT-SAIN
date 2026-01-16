@@ -110,24 +110,31 @@ public class SoundClipNameCheckerPatch2 : ModulePatch
     private const string FUSE = "SndFuse";
 }
 
-//Todo: Doesn't work on fika
-public class ToggleSoundPatch : ModulePatch
+/// <summary>
+/// Replacement for <c>ToggleSoundPatch</c> targeting <c>Player.PlayToggleSound</c>
+/// </summary>
+public class TogglableSetPatch : ModulePatch
 {
+    private static readonly AccessTools.FieldRef<Player, Vector3> _speechLocalPosition =
+        AccessTools.FieldRefAccess<Player, Vector3>("SpeechLocalPosition");
+
     protected override MethodBase GetTargetMethod()
     {
-        return AccessTools.Method(typeof(Player), nameof(Player.PlayToggleSound));
+        return AccessTools.Method(typeof(TogglableComponent), nameof(TogglableComponent.Set));
     }
 
-    [PatchPostfix]
-    public static void PatchPostfix(Player __instance, bool previousState, bool isOn, Vector3 ___SpeechLocalPosition)
+    [PatchPrefix]
+    public static void PatchPrefix(TogglableComponent __instance, bool value, bool simulate, bool silent)
     {
-        if (previousState != isOn)
+        if (!simulate && !silent && __instance.On != value && __instance.Item.Owner is Player.PlayerInventoryController invCont)
         {
-            float baseRange = 10f;
+            Player player = invCont.Player_0;
+
+            const float baseRange = 10f;
             BotManagerComponent.Instance?.BotHearing.PlayAISound(
-                __instance.ProfileId,
+                player.ProfileId,
                 SAINSoundType.GearSound,
-                __instance.Position + ___SpeechLocalPosition,
+                player.Position + _speechLocalPosition(player),
                 baseRange,
                 1f
             );
