@@ -314,21 +314,3 @@ public class EncumberedPatch : ModulePatch
         return false;
     }
 }
-
-//public class DoorDisabledPatch : ModulePatch
-//{
-//    protected override MethodBase GetTargetMethod()
-//    {
-//        return AccessTools.Method(typeof(WorldInteractiveObject), nameof(WorldInteractiveObject.method_4));
-//    }
-//
-//    [PatchPrefix]
-//    public static bool PatchPrefix(WorldInteractiveObject __instance)
-//    {
-//        if (!__instance.enabled || !__instance.gameObject.activeInHierarchy)
-//        {
-//            return false;
-//        }
-//        return true;
-//    }
-//}

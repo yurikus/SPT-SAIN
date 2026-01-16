@@ -524,26 +524,6 @@ namespace SAIN.Patches.Generic
         }
     }
 
-    public class BlockGrenadeThrowRequestsPatch2 : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.Method(typeof(BotRequestController), nameof(BotRequestController.TryActivateThrowGrenadeRequest));
-        }
-
-        [PatchPrefix]
-        public static bool Patch(BotRequestController __instance, Player targetToThrow, ref bool __result)
-        {
-            if (!SAINEnableClass.IsBotInCombat(__instance.Owner))
-            {
-                return true;
-            }
-
-            __result = false;
-            return false;
-        }
-    }
-
     public class BlockRequestPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

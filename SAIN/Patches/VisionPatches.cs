@@ -172,53 +172,6 @@ public class ToggleNightVisionPatch : ModulePatch
     }
 }
 
-public class SetPartPriorityPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_5));
-    }
-
-    [PatchPrefix]
-    public static bool PatchPrefix(EnemyInfo __instance)
-    {
-        bool isAI = __instance.Person?.IsAI == true;
-
-        if (isAI)
-        {
-            if (!__instance.HaveSeenPersonal || Time.time - __instance.TimeLastSeenReal > 5f)
-            {
-                __instance.ActiveParts = __instance.Maxparts;
-            }
-            else
-            {
-                __instance.ActiveParts = __instance.MiddleParts;
-            }
-            return false;
-        }
-
-        if (!isAI && SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent botComponent))
-        {
-            Enemy enemy = botComponent.EnemyController.CheckAddEnemy(__instance.Person);
-            if (enemy != null)
-            {
-                if (enemy.IsCurrentEnemy)
-                {
-                    __instance.ActiveParts = __instance.Maxparts;
-                    return false;
-                }
-                if (enemy.Status.ShotAtMeRecently || enemy.Status.PositionalFlareEnabled)
-                {
-                    __instance.ActiveParts = __instance.Maxparts;
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-}
-
 /// <summary>
 /// Disable the ai task registration of SAIN bots for vision updates.
 /// </summary>
@@ -375,29 +328,6 @@ public class WeatherVisionPatch : ModulePatch
         return false;
     }
 }
-
-//public class CheckPartLineOfSightPatch : ModulePatch
-//{
-//    protected override MethodBase GetTargetMethod()
-//    {
-//        return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.CheckPartLineOfSight));
-//    }
-//
-//    [PatchPrefix]
-//    public static bool PatchPrefix(EnemyInfo __instance, ref bool __result, KeyValuePair<EnemyPart, EnemyPartData> part, LayerMask lookSensorMask, float addSensorDistance, ref float visibilityChangeSpeedK)
-//    {
-//        if (SAINEnableClass.GetSAIN(__instance.Owner, out var sain))
-//        {
-//            Enemy enemy = sain.EnemyController.GetEnemy(__instance.ProfileId, true);
-//            if (enemy != null)
-//            {
-//                __result = enemy.Vision.Angles.CanBeSeen;
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-//}
 
 public class IsPointInVisibleSectorCallerPatch : ModulePatch
 {

@@ -96,24 +96,6 @@ internal class HardAimDisablePatch2 : ModulePatch
     }
 }
 
-internal class DisableMalfunctionPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.GetMalfunctionState));
-    }
-
-    [PatchPostfix]
-    public static void Patch(Player ____player, ref Weapon.EMalfunctionState __result)
-    {
-        if (____player.IsAI && __result != Weapon.EMalfunctionState.None)
-        {
-            //SAIN.Logger.LogError(__result);
-            __result = Weapon.EMalfunctionState.None;
-        }
-    }
-}
-
 internal class PlayerHitReactionDisablePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
