@@ -61,7 +61,6 @@ public class SAINPlugin : BaseUnityPlugin
         BindConfigs();
         _patchManager.EnablePatches();
         BigBrainHandler.Init();
-        Vector.Init();
     }
 
     private void BindConfigs()

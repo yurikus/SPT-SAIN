@@ -119,20 +119,8 @@ public class GameWorldComponent : MonoBehaviour
     public void WorldTick(float deltaTime)
     {
         float currentTime = Time.time;
-        //Stopwatch stopwatch1 = Stopwatch.StartNew();
         ManualUpdate(currentTime, deltaTime);
-        //stopwatch1.Stop();
-        //if (SAINPlugin.DebugMode && stopwatch1.ElapsedMilliseconds > 5)
-        //{
-        //    Logger.LogDebug($"GameWorldComponent ManualUpdate took {stopwatch1.ElapsedMilliseconds} ms");
-        //}
-        //Stopwatch stopwatch2 = Stopwatch.StartNew();
         SAINBotController.ManualUpdate(currentTime, deltaTime);
-        //stopwatch2.Stop();
-        //if (SAINPlugin.DebugMode && stopwatch2.ElapsedMilliseconds > 5)
-        //{
-        //    Logger.LogDebug($"SAINBotController ManualUpdate took {stopwatch2.ElapsedMilliseconds} ms");
-        //}
     }
 
     protected void ManualUpdate(float CurrentTime, float DeltaTime)

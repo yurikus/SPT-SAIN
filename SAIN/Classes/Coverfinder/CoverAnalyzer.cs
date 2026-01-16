@@ -9,8 +9,6 @@ namespace SAIN.SAINComponent.SubComponents.CoverFinder;
 
 public class CoverAnalyzer(BotComponent bot, CoverFinderComponent coverFinder) : BotBase(bot)
 {
-    private readonly CoverFinderComponent CoverFinder = coverFinder;
-
     public bool CheckCreateNewCoverPoint(
         Collider collider,
         Vector3 targetPosition,
@@ -120,11 +118,6 @@ public class CoverAnalyzer(BotComponent bot, CoverFinderComponent coverFinder) :
             reason = "tooCloseToTarget";
             return false;
         }
-        if (isPositionSpotted(navMeshHit.position))
-        {
-            reason = "tooCloseToSpottedPoint";
-            return false;
-        }
         if (!CheckCoverDirectionvsTargetDirection(targetDirectionNormal, targetPosition, navMeshHit.position))
         {
             reason = "coverBehindTarget";
@@ -157,19 +150,6 @@ public class CoverAnalyzer(BotComponent bot, CoverFinderComponent coverFinder) :
     private static bool checkDistToTarget(Vector3 coverPosition, Vector3 targetPosition)
     {
         return (coverPosition - targetPosition).sqrMagnitude > CoverFinderComponent.CoverMinEnemyDistSqr;
-    }
-
-    private bool isPositionSpotted(Vector3 position)
-    {
-        foreach (var point in CoverFinder.SpottedCoverPoints)
-        {
-            if (!point.IsValidAgain && point.TooClose(position))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static bool CheckPath(Vector3 position, PathData pathData, Vector3 botPosition, Vector3 targetPosition, bool checkEnemy = true)

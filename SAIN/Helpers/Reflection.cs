@@ -28,16 +28,4 @@ internal class Reflection
         }
         return null;
     }
-
-    public static FieldInfo FindFieldByName(string name, FieldInfo[] fields)
-    {
-        foreach (FieldInfo field in fields)
-        {
-            if (field.Name == name)
-            {
-                return field;
-            }
-        }
-        return null;
-    }
 }

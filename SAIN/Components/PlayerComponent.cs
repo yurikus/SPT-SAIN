@@ -259,11 +259,6 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         }
     }
 
-    public void ManualLateUpdate()
-    {
-        //ActivationClass.CheckActive();
-    }
-
     public PlayerTickData GetPreparedTickData()
     {
         var data = PlayerTickData;
@@ -275,7 +270,6 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
     public void SetTickData(PlayerTickData data)
     {
         PlayerTickData = data;
-        //SteeringData = data.SteeringData;
     }
 
     public void RegisterFlyBy(PlayerComponent Source, EftBulletClass Bullet)
@@ -380,194 +374,6 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         Destroy(this);
     }
 
-    private void navRayCastAllDir()
-    {
-        if (!SAINPlugin.DebugMode || !SAINPlugin.DrawDebugGizmos || !Player.IsYourPlayer)
-        {
-            return;
-        }
-
-        Vector3 origin = Position;
-        if (NavMesh.SamplePosition(origin, out var hit, 1f, -1))
-        {
-            origin = hit.position;
-        }
-
-        Vector3 direction;
-        int max = 5;
-        for (int i = 0; i < max; i++)
-        {
-            direction = UnityEngine.Random.onUnitSphere;
-            direction.y = 0;
-            direction = direction.normalized * 30f;
-            Vector3 target = origin + direction;
-            if (NavMesh.Raycast(origin, target, out var hit2, -1))
-            {
-                target = hit2.position;
-            }
-            DebugGizmos.DrawLine(origin, target, Color.white, 0.05f, 0.25f, true);
-        }
-    }
-
-    private void testObjectInFront()
-    {
-        if (!Player.IsYourPlayer)
-        {
-            return;
-        }
-        if (_hitLabel == null)
-        {
-            _hitLabel = DebugGizmos.CreateLabel(Vector3.zero, string.Empty);
-        }
-        if (_hitLabel != null)
-        {
-            _hitLabel.StringBuilder.Clear();
-            if (Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out var hit, 100f, LayerMaskClass.DoorLayer))
-            {
-                _hitLabel.Enabled = true;
-                _hitLabel.WorldPos = hit.point;
-                _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
-                _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
-                Door door = hit.collider.gameObject.GetComponent<Door>();
-                if (door != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found Door: [{door.Id}]");
-                }
-                NavMeshDoorLink link = hit.collider.gameObject.GetComponent<NavMeshDoorLink>();
-                if (link != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found Link: [{link.Id}]");
-                }
-            }
-            if (Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out hit, 100f, LayerMaskClass.PlayerStaticDoorMask))
-            {
-                _hitLabel.Enabled = true;
-                _hitLabel.WorldPos = hit.point;
-                _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
-                _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
-                Door door = hit.collider.gameObject.GetComponent<Door>();
-                if (door != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found Door: [{door.Id}]");
-                }
-                NavMeshDoorLink link = hit.collider.gameObject.GetComponent<NavMeshDoorLink>();
-                if (link != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found Link: [{link.Id}]");
-                }
-            }
-            if (Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out hit, 100f, LayerMaskClass.InteractiveMask))
-            {
-                _hitLabel.Enabled = true;
-                _hitLabel.WorldPos = hit.point;
-                _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
-                _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
-                Door door = hit.collider.gameObject.GetComponent<Door>();
-                if (door != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found Door: [{door.Id}]");
-                }
-                NavMeshDoorLink link = hit.collider.gameObject.GetComponent<NavMeshDoorLink>();
-                if (link != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found Link: [{link.Id}]");
-                }
-            }
-            else if (
-                Physics.Raycast(Transform.EyePosition, Transform.LookDirection, out hit, 100f, LayerMaskClass.HighPolyWithTerrainMaskAI)
-            )
-            {
-                _hitLabel.Enabled = true;
-                _hitLabel.WorldPos = hit.point;
-                _hitLabel.StringBuilder.AppendLine($"{hit.collider.gameObject.name}");
-                _hitLabel.StringBuilder.AppendLine($"{LayerMask.LayerToName(hit.collider.gameObject.layer)}");
-                _hitLabel.StringBuilder.AppendLine($"{hit.distance}");
-                var ballistic = hit.collider.gameObject.GetComponent<BallisticCollider>();
-                if (ballistic != null)
-                {
-                    _hitLabel.StringBuilder.AppendLine(
-                        $"Found Ballistic: [{ballistic.name}, {ballistic.PenetrationChance}, {ballistic.PenetrationLevel}]"
-                    );
-                }
-                var components = hit.collider.gameObject.GetComponentsInChildren(typeof(Component));
-                foreach (var component in components)
-                {
-                    _hitLabel.StringBuilder.AppendLine($"Found [{component.name}] : Type [{component.GetType()}]");
-                }
-            }
-            else
-            {
-                _hitLabel.Enabled = false;
-            }
-
-            if (_hitLabel.Enabled)
-            {
-                DebugGizmos.DrawSphere(_hitLabel.WorldPos, 0.025f, Color.white, 0.05f);
-            }
-        }
-    }
-
-    private void testNavMeshNodes()
-    {
-        List<Vector3> visibleNodes = new();
-        Vector3 origin = Transform.EyePosition;
-        Vector3[] vertices = NavMesh.CalculateTriangulation().vertices;
-        foreach (Vector3 vert in vertices)
-        {
-            Vector3 direction = (vert - origin);
-            float sqrMag = direction.sqrMagnitude;
-            if (sqrMag > 100f * 100f)
-            {
-                continue;
-            }
-            float distance = Mathf.Sqrt(sqrMag);
-            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
-            {
-                visibleNodes.Add(vert);
-                continue;
-            }
-            direction.y += 0.5f;
-            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
-            {
-                visibleNodes.Add(vert);
-                continue;
-            }
-            direction.y += 0.5f;
-            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
-            {
-                visibleNodes.Add(vert);
-                continue;
-            }
-            direction.y += 0.5f;
-            if (!Physics.Raycast(origin, direction, distance, LayerMaskClass.HighPolyWithTerrainMask))
-            {
-                visibleNodes.Add(vert);
-                continue;
-            }
-        }
-        foreach (var visibleVert in visibleNodes)
-        {
-            DebugGizmos.Ray(visibleVert, Vector3.up, Color.green, 1.5f, 0.025f, 0.25f);
-        }
-    }
-
-    private IEnumerator voiceTest()
-    {
-        while (true)
-        {
-            yield return playPhrases(EPhraseTrigger.Warning);
-            yield return playPhrases(EPhraseTrigger.Mooing);
-            yield return playPhrases(EPhraseTrigger.NeedHelp);
-            yield return playPhrases(EPhraseTrigger.Greetings);
-            yield return playPhrases(EPhraseTrigger.Toxic);
-            yield return playPhrases(EPhraseTrigger.StartHeal);
-            yield return null;
-        }
-    }
-
     public bool PlayVoiceLine(EPhraseTrigger phrase, ETagStatus mask, bool aggressive)
     {
         var speaker = Player.Speaker;
@@ -597,34 +403,6 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         return speaker.Play(phrase, mask, true, null) != null;
     }
 
-    private IEnumerator playPhrases(EPhraseTrigger trigger)
-    {
-        var speaker = Player.Speaker;
-        if (speaker.PhrasesBanks.TryGetValue(trigger, out var phrasesBank))
-        {
-            int count = phrasesBank.Clips.Length;
-            Logger.LogDebug($" Playing {trigger} {count}");
-            for (int i = 0; i < count; i++)
-            {
-                bool said = false;
-                while (!said)
-                {
-                    if (!speaker.Speaking && !speaker.Busy)
-                    {
-                        speaker.PlayDirect(trigger, i);
-                        Logger.LogDebug($"{trigger} :: {phrasesBank.Clips[i].Clip.name} :: {i}");
-                        said = true;
-                    }
-                    yield return null;
-                }
-            }
-        }
-        else
-        {
-            Logger.LogDebug($"{trigger} no phrases");
-        }
-    }
-
     private void drawTransformGizmos()
     {
         if (SAINPlugin.DebugSettings.Gizmos.DrawTransformGizmos)
@@ -645,8 +423,6 @@ public class PlayerComponent : MonoBehaviour, IDisposable, ISPlayer
         }
     }
 
-    private readonly List<int> _aggroIndexes = new();
-    private DebugLabel _hitLabel;
     private Coroutine _gearCoroutine;
     private Item _currentItem = null;
     private Weapon _currentWeapon = null;
