@@ -7,6 +7,9 @@ using SPT.Reflection.Patching;
 
 namespace SAIN.Patches.BotHearing;
 
+/// <summary>
+/// This patch enables registering shots in the game world, allowing bots to track if bullets flew by them
+/// </summary>
 public class RegisterShotPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()

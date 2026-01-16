@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace SAIN.Patches.BotHearing;
 
+/// <summary>
+/// This patch allows bots to hear whenever a player shoots their gun
+/// </summary>
 public class OnMakingShotPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()

@@ -14,9 +14,10 @@ using SPT.Reflection.Patching;
 using Systems.Effects;
 using UnityEngine;
 
-// this._specificStepAudioController = new GClass1184(surfaceSet, this, 0.1f, useOcclusion);
-
 namespace SAIN.Patches.Hearing;
+
+//Todo: Test all patches in this file and seperate them out undre .BotHearing
+//Testing should be done on Headless fika to make sure that they are fika compatible.
 
 public class GrenadeCollisionPatch : ModulePatch
 {
@@ -151,6 +152,7 @@ public class SoundClipNameCheckerPatch2 : ModulePatch
     private const string FUSE = "SndFuse";
 }
 
+//Todo: Doesn't work on fika
 public class ToggleSoundPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()

@@ -283,17 +283,3 @@ public class StopSetToNavMeshPatch2 : ModulePatch
         return true;
     }
 }
-
-public class RemoveSkillIssueController : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(BotOwner), nameof(BotOwner.ShouldApplyDamage));
-    }
-
-    [PatchTranspiler]
-    public static IEnumerable<CodeInstruction> Transpile()
-    {
-        return [new CodeInstruction(OpCodes.Ldc_I4_1), new CodeInstruction(OpCodes.Ret)];
-    }
-}

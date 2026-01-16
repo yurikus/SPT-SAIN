@@ -8,6 +8,10 @@ using UnityEngine;
 
 namespace SAIN.Patches.BotHearing;
 
+// This set of patches are all for allowing bots to hear various sounds
+// If they are in this file they have all been tested on Fika and work as intended for both host and clients
+// As well as just working on base SPT
+
 public class TreeSoundPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
