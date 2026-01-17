@@ -222,8 +222,15 @@ public class PlayerMovementController
         //if (destinationDistance > 0.1f)
         player.CharacterController.SetSteerDirection(direction);
         Vector2 moveDir = FindMoveDirection(direction, player.Rotation);
+
+        // Stop BSG's actual mover whenever we start issuing move commands
+        // Pause so BSG doesn't re-try and move the bot
+        playerComp.BotOwner.Mover.Stop();
+        playerComp.BotOwner.Mover.Pause = true;
+
+        // Begin moving the bot to it's destination
         player.Move(moveDir);
-        playerComp.BotOwner?.AimingManager?.CurrentAiming?.Move(player.Speed);
+        playerComp.BotOwner.AimingManager.CurrentAiming.Move(player.Speed);
     }
 
     private static float CalcRandomSwayModifier(Player player, BotOwner botOwner, BotComponent botComponent)
