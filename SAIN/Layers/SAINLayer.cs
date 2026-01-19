@@ -8,7 +8,7 @@ using SAIN.SAINComponent.Classes.EnemyClasses;
 
 namespace SAIN.Layers;
 
-public abstract class SAINLayer(BotOwner botOwner, int priority, string layerName, ESAINLayer eSAINLayer) : CustomLayer(botOwner, priority)
+public abstract class SAINLayer : CustomLayer
 {
     public static string BuildLayerName(string name)
     {
@@ -70,8 +70,36 @@ public abstract class SAINLayer(BotOwner botOwner, int priority, string layerNam
 
     private bool _actionReset = false;
 
-    private readonly string LayerName = layerName;
-    private readonly ESAINLayer ELayer = eSAINLayer;
+    private readonly string LayerName;
+    private readonly ESAINLayer ELayer;
+
+    private string _currentLayerName;
+
+    protected SAINLayer(BotOwner botOwner, int priority, string layerName, ESAINLayer eSainLayer) : base(botOwner, priority)
+    {
+        LayerName = layerName;
+        ELayer = eSainLayer;
+
+        botOwner.Brain.BaseBrain.OnLayerChangedTo += OnLayerChanged;
+    }
+
+    private void OnLayerChanged(AICoreLayerClass<BotLogicDecision> layer)
+    {
+        var newLayerName = layer.Name();
+
+        if (newLayerName == LayerName)
+        {
+            // If we activated this (SAIN) layer, wipe the builtin bot mover
+            BotOwner.Mover.Stop();
+        }
+        else if (_currentLayerName == LayerName)
+        {
+            // If we switched away from this layer to a different one, set the player to the navmesh to ensure it has a consistent state
+            BotOwner.Mover.SetPlayerToNavMesh(BotOwner.GetPlayer.Position);
+        }
+
+        _currentLayerName = newLayerName;
+    }
 
     private void SetLayer(bool active)
     {

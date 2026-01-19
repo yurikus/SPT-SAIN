@@ -217,11 +217,7 @@ public class BotMoverManualFixedUpdatePatch : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotMover __instance)
     {
-        if (SAINEnableClass.IsBotInCombat(__instance.BotOwner_0))
-        {
-            return false;
-        }
-        return true;
+        return !SAINEnableClass.IsBotInCombat(__instance.BotOwner_0);
     }
 }
 
