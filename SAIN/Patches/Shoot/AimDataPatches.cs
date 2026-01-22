@@ -437,33 +437,3 @@ public class BotSteeringPitchLimitPatch : ModulePatch
         angle = Mathf.Max(angle, -65f); // Prevents bots from looking too far down
     }
 }
-
-internal class ForceNoHeadAimPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_16));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(ref bool withLegs, ref bool canBeHead, EnemyInfo __instance)
-    {
-        if (!__instance.Person.IsAI)
-        {
-            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent bot))
-            {
-                var aim = bot.Info.FileSettings.Aiming;
-                canBeHead = EFTMath.RandomBool(aim.AimForHeadChance) && aim.AimForHead;
-                withLegs = true;
-                return;
-            }
-            canBeHead = false;
-            withLegs = true;
-        }
-        else
-        {
-            canBeHead = true;
-            withLegs = true;
-        }
-    }
-}
