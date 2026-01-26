@@ -5,6 +5,7 @@ using SAIN.Components;
 using SAIN.Components.BotController;
 using SAIN.Models.Enums;
 using SAIN.SAINComponent.Classes.EnemyClasses;
+using UnityEngine;
 
 namespace SAIN.Layers;
 
@@ -87,15 +88,23 @@ public abstract class SAINLayer : CustomLayer
     {
         var newLayerName = layer.Name();
 
+        var mover = BotOwner.Mover;
+
         if (newLayerName == LayerName)
         {
             // If we activated this (SAIN) layer, wipe the builtin bot mover
-            BotOwner.Mover.Stop();
+            mover.Stop();
         }
         else if (_currentLayerName == LayerName)
         {
             // If we switched away from this layer to a different one, set the player to the navmesh to ensure it has a consistent state
-            BotOwner.Mover.SetPlayerToNavMesh(BotOwner.GetPlayer.Position);
+            var playerPosition = BotOwner.GetPlayer.Position;
+            mover.LastGoodCastPoint = mover.PrevSuccessLinkedFrom_1 = mover.PrevLinkPos = mover.PositionOnWayInner = playerPosition;
+            mover.LastGoodCastPointTime = Time.time;
+            // Prevents the mover from re-issuing a move command to it's last target in SetPlayerToNavMesh
+            mover.PrevPosLinkedTime_1 = 0f;
+            // Final insurance that the bot is set to the navmesh before we hand over the brain
+            mover.SetPlayerToNavMesh(playerPosition);
         }
 
         _currentLayerName = newLayerName;
