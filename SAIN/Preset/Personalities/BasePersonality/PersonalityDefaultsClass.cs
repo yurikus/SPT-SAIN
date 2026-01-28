@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using EFT;
+using SAIN.Models.Preset.Personalities;
 
 namespace SAIN.Preset.Personalities;
 

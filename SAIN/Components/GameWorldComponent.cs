@@ -106,7 +106,6 @@ public class GameWorldComponent : MonoBehaviour
         }
     }
 
-    public ColliderCoverManager CoverManager { get; private set; }
     public static GameWorldComponent Instance { get; private set; }
     public GameWorld GameWorld { get; private set; }
     public PlayerSpawnTracker PlayerTracker { get; private set; }
@@ -120,20 +119,8 @@ public class GameWorldComponent : MonoBehaviour
     public void WorldTick(float deltaTime)
     {
         float currentTime = Time.time;
-        //Stopwatch stopwatch1 = Stopwatch.StartNew();
         ManualUpdate(currentTime, deltaTime);
-        //stopwatch1.Stop();
-        //if (SAINPlugin.DebugMode && stopwatch1.ElapsedMilliseconds > 5)
-        //{
-        //    Logger.LogDebug($"GameWorldComponent ManualUpdate took {stopwatch1.ElapsedMilliseconds} ms");
-        //}
-        //Stopwatch stopwatch2 = Stopwatch.StartNew();
         SAINBotController.ManualUpdate(currentTime, deltaTime);
-        //stopwatch2.Stop();
-        //if (SAINPlugin.DebugMode && stopwatch2.ElapsedMilliseconds > 5)
-        //{
-        //    Logger.LogDebug($"SAINBotController ManualUpdate took {stopwatch2.ElapsedMilliseconds} ms");
-        //}
     }
 
     protected void ManualUpdate(float CurrentTime, float DeltaTime)
@@ -294,7 +281,6 @@ public class GameWorldComponent : MonoBehaviour
         }
 
         SAINBotController = sainBotController;
-        CoverManager = gameWorld.GetOrAddComponent<ColliderCoverManager>();
         PlayerTracker = new PlayerSpawnTracker(this);
         Doors = new DoorHandler(this);
         Location = new LocationClass(this);

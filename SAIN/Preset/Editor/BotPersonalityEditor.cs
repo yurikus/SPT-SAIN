@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using SAIN.Helpers;
+using SAIN.Models.Preset.Personalities;
 using SAIN.Plugin;
 using SAIN.Preset;
 using static SAIN.Attributes.AttributesGUI;
@@ -8,11 +9,6 @@ namespace SAIN.Editor.GUISections;
 
 public static class BotPersonalityEditor
 {
-    public static void ClearCache()
-    {
-        ListHelpers.ClearCache(OpenPersMenus);
-    }
-
     public static void PersonalityMenu()
     {
         string toolTip =

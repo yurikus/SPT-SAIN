@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using EFT;
 using HarmonyLib;
 using SAIN.Components.PlayerComponentSpace;
@@ -27,32 +26,30 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
 
     public bool DeviceActive
     {
-        get { return ActiveModes.Count > 0; }
+        get { return ActiveModes != 0; }
     }
 
     public bool IRLaser
     {
-        get { return ActiveModes.Contains(DeviceMode.IRLaser); }
+        get { return (ActiveModes & DeviceMode.IRLaser) != 0; }
     }
 
     public bool IRLight
     {
-        get { return ActiveModes.Contains(DeviceMode.IRLight); }
+        get { return (ActiveModes & DeviceMode.IRLight) != 0; }
     }
 
     public bool Laser
     {
-        get { return ActiveModes.Contains(DeviceMode.VisibleLaser); }
+        get { return (ActiveModes & DeviceMode.VisibleLaser) != 0; }
     }
 
     public bool WhiteLight
     {
-        get { return ActiveModes.Contains(DeviceMode.WhiteLight); }
+        get { return (ActiveModes & DeviceMode.WhiteLight) != 0; }
     }
 
     public LightDetectionClass LightDetection { get; } = new LightDetectionClass(component);
-
-    private readonly List<DeviceMode> activeModes = [];
 
     public void Update() { }
 
@@ -61,14 +58,14 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
         CheckUsingLightModes();
 
         bool wasUsingLight = UsingLight;
-        UsingLight = ActiveModes.Contains(DeviceMode.WhiteLight) || ActiveModes.Contains(DeviceMode.IRLight);
+        UsingLight = (ActiveModes & (DeviceMode.WhiteLight | DeviceMode.IRLight)) == (DeviceMode.WhiteLight | DeviceMode.IRLight);
         if (wasUsingLight != UsingLight)
         {
             OnLightToggle?.Invoke(UsingLight);
         }
 
         bool wasUsingLaser = UsingLaser;
-        UsingLaser = ActiveModes.Contains(DeviceMode.VisibleLaser) || ActiveModes.Contains(DeviceMode.IRLaser);
+        UsingLaser = (ActiveModes & (DeviceMode.VisibleLaser | DeviceMode.IRLaser)) == (DeviceMode.VisibleLaser | DeviceMode.IRLaser);
         if (wasUsingLaser != UsingLaser)
         {
             OnLaserToggle?.Invoke(UsingLaser);
@@ -77,7 +74,7 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
 
     private void CheckUsingLightModes()
     {
-        ActiveModes.Clear();
+        ActiveModes = DeviceMode.None;
         Player player = Player;
         if (player == null)
         {
@@ -113,15 +110,10 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
             return;
         }
 
-        bool foundWhiteLight = false;
-        bool foundVisibleLaser = false;
-        bool foundIRLight = false;
-        bool FoundIRLaser = false;
-
         // Loop through all of the tacticalComboVisualControllers, then its modes, then that modes children, and look for a light
         foreach (TacticalComboVisualController tacticalComboVisualController in TacticalDevices)
         {
-            List<Transform> tacticalModes = _tacticalModesField.GetValue(tacticalComboVisualController) as List<Transform>;
+            List<Transform> tacticalModes = _tacticalModesField(tacticalComboVisualController);
             foreach (var mode in tacticalModes)
             {
                 // Skip disabled modes
@@ -130,10 +122,11 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
                     continue;
                 }
 
-                foreach (var child in mode.GetChildren())
+                for (int i = 0; i < mode.childCount; i++)
                 {
-                    string name = child.name.ToLower();
-                    if (!foundWhiteLight && name.StartsWith("light_0"))
+                    Transform child = mode.GetChild(i);
+                    string name = child.name;
+                    if (!WhiteLight && name.StartsWith("light_0", StringComparison.OrdinalIgnoreCase))
                     {
 #if DEBUG
                         if (_debugMode)
@@ -141,10 +134,9 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
                             Logger.LogDebug($"[{player.name}] Found WhiteLight : Name:{name}");
                         }
 #endif
-                        foundWhiteLight = true;
-                        ActiveModes.Add(DeviceMode.WhiteLight);
+                        ActiveModes |= DeviceMode.WhiteLight;
                     }
-                    if (!foundVisibleLaser && name.StartsWith("vis_0"))
+                    if (!Laser && name.StartsWith("vis_0", StringComparison.OrdinalIgnoreCase))
                     {
 #if DEBUG
                         if (_debugMode)
@@ -152,10 +144,9 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
                             Logger.LogDebug($"[{player.name}] Found VisibleLaser : Name:{name}");
                         }
 #endif
-                        foundVisibleLaser = true;
-                        ActiveModes.Add(DeviceMode.VisibleLaser);
+                        ActiveModes |= DeviceMode.VisibleLaser;
                     }
-                    if (!foundIRLight && name.StartsWith("il_0"))
+                    if (!IRLight && name.StartsWith("il_0", StringComparison.OrdinalIgnoreCase))
                     {
 #if DEBUG
                         if (_debugMode)
@@ -163,10 +154,9 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
                             Logger.LogDebug($"[{player.name}] Found IRLight : Name:{name}");
                         }
 #endif
-                        foundIRLight = true;
-                        ActiveModes.Add(DeviceMode.IRLight);
+                        ActiveModes |= DeviceMode.IRLight;
                     }
-                    if (!FoundIRLaser && name.StartsWith("ir_0"))
+                    if (!IRLaser && name.StartsWith("ir_0", StringComparison.OrdinalIgnoreCase))
                     {
 #if DEBUG
                         if (_debugMode)
@@ -174,8 +164,7 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
                             Logger.LogDebug($"[{player.name}] Found IRLaser : Name:{name}");
                         }
 #endif
-                        FoundIRLaser = true;
-                        ActiveModes.Add(DeviceMode.IRLaser);
+                        ActiveModes |= DeviceMode.IRLaser;
                     }
                 }
             }
@@ -187,10 +176,8 @@ public class FlashLightClass(PlayerComponent component) : PlayerComponentBase(co
         get { return SAINPlugin.LoadedPreset.GlobalSettings.General.Flashlight.DebugFlash; }
     }
 
-    public List<DeviceMode> ActiveModes
-    {
-        get { return activeModes; }
-    }
+    public DeviceMode ActiveModes { get; set; }
 
-    private static readonly FieldInfo _tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
+    private static readonly AccessTools.FieldRef<TacticalComboVisualController, List<Transform>> _tacticalModesField =
+        AccessTools.FieldRefAccess<TacticalComboVisualController, List<Transform>>("list_0");
 }

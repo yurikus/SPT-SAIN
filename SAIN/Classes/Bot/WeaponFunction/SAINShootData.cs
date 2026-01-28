@@ -327,35 +327,26 @@ public class SAINShootData : BotComponentClassBase
 
     private static Vector3? FindCenterMassPoint(Enemy enemy, BotComponent bot)
     {
-        if (enemy.IsAI)
-        {
-            return null;
-        }
         if (SAINPlugin.LoadedPreset.GlobalSettings.Aiming.AimCenterMassGlobal)
         {
             return enemy.CenterMass;
         }
-        if (bot.Info.FileSettings.Aiming.AimForHead || !bot.Info.FileSettings.Aiming.AimCenterMass)
-        {
-            return null;
-        }
-        return enemy.CenterMass;
+
+        return null;
     }
 
     private static Vector3? GetEnemyPartToShoot(EnemyInfo enemy)
     {
         if (enemy != null)
         {
-            Vector3 value;
             if (enemy.Distance < 6f)
             {
-                value = enemy.GetBodyPartPosition();
+                return enemy.GetBodyPartPosition();
             }
             else
             {
-                value = enemy.GetPartToShoot();
+                return enemy.GetPartToShoot();
             }
-            return new Vector3?(value);
         }
         return null;
     }

@@ -21,7 +21,6 @@ public class CoverFinderComponent : BotComponentBase
     public BotComponent Bot { get; private set; }
     public List<CoverPoint> CoverPoints { get; } = [];
     private CoverAnalyzer CoverAnalyzer { get; set; }
-    public List<SpottedCoverPoint> SpottedCoverPoints { get; private set; } = [];
 
     public void Init(BotComponent bot)
     {
@@ -92,10 +91,6 @@ public class CoverFinderComponent : BotComponentBase
     public void LookForCover()
     {
         _findCoverPointsCoroutine ??= StartCoroutine(FindCoverLoop());
-        //if (_recheckCoverPointsCoroutine == null)
-        //{
-        //    _recheckCoverPointsCoroutine = StartCoroutine(RecheckCoverLoop());
-        //}
     }
 
     public void StopLooking()

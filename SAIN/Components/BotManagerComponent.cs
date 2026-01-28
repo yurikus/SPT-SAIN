@@ -65,7 +65,7 @@ public class BotManagerComponent : MonoBehaviour
     public BotJobsClass BotJobs { get; private set; }
     public BotExtractManager BotExtractManager { get; private set; }
     public TimeClass TimeVision { get; private set; }
-    public BotController.SAINWeatherClass WeatherVision { get; private set; }
+    public SAINWeatherClass WeatherVision { get; private set; }
     public BotSpawnController BotSpawnController { get; private set; }
     public BotSquads BotSquads { get; private set; }
     public BotHearingClass BotHearing { get; private set; }
@@ -82,7 +82,7 @@ public class BotManagerComponent : MonoBehaviour
         BotSpawnController = new BotSpawnController(this);
         BotExtractManager = new BotExtractManager(this);
         TimeVision = new TimeClass(this);
-        WeatherVision = new BotController.SAINWeatherClass(this);
+        WeatherVision = new SAINWeatherClass(this);
         BotSquads = new BotSquads(this);
         BotHearing = new BotHearingClass(this);
         BotJobs = new BotJobsClass(this);
@@ -107,8 +107,6 @@ public class BotManagerComponent : MonoBehaviour
             }
         }
     }
-
-    public void OnDestroy() { }
 
     public void Dispose()
     {

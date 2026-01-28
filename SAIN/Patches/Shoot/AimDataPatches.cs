@@ -96,24 +96,6 @@ internal class HardAimDisablePatch2 : ModulePatch
     }
 }
 
-internal class DisableMalfunctionPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(Player.FirearmController), nameof(Player.FirearmController.GetMalfunctionState));
-    }
-
-    [PatchPostfix]
-    public static void Patch(Player ____player, ref Weapon.EMalfunctionState __result)
-    {
-        if (____player.IsAI && __result != Weapon.EMalfunctionState.None)
-        {
-            //SAIN.Logger.LogError(__result);
-            __result = Weapon.EMalfunctionState.None;
-        }
-    }
-}
-
 internal class PlayerHitReactionDisablePatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -453,35 +435,5 @@ public class BotSteeringPitchLimitPatch : ModulePatch
     public static void Patch(ref float angle)
     {
         angle = Mathf.Max(angle, -65f); // Prevents bots from looking too far down
-    }
-}
-
-internal class ForceNoHeadAimPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(EnemyInfo), nameof(EnemyInfo.method_16));
-    }
-
-    [PatchPrefix]
-    public static void PatchPrefix(ref bool withLegs, ref bool canBeHead, EnemyInfo __instance)
-    {
-        if (!__instance.Person.IsAI)
-        {
-            if (SAINEnableClass.GetSAIN(__instance.Owner.ProfileId, out BotComponent bot))
-            {
-                var aim = bot.Info.FileSettings.Aiming;
-                canBeHead = EFTMath.RandomBool(aim.AimForHeadChance) && aim.AimForHead;
-                withLegs = true;
-                return;
-            }
-            canBeHead = false;
-            withLegs = true;
-        }
-        else
-        {
-            canBeHead = true;
-            withLegs = true;
-        }
     }
 }

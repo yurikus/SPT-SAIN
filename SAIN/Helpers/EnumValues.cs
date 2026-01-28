@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using EFT;
+using SAIN.Models.Preset.Personalities;
 
 namespace SAIN.Helpers;
 

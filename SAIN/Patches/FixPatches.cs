@@ -1,7 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using EFT;
 using HarmonyLib;
 using SAIN.Components;
+using SAIN.Extensions;
 using SAIN.Preset.GlobalSettings;
 using SAIN.SAINComponent.Classes.EnemyClasses;
 using SAIN.SAINComponent.Classes.Mover;
@@ -142,39 +145,6 @@ internal class EnableVaultPatch : ModulePatch
     }
 }
 
-internal class DisableGrenadesPatch : ModulePatch
-{
-    protected override MethodBase GetTargetMethod()
-    {
-        return AccessTools.Method(typeof(BotGrenadeToPortal), nameof(BotGrenadeToPortal.method_0));
-    }
-
-    [PatchPrefix]
-    public static bool Patch(BotGrenadeToPortal __instance)
-    {
-        var settings = GlobalSettingsClass.Instance.General;
-        if (!settings.BotsUseGrenades)
-        {
-            return false;
-        }
-
-        if (SAINEnableClass.GetSAIN(__instance.BotOwner_0.ProfileId, out BotComponent bot))
-        {
-            var goalEnemy = bot.EnemyController.GoalEnemy;
-            if (goalEnemy == null)
-            {
-                return false;
-            }
-
-            if (!settings.BotVsBotGrenade && goalEnemy.IsAI)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
 internal class FightShallReloadFixPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -194,6 +164,7 @@ internal class FightShallReloadFixPatch : ModulePatch
     }
 }
 
+//Todo: Still necessary?
 internal class FixItemTakerPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -204,10 +175,11 @@ internal class FixItemTakerPatch : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotItemTaker __instance)
     {
-        return GenericHelpers.CheckNotNull(__instance.BotOwner_0);
+        return __instance.BotOwner_0.IsBotNotNullOrDead();
     }
 }
 
+//Todo: Still necessary?
 internal class FixItemTakerPatch2 : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -218,7 +190,7 @@ internal class FixItemTakerPatch2 : ModulePatch
     [PatchPrefix]
     public static bool PatchPrefix(BotItemTaker __instance)
     {
-        return GenericHelpers.CheckNotNull(__instance.BotOwner_0);
+        return __instance.BotOwner_0.IsBotNotNullOrDead();
     }
 }
 

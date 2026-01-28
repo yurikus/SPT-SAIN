@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+﻿using System.Reflection;
 using HarmonyLib;
-using SAIN.Components;
-using SAIN.SAINComponent.Classes.EnemyClasses;
-using SAIN.SAINComponent.Classes.Mover;
 using SPT.Reflection.Patching;
-using UnityEngine;
 
 namespace SAIN.Patches.Event;
 
+/// <summary>
+/// This patch enables a 'joke' that allows PMC's to come to the christmas tree when it is activated
+/// </summary>
 public class EnableUsecPmcKhorovodPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()
@@ -32,6 +28,9 @@ public class EnableUsecPmcKhorovodPatch : ModulePatch
     }
 }
 
+/// <summary>
+/// This patch enables a 'joke' that allows PMC's to come to the christmas tree when it is activated
+/// </summary>
 public class EnableBearPmcKhorovodPatch : ModulePatch
 {
     protected override MethodBase GetTargetMethod()

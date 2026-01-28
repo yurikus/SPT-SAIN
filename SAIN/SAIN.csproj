@@ -6,6 +6,7 @@
     <Nullable>disable</Nullable>
     <RootNamespace>SAIN</RootNamespace>
     <AssemblyName>SAIN</AssemblyName>
+    <ReleaseOutputDir>..\Build\BepInEx\plugins\SAIN\</ReleaseOutputDir>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -76,7 +77,21 @@
     </Reference>
   </ItemGroup>
 
-  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)\..\..\BepInEx\plugins\SAIN\$(TargetFileName)&quot;" />
-  </Target>-->
+  <!-- Build script-->
+  <Target Name="CleanUnwantedFiles" AfterTargets="Build">
+    <ItemGroup>
+      <UnwantedFiles Include="$(OutputPath)*.pdb; $(OutputPath)*.deps.json; $(OutputPath)*.dll" Exclude="$(OutputPath)SAIN.dll" />
+    </ItemGroup>
+    <Delete Files="@(UnwantedFiles)" />
+  </Target>
+  <Target Name="CopyBuildOutput" AfterTargets="CleanUnwantedFiles">
+    <MakeDir Directories="$(ReleaseOutputDir)" />
+    <ItemGroup>
+      <RemainingFiles Include="$(OutputPath)**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(RemainingFiles)"
+      DestinationFiles="@(RemainingFiles->'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
+    />
+  </Target>
 </Project>

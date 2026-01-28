@@ -85,12 +85,19 @@ public class BotHearingClass : BotManagerBase
         {
             return;
         }
+
+        /*
+        if (!playerComponent.IsAI)
+        {
+            Logger.LogInfo(
+                $"{playerComponent.Player.Profile.Nickname}: SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}"
+            );
+        }
+        */
+
         playerComponent.PlayAISound(soundType, position, range, volume);
         AISoundPlayed?.Invoke(soundType, position, playerComponent, range, volume);
-        //if (playerComponent.Player.IsYourPlayer)
-        //{
-        //    Logger.LogDebug($"SoundType [{soundType}] FinalRange: {range * volume} Base Range {range} : Volume: {volume}");
-        //}
+        
         BotController.StartCoroutine(WaitDelayThenPlayDefaultBotEvent(soundType, playerComponent, position, range, volume));
     }
 

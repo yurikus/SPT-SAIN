@@ -7,20 +7,8 @@ namespace SAIN.Helpers;
 
 internal class ComponentHelpers
 {
-    public static T AddOrDestroyComponent<T, K>(T component, K condition)
-        where T : Component
-        where K : Component
-    {
-        if (component == null && condition != null)
-        {
-            component = GetOrAddComponent<T, K>(condition);
-        }
-        else if (component != null && condition == null)
-        {
-            DestroyComponent(component);
-        }
-        return component;
-    }
+    private static readonly Dictionary<Type, MethodInfo> DisposeMethods = new();
+    private static readonly List<string> NoDisposeMethods = new();
 
     public static void DestroyComponent<T>(T component)
         where T : Component
@@ -80,8 +68,6 @@ internal class ComponentHelpers
         return methodInfo != null;
     }
 
-    private static readonly List<string> NoDisposeMethods = new();
-
     private static void LogError(Exception ex, string message)
     {
         Logger.LogError($"{message} Error");
@@ -93,19 +79,5 @@ internal class ComponentHelpers
 #if DEBUG
         Logger.LogDebug(message);
 #endif
-    }
-
-    public static void ClearCache()
-    {
-        ListHelpers.ClearCache(DisposeMethods);
-    }
-
-    private static readonly Dictionary<Type, MethodInfo> DisposeMethods = new();
-
-    public static T GetOrAddComponent<T, K>(K original)
-        where T : Component
-        where K : Component
-    {
-        return original.GetComponent<T>() ?? original.gameObject.AddComponent<T>();
     }
 }

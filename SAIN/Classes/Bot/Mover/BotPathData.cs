@@ -72,7 +72,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
 
         Status = EBotMoveStatus.Moving;
 
-        Util.StopVanillaMover(Bot.BotOwner.Mover);
+        //Util.StopVanillaMover(Bot.BotOwner.Mover);
         Bot.Mover.Prone.SetProne(Crawling);
 
 #if DEBUG
@@ -87,6 +87,7 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         Vector3 startSlowDestination = slowAtCorners ? currentCorner.Position : Destination;
         float startSlowDist = slowAtCorners ? 2f : 0.85f;
         float stopSprintDist = slowAtCorners ? 2f : 1.1f;
+
         Bot.PlayerComponent.CharacterController.SetTargetMoveDirection(
             currentCorner.Position - Bot.Position,
             startSlowDestination,
@@ -123,6 +124,8 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
         {
             return;
         }
+
+        Bot.BotOwner.Mover.Pause = false;
     }
 
     private bool CheckCornerComplete()
@@ -374,7 +377,6 @@ public class BotPathDataManual(BotComponent bot, IBotPathFinder pathFinder) : IB
 
     public void Start()
     {
-        Util.PrepareBot(Bot, WantToSprint);
         Status = EBotMoveStatus.Moving;
         TimeStarted = Time.time;
     }

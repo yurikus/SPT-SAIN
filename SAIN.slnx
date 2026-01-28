@@ -10,4 +10,5 @@
         <File Path=".editorconfig" />
     </Folder>
     <Project Path="SAIN/SAIN.csproj" />
+    <Project Path="SAINServerMod/SAINServerMod.csproj" />
 </Solution>

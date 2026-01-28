@@ -83,7 +83,7 @@ public class AimClass : BotComponentClassBase, IBotClass
         }
 
         // Feed desired aim point to the smoother to account for enemy movement.
-        smoother.Update(aimPoint, enemy.EnemyPlayer.Velocity, Time.fixedDeltaTime);
+        smoother.Update(aimPoint, enemy.EnemyPlayer.Velocity, Time.deltaTime);
 
         // Input the final aim point to EFT's bot aim system.
         currentAiming.SetTarget(smoother.Position);

@@ -23,4 +23,13 @@ public static class BotExtensions
 
         return false;
     }
+
+    public static bool IsBotNotNullOrDead(this BotOwner botOwner)
+    {
+        return botOwner != null
+            && botOwner.gameObject != null
+            && botOwner.gameObject.transform != null
+            && botOwner.Transform != null
+            && !botOwner.IsDead;
+    }
 }
