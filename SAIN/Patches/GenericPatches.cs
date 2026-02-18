@@ -42,12 +42,31 @@ namespace SAIN.Patches.Generic
             }
         }
 
+        // Does not seem to work nor break anything, so let's leave it as is.
         public class SetInHands_Weapon_Patch : ModulePatch
         {
             protected override MethodBase GetTargetMethod()
             {
                 System.Type[] Params = [typeof(Weapon), typeof(Callback<IFirearmHandsController>)];
                 return AccessTools.Method(typeof(Player), nameof(Player.SetInHands), Params);
+            }
+
+            [PatchPostfix]
+            public static void Patch(Player __instance, Weapon weapon)
+            {
+                Helpers.SetItemEquiped(__instance, weapon);
+            }
+        }
+
+        /// <summary>
+        /// Patches method which is called when weapon is swapped.
+        /// </summary>
+        public class Proceed_Weapon_Patch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                System.Type[] Params = [typeof(Weapon), typeof(Callback<IFirearmHandsController>), typeof(bool)];
+                return AccessTools.Method(typeof(Player), nameof(Player.Proceed), Params);
             }
 
             [PatchPostfix]
