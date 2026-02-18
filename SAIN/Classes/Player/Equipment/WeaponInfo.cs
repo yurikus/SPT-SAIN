@@ -44,12 +44,13 @@ public class WeaponInfo
 
     public bool HasSuppressor { get; private set; }
     public float BaseAudibleRange { get; private set; } = 150f;
-    public float MuzzleLoudness { get; private set; }
+    public float MuzzleLoudness { get; private set; } = 0f;
     public bool Subsonic
     {
         get { return Weapon != null && BulletSpeed < SuperSonicSpeed; }
     }
 
+    public Mod FlashHider { get; private set; }
     public Mod Suppressor { get; private set; }
     public Mod RedDot { get; private set; }
     public Mod Optic { get; private set; }
@@ -83,10 +84,10 @@ public class WeaponInfo
 
     private void UpdateWeaponData(Player Player, IEnumerable<Mod> mods)
     {
-        Suppressor = FindModType(mods, EModType.Suppressor);
-        RedDot = FindModType(mods, EModType.RedDot);
-        Optic = FindModType(mods, EModType.Optic);
-        MuzzleLoudness = Suppressor != null ? Suppressor.Template.Loudness : 0f;
+        FindModType(mods);
+        MuzzleLoudness = 0f;
+        MuzzleLoudness += Suppressor?.Loudness ?? 0f;
+        MuzzleLoudness += FlashHider?.Loudness ?? 0f;
         BulletSpeed = Weapon.CurrentAmmoTemplate.InitialSpeed * Weapon.SpeedFactor;
         CalculatedAudibleRange = BaseAudibleRange + MuzzleLoudness;
         if (Suppressor != null || (Player.HandsController is Player.FirearmController firearmController && firearmController.IsSilenced))
@@ -116,28 +117,55 @@ public class WeaponInfo
         PresetHandler.OnPresetUpdated -= updateSettings;
     }
 
-    private static Mod FindModType(IEnumerable<Mod> mods, EModType ModType)
+    private void FindModType(IEnumerable<Mod> mods)
     {
+        RedDot = null;
+        Optic = null;
+        FlashHider = null;
+        Suppressor = null;
         if (mods != null)
         {
             foreach (Mod mod in mods)
             {
-                if (CheckItemType(mod.GetType()) == ModType)
+                var modType = CheckItemType(mod.GetType());
+                switch (modType)
                 {
-                    return mod;
+                    case EModType.RedDot:
+                        if (RedDot == null)
+                        {
+                            RedDot = mod;
+                        }
+                        break;
+                    case EModType.Optic:
+                        if (Optic == null)
+                        {
+                            Optic = mod;
+                        }
+                        break;
+                    case EModType.FlashHider:
+                        if (FlashHider == null)
+                        {
+                            FlashHider = mod;
+                        }
+                        break;
+                    case EModType.Suppressor:
+                        if (Suppressor == null)
+                        {
+                            Suppressor = mod;
+                        }
+                        break;
                 }
 
-                Slot[] Slots = mod.Slots;
-                foreach (Slot slot in Slots)
+                if (RedDot != null
+                    && Optic != null
+                    && FlashHider != null
+                    && Suppressor != null
+                )
                 {
-                    if (slot.ContainedItem is Mod ContainedMod && CheckItemType(ContainedMod.GetType()) == ModType)
-                    {
-                        return ContainedMod;
-                    }
+                    return;
                 }
             }
         }
-        return null;
     }
 
     private static float SuppressorModifier(float bulletspeed)
@@ -151,6 +179,10 @@ public class WeaponInfo
 
     private static EModType CheckItemType(Type type)
     {
+        if (CheckTemplateType(type, FlashHiderTypeId))
+        {
+            return EModType.FlashHider;
+        }
         if (CheckTemplateType(type, SuppressorTypeId))
         {
             return EModType.Suppressor;
@@ -209,7 +241,7 @@ public class WeaponInfo
     {
         Logger.LogDebug(
             $"Found Weapon Info: "
-                + $"Weapon: [{Weapon.ShortName}] "
+                + $"Weapon: [{Weapon.ShortName.Localized()}] "
                 + $"Weapon Class: [{WeaponClass}] "
                 + $"Ammo Caliber: [{AmmoCaliber}] "
                 + $"Calculated Audible Range: [{CalculatedAudibleRange}] "
@@ -221,12 +253,22 @@ public class WeaponInfo
                 + $"Has Optic? [{HasOptic}] "
                 + $"Has Suppressor? [{HasSuppressor}]"
         );
+
+        Logger.LogDebug(
+            $"Found Weapon Info (continue):"
+                + $" Suppressor: [{Suppressor?.ShortName.Localized()}]"
+                + $" Flash Hider: [{FlashHider?.ShortName.Localized()}]"
+                + $" Optic: [{Optic?.ShortName.Localized()}]"
+                + $" Red dot: [{RedDot?.ShortName.Localized()}]"
+        );
     }
 
     private const float SuperSonicSpeed = 343.2f;
 
-    //private static readonly string FlashHiderTypeId = "550aa4bf4bdc2dd6348b456b";
+    // Contrary to the name, Muzzle here means "Muzzle Device", i.e., the parent of flash hiders and suppressors.
+    // Muzzle brake is also considered a "FlashHider".
     //private static readonly string MuzzleTypeId = "5448fe394bdc2d0d028b456c";
+    private static readonly string FlashHiderTypeId = "550aa4bf4bdc2dd6348b456b";
     private static readonly string SuppressorTypeId = "550aa4cd4bdc2dd8348b456c";
 
     private static readonly string CollimatorTypeId = "55818ad54bdc2ddc698b4569";
@@ -245,6 +287,7 @@ public enum EModType
     Suppressor,
     RedDot,
     Optic,
+    FlashHider,
 }
 
 public class OpticAIConfig
