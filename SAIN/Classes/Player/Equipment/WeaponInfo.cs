@@ -90,7 +90,7 @@ public class WeaponInfo
         MuzzleLoudness += FlashHider?.Loudness ?? 0f;
         BulletSpeed = Weapon.CurrentAmmoTemplate.InitialSpeed * Weapon.SpeedFactor;
         CalculatedAudibleRange = BaseAudibleRange + MuzzleLoudness;
-        if (Suppressor != null || (Player.HandsController is Player.FirearmController firearmController && firearmController.IsSilenced))
+        if (Suppressor != null)
         {
             CalculatedAudibleRange *= SuppressorModifier(BulletSpeed);
             HasSuppressor = true;
