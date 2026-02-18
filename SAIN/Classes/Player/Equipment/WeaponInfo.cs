@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using EFT;
 using EFT.InventoryLogic;
 using SAIN.Helpers;
@@ -90,7 +91,7 @@ public class WeaponInfo
         MuzzleLoudness += FlashHider?.Loudness ?? 0f;
         BulletSpeed = Weapon.CurrentAmmoTemplate.InitialSpeed * Weapon.SpeedFactor;
         CalculatedAudibleRange = BaseAudibleRange + MuzzleLoudness;
-        if (Suppressor != null)
+        if (Suppressor != null || _suppressedWeapons.Contains(Weapon.TemplateId.StringID))
         {
             CalculatedAudibleRange *= SuppressorModifier(BulletSpeed);
             HasSuppressor = true;
