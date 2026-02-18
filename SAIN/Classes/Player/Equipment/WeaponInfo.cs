@@ -15,8 +15,8 @@ public class WeaponInfo
         Weapon = weapon;
         WeaponClass = TryGetWeaponClass(weapon);
         AmmoCaliber = TryGetAmmoCaliber(weapon);
-        updateSettings(SAINPresetClass.Instance);
-        PresetHandler.OnPresetUpdated += updateSettings;
+        UpdateSettings(SAINPresetClass.Instance);
+        PresetHandler.OnPresetUpdated += UpdateSettings;
     }
 
     public EWeaponClass WeaponClass { get; private set; }
@@ -62,7 +62,7 @@ public class WeaponInfo
         get { return Weapon.Repairable.Durability / (float)Weapon.Repairable.TemplateDurability; }
     }
 
-    private void updateSettings(SAINPresetClass preset)
+    private void UpdateSettings(SAINPresetClass preset)
     {
         if (preset.GlobalSettings.Shoot.EngagementDistance.TryGetValue(WeaponClass, out float distance))
         {
@@ -114,7 +114,7 @@ public class WeaponInfo
 
     public void Dispose()
     {
-        PresetHandler.OnPresetUpdated -= updateSettings;
+        PresetHandler.OnPresetUpdated -= UpdateSettings;
     }
 
     private void FindModType(IEnumerable<Mod> mods)
@@ -179,24 +179,24 @@ public class WeaponInfo
 
     private static EModType CheckItemType(Type type)
     {
-        if (CheckTemplateType(type, FlashHiderTypeId))
+        if (CheckTemplateType(type, _flashHiderTypeId))
         {
             return EModType.FlashHider;
         }
-        if (CheckTemplateType(type, SuppressorTypeId))
+        if (CheckTemplateType(type, _suppressorTypeId))
         {
             return EModType.Suppressor;
         }
-        for (int i = 0; i < RedDotTypes.Length; i++)
+        for (int i = 0; i < _redDotTypes.Length; i++)
         {
-            if (CheckTemplateType(type, RedDotTypes[i]))
+            if (CheckTemplateType(type, _redDotTypes[i]))
             {
                 return EModType.RedDot;
             }
         }
-        for (int i = 0; i < OpticTypes.Length; i++)
+        for (int i = 0; i < _opticTypes.Length; i++)
         {
-            if (CheckTemplateType(type, OpticTypes[i]))
+            if (CheckTemplateType(type, _opticTypes[i]))
             {
                 return EModType.Optic;
             }
@@ -268,17 +268,27 @@ public class WeaponInfo
     // Contrary to the name, Muzzle here means "Muzzle Device", i.e., the parent of flash hiders and suppressors.
     // Muzzle brake is also considered a "FlashHider".
     //private static readonly string MuzzleTypeId = "5448fe394bdc2d0d028b456c";
-    private static readonly string FlashHiderTypeId = "550aa4bf4bdc2dd6348b456b";
-    private static readonly string SuppressorTypeId = "550aa4cd4bdc2dd8348b456c";
+    private static readonly string _flashHiderTypeId = "550aa4bf4bdc2dd6348b456b";
+    private static readonly string _suppressorTypeId = "550aa4cd4bdc2dd8348b456c";
 
-    private static readonly string CollimatorTypeId = "55818ad54bdc2ddc698b4569";
-    private static readonly string CompactCollimatorTypeId = "55818acf4bdc2dde698b456b";
-    private static readonly string AssaultScopeTypeId = "55818add4bdc2d5b648b456f";
-    private static readonly string OpticScopeTypeId = "55818ae44bdc2dde698b456c";
-    private static readonly string SpecialScopeTypeId = "55818aeb4bdc2ddc698b456a";
+    private static readonly string[] _opticTypes =
+    {
+        "55818add4bdc2d5b648b456f", // AssaultScopeTypeId
+        "55818ae44bdc2dde698b456c", // OpticScopeTypeId
+        "55818aeb4bdc2ddc698b456a"  // SpecialScopeTypeId
+    };
+    private static readonly string[] _redDotTypes =
+    {
+        "55818ad54bdc2ddc698b4569", // CollimatorTypeId
+        "55818acf4bdc2dde698b456b"  // CompactCollimatorTypeId
+    };
 
-    private static readonly string[] OpticTypes = { AssaultScopeTypeId, OpticScopeTypeId, SpecialScopeTypeId };
-    private static readonly string[] RedDotTypes = { CollimatorTypeId, CompactCollimatorTypeId };
+    // Some weapons don't have their suppressors listed in their mod lists, eventhough they are suppressed.
+    // So, we check for their weapon IDs instead.
+    private static readonly string[] _suppressedWeapons =
+    {
+        "674d6121c09f69dfb201a888" // Aklys Defense Velociraptor .300
+    };
 }
 
 public enum EModType
