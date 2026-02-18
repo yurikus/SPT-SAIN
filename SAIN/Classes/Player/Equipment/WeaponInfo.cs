@@ -132,25 +132,19 @@ public class WeaponInfo
                 switch (modType)
                 {
                     case EModType.RedDot:
-                        if (RedDot == null)
-                        {
-                            RedDot = mod;
-                        }
+                        RedDot ??= mod;
                         break;
                     case EModType.Optic:
-                        if (Optic == null)
-                        {
-                            Optic = mod;
-                        }
+                        Optic ??= mod;
                         break;
                     case EModType.FlashHider:
-                        if (FlashHider == null)
-                        {
-                            FlashHider = mod;
-                        }
+                        FlashHider ??= mod;
                         break;
                     case EModType.Suppressor:
-                        if (Suppressor == null)
+                        Suppressor ??= mod;
+                        break;
+                    default:
+                        if (Suppressor == null && _suppressorMods.Contains(mod.TemplateId.StringID))
                         {
                             Suppressor = mod;
                         }
@@ -289,6 +283,12 @@ public class WeaponInfo
     private static readonly string[] _suppressedWeapons =
     {
         "674d6121c09f69dfb201a888" // Aklys Defense Velociraptor .300
+    };
+
+    // Some mods are suppressors, but aren't classified as suppressors.
+    private static readonly string[] _suppressorMods =
+    {
+        "5888945a2459774bf43ba385" // DVL-10 suppressed barrel
     };
 }
 
